@@ -25,7 +25,7 @@ func TestBoardInvocation(t *testing.T) {
 		}
 	}
 	for _, args := range [][]string{
-		{"board"}, {"G-009"}, {"--json", "--json"}, {"--project", "a", "--project", "b"}, {"--wat"}, {"--project"}, {"--project="},
+		{"board"}, {"G-260101-00009"}, {"--json", "--json"}, {"--project", "a", "--project", "b"}, {"--wat"}, {"--project"}, {"--project="},
 		{"--source", selector}, {"--slug", "x"}, {"--expect", rev}, {"--set", "status=done"}, {"--unset", "kind"}, {"--json", "board"},
 	} {
 		var out, errOut bytes.Buffer
@@ -170,7 +170,7 @@ func boardWorkflow(t *testing.T, broken bool) {
 		record := filepath.Join(wt, "docs/records/work/renamed.md")
 		onFeature := strings.NewReplacer("status: proposed", "status: active", "Inspect records", "Inspect records, on feature").Replace(work)
 		write(t, wt, "docs/records/work/renamed.md", onFeature)
-		write(t, wt, "docs/records/work/only.md", strings.NewReplacer("G-001", "G-003", "Inspect records", "Only on feature").Replace(work))
+		write(t, wt, "docs/records/work/only.md", strings.NewReplacer("G-260101-00001", "G-260101-00003", "Inspect records", "Only on feature").Replace(work))
 		gitIn(t, wt, "add", "-A")
 		gitIn(t, wt, "commit", "-q", "-m", "retitle and add")
 		if broken {
@@ -190,18 +190,18 @@ func boardWorkflow(t *testing.T, broken bool) {
 		}
 		before := all()
 
-		// The current view: feature changed G-001 after main, and G-003 is
+		// The current view: feature changed G-260101-00001 after main, and G-260101-00003 is
 		// only there, so both show in feature's state.
 		s := openBoard(t, root)
 		s.want("Board: current view", "Proposed 1", "Active 1", "Inspect records, on feature", "Only on feature", "Deleted: none")
-		s.lacks("G-002", "⑂", "uncommitted")
+		s.lacks("G-260101-00002", "⑂", "uncommitted")
 		incomplete(s)
 
 		s.press("b")
 		s.want("current view", "checkout . (main)", "checkout feature-wt (feature)")
 		s.press("down", "enter")
-		s.want("Board: checkout . (main)", "Proposed 1", "Active 0", "Inspect records", "2 versions", "Elsewhere (1", "): G-003 ")
-		s.lacks("on feature", "Only on feature", "G-002")
+		s.want("Board: checkout . (main)", "Proposed 1", "Active 0", "Inspect records", "2 versions", "Elsewhere (1", "): G-260101-00003 ")
+		s.lacks("on feature", "Only on feature", "G-260101-00002")
 		incomplete(s)
 
 		s.press("b", "down")
@@ -219,11 +219,11 @@ func boardWorkflow(t *testing.T, broken bool) {
 		// Enter opens the record's detail: its content, rendered, its linked
 		// records and the timeline from real Git; v is the version list.
 		s.press("enter")
-		s.want("G-001 · proposed", "Inspect records", "▶ Content", "An outcome.", "Linked", "related    G-002", "Timeline on checkout . (main)", "  proposed   ", "  init", "Sources", "current: active \"Inspect records, on feature\"", "places hold an earlier state")
+		s.want("G-260101-00001 · proposed", "Inspect records", "▶ Content", "An outcome.", "Linked", "related    G-260101-00002", "Timeline on checkout . (main)", "  proposed   ", "  init", "Sources", "current: active \"Inspect records, on feature\"", "places hold an earlier state")
 		s.lacks("▸ proposed", "retitle and add")
 		incomplete(s)
 		s.press("v")
-		s.want("G-001   2 versions differ", "▸ proposed   older  same on ", "▸ active     same on 1 branch, 1 checkout")
+		s.want("G-260101-00001   2 versions differ", "▸ proposed   older  same on ", "▸ active     same on 1 branch, 1 checkout")
 		s.lacks("checkout feature-wt (feature)  unchanged")
 		incomplete(s)
 		// The card opens on the lineage of the board's checkout, from real Git.
@@ -245,7 +245,7 @@ func boardWorkflow(t *testing.T, broken bool) {
 		}
 		ws := s.m.Workspace
 		var out, errOut bytes.Buffer
-		if code := Run([]string{"--project", ws.Project, "show", "G-001"}, root, &out, &errOut); code != 0 || out.String() != onFeature || ws.Project != wt || ws.Record != record {
+		if code := Run([]string{"--project", ws.Project, "show", "G-260101-00001"}, root, &out, &errOut); code != 0 || out.String() != onFeature || ws.Project != wt || ws.Record != record {
 			t.Fatalf("show through the selected workspace: code=%d project=%s\n%s", code, ws.Project, out.String())
 		}
 		// The board's result goes through workspace's own writer.
@@ -258,7 +258,7 @@ func boardWorkflow(t *testing.T, broken bool) {
 			t.Fatal("browsing and selecting changed files")
 		}
 
-		// The same walk from the current view, where G-001 is active, but the
+		// The same walk from the current view, where G-260101-00001 is active, but the
 		// target changes after it was displayed.
 		s = openBoard(t, root)
 		s.press("l", "enter", "v")
@@ -271,9 +271,9 @@ func boardWorkflow(t *testing.T, broken bool) {
 		if s.press("enter") || s.m.Workspace != nil {
 			t.Fatal("a stale selection resolved")
 		}
-		s.want("REFUSED: G-001 changed since it was selected", "Nothing was opened. Press r to refresh")
+		s.want("REFUSED: G-260101-00001 changed since it was selected", "Nothing was opened. Press r to refresh")
 		s.press("up", "down")
-		s.want("REFUSED: G-001 changed since it was selected")
+		s.want("REFUSED: G-260101-00001 changed since it was selected")
 		s.press("r")
 		s.lacks("REFUSED")
 		s.want("active     checkout feature-wt (feature)  modified", "3 versions differ")
@@ -286,7 +286,7 @@ func boardWorkflow(t *testing.T, broken bool) {
 			t.Fatalf("explicit reselection after refresh should resolve:\n%s", s.screen())
 		}
 		out.Reset()
-		if code := Run([]string{"--project", s.m.Workspace.Project, "show", "G-001"}, root, &out, &errOut); code != 0 || out.String() != changed {
+		if code := Run([]string{"--project", s.m.Workspace.Project, "show", "G-260101-00001"}, root, &out, &errOut); code != 0 || out.String() != changed {
 			t.Fatalf("show after reselection: %d\n%s", code, out.String())
 		}
 		// A committed version routes only while its checkout still matches it.
@@ -296,14 +296,14 @@ func boardWorkflow(t *testing.T, broken bool) {
 		if s.press("enter") || s.m.Workspace != nil {
 			t.Fatal("a committed version whose checkout differs must be refused")
 		}
-		s.want("REFUSED: the live G-001 in worktree feature-wt differs from the committed version selected")
+		s.want("REFUSED: the live G-260101-00001 in worktree feature-wt differs from the committed version selected")
 		if !reflect.DeepEqual(before, all()) {
 			t.Fatal("refusal, refresh, and reselection changed files")
 		}
 	}
 }
 
-// The review workflow on real Git: G-001 is in review on feature with a
+// The review workflow on real Git: G-260101-00001 is in review on feature with a
 // candidate that adds a file. From the board in main's checkout the owner
 // reads the candidate's standing, its changed files and a diff, approves it
 // (written on feature), then integrates it into main, where it is done.
@@ -323,7 +323,7 @@ func TestBoardReviewWorkflow(t *testing.T) {
 	gitIn(t, wt, "commit", "-qm", "feat: the work")
 	candidate := gitIn(t, wt, "rev-parse", "HEAD")
 	var out, errOut bytes.Buffer
-	if code := Run([]string{"--project", wt, "update", "G-001", "--set", "status=review", "--set", "candidate=" + candidate, "--commit"}, root, &out, &errOut); code != 0 {
+	if code := Run([]string{"--project", wt, "update", "G-260101-00001", "--set", "status=review", "--set", "candidate=" + candidate, "--commit"}, root, &out, &errOut); code != 0 {
 		t.Fatal(errOut.String())
 	}
 	short := candidate[:7]
@@ -332,7 +332,7 @@ func TestBoardReviewWorkflow(t *testing.T) {
 	s := openBoard(t, root)
 	s.want("Board: current view, target main", "Review 1")
 	s.press("l", "l", "enter")
-	s.want("G-001 · review", "candidate "+short+" · not on main",
+	s.want("G-260101-00001 · review", "candidate "+short+" · not on main",
 		"Changes against main from ", "code.txt  +1 −0", "docs/records/work/renamed.md  +1 −1", "a approve   f feedback   i integrate")
 	// The temp dir's length decides where the card wraps, so read it unwrapped.
 	card := strings.Join(strings.Fields(strings.ReplaceAll(s.screen(), "┃", "")), " ")
@@ -356,12 +356,12 @@ func TestBoardReviewWorkflow(t *testing.T) {
 
 	// Approval is written on feature, and the board re-read shows it.
 	s.press("a")
-	s.want("Approve G-001 on branch feature · verdict")
+	s.want("Approve G-260101-00001 on branch feature · verdict")
 	for _, c := range "Ship it" {
 		s.press(string(c))
 	}
 	s.press("enter")
-	s.want("Approved G-001", "approved: G-001's candidate, in commit ", "The board has been re-read. Esc returns to the record.")
+	s.want("Approved G-260101-00001", "approved: G-260101-00001's candidate, in commit ", "The board has been re-read. Esc returns to the record.")
 	if got := gitIn(t, wt, "show", "HEAD:docs/records/work/renamed.md"); !strings.Contains(got, "approved: \""+candidate+"\"") || !strings.Contains(got, "Verdict on candidate "+short+", ") || !strings.HasSuffix(got, ": Ship it") {
 		t.Fatalf("feature's record after approval:\n%s", got)
 	}
@@ -370,11 +370,11 @@ func TestBoardReviewWorkflow(t *testing.T) {
 
 	// Integration merges feature into main and writes done there.
 	s.press("i")
-	s.want("Merge branch feature into main and mark G-001 done? y/n   (runs in ") // the temp path is truncated at 160 columns
+	s.want("Merge branch feature into main and mark G-260101-00001 done? y/n   (runs in ") // the temp path is truncated at 160 columns
 	s.press("y")
 	s.want("Also delete branch feature and remove its worktree? y/n   (")
 	s.press("n")
-	s.want("Integration of G-001", "approval: candidate "+short+" of G-001 approved on branch feature at ", "merge: fast-forward main from ", "done: G-001 done at commit ")
+	s.want("Integration of G-260101-00001", "approval: candidate "+short+" of G-260101-00001 approved on branch feature at ", "merge: fast-forward main from ", "done: G-260101-00001 done at commit ")
 	if got := gitIn(t, root, "show", "HEAD:docs/records/work/renamed.md"); !strings.Contains(got, "status: done") || !strings.Contains(got, "approved: \""+candidate+"\"") {
 		t.Fatalf("main's record after integration:\n%s", got)
 	}
@@ -382,6 +382,6 @@ func TestBoardReviewWorkflow(t *testing.T) {
 		t.Fatal("n should keep the worktree")
 	}
 	s.press("esc")
-	s.want("G-001 · done", "candidate "+short+" · on main")
+	s.want("G-260101-00001 · done", "candidate "+short+" · on main")
 	s.lacks("a approve")
 }

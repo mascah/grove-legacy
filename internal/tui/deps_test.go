@@ -32,7 +32,7 @@ func (f fixture) backlog() *versions.Result {
 		{"W-07", "review", "Reconcile imported balances against statement closing balances", "c7"},
 		{"W-08", "proposed", "Detect recurring transactions and predict next month's bills", ""},
 		{"W-09", "proposed", "Dark theme for the report viewer", ""},
-		{"W-10", "abandoned", "Legacy OFX 1.x parser", ""},
+		{"W-10", "abandoned", "Old OFX 1.x parser", ""},
 		{"W-11", "active", "Fix rounding of foreign-currency amounts on import", ""},
 		{"W-13", "proposed", "Send budget alerts when a category passes its limit", ""},
 	}

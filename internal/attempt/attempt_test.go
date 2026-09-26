@@ -33,9 +33,9 @@ func TestMain(m *testing.M) {
 
 const config = "schema_version: 3\nrecords: grove\ntarget: main\n"
 
-const work = "---\nid: \"G-001\"\ntype: work\ntitle: First\nstatus: %s\ncreated: \"2026-09-22T10:00:00Z\"\nupdated: \"2026-09-22T10:00:00Z\"\n---\n\n## Outcome\n\nA thing.\n\n## Acceptance\n\n1. It is.\n"
+const work = "---\nid: \"G-260101-00001\"\ntype: work\ntitle: First\nstatus: %s\ncreated: \"2026-09-22T10:00:00Z\"\nupdated: \"2026-09-22T10:00:00Z\"\n---\n\n## Outcome\n\nA thing.\n\n## Acceptance\n\n1. It is.\n"
 
-const question = "---\nid: \"G-002\"\ntype: question\ntitle: Which colour?\nstatus: open\ncreated: \"2026-09-22T11:00:00Z\"\nupdated: \"2026-09-22T11:00:00Z\"\nblocks: [\"G-001\"]\n---\n\nRed or blue.\n"
+const question = "---\nid: \"G-260101-00002\"\ntype: question\ntitle: Which colour?\nstatus: open\ncreated: \"2026-09-22T11:00:00Z\"\nupdated: \"2026-09-22T11:00:00Z\"\nblocks: [\"G-260101-00001\"]\n---\n\nRed or blue.\n"
 
 var now = time.Date(2026, 9, 22, 18, 30, 0, 0, time.UTC)
 
@@ -60,7 +60,7 @@ func write(t *testing.T, root, rel, content string) {
 	}
 }
 
-// fixture is a checkout on main with G-001 proposed and the grove-work skill
+// fixture is a checkout on main with G-260101-00001 proposed and the grove-work skill
 // init writes, committed, and no reviewer definition.
 func fixture(t *testing.T) string {
 	t.Helper()
@@ -77,7 +77,7 @@ func fixture(t *testing.T) string {
 	}
 	git(t, root, "init", "-q", "-b", "main") // identity comes from git()'s -c flags; the fakes that commit pass their own
 	write(t, root, "grove.yaml", config)
-	write(t, root, "grove/G-001-first.md", fmt.Sprintf(work, "proposed"))
+	write(t, root, "grove/G-260101-00001-first.md", fmt.Sprintf(work, "proposed"))
 	write(t, root, SkillPath, "---\nname: grove-work\n---\n")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "init")
@@ -125,7 +125,7 @@ while [ ! -e "$RELEASE" ]; do sleep 0.05; done
 func start(t *testing.T, root string, at time.Time) (*Launch, []string) {
 	t.Helper()
 	var facts []string
-	l, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, at, func(f string) { facts = append(facts, f) })
+	l, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, at, func(f string) { facts = append(facts, f) })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,23 +209,23 @@ func TestRunToResult(t *testing.T) {
 	git(t, root, "commit", "-qam", "the managed skill")
 	fake(t, initLine+"\necho '{\"type\":\"assistant\"}'\necho '{\"type\":\"weird\"}'\n"+resultLine("success", false))
 	l, facts := start(t, root, now)
-	if len(facts) != 2 || !strings.Contains(facts[0], "worktree-G-001 created at") || facts[1] != "warning: "+ReviewerPath+" is not in "+filepath.Join(root, ".claude", "worktrees", "worktree-G-001")+", so the attempt has no independent reviewer and work whose record requires one stays active; commit the files grove init wrote to give it one" {
+	if len(facts) != 2 || !strings.Contains(facts[0], "worktree-G-260101-00001 created at") || facts[1] != "warning: "+ReviewerPath+" is not in "+filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00001")+", so the attempt has no independent reviewer and work whose record requires one stays active; commit the files grove init wrote to give it one" {
 		t.Fatalf("facts %q", facts)
 	}
-	want := filepath.Join(root, ".claude", "worktrees", "worktree-G-001")
-	if l.Worktree != want || l.Branch != "worktree-G-001" || l.WorktreeReused || l.Base != git(t, root, "rev-parse", "HEAD") {
+	want := filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00001")
+	if l.Worktree != want || l.Branch != "worktree-G-260101-00001" || l.WorktreeReused || l.Base != git(t, root, "rev-parse", "HEAD") {
 		t.Fatalf("launch %+v", l)
 	}
-	if got := git(t, l.Worktree, "symbolic-ref", "--short", "HEAD"); got != "worktree-G-001" {
+	if got := git(t, l.Worktree, "symbolic-ref", "--short", "HEAD"); got != "worktree-G-260101-00001" {
 		t.Fatalf("worktree branch %s", got)
 	}
 	cmd := strings.Join(l.Command, " ")
-	for _, part := range []string{"-p /grove-work G-001 --interaction headless", "--output-format stream-json --verbose", "--session-id " + l.SessionID, "--max-budget-usd 1", "--permission-mode acceptEdits --permission-prompts none"} {
+	for _, part := range []string{"-p /grove-work G-260101-00001 --interaction headless", "--output-format stream-json --verbose", "--session-id " + l.SessionID, "--max-budget-usd 1", "--permission-mode acceptEdits --permission-prompts none"} {
 		if !strings.Contains(cmd, part) {
 			t.Fatalf("command %q lacks %q", cmd, part)
 		}
 	}
-	if l.ClaudeVersion != "fake 0.1" || l.Owner <= 0 || l.Attempt != "G-001.20260922T183000Z" {
+	if l.ClaudeVersion != "fake 0.1" || l.Owner <= 0 || l.Attempt != "G-260101-00001.20260922T183000Z" {
 		t.Fatalf("launch %+v", l)
 	}
 	if l.Until != "" || l.Model != "" || l.Effort != "" || l.Reviewer != "none" || strings.Contains(cmd, "--until") || strings.Contains(cmd, "--model") || strings.Contains(cmd, "--effort") {
@@ -239,7 +239,7 @@ func TestRunToResult(t *testing.T) {
 	if r.ExitCode != 0 || r.Stopped || !r.Dirty || r.Head != l.Base { // dirty: the fake left env.txt untracked
 		t.Fatalf("result %+v", r)
 	}
-	if r.Record == nil || r.Record.Status != "proposed" || r.RecordError != "" || r.Record.Path != "grove/G-001-first.md" || r.RecordUncommitted {
+	if r.Record == nil || r.Record.Status != "proposed" || r.RecordError != "" || r.Record.Path != "grove/G-260101-00001-first.md" || r.RecordUncommitted {
 		t.Fatalf("record %+v %q", r.Record, r.RecordError)
 	}
 	ev := r.Events
@@ -262,7 +262,7 @@ func TestRunToResult(t *testing.T) {
 		t.Fatalf("the owner must lead its own session, apart from the launcher's %d:\n%s", sid, log)
 	}
 	exclude, _ := os.ReadFile(filepath.Join(root, ".git", "info", "exclude"))
-	if !strings.Contains(string(exclude), "/.claude/worktrees/worktree-G-001/\n") {
+	if !strings.Contains(string(exclude), "/.claude/worktrees/worktree-G-260101-00001/\n") {
 		t.Fatalf("exclude %q", exclude)
 	}
 	if out := git(t, root, "status", "--porcelain"); out != "" {
@@ -276,7 +276,7 @@ func TestRunToResult(t *testing.T) {
 	// Provider failures, in the same checkout: an error result with exit 1
 	// after an uncommitted record edit, no result event with exit 2, no
 	// executable at all.
-	fake(t, initLine+"\necho edited >> grove/G-001-first.md\n"+resultLine("error_max_budget_usd", true)+"\nexit 1")
+	fake(t, initLine+"\necho edited >> grove/G-260101-00001-first.md\n"+resultLine("error_max_budget_usd", true)+"\nexit 1")
 	l, _ = start(t, root, now.Add(time.Minute))
 	v = await(t, root, l.Attempt, Finished)
 	if v.Result.ExitCode != 1 || v.Result.Events.Result == nil || !v.Result.Events.Result.IsError || v.Result.Events.Result.Subtype != "error_max_budget_usd" || !v.Result.RecordUncommitted {
@@ -291,7 +291,7 @@ func TestRunToResult(t *testing.T) {
 	}
 	// The provider cannot start at all.
 	t.Setenv(ClaudeEnv, filepath.Join(t.TempDir(), "missing"))
-	if _, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(3*time.Minute), func(string) {}); err == nil || !strings.Contains(err.Error(), "provider executable is not available") {
+	if _, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(3*time.Minute), func(string) {}); err == nil || !strings.Contains(err.Error(), "provider executable is not available") {
 		t.Fatalf("%v", err)
 	}
 }
@@ -313,8 +313,8 @@ func TestCompetingStartAndReconnect(t *testing.T) {
 			v, _ = Show(root, l.Attempt)
 		}
 	}
-	_, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Second), func(string) {})
-	if err == nil || !strings.Contains(err.Error(), "attempt "+l.Attempt+" of G-001 is running since") {
+	_, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Second), func(string) {})
+	if err == nil || !strings.Contains(err.Error(), "attempt "+l.Attempt+" of G-260101-00001 is running since") {
 		t.Fatalf("competing start: %v", err)
 	}
 	for range 3 { // reconnecting is a read
@@ -343,7 +343,7 @@ func TestCompetingStartAndReconnect(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(l.Worktree, "partial.txt")); err != nil {
 		t.Fatal("partial work was not preserved:", err)
 	}
-	views, _ := List(root, "G-001")
+	views, _ := List(root, "G-260101-00001")
 	if len(views) != 2 || views[0].Launch.Attempt != l2.Attempt {
 		t.Fatalf("list %+v", views)
 	}
@@ -407,7 +407,7 @@ func TestOwnerLost(t *testing.T) {
 		t.Fatal(err)
 	}
 	v = await(t, root, l.Attempt, Orphaned)
-	if _, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Second), func(string) {}); err == nil || !strings.Contains(err.Error(), "is orphaned since") {
+	if _, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Second), func(string) {}); err == nil || !strings.Contains(err.Error(), "is orphaned since") {
 		t.Fatalf("start over an orphan: %v", err)
 	}
 	var facts []string
@@ -443,20 +443,20 @@ func TestBlockingQuestionStopsTheNextRun(t *testing.T) {
 	skipShort(t)
 	root := fixture(t)
 	// The attempt persists a question that blocks its work, on its branch.
-	fake(t, initLine+"\nprintf '%s' '"+strings.ReplaceAll(question, "'", "'\\''")+"' > grove/G-002-q.md\ngit add -A && git -c user.name=t -c user.email=t@t -c commit.gpgsign=false -c maintenance.auto=false commit -qm 'question' || exit 3\n"+resultLine("success", false))
+	fake(t, initLine+"\nprintf '%s' '"+strings.ReplaceAll(question, "'", "'\\''")+"' > grove/G-260101-00002-q.md\ngit add -A && git -c user.name=t -c user.email=t@t -c commit.gpgsign=false -c maintenance.auto=false commit -qm 'question' || exit 3\n"+resultLine("success", false))
 	l, _ := start(t, root, now)
 	v := await(t, root, l.Attempt, Finished)
 	if v.Result.ExitCode != 0 || v.Result.Head == l.Base {
 		t.Fatalf("%+v", v.Result)
 	}
-	_, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Second), func(string) {})
-	if err == nil || !strings.Contains(err.Error(), "nothing in the selection can start: G-001 blocked by open question G-002 (Which colour?)") {
+	_, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Second), func(string) {})
+	if err == nil || !strings.Contains(err.Error(), "nothing in the selection can start: G-260101-00001 blocked by open question G-260101-00002 (Which colour?)") {
 		t.Fatalf("%v", err)
 	}
-	if _, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(2*time.Second), func(string) {}); err == nil || !strings.Contains(err.Error(), "blocked by open question G-002") {
+	if _, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(2*time.Second), func(string) {}); err == nil || !strings.Contains(err.Error(), "blocked by open question G-260101-00002") {
 		t.Fatalf("an unchanged wait must refuse the same way: %v", err)
 	}
-	views, _ := List(root, "G-001")
+	views, _ := List(root, "G-260101-00001")
 	if len(views) != 1 {
 		t.Fatalf("a refused run left %d attempts", len(views))
 	}
@@ -480,15 +480,15 @@ func TestInputsChanged(t *testing.T) {
 	git(t, top, "add", "-A")
 	git(t, top, "commit", "-qm", "move the project below the top")
 	fake(t, initLine+"\n"+`echo '{"type":"result","subtype":"success","is_error":false,"session_id":"'"$SID"'","total_cost_usd":3,"num_turns":2,"modelUsage":{"claude-opus-5-5":{"costUSD":2.5},"claude-sonnet-5":{"costUSD":0.5}}}'`)
-	l, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits", Until: "plan", Model: "opus", Effort: "xhigh"}, now, func(string) {})
+	l, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits", Until: "plan", Model: "opus", Effort: "xhigh"}, now, func(string) {})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if l.Prefix != "sub" || l.Worktree != filepath.Join(root, ".claude", "worktrees", "worktree-G-001") {
+	if l.Prefix != "sub" || l.Worktree != filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00001") {
 		t.Fatalf("%+v", l)
 	}
 	cmd := strings.Join(l.Command, " ")
-	for _, part := range []string{"-p /grove-work G-001 --until plan --interaction headless", "--model opus", "--effort xhigh"} {
+	for _, part := range []string{"-p /grove-work G-260101-00001 --until plan --interaction headless", "--model opus", "--effort xhigh"} {
 		if !strings.Contains(cmd, part) {
 			t.Fatalf("command %q lacks %q", cmd, part)
 		}
@@ -516,20 +516,20 @@ func TestInputsChanged(t *testing.T) {
 		t.Fatal("the provider did not run in the project directory:", err)
 	}
 	// The branch's record enters review: a second run is refused from the project below the top.
-	write(t, l.Worktree, "sub/grove/G-001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "---\n\n## Outcome", "candidate: \""+l.Base+"\"\n---\n\n## Outcome", 1))
+	write(t, l.Worktree, "sub/grove/G-260101-00001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "---\n\n## Outcome", "candidate: \""+l.Base+"\"\n---\n\n## Outcome", 1))
 	git(t, l.Worktree, "commit", "-qam", "review")
 	// Reached through a symlink: Git still names the prefix, and the branch's review refuses.
 	link := filepath.Join(t.TempDir(), "link")
 	if err := os.Symlink(root, link); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Start(Request{Root: link, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Minute), func(string) {}); err == nil || !strings.Contains(err.Error(), "G-001 is review on worktree-G-001") {
+	if _, err := Start(Request{Root: link, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now.Add(time.Minute), func(string) {}); err == nil || !strings.Contains(err.Error(), "G-260101-00001 is review on worktree-G-260101-00001") {
 		t.Fatal(err)
 	}
-	write(t, root, "grove/G-001-first.md", fmt.Sprintf(work, "active"))
+	write(t, root, "grove/G-260101-00001-first.md", fmt.Sprintf(work, "active"))
 	git(t, top, "commit", "-qam", "activate")
 	v, _ = Show(root, l.Attempt)
-	if !strings.Contains(v.InputsChanged, "grove/G-001-first.md on main is sha256:") || !strings.Contains(v.InputsChanged, "launched from "+l.Members()[0].Revision) {
+	if !strings.Contains(v.InputsChanged, "grove/G-260101-00001-first.md on main is sha256:") || !strings.Contains(v.InputsChanged, "launched from "+l.Members()[0].Revision) {
 		t.Fatal(v.InputsChanged)
 	}
 }
@@ -543,7 +543,7 @@ func TestDefaults(t *testing.T) {
 	git(t, root, "commit", "-qam", "defaults")
 	fake(t, initLine+"\n"+resultLine("success", false))
 	for i, c := range []struct{ budget, want string }{{"", "50"}, {"2", "2"}} {
-		l, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: c.budget}, now.Add(time.Duration(i)*time.Hour), func(string) {})
+		l, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: c.budget}, now.Add(time.Duration(i)*time.Hour), func(string) {})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -565,7 +565,7 @@ func TestRefusals(t *testing.T) {
 			req.Root = root
 		}
 		if req.IDs == nil {
-			req.IDs = []string{"G-001"}
+			req.IDs = []string{"G-260101-00001"}
 		}
 		_, err := Start(req, now, func(string) {})
 		if err == nil || !strings.Contains(err.Error(), want) {
@@ -574,37 +574,37 @@ func TestRefusals(t *testing.T) {
 	}
 	try(Request{BudgetUSD: "1"}, "run requires --budget USD and --permission-mode MODE, or their defaults under run: in grove.yaml")
 	try(Request{PermissionMode: "auto"}, "run requires --budget USD and --permission-mode MODE")
-	try(Request{IDs: []string{"G-009"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-009 is not in this checkout")
+	try(Request{IDs: []string{"G-260101-00009"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-260101-00009 is not in this checkout")
 	try(Request{IDs: []string{"nope"}, BudgetUSD: "1", PermissionMode: "auto"}, "nope is not a record ID")
 	try(Request{IDs: []string{"G-260925-7k2qm"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-260925-7k2qm is not in this checkout") // G-260926-pgj43: a date-form ID is an ID
 	try(Request{BudgetUSD: "1", PermissionMode: "auto", Until: "review"}, `--until must be plan, not "review"`)
-	try(Request{BudgetUSD: "1", PermissionMode: "auto", Expect: "sha256:old"}, "G-001 changed since it was read: grove/G-001-first.md is sha256:")
-	write(t, root, "grove/G-002-q.md", question)
+	try(Request{BudgetUSD: "1", PermissionMode: "auto", Expect: "sha256:old"}, "G-260101-00001 changed since it was read: grove/G-260101-00001-first.md is sha256:")
+	write(t, root, "grove/G-260101-00002-q.md", question)
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "question")
-	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, "nothing in the selection can start: G-001 blocked by open question G-002 (Which colour?)")
-	try(Request{IDs: []string{"G-002"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-002 is a question; only work can be selected")
-	git(t, root, "rm", "-q", "grove/G-002-q.md")
+	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, "nothing in the selection can start: G-260101-00001 blocked by open question G-260101-00002 (Which colour?)")
+	try(Request{IDs: []string{"G-260101-00002"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-260101-00002 is a question; only work can be selected")
+	git(t, root, "rm", "-q", "grove/G-260101-00002-q.md")
 	git(t, root, "commit", "-qm", "resolved")
-	write(t, root, "grove/G-001-first.md", fmt.Sprintf(work, "active"))
-	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, "grove/G-001-first.md has uncommitted changes in this checkout")
-	git(t, root, "checkout", "-q", "--", "grove/G-001-first.md")
-	write(t, root, "grove/G-001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "---\n\n## Outcome", "candidate: \""+git(t, root, "rev-parse", "HEAD")+"\"\n---\n\n## Outcome", 1))
+	write(t, root, "grove/G-260101-00001-first.md", fmt.Sprintf(work, "active"))
+	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, "grove/G-260101-00001-first.md has uncommitted changes in this checkout")
+	git(t, root, "checkout", "-q", "--", "grove/G-260101-00001-first.md")
+	write(t, root, "grove/G-260101-00001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "---\n\n## Outcome", "candidate: \""+git(t, root, "rev-parse", "HEAD")+"\"\n---\n\n## Outcome", 1))
 	git(t, root, "commit", "-qam", "review")
-	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, "G-001 is review; only proposed or active work runs")
+	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, "G-260101-00001 is review; only proposed or active work runs")
 	git(t, root, "revert", "--no-edit", "HEAD")
 	// The branch's own record already in review: judgment, not another
 	// attempt, even where the branch lacks the skill.
-	wt := filepath.Join(root, ".claude", "worktrees", "worktree-G-001")
-	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-001", wt)
+	wt := filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00001")
+	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-260101-00001", wt)
 	git(t, wt, "rm", "-q", SkillPath)
-	write(t, wt, "grove/G-001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "---\n\n## Outcome", "candidate: \""+git(t, root, "rev-parse", "HEAD")+"\"\n---\n\n## Outcome", 1))
+	write(t, wt, "grove/G-260101-00001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "---\n\n## Outcome", "candidate: \""+git(t, root, "rev-parse", "HEAD")+"\"\n---\n\n## Outcome", 1))
 	git(t, wt, "commit", "-qam", "review")
-	if _, err := Start(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "auto"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "G-001 is review on worktree-G-001 at "+wt+"; judge that candidate") {
+	if _, err := Start(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "auto"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "G-260101-00001 is review on worktree-G-260101-00001 at "+wt+"; judge that candidate") {
 		t.Fatal(err)
 	}
 	git(t, root, "worktree", "remove", "--force", wt)
-	git(t, root, "branch", "-qD", "worktree-G-001")
+	git(t, root, "branch", "-qD", "worktree-G-260101-00001")
 	// An init nobody committed (G-260925-3pj9a): the skill is on disk here but not in
 	// HEAD, so a new branch is refused before it exists, and an existing
 	// branch without it is refused in its checkout. Committed, the launch
@@ -612,13 +612,13 @@ func TestRefusals(t *testing.T) {
 	git(t, root, "rm", "-q", "--cached", SkillPath)
 	git(t, root, "commit", "-qm", "the skill as init leaves it")
 	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, SkillPath+" is not committed at HEAD")
-	if out := git(t, root, "branch", "--list", "worktree-G-001"); out != "" {
+	if out := git(t, root, "branch", "--list", "worktree-G-260101-00001"); out != "" {
 		t.Fatalf("a refused new branch was made: %q", out)
 	}
-	git(t, root, "branch", "worktree-G-001")
-	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, SkillPath+" is not in "+wt+" on worktree-G-001, so the attempt would not find the grove-work skill its prompt names; commit the files grove init wrote to worktree-G-001")
+	git(t, root, "branch", "worktree-G-260101-00001")
+	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, SkillPath+" is not in "+wt+" on worktree-G-260101-00001, so the attempt would not find the grove-work skill its prompt names; commit the files grove init wrote to worktree-G-260101-00001")
 	git(t, root, "worktree", "remove", "--force", wt)
-	git(t, root, "branch", "-qD", "worktree-G-001")
+	git(t, root, "branch", "-qD", "worktree-G-260101-00001")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "commit what init wrote")
 	// An entrypoint revision this grove does not serve (G-260925-p2k54): a newer or a
@@ -633,21 +633,21 @@ func TestRefusals(t *testing.T) {
 		write(t, root, SkillPath, skill)
 		git(t, root, "commit", "-qam", "another grove's skill")
 		try(Request{BudgetUSD: "1", PermissionMode: "auto"}, fmt.Sprintf("%s in HEAD %s is entrypoint revision %s, and this grove serves %s; run grove init", SkillPath, git(t, root, "rev-parse", "--short=7", "HEAD"), revision, grove.ServedEntrypoints()))
-		if out := git(t, root, "branch", "--list", "worktree-G-001"); out != "" {
+		if out := git(t, root, "branch", "--list", "worktree-G-260101-00001"); out != "" {
 			t.Fatalf("a refused new branch was made: %q", out)
 		}
 		git(t, root, "revert", "--no-edit", "HEAD")
 	}
-	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-001", wt)
+	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-260101-00001", wt)
 	write(t, wt, ReviewerPath, strings.Replace(grove.Entrypoints()[ReviewerPath], current, "<!-- grove entrypoint revision 0 -->\n", 1))
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "an unserved reviewer")
 	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, ReviewerPath+" in "+wt+" is entrypoint revision 0, and this grove serves "+grove.ServedEntrypoints())
 	git(t, root, "worktree", "remove", "--force", wt)
-	git(t, root, "branch", "-qD", "worktree-G-001")
+	git(t, root, "branch", "-qD", "worktree-G-260101-00001")
 	// A directory in the way that is not the branch's worktree.
 	write(t, wt, "stray.txt", "x")
-	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, wt+" exists but is not a registered worktree of worktree-G-001")
+	try(Request{BudgetUSD: "1", PermissionMode: "auto"}, wt+" exists but is not a registered worktree of worktree-G-260101-00001")
 	if views, err := List(root, ""); err != nil || len(views) != 0 {
 		t.Fatalf("refusals wrote attempts: %v %v", views, err)
 	}
@@ -659,13 +659,13 @@ func TestRefusals(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("GROVE_TEST_OWNER_DIES", "1")
-	if l, err := Start(Request{BudgetUSD: "1", PermissionMode: "auto", Root: root, IDs: []string{"G-001"}}, now.Add(time.Hour), func(string) {}); err == nil || !strings.Contains(err.Error(), "exited while starting") {
+	if l, err := Start(Request{BudgetUSD: "1", PermissionMode: "auto", Root: root, IDs: []string{"G-260101-00001"}}, now.Add(time.Hour), func(string) {}); err == nil || !strings.Contains(err.Error(), "exited while starting") {
 		t.Fatalf("%+v %v", l, err)
 	}
 	if views, _ := List(root, ""); len(views) != 1 || views[0].Status != Interrupted {
 		t.Fatalf("%+v", views)
 	}
-	if _, err := Show(root, "G-001.20260922T183000Z"); err == nil || !strings.Contains(err.Error(), "does not exist in this repository") {
+	if _, err := Show(root, "G-260101-00001.20260922T183000Z"); err == nil || !strings.Contains(err.Error(), "does not exist in this repository") {
 		t.Fatal(err)
 	}
 	if _, err := Show(root, "bogus"); err == nil || !strings.Contains(err.Error(), "is not an attempt id") {
@@ -677,11 +677,11 @@ func TestRefusals(t *testing.T) {
 func TestAttemptNames(t *testing.T) {
 	t.Parallel()
 	for name, want := range map[string]bool{
-		"G-001.20260922T183000Z":          true,
-		"G-260925-7k2qm.20260922T183000Z": true,
-		"G-260925-7k2qm":                  false,
-		"G-1234.20260922T183000Z":         false,
-		"../G-001.20260922T183000Z":       false,
+		"G-260101-00001.20260922T183000Z":    true,
+		"G-260925-7k2qm.20260922T183000Z":    true,
+		"G-260925-7k2qm":                     false,
+		"G-1234.20260922T183000Z":            false,
+		"../G-260101-00001.20260922T183000Z": false,
 	} {
 		if attemptPattern.MatchString(name) != want {
 			t.Errorf("%s: want %v", name, want)

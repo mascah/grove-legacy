@@ -200,30 +200,14 @@ func Type(name string) *TypeInfo {
 
 var datePattern = regexp.MustCompile("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
 
-// IDForm is the shape of any record ID, unanchored: a legacy number of three
-// digits, never issued again, or the form new issues, the UTC creation date
+// IDForm is the shape of a record ID, unanchored: the UTC creation date
 // YYMMDD and five lowercase Crockford base32 characters (G-260926-2da4n).
-const IDForm = NeutralPrefix + "-(?:[0-9]{3}|[0-9]{6}-[0-9a-hjkmnp-tv-z]{5})"
+const IDForm = NeutralPrefix + "-[0-9]{6}-[0-9a-hjkmnp-tv-z]{5}"
 
-// IDPattern matches the shape of any record ID; validID also refuses G-000.
+// IDPattern matches a record ID. An ID is an identity only, so a reclassified
+// or converted record keeps its own whatever its type.
 var IDPattern = regexp.MustCompile("^" + IDForm + "$")
 var commitPattern = regexp.MustCompile("^[0-9a-f]{7,40}$")
-
-// validID reports whether id is a canonical ID: an ID is an identity only, so
-// a reclassified or converted record keeps its own whatever its type.
-func validID(id string) bool {
-	return IDPattern.MatchString(id) && id != NeutralPrefix+"-000"
-}
-
-// CompareIDs orders canonical IDs: legacy numbers first, numerically, then
-// the date form by date and tail. Every legacy ID is shorter than every
-// date-form ID, so length then bytes gives exactly that.
-func CompareIDs(a, b string) int {
-	if len(a) != len(b) {
-		return len(a) - len(b)
-	}
-	return strings.Compare(a, b)
-}
 
 func (m *metadata) dateField(key string) *time.Time {
 	if _, ok := m.fields[key]; !ok {
@@ -282,8 +266,8 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 	if r.Type != "" && t == nil {
 		m.problem("type", "unknown record type; expected work, question, decision, term, plan, review, or page")
 	}
-	if !validID(r.ID) {
-		m.problem("id", "expected a canonical ID, e.g. G-260925-7k2qm or a legacy G-001")
+	if !IDPattern.MatchString(r.ID) {
+		m.problem("id", "expected a canonical ID, e.g. G-260925-7k2qm")
 	}
 	r.Formerly = m.stringField("formerly", false)
 	if t != nil && len(t.Statuses) == 0 { // a page has no lifecycle, so status is an unknown field on it

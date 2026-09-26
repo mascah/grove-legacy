@@ -34,7 +34,7 @@ func TestNewCreatesRecordAndReadCommandsLeaveNoState(t *testing.T) {
 	t.Parallel()
 	root := gitFixture(t)
 	state := filepath.Join(root, ".git", "grove")
-	for _, args := range [][]string{{"list"}, {"show", "G-001"}, {"check"}} {
+	for _, args := range [][]string{{"list"}, {"show", "G-260101-00001"}, {"check"}} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, root, &out, &errOut); code != 0 {
 			t.Fatal(errOut.String())

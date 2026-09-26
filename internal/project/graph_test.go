@@ -10,11 +10,11 @@ func TestGraphErrors(t *testing.T) {
 	for _, tc := range []struct {
 		name, first, second, want string
 	}{
-		{"missing", record("G-001", "work", "depends_on: [G-003]\n"), record("G-002", "work", ""), "depends_on"},
-		{"self", record("G-001", "work", "relates_to: [G-001]\n"), record("G-002", "work", ""), "self"},
-		{"dependency cycle", record("G-001", "work", "depends_on: [G-002]\n"), record("G-002", "work", "depends_on: [G-001]\n"), "depends_on: cycle"},
-		{"member cycle", record("G-001", "work", "members: [G-002]\n"), record("G-002", "work", "members: [G-001]\n"), "members: cycle"},
-		{"duplicate identity", record("G-001", "work", ""), record("G-001", "work", ""), "duplicate"},
+		{"missing", record("G-260101-00001", "work", "depends_on: [G-260101-00003]\n"), record("G-260101-00002", "work", ""), "depends_on"},
+		{"self", record("G-260101-00001", "work", "relates_to: [G-260101-00001]\n"), record("G-260101-00002", "work", ""), "self"},
+		{"dependency cycle", record("G-260101-00001", "work", "depends_on: [G-260101-00002]\n"), record("G-260101-00002", "work", "depends_on: [G-260101-00001]\n"), "depends_on: cycle"},
+		{"member cycle", record("G-260101-00001", "work", "members: [G-260101-00002]\n"), record("G-260101-00002", "work", "members: [G-260101-00001]\n"), "members: cycle"},
+		{"duplicate identity", record("G-260101-00001", "work", ""), record("G-260101-00001", "work", ""), "duplicate"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -35,9 +35,9 @@ func TestGraphErrors(t *testing.T) {
 func TestTypedTargetsAndAmbiguity(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
-	put(t, root, "grove/work/a.md", record("G-001", "work", "depends_on: [G-003]\nmembers: [G-002]\n"))
-	put(t, root, "grove/questions/q.md", record("G-002", "question", "blocks: [G-003]\n"))
-	put(t, root, "grove/decisions/d.md", record("G-003", "decision", "relates_to: [G-999]\n"))
+	put(t, root, "grove/work/a.md", record("G-260101-00001", "work", "depends_on: [G-260101-00003]\nmembers: [G-260101-00002]\n"))
+	put(t, root, "grove/questions/q.md", record("G-260101-00002", "question", "blocks: [G-260101-00003]\n"))
+	put(t, root, "grove/decisions/d.md", record("G-260101-00003", "decision", "relates_to: [G-260101-00999]\n"))
 	_, ds := Load(root, "")
 	msg := diagnostics(ds)
 	for _, field := range []string{"depends_on", "members", "blocks", "relates_to"} {
@@ -45,9 +45,9 @@ func TestTypedTargetsAndAmbiguity(t *testing.T) {
 			t.Fatalf("missing %s diagnostic: %s", field, msg)
 		}
 	}
-	put(t, root, "grove/work/b.md", record("G-004", "work", ""))
-	put(t, root, "grove/work/c.md", record("G-004", "work", ""))
-	put(t, root, "grove/questions/q.md", record("G-002", "question", "blocks: [G-004]\n"))
+	put(t, root, "grove/work/b.md", record("G-260101-00004", "work", ""))
+	put(t, root, "grove/work/c.md", record("G-260101-00004", "work", ""))
+	put(t, root, "grove/questions/q.md", record("G-260101-00002", "question", "blocks: [G-260101-00004]\n"))
 	_, ds = Load(root, "")
 	if !strings.Contains(diagnostics(ds), "ambiguous") {
 		t.Fatal(diagnostics(ds))
@@ -57,11 +57,11 @@ func TestTypedTargetsAndAmbiguity(t *testing.T) {
 func TestMembershipIsSeparateFromDependencyOrdering(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
-	put(t, root, "grove/work/a.md", record("G-001", "work", "members: [G-002, G-003]\ndepends_on: [G-002]\n"))
-	put(t, root, "grove/work/b.md", record("G-002", "work", "members: [G-003]\n"))
-	put(t, root, "grove/work/c.md", record("G-003", "work", "depends_on: [G-001]\n"))
-	put(t, root, "grove/questions/q.md", record("G-004", "question", "blocks: [G-001]\nrelates_to: [G-005]\n"))
-	put(t, root, "grove/decisions/d.md", record("G-005", "decision", "relates_to: [G-004]\n"))
+	put(t, root, "grove/work/a.md", record("G-260101-00001", "work", "members: [G-260101-00002, G-260101-00003]\ndepends_on: [G-260101-00002]\n"))
+	put(t, root, "grove/work/b.md", record("G-260101-00002", "work", "members: [G-260101-00003]\n"))
+	put(t, root, "grove/work/c.md", record("G-260101-00003", "work", "depends_on: [G-260101-00001]\n"))
+	put(t, root, "grove/questions/q.md", record("G-260101-00004", "question", "blocks: [G-260101-00001]\nrelates_to: [G-260101-00005]\n"))
+	put(t, root, "grove/decisions/d.md", record("G-260101-00005", "decision", "relates_to: [G-260101-00004]\n"))
 	_, ds := Load(root, "")
 	if len(ds) != 0 {
 		t.Fatal(diagnostics(ds))
@@ -71,11 +71,11 @@ func TestMembershipIsSeparateFromDependencyOrdering(t *testing.T) {
 func TestDuplicateIDsAcrossDifferentTypes(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
-	put(t, root, "grove/work/work.md", record("G-001", "work", ""))
-	put(t, root, "grove/questions/question.md", record("G-001", "question", ""))
+	put(t, root, "grove/work/work.md", record("G-260101-00001", "work", ""))
+	put(t, root, "grove/questions/question.md", record("G-260101-00001", "question", ""))
 	_, ds := Load(root, "")
 	message := diagnostics(ds)
-	if !strings.Contains(message, "duplicate G-001 in grove/questions/question.md, grove/work/work.md") {
+	if !strings.Contains(message, "duplicate G-260101-00001 in grove/questions/question.md, grove/work/work.md") {
 		t.Fatalf("duplicate identity must be reported across differing types: %s", message)
 	}
 }

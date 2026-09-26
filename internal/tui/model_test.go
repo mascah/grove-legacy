@@ -947,26 +947,26 @@ func TestBoardFollowsTypeNotIDOrPlacement(t *testing.T) {
 	var vs []versions.Version
 	for _, s := range []*versions.Source{fx.cMain, fx.main} {
 		vs = append(vs,
-			retype(version(s, "G-001", "Neutral work", "active"), "work", "active"),
-			retype(version(s, "G-002", "A page about proposed work", ""), "page", ""),
+			retype(version(s, "G-260101-00001", "Neutral work", "active"), "work", "active"),
+			retype(version(s, "G-260101-00002", "A page about proposed work", ""), "page", ""),
 			retype(version(s, "W-003", "A page under an old work ID", ""), "page", ""),
 			retype(version(s, "D-004", "Reclassified into work", "proposed"), "work", "proposed"))
 	}
 	// Sources may disagree about a type: the board source's own record decides,
-	// and committed main, which sorts first, must not. G-060 became work in the
-	// live checkout; G-061 became a page there; G-062 is work only on feature.
+	// and committed main, which sorts first, must not. G-260101-00060 became work in the
+	// live checkout; G-260101-00061 became a page there; G-260101-00062 is work only on feature.
 	vs = append(vs,
-		retype(version(fx.cMain, "G-060", "Was a page", ""), "page", ""), retype(version(fx.main, "G-060", "Now work", "active"), "work", "active"),
-		retype(version(fx.cMain, "G-061", "Was work", "done"), "work", "done"), retype(version(fx.main, "G-061", "Now a page", ""), "page", ""),
-		retype(version(fx.cFeat, "G-062", "Work elsewhere", "proposed"), "work", "proposed"))
-	// G-063 is deleted everywhere it is seen, so no record says it was work.
-	vs = append(vs, versions.Version{Source: fx.main, Path: "grove/G-063.md", Change: "deleted"})
+		retype(version(fx.cMain, "G-260101-00060", "Was a page", ""), "page", ""), retype(version(fx.main, "G-260101-00060", "Now work", "active"), "work", "active"),
+		retype(version(fx.cMain, "G-260101-00061", "Was work", "done"), "work", "done"), retype(version(fx.main, "G-260101-00061", "Now a page", ""), "page", ""),
+		retype(version(fx.cFeat, "G-260101-00062", "Work elsewhere", "proposed"), "work", "proposed"))
+	// G-260101-00063 is deleted everywhere it is seen, so no record says it was work.
+	vs = append(vs, versions.Version{Source: fx.main, Path: "grove/G-260101-00063.md", Change: "deleted"})
 	m := open(t, &fake{res: result(fx.main, fx.sources(), vs...)}, 120, 30)
 	chooseCheckout(m, 0)
-	if got, want := board(m), "proposed=D-004 active=G-001,G-060 review= done= abandoned= shelf=G-062"; got != want {
+	if got, want := board(m), "proposed=D-004 active=G-260101-00001,G-260101-00060 review= done= abandoned= shelf=G-260101-00062"; got != want {
 		t.Fatalf("board:\n got %s\nwant %s", got, want)
 	}
-	if screen := plain(m); strings.Contains(screen, "page") || strings.Contains(screen, "G-002") || strings.Contains(screen, "W-003") || strings.Contains(screen, "G-061") || strings.Contains(screen, "G-063") {
+	if screen := plain(m); strings.Contains(screen, "page") || strings.Contains(screen, "G-260101-00002") || strings.Contains(screen, "W-003") || strings.Contains(screen, "G-260101-00061") || strings.Contains(screen, "G-260101-00063") {
 		t.Fatalf("a page must not appear on the board:\n%s", screen)
 	}
 }

@@ -15,18 +15,18 @@ const rev = "sha256:" + "0123456789abcdef0123456789abcdef0123456789abcdef0123456
 func TestUpdateUsage(t *testing.T) {
 	t.Parallel()
 	for _, args := range [][]string{
-		{"update"}, {"update", "G-001"}, {"update", "G-001", "extra", "--expect", rev, "--set", "status=done"},
-		{"update", "G-001", "--expect", rev}, {"update", "G-001", "--commit"},
-		{"update", "G-001", "--commit", "--commit", "--set", "status=done"},
-		{"update", "G-001", "--expect", "abc", "--set", "status=done"},
-		{"update", "G-001", "--expect", strings.ToUpper(rev), "--set", "status=done"},
-		{"update", "G-001", "--expect", rev, "--expect", rev, "--set", "status=done"},
-		{"update", "G-001", "--expect", rev, "--set", "status=done", "--set", "status=active"},
-		{"update", "G-001", "--expect", rev, "--set", "size=small", "--unset", "size"},
-		{"update", "G-001", "--expect", rev, "--unset", "size", "--unset", "size"},
-		{"update", "G-001", "--expect", rev, "--set", "status"}, {"update", "G-001", "--expect", rev, "--set", "=x"},
-		{"update", "G-001", "--expect", rev, "--set"}, {"update", "G-001", "--expect", rev, "--unset", ""},
-		{"list", "--expect", rev}, {"show", "G-001", "--set", "a=b"}, {"check", "--unset", "size"}, {"list", "--commit"},
+		{"update"}, {"update", "G-260101-00001"}, {"update", "G-260101-00001", "extra", "--expect", rev, "--set", "status=done"},
+		{"update", "G-260101-00001", "--expect", rev}, {"update", "G-260101-00001", "--commit"},
+		{"update", "G-260101-00001", "--commit", "--commit", "--set", "status=done"},
+		{"update", "G-260101-00001", "--expect", "abc", "--set", "status=done"},
+		{"update", "G-260101-00001", "--expect", strings.ToUpper(rev), "--set", "status=done"},
+		{"update", "G-260101-00001", "--expect", rev, "--expect", rev, "--set", "status=done"},
+		{"update", "G-260101-00001", "--expect", rev, "--set", "status=done", "--set", "status=active"},
+		{"update", "G-260101-00001", "--expect", rev, "--set", "size=small", "--unset", "size"},
+		{"update", "G-260101-00001", "--expect", rev, "--unset", "size", "--unset", "size"},
+		{"update", "G-260101-00001", "--expect", rev, "--set", "status"}, {"update", "G-260101-00001", "--expect", rev, "--set", "=x"},
+		{"update", "G-260101-00001", "--expect", rev, "--set"}, {"update", "G-260101-00001", "--expect", rev, "--unset", ""},
+		{"list", "--expect", rev}, {"show", "G-260101-00001", "--set", "a=b"}, {"check", "--unset", "size"}, {"list", "--commit"},
 	} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, t.TempDir(), &out, &errOut); code != 2 || out.Len() != 0 || !strings.Contains(errOut.String(), "Usage:") {
@@ -65,7 +65,7 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 		changed bool
 		status  string
 	}{
-		{[]string{"--set", "status=active", "--set", "kind=feature", "--set=priority=2", "--set", `depends_on=["G-001"]`, "--set", "title=Renamed: 版本 \"quoted\""}, true, "active"},
+		{[]string{"--set", "status=active", "--set", "kind=feature", "--set=priority=2", "--set", `depends_on=["G-260101-00001"]`, "--set", "title=Renamed: 版本 \"quoted\""}, true, "active"},
 		{[]string{"--set", "status=active", "--unset", "size"}, false, "active"},
 		{[]string{"--set", "status=review", "--set", "candidate=" + gitIn(t, root, "rev-parse", "HEAD"), "--unset", "priority"}, true, "review"},
 		{[]string{"--set", "status=done"}, true, "done"}, // HEAD contains the candidate, so this checkout may close it
@@ -104,7 +104,7 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 	if !strings.Contains(created, "created: "+createdLine) || !strings.HasSuffix(final, "## Outcome\n\n## Constraints\n\n## Acceptance\n\n## Next\n") {
 		t.Fatalf("created or body changed:\n%s", final)
 	}
-	if strings.Contains(final, "priority") || !strings.Contains(final, "title: \"Renamed: 版本 \\\"quoted\\\"\"\n") || !strings.Contains(final, "depends_on: [\"G-001\"]\n") {
+	if strings.Contains(final, "priority") || !strings.Contains(final, "title: \"Renamed: 版本 \\\"quoted\\\"\"\n") || !strings.Contains(final, "depends_on: [\"G-260101-00001\"]\n") {
 		t.Fatalf("final source:\n%s", final)
 	}
 	out.Reset()
@@ -125,15 +125,15 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 func TestUpdateOperationErrorsAndOutputFailure(t *testing.T) {
 	t.Parallel()
 	root := gitFixture(t)
-	expect := showJSON(t, root, "G-001")["revision"].(string)
+	expect := showJSON(t, root, "G-260101-00001")["revision"].(string)
 	before := hashes(t, filepath.Join(root, "docs"))
 	for _, args := range [][]string{
-		{"update", "G-001", "--expect", rev, "--set", "status=active"},
-		{"update", "G-404", "--expect", expect, "--set", "status=active"},
-		{"update", "G-001", "--expect", expect, "--set", "status=bogus"},
-		{"update", "G-001", "--expect", expect, "--set", "id=G-009"},
-		{"update", "G-001", "--expect", expect, "--set", "blocks=[]"},
-		{"update", "G-002", "--expect", showJSON(t, root, "G-002")["revision"].(string), "--set", `blocks=["G-002"]`},
+		{"update", "G-260101-00001", "--expect", rev, "--set", "status=active"},
+		{"update", "G-260101-00404", "--expect", expect, "--set", "status=active"},
+		{"update", "G-260101-00001", "--expect", expect, "--set", "status=bogus"},
+		{"update", "G-260101-00001", "--expect", expect, "--set", "id=G-260101-00009"},
+		{"update", "G-260101-00001", "--expect", expect, "--set", "blocks=[]"},
+		{"update", "G-260101-00002", "--expect", showJSON(t, root, "G-260101-00002")["revision"].(string), "--set", `blocks=["G-260101-00002"]`},
 	} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, root, &out, &errOut); code != 1 || out.Len() != 0 || !strings.HasPrefix(errOut.String(), "Project: ") || !strings.Contains(errOut.String(), "grove: ") {
@@ -144,21 +144,21 @@ func TestUpdateOperationErrorsAndOutputFailure(t *testing.T) {
 		t.Fatal("failed updates changed project files")
 	}
 	var errOut bytes.Buffer
-	if code := Run([]string{"update", "G-001", "--expect", expect, "--set", "status=active"}, root, brokenWriter{}, &errOut); code != 1 || !strings.Contains(errOut.String(), "the update was applied to docs/records/work/renamed.md; revision sha256:") {
+	if code := Run([]string{"update", "G-260101-00001", "--expect", expect, "--set", "status=active"}, root, brokenWriter{}, &errOut); code != 1 || !strings.Contains(errOut.String(), "the update was applied to docs/records/work/renamed.md; revision sha256:") {
 		t.Fatalf("output failure must report the applied update: code=%d stderr=%s", code, errOut.String())
 	}
-	after := showJSON(t, root, "G-001")
+	after := showJSON(t, root, "G-260101-00001")
 	if !strings.Contains(errOut.String(), after["revision"].(string)) || !strings.Contains(after["source"].(string), "status: active") {
 		t.Fatal("reported revision must describe the published file")
 	}
 	errOut.Reset()
-	if code := Run([]string{"update", "G-001", "--expect", after["revision"].(string), "--set", "status=active"}, root, brokenWriter{}, &errOut); code != 1 || !strings.Contains(errOut.String(), "no change was needed") {
+	if code := Run([]string{"update", "G-260101-00001", "--expect", after["revision"].(string), "--set", "status=active"}, root, brokenWriter{}, &errOut); code != 1 || !strings.Contains(errOut.String(), "no change was needed") {
 		t.Fatalf("output failure after a no-op: %s", errOut.String())
 	}
 	root = projectFixture(t)
 	errOut.Reset()
 	var out bytes.Buffer
-	if code := Run([]string{"update", "G-001", "--expect", expect, "--set", "status=active"}, root, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "Git") {
+	if code := Run([]string{"update", "G-260101-00001", "--expect", expect, "--set", "status=active"}, root, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "Git") {
 		t.Fatalf("outside Git: code=%d stderr=%s", code, errOut.String())
 	}
 }
@@ -184,18 +184,18 @@ func TestUpdateCommitResultAndFailure(t *testing.T) {
 		}
 		return code, result, errOut.String()
 	}
-	code, result, stderr := run("update", "G-001", "--set", "status=active", "--commit")
+	code, result, stderr := run("update", "G-260101-00001", "--set", "status=active", "--commit")
 	if code != 0 || result["changed"] != true || result["commit"] != gitIn(t, root, "rev-parse", "HEAD") {
 		t.Fatalf("code=%d result=%v stderr=%s", code, result, stderr)
 	}
 	if files := gitIn(t, root, "show", "--format=", "--name-only", "HEAD"); files != "docs/records/work/renamed.md" {
 		t.Fatalf("commit must hold the record alone: %q", files)
 	}
-	code, result, _ = run("update", "G-001", "--set", "status=active", "--commit")
+	code, result, _ = run("update", "G-260101-00001", "--set", "status=active", "--commit")
 	if commit, present := result["commit"]; code != 0 || result["changed"] != false || !present || commit != nil {
 		t.Fatalf("no-op: code=%d result=%v", code, result)
 	}
-	code, result, _ = run("update", "G-001", "--set", "status=proposed")
+	code, result, _ = run("update", "G-260101-00001", "--set", "status=proposed")
 	if _, present := result["commit"]; code != 0 || present || gitIn(t, root, "status", "--porcelain") != "M docs/records/work/renamed.md" { // gitIn trims the leading space
 		t.Fatalf("without --commit nothing is committed and no key is printed: %v", result)
 	}
@@ -205,8 +205,8 @@ func TestUpdateCommitResultAndFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 	gitIn(t, root, "config", "core.hooksPath", hooks)
-	code, result, stderr = run("update", "G-001", "--set", "status=active", "--commit")
-	if code != 1 || result != nil || !strings.Contains(stderr, "the file is staged but nothing was committed (the update was applied to docs/records/work/renamed.md; revision "+showJSON(t, root, "G-001")["revision"].(string)+")") {
+	code, result, stderr = run("update", "G-260101-00001", "--set", "status=active", "--commit")
+	if code != 1 || result != nil || !strings.Contains(stderr, "the file is staged but nothing was committed (the update was applied to docs/records/work/renamed.md; revision "+showJSON(t, root, "G-260101-00001")["revision"].(string)+")") {
 		t.Fatalf("failed commit: code=%d stderr=%s", code, stderr)
 	}
 }

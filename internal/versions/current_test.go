@@ -47,7 +47,7 @@ func TestCurrentView(t *testing.T) {
 	t.Parallel()
 	root := repoFixture(t)
 	rec := func(id, status, body string) { write(t, root, "grove/"+id+".md", record(id, "work", status, body)) }
-	for _, id := range []string{"G-010", "G-011", "G-013", "G-014", "G-015", "G-016", "G-017"} {
+	for _, id := range []string{"G-260101-00010", "G-260101-00011", "G-260101-00013", "G-260101-00014", "G-260101-00015", "G-260101-00016", "G-260101-00017"} {
 		rec(id, "proposed", "Start.\n")
 	}
 	c0 := commit(t, root, "records")
@@ -63,29 +63,29 @@ func TestCurrentView(t *testing.T) {
 	// A feature branch with unmerged progress, work only it has, a change
 	// that diverges from main's, and a deletion.
 	feature := addWorktree(t, root, "feature", c0, "-b", "feature")
-	write(t, feature, "grove/G-011.md", record("G-011", "work", "active", "Start.\n"))
-	write(t, feature, "grove/G-012.md", record("G-012", "work", "proposed", "Only here.\n"))
-	write(t, feature, "grove/G-013.md", record("G-013", "work", "active", "Start.\n"))
-	if err := os.Remove(filepath.Join(feature, "grove/G-014.md")); err != nil {
+	write(t, feature, "grove/G-260101-00011.md", record("G-260101-00011", "work", "active", "Start.\n"))
+	write(t, feature, "grove/G-260101-00012.md", record("G-260101-00012", "work", "proposed", "Only here.\n"))
+	write(t, feature, "grove/G-260101-00013.md", record("G-260101-00013", "work", "active", "Start.\n"))
+	if err := os.Remove(filepath.Join(feature, "grove/G-260101-00014.md")); err != nil {
 		t.Fatal(err)
 	}
 	commit(t, feature, "feature progress")
 
 	// A branch merged into main, whose record main then moved on.
 	git(t, root, "checkout", "-q", "-b", "merged", c0)
-	rec("G-016", "active", "Start.\n")
+	rec("G-260101-00016", "active", "Start.\n")
 	commit(t, root, "merged progress")
 	git(t, root, "checkout", "-q", "main")
 	git(t, root, "merge", "-q", "--no-ff", "-m", "merge", "merged")
 
-	rec("G-010", "done", "Start.\n")
-	rec("G-013", "proposed", "Main edited this.\n")
-	rec("G-015", "active", "Start.\n")
+	rec("G-260101-00010", "done", "Start.\n")
+	rec("G-260101-00013", "proposed", "Main edited this.\n")
+	rec("G-260101-00015", "active", "Start.\n")
 	commit(t, root, "main moves on")
 	git(t, root, "branch", "mid")
-	rec("G-015", "proposed", "Start.\n") // a revert to c0's exact bytes
-	rec("G-016", "done", "Start.\n")
-	commit(t, root, "revert G-015, finish G-016")
+	rec("G-260101-00015", "proposed", "Start.\n") // a revert to c0's exact bytes
+	rec("G-260101-00016", "done", "Start.\n")
+	commit(t, root, "revert G-260101-00015, finish G-260101-00016")
 
 	// A branch from before schema 3 is an invalid source, not an observation.
 	git(t, root, "checkout", "-q", "-b", "oldschema", c0)
@@ -96,9 +96,9 @@ func TestCurrentView(t *testing.T) {
 	addWorktree(t, root, "old", c0, "--detach")
 	// Uncommitted: an edit and a new record in the feature checkout,
 	// a deletion in the main checkout.
-	write(t, feature, "grove/G-011.md", record("G-011", "work", "active", "Working on it.\n"))
-	write(t, feature, "grove/G-019.md", record("G-019", "work", "proposed", "New.\n"))
-	if err := os.Remove(filepath.Join(root, "grove/G-017.md")); err != nil {
+	write(t, feature, "grove/G-260101-00011.md", record("G-260101-00011", "work", "active", "Working on it.\n"))
+	write(t, feature, "grove/G-260101-00019.md", record("G-260101-00019", "work", "proposed", "New.\n"))
+	if err := os.Remove(filepath.Join(root, "grove/G-260101-00017.md")); err != nil {
 		t.Fatal(err)
 	}
 
@@ -113,45 +113,45 @@ func TestCurrentView(t *testing.T) {
 	}
 	// Sources: branches feature, main, merged, mid, oldschema (invalid),
 	// stale; checkouts . (main), feature, old (detached at c0).
-	expectStanding(t, res, "G-010",
+	expectStanding(t, res, "G-260101-00010",
 		"branch feature proposed older", "branch main done current", "branch merged proposed older",
 		"branch mid done current", "branch stale proposed older",
 		"checkout . done current", "checkout feature proposed older", "checkout old proposed older")
-	expectStanding(t, res, "G-011",
+	expectStanding(t, res, "G-260101-00011",
 		"branch feature active older", "branch main proposed older", "branch merged proposed older",
 		"branch mid proposed older", "branch stale proposed older",
 		"checkout . proposed older", "checkout feature active current", "checkout old proposed older")
-	expectStanding(t, res, "G-012", "branch feature proposed current", "checkout feature proposed current")
-	expectStanding(t, res, "G-013",
+	expectStanding(t, res, "G-260101-00012", "branch feature proposed current", "checkout feature proposed current")
+	expectStanding(t, res, "G-260101-00013",
 		"branch feature active current", "branch main proposed current", "branch merged proposed older",
 		"branch mid proposed current", "branch stale proposed older",
 		"checkout . proposed current", "checkout feature active current", "checkout old proposed older")
-	expectStanding(t, res, "G-014",
+	expectStanding(t, res, "G-260101-00014",
 		"branch feature - current", "branch main proposed older", "branch merged proposed older",
 		"branch mid proposed older", "branch stale proposed older",
 		"checkout . proposed older", "checkout old proposed older")
 	// The revert: main's bytes equal c0's, and still main's state is current
 	// while mid's later-looking active is older. The stale branch's identical
 	// bytes are older than mid's change, since it never made one.
-	expectStanding(t, res, "G-015",
+	expectStanding(t, res, "G-260101-00015",
 		"branch feature proposed older", "branch main proposed current", "branch merged proposed older",
 		"branch mid active older", "branch stale proposed older",
 		"checkout . proposed current", "checkout feature proposed older", "checkout old proposed older")
-	expectStanding(t, res, "G-016",
+	expectStanding(t, res, "G-260101-00016",
 		"branch feature proposed older", "branch main done current", "branch merged active older",
 		"branch mid active older", "branch stale proposed older",
 		"checkout . done current", "checkout feature proposed older", "checkout old proposed older")
-	expectStanding(t, res, "G-017",
+	expectStanding(t, res, "G-260101-00017",
 		"branch feature proposed older", "branch main proposed older", "branch merged proposed older",
 		"branch mid proposed older", "branch stale proposed older",
 		"checkout . - current", "checkout feature proposed older", "checkout old proposed older")
-	expectStanding(t, res, "G-019", "checkout feature proposed current")
+	expectStanding(t, res, "G-260101-00019", "checkout feature proposed current")
 
-	if why := find(t, group(t, res, "G-011"), "committed", "refs/heads/feature").Older; why != "checkout feature (feature) has an uncommitted change to it on top of this commit" {
+	if why := find(t, group(t, res, "G-260101-00011"), "committed", "refs/heads/feature").Older; why != "checkout feature (feature) has an uncommitted change to it on top of this commit" {
 		t.Errorf("reason for the committed copy under an uncommitted edit: %q", why)
 	}
 	// Main and mid hold the same current bytes; either may be named.
-	if why := find(t, group(t, res, "G-010"), "committed", "refs/heads/stale").Older; why != "branch main changed it since their common history" && why != "branch mid changed it since their common history" {
+	if why := find(t, group(t, res, "G-260101-00010"), "committed", "refs/heads/stale").Older; why != "branch main changed it since their common history" && why != "branch mid changed it since their common history" {
 		t.Errorf("reason for the stale copy: %q", why)
 	}
 
@@ -162,7 +162,7 @@ func TestCurrentView(t *testing.T) {
 			t.Errorf("%s differs by invoking checkout:\n%q\n%q", res.Groups[i].ID, a, b)
 		}
 	}
-	if one := mustInspect(t, root, "G-013"); !slices.Equal(standing(one.Groups[0]), standing(group(t, res, "G-013"))) {
+	if one := mustInspect(t, root, "G-260101-00013"); !slices.Equal(standing(one.Groups[0]), standing(group(t, res, "G-260101-00013"))) {
 		t.Errorf("one record's view should equal its part of the whole")
 	}
 }
@@ -174,21 +174,21 @@ func TestCurrentView(t *testing.T) {
 func TestCurrentViewUnorderedPair(t *testing.T) {
 	t.Parallel()
 	root := repoFixture(t)
-	write(t, root, "grove/G-020.md", "---\nid: [broken\n---\n")
-	write(t, root, "grove/G-021.md", record("G-021", "work", "proposed", "Start.\n"))
+	write(t, root, "grove/G-260101-00020.md", "---\nid: [broken\n---\n")
+	write(t, root, "grove/G-260101-00021.md", record("G-260101-00021", "work", "proposed", "Start.\n"))
 	base := commit(t, root, "base does not validate")
-	write(t, root, "grove/G-020.md", record("G-020", "work", "proposed", "Fixed on main.\n"))
+	write(t, root, "grove/G-260101-00020.md", record("G-260101-00020", "work", "proposed", "Fixed on main.\n"))
 	commit(t, root, "fix on main")
 	git(t, root, "checkout", "-q", "-b", "other", base)
-	write(t, root, "grove/G-020.md", record("G-020", "work", "proposed", "Fixed on other.\n"))
-	write(t, root, "grove/G-021.md", record("G-021", "work", "active", "Start.\n"))
+	write(t, root, "grove/G-260101-00020.md", record("G-260101-00020", "work", "proposed", "Fixed on other.\n"))
+	write(t, root, "grove/G-260101-00021.md", record("G-260101-00021", "work", "active", "Start.\n"))
 	commit(t, root, "fix and change on other")
 	git(t, root, "checkout", "-q", "main")
 
 	res := mustInspect(t, root, "")
-	expectStanding(t, res, "G-021", "branch main proposed older", "branch other active current", "checkout . proposed older")
+	expectStanding(t, res, "G-260101-00021", "branch main proposed older", "branch other active current", "checkout . proposed older")
 	want := fmt.Sprintf("branch main and branch other could not be ordered: their common commit %s holds a project that does not validate", base[:12])
-	expectStanding(t, res, "G-020",
+	expectStanding(t, res, "G-260101-00020",
 		"branch main proposed current", "branch other proposed current", "checkout . proposed current", want)
 }
 
@@ -246,7 +246,9 @@ func TestMergeBases(t *testing.T) {
 func TestCurrentViewCycle(t *testing.T) {
 	t.Parallel()
 	root := repoFixture(t)
-	rec := func(body string) { write(t, root, "grove/G-030.md", record("G-030", "work", "proposed", body)) }
+	rec := func(body string) {
+		write(t, root, "grove/G-260101-00030.md", record("G-260101-00030", "work", "proposed", body))
+	}
 	rec("X0\n")
 	commit(t, root, "M0")
 	git(t, root, "checkout", "-q", "-b", "e")
@@ -275,7 +277,7 @@ func TestCurrentViewCycle(t *testing.T) {
 	// a is older than b (base M1 has X), b than c (base M3 has Y), c than a
 	// (base D has Z). d is older than a, which changed d's record, and
 	// outside the cycle. e meets every other at M0, holding neither's bytes.
-	expectStanding(t, mustInspect(t, root, ""), "G-030",
+	expectStanding(t, mustInspect(t, root, ""), "G-260101-00030",
 		"branch a proposed current", "branch b proposed current", "branch c proposed current",
 		"branch d proposed older", "branch e proposed current", "branch main proposed current", "checkout . proposed current",
 		"some versions could not be ordered: each is older than another, through changes and reverts that merges carried across branches")
@@ -287,7 +289,7 @@ func TestCurrentViewCancelled(t *testing.T) {
 	t.Parallel()
 	root := repoFixture(t)
 	git(t, root, "checkout", "-q", "-b", "f")
-	write(t, root, "grove/work/G-001-first.md", record("G-001", "work", "active", "x\n"))
+	write(t, root, "grove/work/G-260101-00001-first.md", record("G-260101-00001", "work", "active", "x\n"))
 	commit(t, root, "f")
 	git(t, root, "checkout", "-q", "main")
 	res := mustInspect(t, root, "")
@@ -306,7 +308,7 @@ func TestBaseOfUnborn(t *testing.T) {
 	o := newObjects(t.Context(), root, "")
 	defer o.close()
 	zero := strings.Repeat("0", 40)
-	base, err := o.baseOf(&node{commit: zero, live: true, content: "a"}, &node{commit: zero, live: true, content: "b"}, "G-001")
+	base, err := o.baseOf(&node{commit: zero, live: true, content: "a"}, &node{commit: zero, live: true, content: "b"}, "G-260101-00001")
 	if base != "" || err != nil {
 		t.Errorf("got %q, %v", base, err)
 	}
@@ -321,8 +323,8 @@ func TestCurrentViewTarget(t *testing.T) {
 	target := func(branch string) { write(t, root, "grove.yaml", config+"target: "+branch+"\n") }
 	git(t, root, "checkout", "-q", "-b", "feature")
 	target("main")
-	write(t, root, "grove/work/G-001-first.md", record("G-001", "work", "active", "Main body.\n"))
-	commit(t, root, "name the target and start G-001")
+	write(t, root, "grove/work/G-260101-00001-first.md", record("G-260101-00001", "work", "active", "Main body.\n"))
+	commit(t, root, "name the target and start G-260101-00001")
 	git(t, root, "checkout", "-q", "main")
 
 	res := mustInspect(t, root, "")
@@ -336,24 +338,24 @@ func TestCurrentViewTarget(t *testing.T) {
 		return got
 	}
 	want := []string{"committed:refs/heads/feature current=true on=false", "committed:refs/heads/main current=false on=true", "live:refs/heads/main current=false on=true"}
-	if got := labels(group(t, res, "G-001")); !slices.Equal(got, want) {
-		t.Errorf("G-001:\n got %q\nwant %q", got, want)
+	if got := labels(group(t, res, "G-260101-00001")); !slices.Equal(got, want) {
+		t.Errorf("G-260101-00001:\n got %q\nwant %q", got, want)
 	}
-	for _, v := range group(t, res, "G-002").Versions {
+	for _, v := range group(t, res, "G-260101-00002").Versions {
 		if !v.OnTarget {
-			t.Errorf("G-002 is the same everywhere, so on the target: %+v", v.Source)
+			t.Errorf("G-260101-00002 is the same everywhere, so on the target: %+v", v.Source)
 		}
 	}
 	// A deletion is on the target only where the target lacks the record too.
-	if err := os.Remove(filepath.Join(root, "grove/questions/G-002-q.md")); err != nil {
+	if err := os.Remove(filepath.Join(root, "grove/questions/G-260101-00002-q.md")); err != nil {
 		t.Fatal(err)
 	}
-	for _, v := range group(t, mustInspect(t, root, ""), "G-002").Versions {
+	for _, v := range group(t, mustInspect(t, root, ""), "G-260101-00002").Versions {
 		if v.OnTarget != (v.Record != nil) {
-			t.Errorf("G-002 deleted in the main checkout: %s:%s on=%t", v.Source.Kind, v.Source.Ref, v.OnTarget)
+			t.Errorf("G-260101-00002 deleted in the main checkout: %s:%s on=%t", v.Source.Kind, v.Source.Ref, v.OnTarget)
 		}
 	}
-	git(t, root, "checkout", "-q", "--", "grove/questions/G-002-q.md")
+	git(t, root, "checkout", "-q", "--", "grove/questions/G-260101-00002-q.md")
 
 	git(t, root, "checkout", "-q", "-b", "other")
 	target("trunk")
@@ -363,7 +365,7 @@ func TestCurrentViewTarget(t *testing.T) {
 	if want := "grove.yaml names different targets (main on branch feature, trunk on branch other), so none is used"; res.Target != "" || !slices.Equal(res.Notes, []string{want}) {
 		t.Errorf("target %q, notes %q", res.Target, res.Notes)
 	}
-	if v := group(t, res, "G-002").Versions[0]; v.OnTarget {
+	if v := group(t, res, "G-260101-00002").Versions[0]; v.OnTarget {
 		t.Error("without a target nothing is on it")
 	}
 
@@ -391,7 +393,7 @@ func TestCurrentViewTargetBeforeAdoption(t *testing.T) {
 	if res.Target != "main" || len(res.Notes) != 0 || !res.Complete {
 		t.Fatalf("target %q, notes %q, complete %t", res.Target, res.Notes, res.Complete)
 	}
-	if v := group(t, res, "G-001").Versions; len(v) != 1 || v[0].OnTarget {
-		t.Errorf("G-001 is only on adopt: %+v", v)
+	if v := group(t, res, "G-260101-00001").Versions; len(v) != 1 || v[0].OnTarget {
+		t.Errorf("G-260101-00001 is only on adopt: %+v", v)
 	}
 }

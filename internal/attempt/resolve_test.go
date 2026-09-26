@@ -12,7 +12,7 @@ import (
 	"github.com/mascah/grove/internal/versions"
 )
 
-// conflicted is fixture's repository with G-001 in review on worktree-G-001,
+// conflicted is fixture's repository with G-260101-00001 in review on worktree-G-260101-00001,
 // in its checkout, whose candidate changes shared.txt as main does too since
 // the branch left it. It returns the main checkout, the branch's checkout,
 // the candidate and main's tip.
@@ -22,12 +22,12 @@ func conflicted(t *testing.T) (root, wt, candidate, tip string) {
 	write(t, root, "shared.txt", "base\n")
 	git(t, root, "add", "shared.txt")
 	git(t, root, "commit", "-qm", "shared")
-	wt = filepath.Join(root, ".claude", "worktrees", "worktree-G-001")
-	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-001", wt)
+	wt = filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00001")
+	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-260101-00001", wt)
 	write(t, wt, "shared.txt", "branch\n")
 	git(t, wt, "commit", "-qam", "the change")
 	candidate = git(t, wt, "rev-parse", "HEAD")
-	write(t, wt, "grove/G-001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "\n---\n\n## Outcome", "\ncandidate: \""+candidate+"\"\n---\n\n## Outcome", 1))
+	write(t, wt, "grove/G-260101-00001-first.md", strings.Replace(fmt.Sprintf(work, "review"), "\n---\n\n## Outcome", "\ncandidate: \""+candidate+"\"\n---\n\n## Outcome", 1))
 	git(t, wt, "commit", "-qam", "handoff")
 	write(t, root, "shared.txt", "main\n")
 	git(t, root, "commit", "-qam", "main moves")
@@ -36,38 +36,38 @@ func conflicted(t *testing.T) (root, wt, candidate, tip string) {
 
 // resolving is a fake agent that does what the mandate says: merge the
 // commit the feedback names, resolve shared.txt, and hand the merge off.
-const resolving = `T=$(grep -o 'git merge [0-9a-f]\{40\}' grove/G-001-first.md | head -1 | cut -d' ' -f3)
+const resolving = `T=$(grep -o 'git merge [0-9a-f]\{40\}' grove/G-260101-00001-first.md | head -1 | cut -d' ' -f3)
 G="git -c user.name=f -c user.email=f@f -c commit.gpgsign=false"
 $G merge -q "$T" >/dev/null 2>&1
 echo resolved > shared.txt
 $G add shared.txt
 $G commit -q --no-edit
 M=$($G rev-parse HEAD)
-sed -e 's/^status: active/status: review/' -e "s/^candidate: .*/candidate: \"$M\"/" grove/G-001-first.md > r.tmp && mv r.tmp grove/G-001-first.md
+sed -e 's/^status: active/status: review/' -e "s/^candidate: .*/candidate: \"$M\"/" grove/G-260101-00001-first.md > r.tmp && mv r.tmp grove/G-260101-00001-first.md
 $G commit -qam handoff
 `
 
 func resolve(root string, shown *versions.Merge, at time.Time) (*Launch, []string, error) {
 	var facts []string
-	l, err := Resolve(Request{Root: root, IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, shown, at, func(f string) { facts = append(facts, f) })
+	l, err := Resolve(Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, shown, at, func(f string) { facts = append(facts, f) })
 	return l, facts, err
 }
 
-// recordOn reads G-001 as a branch holds it.
+// recordOn reads G-260101-00001 as a branch holds it.
 func recordOn(t *testing.T, root, ref string) string {
-	return git(t, root, "show", ref+":grove/G-001-first.md")
+	return git(t, root, "show", ref+":grove/G-260101-00001-first.md")
 }
 
 func TestResolveRefusals(t *testing.T) {
 	root, wt, candidate, tip := conflicted(t)
 	fake(t, "exit 0")
-	before := git(t, root, "rev-parse", "worktree-G-001")
+	before := git(t, root, "rev-parse", "worktree-G-260101-00001")
 	unchanged := func(t *testing.T) {
 		t.Helper()
-		if now := git(t, root, "rev-parse", "worktree-G-001"); now != before || git(t, wt, "status", "--porcelain") != "" {
+		if now := git(t, root, "rev-parse", "worktree-G-260101-00001"); now != before || git(t, wt, "status", "--porcelain") != "" {
 			t.Fatal("a refusal wrote something")
 		}
-		if views, _ := List(root, "G-001"); len(views) != 0 {
+		if views, _ := List(root, "G-260101-00001"); len(views) != 0 {
 			t.Fatalf("a refusal started %d attempts", len(views))
 		}
 	}
@@ -76,15 +76,15 @@ func TestResolveRefusals(t *testing.T) {
 		shown *versions.Merge
 		want  string
 	}{
-		"a selection":          {Request{IDs: []string{"G-001", "G-002"}}, nil, "resolve takes one work ID"},
-		"a bound":              {Request{IDs: []string{"G-001"}, Until: "plan"}, nil, "do not apply"},
-		"a branch":             {Request{IDs: []string{"G-001"}, Branch: "x"}, nil, "do not apply"},
-		"not in review":        {Request{IDs: []string{"G-009"}}, nil, "no branch holds G-009 in review"},
-		"another candidate":    {Request{IDs: []string{"G-001"}}, &versions.Merge{Commit: tip, Target: tip}, "look again"},
-		"a moved target":       {Request{IDs: []string{"G-001"}}, &versions.Merge{Commit: candidate, Target: candidate}, "moved from"},
-		"no budget or mode":    {Request{IDs: []string{"G-001"}}, nil, "run requires --budget"},
-		"no provider":          {Request{IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "x"}, nil, "provider executable is not available"},
-		"a shown fact matches": {Request{IDs: []string{"G-001"}, BudgetUSD: "1", PermissionMode: "x"}, &versions.Merge{Commit: candidate[:7], Target: tip}, "provider executable is not available"},
+		"a selection":          {Request{IDs: []string{"G-260101-00001", "G-260101-00002"}}, nil, "resolve takes one work ID"},
+		"a bound":              {Request{IDs: []string{"G-260101-00001"}, Until: "plan"}, nil, "do not apply"},
+		"a branch":             {Request{IDs: []string{"G-260101-00001"}, Branch: "x"}, nil, "do not apply"},
+		"not in review":        {Request{IDs: []string{"G-260101-00009"}}, nil, "no branch holds G-260101-00009 in review"},
+		"another candidate":    {Request{IDs: []string{"G-260101-00001"}}, &versions.Merge{Commit: tip, Target: tip}, "look again"},
+		"a moved target":       {Request{IDs: []string{"G-260101-00001"}}, &versions.Merge{Commit: candidate, Target: candidate}, "moved from"},
+		"no budget or mode":    {Request{IDs: []string{"G-260101-00001"}}, nil, "run requires --budget"},
+		"no provider":          {Request{IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "x"}, nil, "provider executable is not available"},
+		"a shown fact matches": {Request{IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "x"}, &versions.Merge{Commit: candidate[:7], Target: tip}, "provider executable is not available"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			if strings.Contains(c.want, "provider") {
@@ -99,7 +99,7 @@ func TestResolveRefusals(t *testing.T) {
 	}
 
 	// An attempt of the work that may be running.
-	done := running(t, root, "G-001")
+	done := running(t, root, "G-260101-00001")
 	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "is running; stop it or wait") {
 		t.Fatalf("a running attempt: %v", err)
 	}
@@ -108,17 +108,17 @@ func TestResolveRefusals(t *testing.T) {
 
 	// What the attempt would wait on once the work is active: an open
 	// question on the branch that blocks it.
-	write(t, wt, "grove/G-002-q.md", question)
+	write(t, wt, "grove/G-260101-00002-q.md", question)
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "a question")
-	before = git(t, root, "rev-parse", "worktree-G-001")
-	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "G-001 blocked by open question G-002") {
+	before = git(t, root, "rev-parse", "worktree-G-260101-00001")
+	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "G-260101-00001 blocked by open question G-260101-00002") {
 		t.Fatalf("a blocking question: %v", err)
 	}
 	unchanged(t)
-	git(t, wt, "rm", "-q", "grove/G-002-q.md")
+	git(t, wt, "rm", "-q", "grove/G-260101-00002-q.md")
 	git(t, wt, "commit", "-qm", "no question")
-	before = git(t, root, "rev-parse", "worktree-G-001")
+	before = git(t, root, "rev-parse", "worktree-G-260101-00001")
 
 	// Resolved by hand: the candidate merges cleanly, so there is nothing to do.
 	git(t, root, "revert", "--no-edit", "HEAD")
@@ -165,25 +165,25 @@ func running(t *testing.T, root, work string) func() {
 // ID first, and any member's running attempt refuses it.
 func TestResolveAGroup(t *testing.T) {
 	root, wt, candidate, _ := conflicted(t)
-	write(t, wt, "grove/G-003-third.md", strings.NewReplacer("G-001", "G-003", "First", "Third").Replace(recordOn(t, root, "worktree-G-001")))
+	write(t, wt, "grove/G-260101-00003-third.md", strings.NewReplacer("G-260101-00001", "G-260101-00003", "First", "Third").Replace(recordOn(t, root, "worktree-G-260101-00001")))
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "the group")
 	fake(t, initLine+"\n"+resultLine("success", false))
-	done := running(t, root, "G-003")
-	if _, err := Resolve(Request{Root: root, IDs: []string{"G-003"}, BudgetUSD: "1", PermissionMode: "x"}, nil, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "attempt G-003.20260922T170000Z of G-003 is running") {
+	done := running(t, root, "G-260101-00003")
+	if _, err := Resolve(Request{Root: root, IDs: []string{"G-260101-00003"}, BudgetUSD: "1", PermissionMode: "x"}, nil, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "attempt G-260101-00003.20260922T170000Z of G-260101-00003 is running") {
 		t.Fatalf("a member's running attempt: %v", err)
 	}
 	done()
 	skipShort(t)
-	l, err := Resolve(Request{Root: root, IDs: []string{"G-003"}, BudgetUSD: "1", PermissionMode: "x"}, nil, now, func(string) {})
+	l, err := Resolve(Request{Root: root, IDs: []string{"G-260101-00003"}, BudgetUSD: "1", PermissionMode: "x"}, nil, now, func(string) {})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := strings.Join(l.Selection.Selected, " "); got != "G-003 G-001" {
+	if got := strings.Join(l.Selection.Selected, " "); got != "G-260101-00003 G-260101-00001" {
 		t.Fatalf("selected %q", got)
 	}
-	g1, g3 := recordOn(t, root, l.Base), git(t, root, "show", l.Base+":grove/G-003-third.md")
-	if !strings.Contains(g3, "Feedback on candidate "+candidate[:7]) || !strings.Contains(g1, "Reopened with G-003's feedback on candidate "+candidate[:7]) || !strings.Contains(g1, "status: active") {
+	g1, g3 := recordOn(t, root, l.Base), git(t, root, "show", l.Base+":grove/G-260101-00003-third.md")
+	if !strings.Contains(g3, "Feedback on candidate "+candidate[:7]) || !strings.Contains(g1, "Reopened with G-260101-00003's feedback on candidate "+candidate[:7]) || !strings.Contains(g1, "status: active") {
 		t.Fatalf("the group reopens:\n%s\n%s", g3, g1)
 	}
 	await(t, root, l.Attempt, Finished)
@@ -198,10 +198,10 @@ func TestResolveCleanly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(facts) < 2 || !strings.HasPrefix(facts[0], "feedback: G-001 is active again on branch worktree-G-001") || !strings.Contains(facts[0], "resolve the conflict in shared.txt") {
+	if len(facts) < 2 || !strings.HasPrefix(facts[0], "feedback: G-260101-00001 is active again on branch worktree-G-260101-00001") || !strings.Contains(facts[0], "resolve the conflict in shared.txt") {
 		t.Fatalf("facts %q", facts)
 	}
-	if l.Branch != "worktree-G-001" || !samePath(l.Worktree, wt) || !l.WorktreeReused || strings.Join(l.Selection.Selected, " ") != "G-001" {
+	if l.Branch != "worktree-G-260101-00001" || !samePath(l.Worktree, wt) || !l.WorktreeReused || strings.Join(l.Selection.Selected, " ") != "G-260101-00001" {
 		t.Fatalf("launch %+v", l)
 	}
 	// The mandate is in the record, where the headless guide reads it.
@@ -226,7 +226,7 @@ func TestResolveCleanly(t *testing.T) {
 		t.Fatalf("the new candidate %+v %v", ms, err)
 	}
 	// What the owner judges: the merge, what it merged, and the file it resolved.
-	c, err := versions.ChangesContext(t.Context(), root, "main", next, next, "grove/G-001-first.md")
+	c, err := versions.ChangesContext(t.Context(), root, "main", next, next, "grove/G-260101-00001-first.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,7 +254,7 @@ func TestResolveNeedsAChoice(t *testing.T) {
 	if r := v.Result.Record; r == nil || r.Status != "active" || r.Candidate != candidate || v.Result.Head != l.Base {
 		t.Fatalf("result %+v %+v", v.Result, r)
 	}
-	if _, _, err := resolve(root, nil, now.Add(time.Minute)); err == nil || !strings.Contains(err.Error(), "no branch holds G-001 in review") {
+	if _, _, err := resolve(root, nil, now.Add(time.Minute)); err == nil || !strings.Contains(err.Error(), "no branch holds G-260101-00001 in review") {
 		t.Fatalf("active work is not resolved again: %v", err)
 	}
 }

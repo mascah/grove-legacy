@@ -16,14 +16,14 @@ import (
 
 // linkedFixture: W-001 is work with a plan, a review, a prerequisite, a
 // dependant, a blocking question, a parent, a member and a related page;
-// G-020 is a page linked from nothing but W-001.
+// G-260101-00020 is a page linked from nothing but W-001.
 func linkedFixture(fx fixture) *fake {
 	var vs []versions.Version
 	for _, s := range []*versions.Source{fx.cMain, fx.main} {
 		w := version(s, "W-001", "Inspect records", "active")
 		p := 2
 		w.Record.Kind, w.Record.Size, w.Record.Priority, w.Record.Candidate = "feature", "small", &p, "abcdef1"
-		w.Record.DependsOn, w.Record.Members, w.Record.RelatesTo = []string{"W-002"}, []string{"W-004"}, []string{"G-020"}
+		w.Record.DependsOn, w.Record.Members, w.Record.RelatesTo = []string{"W-002"}, []string{"W-004"}, []string{"G-260101-00020"}
 		w.Record.Source = []byte("---\nid: W-001\n---\n\n## Outcome\n\nA **clear** board.\n\n- one\n- two\n" + strings.Repeat("\nfiller paragraph\n", 40) + "\nTHE END\n")
 		u := time.Date(2026, 9, 22, 12, 0, 0, 0, time.UTC)
 		w.Record.Updated, w.OnTarget = &u, true
@@ -42,8 +42,8 @@ func linkedFixture(fx fixture) *fake {
 		parent.Record.Members = []string{"W-001"}
 		dependant := version(s, "W-003", "Later work", "proposed")
 		dependant.Record.DependsOn = []string{"W-001"}
-		page := typed("G-020", "How boards work", "page", "")
-		page.Record.Source = []byte("---\nid: G-020\n---\n\n# Boards\n\nA page.\n")
+		page := typed("G-260101-00020", "How boards work", "page", "")
+		page.Record.Source = []byte("---\nid: G-260101-00020\n---\n\n# Boards\n\nA page.\n")
 		vs = append(vs, w, version(s, "W-002", "Create records", "done"), version(s, "W-004", "A member", "proposed"),
 			plan, review, q, parent, dependant, page)
 	}
@@ -73,14 +73,14 @@ func TestDetailLeadsWithContentAndLinks(t *testing.T) {
 		"▶ Content", "## Outcome", "A **clear** board.", "• one",
 		"plan       W-005  W-001 plan  current", "review     W-006  W-001 review  current", "             examined abcdef1 = candidate", "needs      W-002  Create records  done",
 		"needed by  W-003  Later work  proposed", "blocked by Q-001  Which first?  open", "part of    W-007  Milestone  active",
-		"member     W-004  A member  proposed", "related    G-020  How boards work  -",
+		"member     W-004  A member  proposed", "related    G-260101-00020  How boards work  -",
 		"Timeline on branch main", "2026-09-22 10:00  active     bbbbbbb", "2026-09-20 09:00  -          0000000",
 		"Sources", `current: active "Inspect records" on branch main,`, "v lists every version"} {
 		if !strings.Contains(s, want) {
 			t.Fatalf("detail lacks %q:\n%s", want, s)
 		}
 	}
-	if i, j := strings.Index(s, "plan       W-005"), strings.Index(s, "related    G-020"); i > j {
+	if i, j := strings.Index(s, "plan       W-005"), strings.Index(s, "related    G-260101-00020"); i > j {
 		t.Fatalf("roles are ordered:\n%s", s)
 	}
 	if strings.Contains(s, "▸") || strings.Contains(s, "Details") {
@@ -124,11 +124,11 @@ func TestDetailNavigatesLinksAndTimeline(t *testing.T) {
 	for range 7 {
 		press(m, "down")
 	}
-	if s := plain(m); !strings.Contains(s, "> related    G-020") {
+	if s := plain(m); !strings.Contains(s, "> related    G-260101-00020") {
 		t.Fatalf("↓ walks the linked records:\n%s", s)
 	}
 	press(m, "enter")
-	if s := plain(m); m.openID() != "G-020" || !strings.Contains(s, "G-020 · page") || !strings.Contains(s, "# Boards") || !strings.Contains(s, "related    W-001") {
+	if s := plain(m); m.openID() != "G-260101-00020" || !strings.Contains(s, "G-260101-00020 · page") || !strings.Contains(s, "# Boards") || !strings.Contains(s, "related    W-001") {
 		t.Fatalf("Enter opens the page's own detail with the link back:\n%s", s)
 	}
 	if press(m, "esc"); m.openID() != "W-001" || m.screen != detailScreen {

@@ -22,7 +22,7 @@ ALT_ON, ALT_OFF = b"\x1b[?1049h", b"\x1b[?1049l"
 
 SESSIONS = []  # every grove started, killed on the way out so a failed scenario leaves none running
 
-WORK = "---\nid: G-001\ntype: work\ntitle: {title}\nstatus: {status}\n---\nAn outcome.\n"
+WORK = "---\nid: G-260101-00001\ntype: work\ntitle: {title}\nstatus: {status}\n---\nAn outcome.\n"
 
 
 def git(cwd, *args):
@@ -31,18 +31,18 @@ def git(cwd, *args):
 
 
 def fixture(base):
-    """main has G-001 proposed; a linked worktree on feature has it active."""
+    """main has G-260101-00001 proposed; a linked worktree on feature has it active."""
     root, wt = os.path.join(base, "main"), os.path.join(base, "feature-wt")
     os.makedirs(os.path.join(root, "grove", "work"))
     with open(os.path.join(root, "grove.yaml"), "w") as f:
         f.write("schema_version: 3\nrecords: grove\n")
-    with open(os.path.join(root, "grove", "work", "G-001-first.md"), "w") as f:
+    with open(os.path.join(root, "grove", "work", "G-260101-00001-first.md"), "w") as f:
         f.write(WORK.format(title="First on main", status="proposed"))
     git(root, "init", "-q", "-b", "main")
     git(root, "add", "-A")
     git(root, "commit", "-q", "-m", "main")
     git(root, "worktree", "add", "-q", "-b", "feature", wt)
-    with open(os.path.join(wt, "grove", "work", "G-001-first.md"), "w") as f:
+    with open(os.path.join(wt, "grove", "work", "G-260101-00001-first.md"), "w") as f:
         f.write(WORK.format(title="First on feature", status="active"))
     git(wt, "add", "-A")
     git(wt, "commit", "-q", "-m", "feature")
@@ -170,7 +170,7 @@ def select_and_show(root, wt, base):
     for flags in ([], ["--json"]):
         s = Session(root, flags)
         s.expect("Board: current view")
-        s.expect("First on feature")  # feature changed G-001 after main: its state is current
+        s.expect("First on feature")  # feature changed G-260101-00001 after main: its state is current
         s.send(b"l" + ENTER)  # the card is Active
         # The detail opens on the history of its current state, read from Git.
         s.expect("Timeline on branch feature")
@@ -197,8 +197,8 @@ def select_and_show(root, wt, base):
         check(flags or out == (wt + "\n").encode(), f"plain result is exactly the path and a newline: {out!r}")
         tail = s.screen[s.screen.rfind(ALT_OFF):]
         check(b"Checkout: " + wt.encode() in tail and b"refs/heads/feature" in tail, f"context belongs on stderr after the screen: {tail!r}")
-        shown = subprocess.run([GROVE, "--project", project, "show", "G-001"], capture_output=True, cwd=base, env=clean_env())
-        with open(os.path.join(wt, "grove", "work", "G-001-first.md"), "rb") as f:
+        shown = subprocess.run([GROVE, "--project", project, "show", "G-260101-00001"], capture_output=True, cwd=base, env=clean_env())
+        with open(os.path.join(wt, "grove", "work", "G-260101-00001-first.md"), "rb") as f:
             check(shown.returncode == 0 and shown.stdout == f.read(), "show did not read the selected bytes")
 
 
@@ -232,7 +232,7 @@ def refuses_without_terminal(root, wt, base):
             check(b"needs a terminal" in text and b"grove list" in text and b"--help" in text, f"no guidance: {text!r}")
             check(b"\x1b" not in text and same_modes(s.after, s.before), "the refusal touched the terminal")
     # Help and explicit commands stay noninteractive, with or without a terminal.
-    for args, cwd in ((["--help"], base), (["help"], base), (["list"], root), (["versions", "G-001"], root)):
+    for args, cwd in ((["--help"], base), (["help"], base), (["list"], root), (["versions", "G-260101-00001"], root)):
         for stdin, stderr in (("null", "pipe"), ("pty", "pty")):
             s = Session(cwd, args, stdin=stdin, stderr=stderr)
             code, out = s.finish()
@@ -378,7 +378,7 @@ def resize(root, wt, base):
 
 
 def focus_rereads(root, wt, base):
-    """The board asks for focus reports and re-reads when focus returns (G-124), and turns them off on the way out."""
+    """The board asks for focus reports and re-reads when focus returns (G-260101-00124), and turns them off on the way out."""
     s = Session(root)
     mark = s.expect("read 2 branches")
     check(b"\x1b[?1004h" in s.screen, "the board did not ask for focus reports")
@@ -422,7 +422,7 @@ def review_and_integrate(root, wt, base):
     git(wt, "add", "-A")
     git(wt, "commit", "-qm", "feat: code")
     candidate = subprocess.run([GIT, "-C", wt, "rev-parse", "HEAD"], check=True, capture_output=True, env=clean_env()).stdout.decode().strip()
-    subprocess.run([GROVE, "--project", wt, "update", "G-001", "--set", "status=review", "--set", f"candidate={candidate}", "--commit"],
+    subprocess.run([GROVE, "--project", wt, "update", "G-260101-00001", "--set", "status=review", "--set", f"candidate={candidate}", "--commit"],
                    check=True, capture_output=True, cwd=base, env=clean_env())
     s = Session(root)
     s.expect("Board: current view")
@@ -435,11 +435,11 @@ def review_and_integrate(root, wt, base):
     s.send(ESC)  # alone: an Esc followed at once by a letter reads as Alt
     mark = s.expect("An outcome.", mark)
     s.send(b"a")
-    mark = s.expect("Approve G-001 on branch feature", mark)
+    mark = s.expect("Approve G-260101-00001 on branch feature", mark)
     s.send(b"Ship it" + ENTER)
-    s.expect("Approved G-001", mark)
+    s.expect("Approved G-260101-00001", mark)
     mark = s.expect("The board has been re-read.", mark)
-    with open(os.path.join(wt, "grove", "work", "G-001-first.md")) as f:
+    with open(os.path.join(wt, "grove", "work", "G-260101-00001-first.md")) as f:
         record = f.read()
     check(f'approved: "{candidate}"' in record and record.endswith(": Ship it\n"), f"feature's record after approval: {record!r}")
     s.send(ESC)
@@ -447,13 +447,13 @@ def review_and_integrate(root, wt, base):
     # the approval is checked in the file above; the re-read changes are new.
     mark = s.expect("only the record changed since it", mark)
     s.send(b"i")
-    mark = s.expect("mark G-001 done? y/n", mark)
+    mark = s.expect("mark G-260101-00001 done? y/n", mark)
     s.send(b"y")
     mark = s.expect("remove its worktree? y/n", mark)
     s.send(b"n")
-    s.expect("Integration of G-001", mark)
+    s.expect("Integration of G-260101-00001", mark)
     s.expect("merge: merge commit", mark)  # main gained the target commit after feature branched
-    s.expect("done: G-001 done at commit", mark)
+    s.expect("done: G-260101-00001 done at commit", mark)
     mark = s.expect("The board has been re-read.", mark)  # Esc waits for the re-read
     s.send(ESC)
     s.expect("· done", mark)
@@ -461,7 +461,7 @@ def review_and_integrate(root, wt, base):
     code, out = s.finish()
     s.restored()
     check(code == 0 and out == b"", f"exit {code}, stdout {out!r}")
-    with open(os.path.join(root, "grove", "work", "G-001-first.md")) as f:
+    with open(os.path.join(root, "grove", "work", "G-260101-00001-first.md")) as f:
         record = f.read()
     check("status: done" in record and f'approved: "{candidate}"' in record, f"main's record after integration: {record!r}")
     check(os.path.isdir(wt), "n kept the worktree")
@@ -474,16 +474,16 @@ FAKE_CLAUDE = r"""#!/bin/sh
 echo start >> "@STARTS@"
 trap 'echo "{\"type\":\"result\",\"subtype\":\"error_during_execution\",\"is_error\":true}"; exit 130' INT
 echo '{"type":"system","subtype":"init","model":"fake-model"}'
-if [ -e "@QUESTION@" ] && [ ! -e grove/G-002-colour.md ]; then
-  printf -- '---\nid: G-002\ntype: question\ntitle: Which colour?\nstatus: open\nblocks: ["G-001"]\n---\nRed or blue?\n' > grove/G-002-colour.md
-  git add grove/G-002-colour.md
+if [ -e "@QUESTION@" ] && [ ! -e grove/G-260101-00002-colour.md ]; then
+  printf -- '---\nid: G-260101-00002\ntype: question\ntitle: Which colour?\nstatus: open\nblocks: ["G-260101-00001"]\n---\nRed or blue?\n' > grove/G-260101-00002-colour.md
+  git add grove/G-260101-00002-colour.md
   git -c user.name=t -c user.email=t@t -c commit.gpgsign=false -c maintenance.auto=false commit -qm question
-  echo '{"type":"result","subtype":"success","is_error":false,"result":"Waiting on G-002."}'
+  echo '{"type":"result","subtype":"success","is_error":false,"result":"Waiting on G-260101-00002."}'
   exit 0
 fi
 if [ -e "@FINISH@" ]; then
   head=$(git rev-parse HEAD)
-  printf -- '---\nid: G-001\ntype: work\ntitle: First on main\nstatus: review\ncandidate: "%s"\n---\nAn outcome.\n' "$head" > grove/work/G-001-first.md
+  printf -- '---\nid: G-260101-00001\ntype: work\ntitle: First on main\nstatus: review\ncandidate: "%s"\n---\nAn outcome.\n' "$head" > grove/work/G-260101-00001-first.md
   git -c user.name=t -c user.email=t@t -c commit.gpgsign=false -c maintenance.auto=false commit -qam review
   echo '{"type":"result","subtype":"success","is_error":false,"total_cost_usd":0.25,"result":"## Handoff\n\nReady for review."}'
   exit 0
@@ -571,7 +571,7 @@ def attempt_lifecycle(root, wt, base):
     # Without run: in grove.yaml the one launch line needs the budget and the
     # mode typed, in run's own flags, and refuses what run refuses.
     s.send(b"R")
-    mark = s.expect("Launch G-001 ▏ · no budget, no mode, to the handoff, model default, effort default", mark)
+    mark = s.expect("Launch G-260101-00001 ▏ · no budget, no mode, to the handoff, model default, effort default", mark)
     s.send(ENTER)
     mark = s.expect("type --budget USD and --permission-mode MODE", mark)
     s.send(b"--frob" + ENTER)
@@ -589,16 +589,16 @@ def attempt_lifecycle(root, wt, base):
     s.send(ESC)
     mark = s.expect("R launches one", mark)
     s.send(b"R")
-    mark = s.expect("Launch G-001", mark)
+    mark = s.expect("Launch G-260101-00001", mark)
     s.send(b"--budget 1 --permission-mode auto" + ENTER)
-    s.expect("Launch of an attempt of G-001", mark)
+    s.expect("Launch of an attempt of G-260101-00001", mark)
     s.expect("warning: .claude/agents/grove-reviewer.md is not in", mark)
     s.expect("started; owner pid", mark)
     mark = s.expect("The board has been re-read.", mark)  # Esc waits for the re-read; both may be one frame
     s.send(ESC)
     mark = s.expect("A lists them", mark)
     s.send(b"A")
-    mark = s.expect("Attempts of G-001", mark)
+    mark = s.expect("Attempts of G-260101-00001", mark)
     s.send(ENTER)
     s.expect("Running.", mark)
     mark = s.expect("step 19999", mark)  # the newest of 20,000 events, shown while it runs
@@ -621,8 +621,8 @@ def attempt_lifecycle(root, wt, base):
     s.expect("Board: current view")
     mark = s.expect("running")  # the card's tag
     # A status committed on the running attempt's branch moves its card with no key pressed (G-260924-zxvqf).
-    wt1 = os.path.join(root, ".claude", "worktrees", "worktree-G-001")
-    record = os.path.join(wt1, "grove", "work", "G-001-first.md")
+    wt1 = os.path.join(root, ".claude", "worktrees", "worktree-G-260101-00001")
+    record = os.path.join(wt1, "grove", "work", "G-260101-00001-first.md")
     with open(record) as f:
         text = f.read()
     with open(record, "w") as f:
@@ -632,7 +632,7 @@ def attempt_lifecycle(root, wt, base):
     s.send(ENTER)
     mark = s.expect("A lists them")
     s.send(b"A")
-    mark = s.expect("Attempts of G-001", mark)
+    mark = s.expect("Attempts of G-260101-00001", mark)
     s.send(ENTER)
     mark = s.expect("Running.", mark)
     check(count() == 1, "reconnecting started nothing")
@@ -643,7 +643,7 @@ def attempt_lifecycle(root, wt, base):
     mark = s.expect("The board has been re-read.", mark)
     s.send(ESC)
     mark = s.expect("Stopped (exit 130)", mark)  # only the changed cells are redrawn
-    check(os.path.exists(os.path.join(root, ".claude", "worktrees", "worktree-G-001", "partial.txt")), "Stop kept the partial work")
+    check(os.path.exists(os.path.join(root, ".claude", "worktrees", "worktree-G-260101-00001", "partial.txt")), "Stop kept the partial work")
     s.send(ESC)
     mark = s.expect("0 need you · 0 running · 1 settled", mark)  # the list, redrawn where it differs
     s.send(ESC)
@@ -651,43 +651,43 @@ def attempt_lifecycle(root, wt, base):
     # The next attempt persists a question and ends: a wait, which a launch then refuses.
     open(question, "w").close()
     s.send(b"R")
-    mark = s.expect("Launch G-001 ▏ · $1, mode auto, to the handoff, model default, effort default", mark)
+    mark = s.expect("Launch G-260101-00001 ▏ · $1, mode auto, to the handoff, model default, effort default", mark)
     s.send(ENTER)
     s.expect("started; owner pid", mark)
     mark = s.expect("The board has been re-read.", mark)  # Esc waits for the re-read; both may be one frame
     s.send(ESC)
-    mark = s.expect("answer question G-002", mark)
+    mark = s.expect("answer question G-260101-00002", mark)
     s.send(b"R")
-    mark = s.expect("blocked by open question G-002", mark)
+    mark = s.expect("blocked by open question G-260101-00002", mark)
     check(count() == 2, "the wait started nothing more")
     # The owner answers from the attempt (G-260924-wp2pe): e suspends the board for the
     # editor on the branch's copy, then resolves and commits it there.
     s.send(b"A")
-    mark = s.expect("answer question G-002", mark)
+    mark = s.expect("answer question G-260101-00002", mark)
     s.send(ENTER)
-    mark = s.expect("e answers G-002 in your editor", mark)
+    mark = s.expect("e answers G-260101-00002 in your editor", mark)
     s.send(b"e")
     mark = s.expect("EDITOR-RAN", mark)
-    after = s.expect("Resolve G-002 and commit it with your answer on branch worktree-G-001? y/n", mark)
+    after = s.expect("Resolve G-260101-00002 and commit it with your answer on branch worktree-G-260101-00001? y/n", mark)
     suspended = s.screen[mark:after]
     check(suspended.find(ALT_ON) >= 0, f"the board did not resume on the alternate screen: {suspended[:300]!r}")
-    path = os.path.join(wt1, "grove", "G-002-colour.md")
+    path = os.path.join(wt1, "grove", "G-260101-00002-colour.md")
     with open(edits) as f:
         check(f.read() == path + " icanon\n", f"the editor ran on {open(edits).read()!r}, want {path} in canonical mode")
     s.send(b"y")
-    s.expect("Answer to G-002", mark)
-    s.expect("next: R on G-001 launches its next attempt", mark)
+    s.expect("Answer to G-260101-00002", mark)
+    s.expect("next: R on G-260101-00001 launches its next attempt", mark)
     mark = s.expect("The board has been re-read.", mark)
     with open(path) as f:
         text = f.read()
     check("status: resolved" in text and text.endswith("## Answer\n\nBlue.\n"), f"the answer and the status: {text!r}")
     log = subprocess.run([GIT, "-C", wt1, "log", "-1", "--name-only", "--format=%s"], check=True, capture_output=True, env=clean_env()).stdout.decode()
-    check(log == "docs(G-002): set status=resolved\n\ngrove/G-002-colour.md\n", f"one commit of the question alone on the branch: {log!r}")
+    check(log == "docs(G-260101-00002): set status=resolved\n\ngrove/G-260101-00002-colour.md\n", f"one commit of the question alone on the branch: {log!r}")
     s.send(ESC)  # to the question
-    mark = s.expect("G-002 · question · resolved", mark)
+    mark = s.expect("G-260101-00002 · question · resolved", mark)
     s.send(ESC)  # to the attempt
     mark = s.expect("question answered: R again", mark)
-    s.send(b"o")  # G-001's detail, launchable again
+    s.send(b"o")  # G-260101-00001's detail, launchable again
     mark = s.expect("R launches one", mark)
     open(finish, "w").close()
     s.send(b"R")
@@ -715,9 +715,9 @@ def attempt_lifecycle(root, wt, base):
 attempt_lifecycle.mutates = True  # attempts, a worktree and the fake's commit change the repository on purpose
 
 def dependencies(root, wt, base):
-    """board -> g -> focus and select -> preview -> back -> a record's detail -> back -> refresh -> resize -> exit, reading nothing into stdout (G-161)."""
-    with open(os.path.join(root, "grove", "work", "G-002-second.md"), "w") as f:
-        f.write('---\nid: G-002\ntype: work\ntitle: Second needs first\nstatus: proposed\ndepends_on: ["G-001"]\n---\nAn outcome.\n')
+    """board -> g -> focus and select -> preview -> back -> a record's detail -> back -> refresh -> resize -> exit, reading nothing into stdout (G-260101-00161)."""
+    with open(os.path.join(root, "grove", "work", "G-260101-00002-second.md"), "w") as f:
+        f.write('---\nid: G-260101-00002\ntype: work\ntitle: Second needs first\nstatus: proposed\ndepends_on: ["G-260101-00001"]\n---\nAn outcome.\n')
     git(root, "add", "-A")
     git(root, "commit", "-qm", "second")
     s = Session(root)
@@ -725,21 +725,21 @@ def dependencies(root, wt, base):
     s.send(b"g")  # each frame's lines are searched from where the frame began
     s.expect("Connected · 2 work", mark)
     s.expect("← Needs", mark)
-    mark = s.expect("G-002 proposed · layer 1", mark)  # the board's focused card
+    mark = s.expect("G-260101-00002 proposed · layer 1", mark)  # the board's focused card
     s.send(b"\x1b[A")  # up
-    mark = s.expect("active · layer 0", mark)  # G-001 in the current view: feature's state; redraws start at the first changed cell
+    mark = s.expect("active · layer 0", mark)  # G-260101-00001 in the current view: feature's state; redraws start at the first changed cell
     s.send(DOWN)
     mark = s.expect("proposed · layer 1", mark)
     s.send(b" p")
     s.expect("Selection preview", mark)
-    s.expect("Order:    G-002", mark)
+    s.expect("Order:    G-260101-00002", mark)
     s.expect("Outside the selection, not added", mark)
-    mark = s.expect("awaiting implementation", mark)  # G-001 is proposed in this checkout, whatever feature holds
+    mark = s.expect("awaiting implementation", mark)  # G-260101-00001 is proposed in this checkout, whatever feature holds
     s.send(ESC)
     time.sleep(0.2)  # alone: an Esc followed at once by a letter reads as Alt
     mark = s.expect("p preview (1", mark)
     s.send(ENTER)
-    mark = s.expect("dependencies › G-002", mark)
+    mark = s.expect("dependencies › G-260101-00002", mark)
     s.send(ESC)
     time.sleep(0.2)
     mark = s.expect("Connected · 2 work", mark)
@@ -748,7 +748,7 @@ def dependencies(root, wt, base):
     s.resize(24, 80)
     mark = s.expect("Tab trees", mark)
     s.send(b"\t")
-    s.expect("G-002 proposed · layer 1", mark)
+    s.expect("G-260101-00002 proposed · layer 1", mark)
     s.send(b"q")
     code, out = s.finish()
     s.restored()

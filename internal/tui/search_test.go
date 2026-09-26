@@ -25,26 +25,26 @@ func TestSearchReachesEveryRecord(t *testing.T) {
 	res := manyDone(fx)
 	groups := map[string][]versions.Version{}
 	for _, s := range []*versions.Source{fx.cMain, fx.main} {
-		page := version(s, "G-020", "How boards work", "")
+		page := version(s, "G-260101-00020", "How boards work", "")
 		page.Record.Type = "page"
-		page.Record.Source = []byte("---\nid: G-020\n---\n\n# Boards\n\nA page.\n")
-		term := version(s, "G-021", "Candidate", "settled")
+		page.Record.Source = []byte("---\nid: G-260101-00020\n---\n\n# Boards\n\nA page.\n")
+		term := version(s, "G-260101-00021", "Candidate", "settled")
 		term.Record.Type = "term"
-		hostile := version(s, "G-022", "Sneaky \x1b[2J\x1b]52;c;aGk=\x07 title", "resolved")
+		hostile := version(s, "G-260101-00022", "Sneaky \x1b[2J\x1b]52;c;aGk=\x07 title", "resolved")
 		hostile.Record.Type = "question"
 		for _, v := range []versions.Version{page, term, hostile} {
 			groups[v.Record.ID] = append(groups[v.Record.ID], v)
 		}
 	}
-	for _, id := range []string{"G-020", "G-021", "G-022"} {
+	for _, id := range []string{"G-260101-00020", "G-260101-00021", "G-260101-00022"} {
 		res.Groups = append(res.Groups, versions.Group{ID: id, Versions: groups[id]})
 	}
 	f := &fake{res: res}
 	m := open(t, f, 120, 30)
 	press(m, "/")
 	s := plain(m)
-	if m.screen != searchScreen || !strings.Contains(s, "18 of 18 records") || !strings.Contains(s, "> W-001   work       active     Inspect records") ||
-		!strings.Contains(s, "W-300   work       abandoned  Gave up") || !strings.Contains(s, "G-020   page       -          How boards work") || !strings.Contains(s, "G-021   term       settled    Candidate") {
+	if m.screen != searchScreen || !strings.Contains(s, "18 of 18 records") || !strings.Contains(s, "> W-001           work       active     Inspect records") ||
+		!strings.Contains(s, "W-300           work       abandoned  Gave up") || !strings.Contains(s, "G-260101-00020  page       -          How boards work") || !strings.Contains(s, "G-260101-00021  term       settled    Candidate") {
 		t.Fatalf("search should list everything:\n%s", s)
 	}
 	// Letters filter; they do not quit, refresh, or open other screens.
@@ -79,13 +79,13 @@ func TestSearchReachesEveryRecord(t *testing.T) {
 	press(m, "esc", "/")
 	typeText(m, "PAGE")
 	press(m, "enter")
-	if s = plain(m); m.openID() != "G-020" || !strings.Contains(s, "# Boards") {
+	if s = plain(m); m.openID() != "G-260101-00020" || !strings.Contains(s, "# Boards") {
 		t.Fatalf("a page opens in the detail, matched by type whatever the case:\n%s", s)
 	}
 	press(m, "esc", "/")
 	typeText(m, "candid")
 	press(m, "enter")
-	if m.openID() != "G-021" {
+	if m.openID() != "G-260101-00021" {
 		t.Fatalf("a term opens: %s", m.openID())
 	}
 	// A hostile title is shown escaped.

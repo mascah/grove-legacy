@@ -22,7 +22,6 @@ import (
 	"github.com/mascah/grove/internal/handoff"
 	"github.com/mascah/grove/internal/integrate"
 	"github.com/mascah/grove/internal/project"
-	"github.com/mascah/grove/internal/renumber"
 	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
@@ -43,7 +42,6 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"                                     [--effort LEVEL] [--branch NAME] [--worktree DIR]\n" +
 	"       grove [--project DIR] attempts [ID] | attempt ATTEMPT [--json] | stop ATTEMPT\n" +
 	"       grove [--project DIR] convert PATH --type TYPE --title TITLE [--slug SLUG]\n" +
-	"       grove [--project DIR] renumber\n" +
 	"       grove [--project DIR] versions [ID] [--json]\n" +
 	"       grove [--project DIR] workspace --source SELECTOR [--json]\n" +
 	"       grove [--project DIR] context WORK_ID... [--json] [--interaction interactive|headless]\n" +
@@ -69,9 +67,9 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             (marked as managed) is updated when its template changed. Prints one line\n" +
 	"             per path; on any conflict nothing is written and the reasons are printed.\n" +
 	"             --check writes nothing and prints each entrypoint as current, compatible,\n" +
-	"             legacy (no entrypoint revision), incompatible (a revision this binary does\n" +
-	"             not serve), missing, custom (unmarked, not judged) or conflict; exit 1 if\n" +
-	"             any is legacy, incompatible, missing or a conflict.\n" +
+	"             unrevised (no entrypoint revision), incompatible (a revision this binary\n" +
+	"             does not serve), missing, custom (unmarked, not judged) or conflict; exit 1 if\n" +
+	"             any is unrevised, incompatible, missing or a conflict.\n" +
 	"  guide      Print the work, shaping or review guide, or the record model they cite,\n" +
 	"             that this binary carries; the generated entrypoints read the guides from\n" +
 	"             here, so the workflow version is the binary's. --entrypoint N is how an\n" +
@@ -88,7 +86,7 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             caller whose read may be old; omitted, the update applies to the file as it\n" +
 	"             is. --commit then commits that one file with a generated message and adds\n" +
 	"             commit to the result (null when nothing changed); other paths stay as they are.\n" +
-	"             Lists are JSON arrays such as '[\"G-001\"]'; priority is 1-5. A plan or\n" +
+	"             Lists are JSON arrays such as '[\"G-260925-7k2qm\"]'; priority is 1-5. A plan or\n" +
 	"             review names its work with work=[...]; a review's examined is a Git commit,\n" +
 	"             as is work's candidate, required in review and, reachable from HEAD, for done.\n" +
 	"             update accepts type=TYPE with whatever else the new type requires in the\n" +
@@ -179,17 +177,6 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             the original is left in place. Prints {from, from_path, id, path}. Bodies\n" +
 	"             and Markdown links are never rewritten. A source already converted is\n" +
 	"             refused, writing nothing.\n" +
-	"  renumber   One-time, and leaving before the first release: rename every record with a\n" +
-	"             legacy G-NNN ID to a G-YYMMDD-xxxxx ID dated by its created (else the first\n" +
-	"             commit of its formerly path, else of its own, written as created), with a\n" +
-	"             slug from its title less the IDs it cites (a date-form record whose filename\n" +
-	"             cites a legacy ID takes the same slug), and rewrite every old filename and ID\n" +
-	"             under the record root and in the attempt store. Prints {from, from_path, id,\n" +
-	"             path} per record. Refused, writing nothing, when check fails, when no record is\n" +
-	"             legacy, while a local branch other than this one and the target holds\n" +
-	"             records, or while an attempt of legacy work runs. References outside the\n" +
-	"             record root are the caller's to repair from the printed map. Copy the\n" +
-	"             attempts directory first: it is not in Git.\n" +
 	"  versions   Show each record's committed version on every local branch and live\n" +
 	"             version in every worktree, whether it is current or older and on the\n" +
 	"             integration target, with a selector per version; exit 1 if any source\n" +
@@ -436,20 +423,6 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 			return 1
 		}
 		return code
-	case "renumber":
-		renames, err := renumber.Run(p.Root)
-		var lines []byte
-		for _, m := range renames {
-			lines = append(lines, marshal(map[string]any{"from": m.From, "from_path": m.FromPath, "id": m.ID, "path": m.Path})...)
-		}
-		if _, werr := out.Write(lines); werr != nil && err == nil {
-			err = werr
-		}
-		if err != nil {
-			report(errOut, err)
-			return 1
-		}
-		return 0
 	case "new":
 		path, err := create.New(p, a.kind, a.title, a.slug, time.Now())
 		if err != nil {
@@ -811,10 +784,6 @@ func parseArgs(args []string) (a invocation, err error) {
 		}
 	case "deps":
 		a.ids = positional[1:]
-	case "renumber":
-		if len(positional) != 1 {
-			err = fmt.Errorf("renumber takes no arguments")
-		}
 	case "convert":
 		if len(positional) != 2 {
 			err = fmt.Errorf("convert requires exactly one document path")

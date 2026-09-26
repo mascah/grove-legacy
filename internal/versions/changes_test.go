@@ -13,23 +13,23 @@ func TestChangesAgainstTheTarget(t *testing.T) {
 	t.Parallel()
 	root := repoFixture(t)
 	wt := addWorktree(t, root, "feature", "", "-b", "feature")
-	write(t, wt, "grove/work/G-001-first.md", record("G-001", "work", "active", "Feature body.\n"))
+	write(t, wt, "grove/work/G-260101-00001-first.md", record("G-260101-00001", "work", "active", "Feature body.\n"))
 	write(t, wt, "code.txt", "one\ntwo\n")
 	candidate := commit(t, wt, "feat: implement")
-	write(t, wt, "grove/work/G-001-first.md", record("G-001", "work", "review", "Feature body.\n"))
+	write(t, wt, "grove/work/G-260101-00001-first.md", record("G-260101-00001", "work", "review", "Feature body.\n"))
 	tip := commit(t, wt, "docs: review")
 	write(t, root, "notes.txt", "elsewhere\n")
 	base := git(t, root, "rev-parse", "HEAD")
 	commit(t, root, "docs: main moved")
 	ctx := context.Background()
-	c, err := ChangesContext(ctx, root, "main", candidate, tip, "grove/work/G-001-first.md")
+	c, err := ChangesContext(ctx, root, "main", candidate, tip, "grove/work/G-260101-00001-first.md")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if c.Base != base || c.OnTarget || len(c.After) != 0 {
 		t.Fatalf("%+v", c)
 	}
-	if len(c.Files) != 2 || c.Files[0] != (Change{"code.txt", 2, 0}) || c.Files[1].Path != "grove/work/G-001-first.md" || c.Files[1].Added != 2 || c.Files[1].Removed != 2 { // status and body
+	if len(c.Files) != 2 || c.Files[0] != (Change{"code.txt", 2, 0}) || c.Files[1].Path != "grove/work/G-260101-00001-first.md" || c.Files[1].Added != 2 || c.Files[1].Removed != 2 { // status and body
 		t.Fatalf("files: %+v", c.Files)
 	}
 	diff, err := DiffContext(ctx, root, c.Base, candidate, "code.txt")
@@ -40,18 +40,18 @@ func TestChangesAgainstTheTarget(t *testing.T) {
 	// shows as After; a binary file and a rename are read too.
 	write(t, wt, "code.txt", "one\ntwo\nthree\n")
 	write(t, wt, "blob.bin", "\x00\x01\x02")
-	git(t, wt, "mv", "grove/work/G-001-first.md", "grove/work/G-001-moved.md")
+	git(t, wt, "mv", "grove/work/G-260101-00001-first.md", "grove/work/G-260101-00001-moved.md")
 	tip = commit(t, wt, "fix: later")
-	c, err = ChangesContext(ctx, root, "main", candidate, tip, "grove/work/G-001-moved.md")
+	c, err = ChangesContext(ctx, root, "main", candidate, tip, "grove/work/G-260101-00001-moved.md")
 	if err != nil || strings.Join(c.After, ",") != "blob.bin,code.txt" { // a rename shows its new path, which is the record
 		t.Fatalf("after: %+v %v", c, err)
 	}
-	c, err = ChangesContext(ctx, root, "main", tip, tip, "grove/work/G-001-moved.md")
-	if got := c.Files; err != nil || len(c.After) != 0 || len(got) != 3 || got[0] != (Change{"blob.bin", -1, -1}) || got[1] != (Change{"code.txt", 3, 0}) || got[2].Path != "grove/work/G-001-first.md → grove/work/G-001-moved.md" {
+	c, err = ChangesContext(ctx, root, "main", tip, tip, "grove/work/G-260101-00001-moved.md")
+	if got := c.Files; err != nil || len(c.After) != 0 || len(got) != 3 || got[0] != (Change{"blob.bin", -1, -1}) || got[1] != (Change{"code.txt", 3, 0}) || got[2].Path != "grove/work/G-260101-00001-first.md → grove/work/G-260101-00001-moved.md" {
 		t.Fatalf("files: %+v %v", c, err)
 	}
 	// Without a target there is no base and no file list, only the tip check.
-	c, err = ChangesContext(ctx, root, "", candidate, tip, "grove/work/G-001-moved.md")
+	c, err = ChangesContext(ctx, root, "", candidate, tip, "grove/work/G-260101-00001-moved.md")
 	if err != nil || c.Base != "" || c.Files != nil || len(c.After) != 2 {
 		t.Fatalf("no target: %+v %v", c, err)
 	}
@@ -77,11 +77,11 @@ func TestChangesUnderAPrefix(t *testing.T) {
 	root, wt := nestedFixture(t)
 	project := filepath.Join(root, "sub")
 	candidate := git(t, wt, "rev-parse", "HEAD")
-	write(t, wt, "sub/grove/work/G-001-first.md", record("G-001", "work", "review", "Feature.\n"))
+	write(t, wt, "sub/grove/work/G-260101-00001-first.md", record("G-260101-00001", "work", "review", "Feature.\n"))
 	tip := commit(t, wt, "docs: review")
 	ctx := context.Background()
-	c, err := ChangesContext(ctx, project, "main", candidate, tip, "grove/work/G-001-first.md")
-	if err != nil || len(c.After) != 0 || len(c.Files) != 1 || c.Files[0].Path != "sub/grove/work/G-001-first.md" {
+	c, err := ChangesContext(ctx, project, "main", candidate, tip, "grove/work/G-260101-00001-first.md")
+	if err != nil || len(c.After) != 0 || len(c.Files) != 1 || c.Files[0].Path != "sub/grove/work/G-260101-00001-first.md" {
 		t.Fatalf("%+v %v", c, err)
 	}
 	if diff, err := DiffContext(ctx, project, c.Base, candidate, c.Files[0].Path); err != nil || !strings.Contains(diff, "+status: active") {
@@ -89,7 +89,7 @@ func TestChangesUnderAPrefix(t *testing.T) {
 	}
 	write(t, wt, "code.txt", "above the project\n")
 	tip = commit(t, wt, "feat: code")
-	if others, err := Others(ctx, project, candidate, tip, "grove/work/G-001-first.md"); err != nil || strings.Join(others, ",") != "code.txt" {
+	if others, err := Others(ctx, project, candidate, tip, "grove/work/G-260101-00001-first.md"); err != nil || strings.Join(others, ",") != "code.txt" {
 		t.Fatalf("others: %v %v", others, err)
 	}
 }

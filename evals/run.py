@@ -19,8 +19,8 @@ FIXTURE = os.path.join(ROOT, "evals", "fixture")
 # Variables through which Git takes a repository from its caller; a hook exports GIT_DIR (G-260922-g6e7p).
 GIT_LOCATION = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE")
 IDENTITY = ["-c", "user.name=Grove Eval", "-c", "user.email=eval@example.invalid", "-c", "commit.gpgsign=false"]
-# A record's ID leads its generated filename: a legacy G-001 or the date form G-260925-7k2qm (G-260926-pgj43).
-record_id = lambda path: re.match(r"G-(?:[0-9]{6}-[0-9a-hjkmnp-tv-z]{5}|[0-9]{3})", os.path.basename(path)).group()
+# A record's ID leads its generated filename: G-260925-7k2qm (G-260926-pgj43).
+record_id = lambda path: re.match(r"G-[0-9]{6}-[0-9a-hjkmnp-tv-z]{5}", os.path.basename(path)).group()
 TIMEOUT = 1800  # seconds per run; failure detection only, the budget is the real bound
 PAIR = ("presumes choice", "planted question", "brief constraint", "handoff")
 KNOWN = ("constraint applied", "brief constraint", "handoff")
@@ -91,7 +91,7 @@ def frontmatter(text):
             try:
                 key = key.strip()
                 fields[key] = json.loads(value) if value[:1] in '["' else value
-            except ValueError:  # YAML Grove accepts but does not write, such as [G-002]
+            except ValueError:  # YAML Grove accepts but does not write, such as [G-260101-00002]
                 fields[key] = [v.strip(" '\"") for v in value[1:-1].split(",") if v.strip()] if value[:1] == "[" else value
     return fields
 
@@ -737,7 +737,7 @@ def fake(harness, argv):
         path = os.path.join(wt, "grove", [f for f in os.listdir(os.path.join(wt, "grove")) if f.startswith(q)][0])
         text = open(path).read().replace(f'blocks: ["{work}"]', f"blocks: [{work}]")  # YAML Grove accepts but never writes
         open(path, "w").write(text)
-        open(os.path.join(wt, "grove", "G-099-broken.md"), "w").write('---\nid: "G-099"\ntype: work\n---\n')
+        open(os.path.join(wt, "grove", "G-260101-00099-broken.md"), "w").write('---\nid: "G-260101-00099"\ntype: work\n---\n')
         git(wt, "add", "-A")
         git(wt, "commit", "-q", "-m", "Promote and break")
         git(wt, "push", "-q", "origin", branch)
@@ -831,8 +831,8 @@ def selftest():
     assert retrieval(listing, "claude", os.path.join(out, "listed-constraint-1", "p"), set())["files_read"] == [], "listing is not reading"
     odd = os.path.join(tmp, "odd[1]")  # a glob character in the clone's path is literal; an include context refuses is no read
     os.makedirs(os.path.join(odd, "grove"))
-    open(os.path.join(odd, "grove", "G-002-x.md"), "w").close()
-    for cmd, want in (("cat grove/G-002-x.md", ["grove/G-002-x.md"]), ("grove context G-005 --include ./grove/G-002-x.md", [])):
+    open(os.path.join(odd, "grove", "G-260101-00002-x.md"), "w").close()
+    for cmd, want in (("cat grove/G-260101-00002-x.md", ["grove/G-260101-00002-x.md"]), ("grove context G-260101-00005 --include ./grove/G-260101-00002-x.md", [])):
         open(listing, "w").write(json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {"command": cmd}}]}}) + "\n")
         assert retrieval(listing, "claude", odd, set())["files_read"] == want, cmd
     guarded = os.path.join(tmp, "guarded")  # each run spends 5, and the floor keeps 13 in hand: two runs start, the third is refused

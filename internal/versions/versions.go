@@ -219,7 +219,7 @@ func inspect(ctx context.Context, root, id string, between func()) (*Result, err
 	for _, g := range groups {
 		result.Groups = append(result.Groups, *g)
 	}
-	slices.SortFunc(result.Groups, func(a, b Group) int { return project.CompareIDs(a.ID, b.ID) })
+	slices.SortFunc(result.Groups, func(a, b Group) int { return strings.Compare(a.ID, b.ID) })
 	committed.project(result)
 	if err := ctx.Err(); err != nil {
 		return nil, err
