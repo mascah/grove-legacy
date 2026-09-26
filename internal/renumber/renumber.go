@@ -77,6 +77,7 @@ func Run(root string) ([]Renamed, error) {
 	// Plan every rename before writing anything.
 	var renames []Renamed
 	created := map[string]string{} // record path -> created to add
+	titles := map[string]string{}  // legacy ID -> title
 	issued := *p
 	issued.Records = slices.Clone(p.Records)
 	for _, r := range p.Records {
@@ -96,18 +97,24 @@ func Run(root string) ([]Renamed, error) {
 			return refused(err)
 		}
 		issued.Records = append(issued.Records, &project.Record{ID: id})
-		to := path.Join(path.Dir(r.Path), id+"-"+create.Slug(r.Title)+".md")
-		if _, err := os.Lstat(filepath.Join(p.Root, filepath.FromSlash(to))); !os.IsNotExist(err) {
-			return refused(fmt.Errorf("%s already exists", to))
-		}
-		renames = append(renames, Renamed{From: r.ID, FromPath: r.Path, ID: id, Path: to})
+		titles[r.ID] = r.Title
+		renames = append(renames, Renamed{From: r.ID, FromPath: r.Path, ID: id})
 	}
 	slices.SortFunc(renames, func(a, b Renamed) int { return strings.Compare(a.From, b.From) })
-
-	names, ids := map[string]string{}, map[string]string{}
+	ids := map[string]string{}
 	for _, m := range renames {
-		names[path.Base(m.FromPath)] = path.Base(m.Path)
 		ids[m.From] = m.ID
+	}
+	// A title may cite a legacy ID; the slug comes from the title as it reads after.
+	names := map[string]string{}
+	for i, m := range renames {
+		title := string(Rewrite([]byte(titles[m.From]), nil, ids))
+		m.Path = path.Join(path.Dir(m.FromPath), m.ID+"-"+create.Slug(title)+".md")
+		if _, err := os.Lstat(filepath.Join(p.Root, filepath.FromSlash(m.Path))); !os.IsNotExist(err) {
+			return refused(fmt.Errorf("%s already exists", m.Path))
+		}
+		names[path.Base(m.FromPath)] = path.Base(m.Path)
+		renames[i] = m
 	}
 	incomplete := func(err error) ([]Renamed, error) {
 		return renames, fmt.Errorf("%w (the renumber is incomplete; the map is printed, inspect with Git)", err)

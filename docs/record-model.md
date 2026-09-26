@@ -98,7 +98,8 @@ date-form ID and a filename derived from it. It takes no arguments.
   `created`, else the UTC author date of the first commit of the path its
   `formerly` names, else of its own path's first commit, and a missing
   `created` is written with that time. The ID is drawn for that date as
-  `new` draws one, and the slug comes from the title as `new` derives it.
+  `new` draws one, and the slug is derived as `new` derives it, from the title as it reads
+  with the new IDs.
   The file is renamed; `updated` is left alone, so the board's order holds.
 - Then every file beneath the record root is rewritten, each old filename
   first and then each old ID as a whole token: one not joined to a letter

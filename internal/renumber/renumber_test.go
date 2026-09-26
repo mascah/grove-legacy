@@ -48,7 +48,7 @@ const (
 	first = "---\nid: \"G-001\"\ntype: work\ntitle: \"First, with a title longer than the slug cap\"\nstatus: active\nrelates_to: [\"G-002\"]\ncreated: \"2026-09-20T10:00:00Z\"\nupdated: \"2026-09-21T11:00:00Z\"\n---\n\n" +
 		"See [second](G-002-converted.md) and branch `worktree-G-001-G-002`; not G-1000, AG-001 or G-0012.\n"
 	second = "---\nid: \"G-002\"\ntype: work\ntitle: Converted\nstatus: proposed\nformerly: \"docs/old.md\"\n---\n\nBack to [first](./G-001-first.md#outcome).\n"
-	plan   = "---\nid: \"G-003\"\ntype: plan\ntitle: Plan\nstatus: current\nwork: [\"G-001\"]\ncreated: \"2026-09-20T12:00:00Z\"\nupdated: \"2026-09-20T12:00:00Z\"\n---\n\nFor G-001.\n"
+	plan   = "---\nid: \"G-003\"\ntype: plan\ntitle: Plan for G-001\nstatus: current\nwork: [\"G-001\"]\ncreated: \"2026-09-20T12:00:00Z\"\nupdated: \"2026-09-20T12:00:00Z\"\n---\n\nFor G-001.\n"
 )
 
 func TestRenumber(t *testing.T) {
@@ -96,15 +96,18 @@ func TestRenumber(t *testing.T) {
 	for i, want := range []struct{ from, fromPath, day, slug string }{
 		{"G-001", "grove/G-001-first.md", "G-260920-", "-first-with-a-title-longe.md"},
 		{"G-002", "grove/G-002-converted.md", "G-260914-", "-converted.md"}, // formerly's first commit
-		{"G-003", "grove/G-003-plan.md", "G-260920-", "-plan.md"},
+		{"G-003", "grove/G-003-plan.md", "G-260920-", ""},                   // below
 	} {
 		m := renames[i]
-		if m.From != want.from || m.FromPath != want.fromPath || !strings.HasPrefix(m.ID, want.day) || m.Path != "grove/"+m.ID+want.slug {
+		if m.From != want.from || m.FromPath != want.fromPath || !strings.HasPrefix(m.ID, want.day) || want.slug != "" && m.Path != "grove/"+m.ID+want.slug {
 			t.Fatalf("map line %d = %+v", i, m)
 		}
 		if _, err := os.Stat(filepath.Join(root, want.fromPath)); !os.IsNotExist(err) {
 			t.Fatalf("%s still exists", want.fromPath)
 		}
+	}
+	if three.Path != "grove/"+three.ID+"-plan-for-"+strings.ToLower(one.ID)+".md" {
+		t.Fatalf("the slug comes from the title as rewritten: %s", three.Path)
 	}
 	gotFirst := read(t, filepath.Join(root, one.Path))
 	wantFirst := strings.NewReplacer("G-002-converted.md", filepath.Base(two.Path), "worktree-G-001-G-002", "worktree-"+one.ID+"-"+two.ID,
