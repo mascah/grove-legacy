@@ -2,10 +2,11 @@
 id: "G-195"
 type: work
 title: "Coordination-free record IDs"
-status: active
+status: review
 created: "2026-09-26T02:56:11Z"
-updated: "2026-09-26T05:02:34Z"
+updated: "2026-09-26T05:28:33Z"
 relates_to: ["G-194", "G-004", "G-006", "G-064"]
+candidate: "f6f180279905e07427b31851ca32569f92475992"
 ---
 
 ## Outcome
