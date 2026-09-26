@@ -170,8 +170,10 @@ references elsewhere in the repository were repaired from its output
 subjects, branch names and anything else in Git history keep the legacy IDs;
 this table resolves them. IDs that followed an escape in an attempt's JSON
 text (`\nG-153`) were missed by that run and rewritten in a second pass
-with the same map once the command was fixed; only fixture IDs drawn after
-terminal escapes remain there. The table above already shows each typed ID's
+with the same map once the command was fixed. The attempt that ran the
+rename, G-260926-vkv48.20260926T162220Z, was live and left as it was, so its
+log quotes the legacy IDs; elsewhere only fixture IDs drawn after terminal
+escapes and one scratch filename (`G-107tail.jsonl`) remain. The table above already shows each typed ID's
 date-form ID. Nullsec's own numbers, cited in its cutover records, are not
 this repository's and were left as they were.
 
