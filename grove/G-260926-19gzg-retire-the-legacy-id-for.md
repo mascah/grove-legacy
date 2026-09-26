@@ -2,13 +2,14 @@
 id: "G-260926-19gzg"
 type: work
 title: "Retire the legacy ID form from the binary"
-status: active
+status: review
 created: "2026-09-26T16:09:19Z"
-updated: "2026-09-26T19:53:31Z"
+updated: "2026-09-26T20:09:43Z"
 kind: refactor
 size: small
 depends_on: ["G-260926-vkv48"]
 relates_to: ["G-260926-yvjy6", "G-260926-2da4n", "G-260926-pgj43", "G-260921-czt8x"]
+candidate: "33f78f2d7c228804a1c0e4c2fd78161213f24685"
 ---
 
 ## Outcome
