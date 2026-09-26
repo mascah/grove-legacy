@@ -78,7 +78,7 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"  version    Print this binary's version and commit, and digests of the guides and\n" +
 	"             record model and of all the content it ships.\n" +
 	"  new        Create a work, question, decision, term, plan, review, or page record with\n" +
-	"             the next shared ID, flat in the record root; a page is general knowledge\n" +
+	"             a new G-YYMMDD-xxxxx ID, flat in the record root; a page is general knowledge\n" +
 	"             with a title and no status.\n" +
 	"             Put -- before a title that starts with a dash\n" +
 	"  update ID  Change frontmatter fields; prints {id, path, revision, changed}. --expect\n" +
@@ -176,7 +176,7 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             root becomes a new record with the document as its body and formerly: PATH;\n" +
 	"             the original is left in place. Prints {from, from_path, id, path}. Bodies\n" +
 	"             and Markdown links are never rewritten. A source already converted is\n" +
-	"             refused, reserving nothing.\n" +
+	"             refused, writing nothing.\n" +
 	"  versions   Show each record's committed version on every local branch and live\n" +
 	"             version in every worktree, whether it is current or older and on the\n" +
 	"             integration target, with a selector per version; exit 1 if any source\n" +

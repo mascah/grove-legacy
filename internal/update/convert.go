@@ -104,7 +104,7 @@ func Convert(root string, req ConvertRequest) (Conversion, error) {
 
 // source resolves the request against p: the document's bytes. Every refusal
 // that makes a rerun harmless is here, so it is decided before an ID is
-// reserved and again under the lock.
+// drawn and again under the lock.
 func source(p *project.Project, req ConvertRequest) ([]byte, error) {
 	if req.Slug != "" && !create.ValidSlug(req.Slug) {
 		return nil, fmt.Errorf("slug must contain only lowercase ASCII letters, digits, and hyphens")

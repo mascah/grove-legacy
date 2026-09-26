@@ -31,7 +31,7 @@ go run ./cmd/grove check
 | --- | --- | --- |
 | (none) | Opens the terminal board | [Board](docs/board.md) |
 | `list`, `show`, `brief`, `check` | List, print and validate records and the brief, reading only | [Record model](docs/record-model.md#reading-and-writing-records) |
-| `new`, `update` | Create a record with the next shared ID; change its frontmatter | [Record model](docs/record-model.md#identity-and-dates) |
+| `new`, `update` | Create a record with a new date-form ID; change its frontmatter | [Record model](docs/record-model.md#identity-and-dates) |
 | `convert` | Make a record from a Markdown document outside the record root | [Record model](docs/record-model.md#identity-and-placement-apart-from-classification) |
 | `approve`, `feedback`, `integrate` | Judge a candidate in review; merge an approved one and mark it done | [Work lifecycle](docs/record-model.md#work-lifecycle) |
 | `resolve` | Give a candidate that conflicts with the target to one attempt that merges the target and resolves it | [Resolving a conflict](docs/commands.md#resolving-a-conflict) |
