@@ -4,8 +4,8 @@ type: decision
 title: "Keep identity and placement stable while knowledge evolves"
 status: accepted
 created: "2026-09-21T15:40:59Z"
-updated: "2026-09-26T05:26:20Z"
-relates_to: ["G-001", "G-004", "G-051", "G-037", "G-065", "G-052", "G-036", "G-194"]
+updated: "2026-09-26T16:11:44Z"
+relates_to: ["G-001", "G-004", "G-051", "G-037", "G-065", "G-052", "G-036", "G-194", "G-260926-yvjy6"]
 formerly: "D-006"
 ---
 
@@ -112,3 +112,6 @@ root is not permission for silent root relocation or bulk rewriting.
 [G-194](G-194-identify-records-by-creation-dat.md) revised the "neutral
 sequential ID namespace" on 2026-09-25 to one neutral namespace without a
 sequence; stable identity, placement and short slugs stand.
+
+[G-260926-yvjy6](G-260926-yvjy6-retire-legacy-ids-by-ren.md) authorized a second one-time migration on 2026-09-26, legacy IDs to
+the date form; stable identity and placement stand for ordinary edits.

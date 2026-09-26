@@ -2,10 +2,10 @@
 id: "G-004"
 type: decision
 title: Use shared sequential IDs and short filenames
-status: accepted
-relates_to: ["G-001", "G-003", "G-194"]
+status: superseded
+relates_to: ["G-001", "G-003", "G-194", "G-260926-yvjy6"]
 created: "2026-09-19T14:32:32Z"
-updated: "2026-09-26T05:26:20Z"
+updated: "2026-09-26T16:11:44Z"
 formerly: "D-002"
 ---
 
@@ -54,3 +54,6 @@ can proceed without solving allocation recovery first.
 
 [G-194](G-194-identify-records-by-creation-dat.md) revised the sequential IDs
 on 2026-09-25 for coordination-free date-form IDs; the short filenames stand.
+
+[G-260926-yvjy6](G-260926-yvjy6-retire-legacy-ids-by-ren.md) superseded this decision on 2026-09-26: no sequential ID remains an
+identity, and every legacy record is renamed to the date form.

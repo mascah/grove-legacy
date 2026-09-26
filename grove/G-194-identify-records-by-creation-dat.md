@@ -4,8 +4,8 @@ type: decision
 title: "Identify records by creation date and a random tail, without a counter"
 status: accepted
 created: "2026-09-26T02:56:11Z"
-updated: "2026-09-26T02:58:25Z"
-relates_to: ["G-004", "G-006", "G-064", "G-001", "G-051", "G-195"]
+updated: "2026-09-26T16:11:44Z"
+relates_to: ["G-004", "G-006", "G-064", "G-001", "G-051", "G-195", "G-260926-yvjy6"]
 ---
 
 ## Decision and authority
@@ -113,3 +113,7 @@ adopter needs sequential numbers enough to run an arbiter, if the first
 release wants to fix one ID form and retire the legacy pattern, or if
 browsing shows the date-form names awkward in the board or in editor file
 pickers.
+
+[G-260926-yvjy6](G-260926-yvjy6-retire-legacy-ids-by-ren.md) revised this on 2026-09-26: existing numeric IDs are renamed to the
+date form and the legacy form leaves the validator; the date form, the
+random tail and the slug cap stand.
