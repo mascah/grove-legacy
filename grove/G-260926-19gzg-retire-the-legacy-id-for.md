@@ -2,9 +2,9 @@
 id: "G-260926-19gzg"
 type: work
 title: "Retire the legacy ID form from the binary"
-status: proposed
+status: active
 created: "2026-09-26T16:09:19Z"
-updated: "2026-09-26T16:11:31Z"
+updated: "2026-09-26T19:53:31Z"
 kind: refactor
 size: small
 depends_on: ["G-260926-vkv48"]
