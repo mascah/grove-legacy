@@ -119,6 +119,9 @@ date-form ID and a filename derived from it. It takes no arguments.
   checkout's and the target holds any file beneath the record root, since
   every view reads every local branch and would show both forms, or while
   an attempt whose selection holds a legacy ID is running or orphaned.
+- The attempts directory is not in Git: copy it first. A run that fails
+  after renaming records cannot be rerun, since no legacy record is left,
+  and the map it prints and that copy are what finishing it by hand needs.
 - `git log --follow` finds a renamed record's earlier history only when
   the rename commit keeps enough of its content: commit the renames alone
   first (the old content at the new paths), then the rewrite, when a
@@ -372,8 +375,8 @@ issues is `G-`, the UTC date as `YYMMDD`, a hyphen, and five characters from
 `crypto/rand` in lowercase Crockford base32 (`0-9a-hjkmnp-tv-z`, without
 `i`, `l`, `o` or `u`): `G-260925-7k2qm`, so the longest generated filename is
 42 characters. Legacy IDs, `G-001` to `G-999` from the sequential counter
-that preceded this form, stay valid identities; none is renumbered or issued
-again. Store IDs as strings and match references exactly; `show
+that preceded this form, stay valid identities and are never issued again;
+only the one-time `renumber` above replaces them. Store IDs as strings and match references exactly; `show
 G-260925-7k2qm` needs no abbreviated-ID lookup. Where a command orders by
 ID, legacy IDs come first in numeric order, then date-form IDs by date and
 tail; the board orders cards by their dates.

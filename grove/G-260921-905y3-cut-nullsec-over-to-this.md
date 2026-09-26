@@ -326,7 +326,7 @@ go run ./cmd/grove context G-260921-905y3 --include grove/G-260922-r1dhw-nullsec
 go run ./cmd/grove show G-260922-9d399
 git diff --stat b6db474 HEAD     # only this record
 cd ~/GitHub/mascah/nullsec/.claude/worktrees/grove-cutover
-grove check && grove show G-260924-tbx21 | less
+grove check && grove show G-127 | less
 grove                              # the board, in a real terminal (acceptance 6)
 ```
 

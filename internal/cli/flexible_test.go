@@ -53,3 +53,27 @@ func TestConvertUsageErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestRenumberThroughTheCLI(t *testing.T) {
+	t.Parallel()
+	root := knowledgeFixture(t) // its records have legacy IDs
+	code, out, errOut := run(t, root, "renumber")
+	lines := strings.Split(strings.TrimSuffix(out, "\n"), "\n")
+	for _, l := range lines {
+		var m map[string]string
+		json.Unmarshal([]byte(l), &m)
+		if len(m) != 4 || !strings.HasPrefix(m["from_path"], "docs/records/") || !project.IDPattern.MatchString(m["id"]) || len(m["id"]) != len("G-260925-7k2qm") ||
+			!strings.HasPrefix(m["path"], "docs/records/"+m["id"]+"-") {
+			t.Fatalf("map line %q", l)
+		}
+	}
+	if code != 0 || len(lines) < 2 || !strings.HasPrefix(lines[0], `{"from":"G-001","from_path":`) {
+		t.Fatalf("renumber: code=%d stdout=%q stderr=%s", code, out, errOut)
+	}
+	if code, out, errOut := run(t, root, "renumber"); code != 1 || out != "" || !strings.Contains(errOut, "no record has a legacy ID") {
+		t.Fatalf("rerun: code=%d stdout=%q stderr=%s", code, out, errOut)
+	}
+	if code, _, errOut := run(t, root, "renumber", "x"); code != 2 || !strings.Contains(errOut, "renumber takes no arguments") {
+		t.Fatalf("usage: code=%d stderr=%s", code, errOut)
+	}
+}

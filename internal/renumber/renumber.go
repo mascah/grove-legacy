@@ -126,7 +126,7 @@ func Run(root string) ([]Renamed, error) {
 		renames[i] = m
 	}
 	incomplete := func(err error) ([]Renamed, error) {
-		return renames, fmt.Errorf("%w (the renumber is incomplete; the map is printed, inspect with Git)", err)
+		return renames, fmt.Errorf("%w (the renumber is incomplete; the map is printed: inspect the records with Git and the attempt store against a copy)", err)
 	}
 	for _, m := range renames {
 		from := filepath.Join(p.Root, filepath.FromSlash(m.FromPath))
@@ -259,7 +259,8 @@ func rewriteTree(dir string, names, ids map[string]string, skip map[string]bool)
 // Rewrite replaces, in one pass, each old basename and then each old ID as
 // a whole token: an ID preceded or followed by a letter or digit is part of
 // another word, while a hyphen bounds one, so worktree-G-030 and G-030-G-031
-// are rewritten. names and ids map old to new; a basename starts with an ID.
+// are rewritten, and so does an escape such as the \n of JSON text in an
+// attempt's events. names and ids map old to new; a basename starts with an ID.
 func Rewrite(data []byte, names, ids map[string]string) []byte {
 	bases := map[string][]string{} // the token a basename starts with -> basenames
 	for name := range names {
@@ -279,7 +280,7 @@ func Rewrite(data []byte, names, ids map[string]string) []byte {
 		}
 		if to == "" {
 			var ok bool
-			if to, ok = ids[id]; !ok || m[0] > 0 && alnum(data[m[0]-1]) || m[1] < len(data) && alnum(data[m[1]]) {
+			if to, ok = ids[id]; !ok || m[0] > 0 && alnum(data[m[0]-1]) && !(m[0] > 1 && data[m[0]-2] == '\\') || m[1] < len(data) && alnum(data[m[1]]) {
 				continue
 			}
 		}

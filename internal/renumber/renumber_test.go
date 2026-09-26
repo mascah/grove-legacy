@@ -76,7 +76,7 @@ func TestRenumber(t *testing.T) {
 	attempts := filepath.Join(git(t, root, nil, "rev-parse", "--path-format=absolute", "--git-common-dir"), "grove", "attempts")
 	write(t, attempts, "G-001.20260920T100000Z/attempt.json", `{"attempt":"G-001.20260920T100000Z","work":"G-001","record_path":"grove/G-001-first.md"}`)
 	write(t, attempts, "G-001.20260920T100000Z/result.json", `{"exit_code":0}`)
-	write(t, attempts, "G-001.20260920T100000Z/events.jsonl", `{"text":"G-001 in grove/G-001-first.md"}`+"\n")
+	write(t, attempts, "G-001.20260920T100000Z/events.jsonl", `{"text":"G-001 in grove/G-001-first.md\nG-002\tG-003"}`+"\n")
 
 	git(t, root, nil, "branch", "stale")
 	if _, err := Run(root); err == nil || !strings.Contains(err.Error(), "hold records: stale") {
@@ -126,7 +126,7 @@ func TestRenumber(t *testing.T) {
 	if err != nil || len(views) != 1 || filepath.Base(views[0].Dir) != one.ID+".20260920T100000Z" || views[0].Launch.Work != one.ID {
 		t.Fatalf("attempts = %+v, %v", views, err)
 	}
-	if got := read(t, filepath.Join(views[0].Dir, "events.jsonl")); got != `{"text":"`+one.ID+` in `+one.Path+`"}`+"\n" {
+	if got := read(t, filepath.Join(views[0].Dir, "events.jsonl")); got != `{"text":"`+one.ID+` in `+one.Path+`\n`+two.ID+`\t`+three.ID+`"}`+"\n" {
 		t.Fatalf("events = %s", got)
 	}
 

@@ -168,7 +168,10 @@ references elsewhere in the repository were repaired from its output
 ([G-260926-vkv48](G-260926-vkv48-rename-legacy-records-to.md), under
 [G-260926-yvjy6](G-260926-yvjy6-retire-legacy-ids-by-ren.md)). Commit
 subjects, branch names and anything else in Git history keep the legacy IDs;
-this table resolves them. The table above already shows each typed ID's
+this table resolves them. IDs that followed an escape in an attempt's JSON
+text (`\nG-153`) were missed by that run and rewritten in a second pass
+with the same map once the command was fixed; only fixture IDs drawn after
+terminal escapes remain there. The table above already shows each typed ID's
 date-form ID. Nullsec's own numbers, cited in its cutover records, are not
 this repository's and were left as they were.
 

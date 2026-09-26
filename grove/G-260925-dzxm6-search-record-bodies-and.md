@@ -227,10 +227,10 @@ What changed, per acceptance item:
      reproduced the link pairs independently.
    - nullsec, loaded read-only with `project.LoadFS(os.DirFS(...))` at
      `3eb2785`, `git status` clean after: `match` for
-     `crates/sim/src/warp_profile.rs` lists decision G-260919-7qv4x, page G-260923-tnn5e and
-     plan G-260924-frzeg by code span; for `crates/server/src/ws.rs`, decision G-260920-d1qjs
-     and works G-260921-dqdde, G-260921-6n3da, G-260921-awvk8 and plans G-260923-d8xkp, G-260923-hvnqh, G-260924-zxvqf by code
-     span, then pages G-260923-ccda0, G-260923-stkc6, G-260923-a8kzm by text. The installed `grove show`
+     `crates/sim/src/warp_profile.rs` lists decision G-016, page G-101 and
+     plan G-122 by code span; for `crates/server/src/ws.rs`, decision G-033
+     and works G-055, G-066, G-068 and plans G-113, G-117, G-124 by code
+     span, then pages G-102, G-103, G-104 by text. The installed `grove show`
      from nullsec's checkout confirms both decisions name the files.
 6. At `7f00b39`: `go vet ./...` clean, `gofmt -l .` empty, `go run
    ./cmd/grove check` OK; `go test -count=1 -timeout 120s ./...` passed

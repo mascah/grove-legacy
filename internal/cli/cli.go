@@ -188,7 +188,8 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             path} per record. Refused, writing nothing, when check fails, when no record is\n" +
 	"             legacy, while a local branch other than this one and the target holds\n" +
 	"             records, or while an attempt of legacy work runs. References outside the\n" +
-	"             record root are the caller's to repair from the printed map.\n" +
+	"             record root are the caller's to repair from the printed map. Copy the\n" +
+	"             attempts directory first: it is not in Git.\n" +
 	"  versions   Show each record's committed version on every local branch and live\n" +
 	"             version in every worktree, whether it is current or older and on the\n" +
 	"             integration target, with a selector per version; exit 1 if any source\n" +
