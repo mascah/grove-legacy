@@ -4,8 +4,8 @@ type: decision
 title: "Keep identity and placement stable while knowledge evolves"
 status: accepted
 created: "2026-09-21T15:40:59Z"
-updated: "2026-09-21T15:45:38Z"
-relates_to: ["G-001", "G-004", "G-051", "G-037", "G-065", "G-052", "G-036"]
+updated: "2026-09-26T05:26:20Z"
+relates_to: ["G-001", "G-004", "G-051", "G-037", "G-065", "G-052", "G-036", "G-194"]
 formerly: "D-006"
 ---
 
@@ -108,3 +108,7 @@ shows a need. Add operational semantics when software needs them, not merely
 because a new topic deserves a page. Future changes must preserve existing
 identity and discovery and explicitly handle Markdown links. A configurable
 root is not permission for silent root relocation or bulk rewriting.
+
+[G-194](G-194-identify-records-by-creation-dat.md) revised the "neutral
+sequential ID namespace" on 2026-09-25 to one neutral namespace without a
+sequence; stable identity, placement and short slugs stand.

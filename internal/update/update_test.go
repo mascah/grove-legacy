@@ -647,7 +647,7 @@ func TestUpdatePreservesAcceptedForms(t *testing.T) {
 }
 
 // G-016: a main checkout named "new\nline" once put the write lock in a
-// sibling ".../new/grove". Locks and counters belong under the real common
+// sibling ".../new/grove". Coordination state belongs under the real common
 // directory, from the main and a linked checkout alike.
 func TestCoordinationStateStaysUnderTheCommonDirectory(t *testing.T) {
 	t.Parallel()
