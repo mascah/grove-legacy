@@ -1,19 +1,19 @@
 ---
-id: "G-166"
+id: "G-260925-t2nb3"
 type: question
-title: "Which dependency-view layout should G-161's board implement?"
+title: "Which dependency-view layout should G-260925-g39ga's board implement?"
 status: resolved
 created: "2026-09-25T20:45:48Z"
 updated: "2026-09-25T21:08:25Z"
-blocks: ["G-161"]
-relates_to: ["G-165"]
+blocks: ["G-260925-g39ga"]
+relates_to: ["G-260925-e5qhz"]
 ---
 
 ## Question
 
-[G-161](G-161-dependency-view.md) says the owner judges concrete terminal
+[G-260925-g39ga](G-260925-g39ga-see-work-dependencies-an.md) says the owner judges concrete terminal
 layouts before one is settled. Plan
-[G-165](G-165-g-161-dependency-view-plan.md) draws both options at 120
+[G-260925-e5qhz](G-260925-e5qhz-dependency-view-layouts.md) draws both options at 120
 columns from a synthetic ten-item unfinished backlog (chain, shared
 prerequisite, convergence, unrelated work, a review candidate off `main`, an
 abandoned prerequisite, a blocking question) and describes them at 80.
@@ -32,7 +32,7 @@ Answer two parts:
 
 ## Evidence
 
-G-165's Observed section: this repository's largest group is 13 done items
+G-260925-e5qhz's Observed section: this repository's largest group is 13 done items
 over seven layers, so a lane layout needs four 80-column screens across it;
 unfinished work here has almost no edges, so the drawings use a synthetic
 backlog. The detail sidebar already lists direct `needs` and `needed by`, but
@@ -48,12 +48,12 @@ horizontal scrolling as soon as it is not.
 
 The noninteractive `grove deps` command, the shared model it prints, and the
 shaping-guide change do not depend on this answer and are being built on
-`worktree-G-161` meanwhile.
+`worktree-G-260925-g39ga` meanwhile.
 
 ## Next
 
-Open; blocks G-161's board steps (G-165 step 4). Answer here (for example
-"B as drawn", or what changes), set `status=resolved`, and relaunch G-161;
+Open; blocks G-260925-g39ga's board steps (G-260925-e5qhz step 4). Answer here (for example
+"B as drawn", or what changes), set `status=resolved`, and relaunch G-260925-g39ga;
 the board is then built in the chosen layout.
 
 ## Answer

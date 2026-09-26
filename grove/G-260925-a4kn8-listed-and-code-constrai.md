@@ -1,21 +1,21 @@
 ---
-id: "G-155"
+id: "G-260925-a4kn8"
 type: plan
-title: "G-154 listed and code constraint cases plan"
+title: "G-260925-pbx81 listed and code constraint cases plan"
 status: current
 created: "2026-09-25T19:29:24Z"
 updated: "2026-09-25T19:29:45Z"
-work: ["G-154"]
+work: ["G-260925-pbx81"]
 ---
 
 ## Design
 
-Prepared 2026-09-25 on `worktree-G-154` from main `b684951`, against
-[G-154](G-154-listed-constraint-eval.md) at `sha256:d569262b…`, in a
-headless `/grove-work G-154` session. Everything below is proposed design
-inside G-154's selected scope unless it quotes the record.
+Prepared 2026-09-25 on `worktree-G-260925-pbx81` from main `b684951`, against
+[G-260925-pbx81](G-260925-pbx81-evaluate-whether-agents.md) at `sha256:d569262b…`, in a
+headless `/grove-work G-260925-pbx81` session. Everything below is proposed design
+inside G-260925-pbx81's selected scope unless it quotes the record.
 
-**Fixture.** The G-108 pair keeps its fixture byte for byte, so its
+**Fixture.** The G-260923-p5pt6 pair keeps its fixture byte for byte, so its
 reruns stay comparable. Each new case gets a variant of the built
 template: a copy of it (counter included), its records created with the
 built CLI and an explicit absolute `--project` inside the run's output
@@ -55,7 +55,7 @@ whether the holding record was read (a `grove show` or `grove context`
 naming its ID, or a read of its file, `context --include` among them);
 `distractors_read`, the distractor
 IDs read the same way; and `search`, whether `grove search` ran, on every
-case, since it does not exist before G-153. A distractor's file counts as
+case, since it does not exist before G-260925-dzxm6. A distractor's file counts as
 unneeded; the refined record and the holding record count as needed.
 `grep` stays uncounted, as the README says.
 
@@ -64,11 +64,11 @@ applied", "brief constraint" and "handoff"; the pair's columns stay as
 they are.
 
 **Two-digest comparison.** The `without` row runs from this branch as it
-stands (guides digest before G-153); the `with` row from this branch
-after G-153's candidate is on main and merged in, same cases, model, runs,
+stands (guides digest before G-260925-dzxm6); the `with` row from this branch
+after G-260925-dzxm6's candidate is on main and merged in, same cases, model, runs,
 budget and permission mode. The README says so.
 
-**Spend.** No mandate came with this assignment. Per G-141, a missing
+**Spend.** No mandate came with this assignment. Per G-260925-04ccr, a missing
 item is not a default: the session persists a question naming model,
 runs, budget, permission mode and config directory, and stops before any
 paid run.
@@ -81,20 +81,20 @@ paid run.
    comparison.
 3. Independent review of steps 1 and 2 (consequential boundary: the
    runner every later row depends on).
-4. Mandate question, blocking G-154; checkpoint.
+4. Mandate question, blocking G-260925-pbx81; checkpoint.
 5. Under the mandate: the `without` row, one run set per case, and a
-   review record of its pattern (G-154 acceptance 3 for that row).
-6. The glob fix, the `without` row's facts recomputed into G-160, the
-   final independent review, and handoff into Review. (Was: after G-153
+   review record of its pattern (G-260925-pbx81 acceptance 3 for that row).
+6. The glob fix, the `without` row's facts recomputed into G-260925-khwkq, the
+   final independent review, and handoff into Review. (Was: after G-260925-dzxm6
    integrates, merge main and run the `with` row; the owner's answer to
-   G-173 dropped that row.)
+   G-260925-9bjrx dropped that row.)
 
-Steps 1 to 5 done, 2026-09-25 (G-154's Next has the evidence; step 5's
-review is [G-160](G-160-g-154-without-row-both-constrain.md)); step 6
-waits on G-153's integration, and first makes `holding read` and
-`distractors read` count a glob read, as G-160 finds they must. The glob
+Steps 1 to 5 done, 2026-09-25 (G-260925-pbx81's Next has the evidence; step 5's
+review is [G-260925-khwkq](G-260925-khwkq-without-row-both-constra.md)); step 6
+waits on G-260925-dzxm6's integration, and first makes `holding read` and
+`distractors read` count a glob read, as G-260925-khwkq finds they must. The glob
 fix is done (`40e1263`); step 6 now waits on
-[G-173](G-173-what-should-g-154-s-with-row-bec.md), since G-153 shipped no
+[G-260925-9bjrx](G-260925-9bjrx-what-should-with-row-bec.md), since G-260925-dzxm6 shipped no
 agent-facing search for a `with` row to measure.
-[G-173](G-173-what-should-g-154-s-with-row-bec.md) was answered "Drop the
+[G-260925-9bjrx](G-260925-9bjrx-what-should-with-row-bec.md) was answered "Drop the
 with row" (2026-09-25), so step 6 ends on the `without` row.

@@ -1,16 +1,16 @@
 ---
-id: "G-131"
+id: "G-260924-cr3e4"
 type: plan
-title: "Plan for G-125: answer a blocking question from the board"
+title: "Plan for G-260924-wp2pe: answer a blocking question from the board"
 status: current
 created: "2026-09-24T15:06:48Z"
 updated: "2026-09-24T15:07:18Z"
-work: ["G-125"]
+work: ["G-260924-wp2pe"]
 ---
 
 ## Design
 
-Base: `main` at `c38d914`, branch `worktree-G-125`, G-125 at revision
+Base: `main` at `c38d914`, branch `worktree-G-260924-wp2pe`, G-260924-wp2pe at revision
 `sha256:5db1849f…`. One implementer; `internal/tui` only, plus
 `docs/board.md`.
 
@@ -25,7 +25,7 @@ Base: `main` at `c38d914`, branch `worktree-G-125`, G-125 at revision
 - **Answer heading.** When the body has no `## Answer` line, `e` appends one
   before the editor, and restores the original bytes if the editor leaves the
   file exactly as it was given, so a quit without an answer writes nothing.
-  Kept: G-121's answer landed under the agent's `## Next`.
+  Kept: G-260924-y99bx's answer landed under the agent's `## Next`.
 - **Suspend and resume.** A new `Backend.Edit(path, done)` returns the
   `tea.Cmd`; `Run` sets it to `tea.ExecProcess` of `$VISUAL`, else `$EDITOR`,
   else `vi`, with the terminal's own input and screen files as the editor's
@@ -69,4 +69,4 @@ Base: `main` at `c38d914`, branch `worktree-G-125`, G-125 at revision
 ## Progress
 
 Steps 1 to 6 done in `e1d3339`, `052cc74` and `606330c`; step 7's checks
-pass, and the real-attempt demonstration is left to the owner (G-125 Next).
+pass, and the real-attempt demonstration is left to the owner (G-260924-wp2pe Next).

@@ -1,5 +1,5 @@
 ---
-id: "G-040"
+id: "G-260921-5gz9a"
 type: work
 title: "Bootstrap projects with portable Grove workflows"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-22T16:53:30Z"
 kind: feature
 size: medium
 priority: 2
-depends_on: ["G-039"]
-relates_to: ["G-035", "G-036", "G-025", "G-037", "G-038", "G-064", "G-065"]
+depends_on: ["G-260921-9t178"]
+relates_to: ["G-260921-tkdwh", "G-260921-407n6", "G-260919-04z88", "G-260921-w9x25", "G-260921-9wkjt", "G-260921-gtydy", "G-260921-ebsby"]
 formerly: "W-022"
 candidate: "4edd800"
 ---
@@ -27,9 +27,9 @@ locations and harness entrypoints. Create directories as needed and preserve
 existing AGENTS/CLAUDE instructions. Setup can leave a clearly incomplete brief
 for an interactive shaping session; it must not invent project intent.
 
-The target default uses G-065's one root, flat creation, neutral new IDs and
+The target default uses G-260921-ebsby's one root, flat creation, neutral new IDs and
 general knowledge pages, as selected in
-[G-064](G-064-stable-knowledge.md). Do not pre-create type folders,
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md). Do not pre-create type folders,
 require knowledge classification, add per-type routing/prefix settings, or move
 existing records when setup is rerun. Keep shared workflow
 instructions versioned with Grove; adapters load one owner rather than divergent
@@ -52,12 +52,12 @@ setup wizard is optional later, not a prerequisite for this outcome.
 
 ## Preparation and next
 
-Assigned alone (`/grove-work G-040`, interactive) on 2026-09-22; branch
-`worktree-G-040` in `.claude/worktrees/G-040`, base main `ccdc92d`, this
+Assigned alone (`/grove-work G-260921-5gz9a`, interactive) on 2026-09-22; branch
+`worktree-G-260921-5gz9a` in `.claude/worktrees/G-260921-5gz9a`, base main `ccdc92d`, this
 record at `sha256:5d171634…` and the plan
-[G-080](G-080-portable-bootstrap-plan.md) at `sha256:c1bfd3e6…` when
+[G-260922-6d6jg](G-260922-6d6jg-portable-bootstrap-plan.md) at `sha256:c1bfd3e6…` when
 implementation started. Live sibling installation and migration belong to
-G-041, not this assignment.
+G-260921-905y3, not this assignment.
 
 ## Evidence
 
@@ -65,7 +65,7 @@ Commits: `73b2044` plan, `b8f7cf5` active, `7ddbf52` the implementation,
 `731674e` and `eb32209` fixes from the first trials, `66fcccc` and
 `3113280` the independent review's two rounds, then the evidence commit,
 which is the candidate and changes only records. Review record:
-[G-082](G-082-portable-bootstrap-review.md), with the independent
+[G-260922-fqf3b](G-260922-fqf3b-portable-bootstrap-revie.md), with the independent
 findings, their dispositions, and the trial evidence per acceptance item.
 
 Changed behaviour, against each acceptance item:
@@ -77,10 +77,10 @@ Changed behaviour, against each acceptance item:
    `.claude/skills/` and for Codex under `.agents/skills/` with their
    policies. A disposable repository was initialized, validated, shaped
    headless by Claude and by Codex, and handed off headless by Claude,
-   through those entrypoints and the new CLI only (G-082, items 1 and 4).
+   through those entrypoints and the new CLI only (G-260922-fqf3b, items 1 and 4).
 2. A rerun keeps the configuration, root, brief and any unmarked file,
    reports `unchanged` or `updated` for marked ones, and on any conflict
-   prints every reason, writes nothing, and exits 1 (G-082, item 2).
+   prints every reason, writes nothing, and exits 1 (G-260922-fqf3b, item 2).
 3. `grove version` prints the module version, the VCS revision when
    stamped, and a digest of the embedded guides; `grove guide work|shape`
    prints the guides the binary carries, so the workflow version is the
@@ -90,22 +90,22 @@ Changed behaviour, against each acceptance item:
    the linked-worktree stamping limit; the predecessor stays installed.
 4. Fresh `claude -p` and `codex exec` sessions in the target discovered and
    followed the generated entrypoints; the first Codex run stopped on the
-   predecessor answering, as the adapter says to (G-082, items 3 and 4).
+   predecessor answering, as the adapter says to (G-260922-fqf3b, items 3 and 4).
 5. The guides no longer link into this repository; the printed guides and
    generated files are scanned by a test for `go run`, worktree names and
-   this repository's paths (G-082, item 5).
+   this repository's paths (G-260922-fqf3b, item 5).
 
-Decisions taken inside the outcome, recorded in G-080: the binary is the one
+Decisions taken inside the outcome, recorded in G-260922-6d6jg: the binary is the one
 owner of the workflow (a root package embeds `docs/`), `init` never touches
 `AGENTS.md` or `CLAUDE.md`, adapters carry a marker rather than a version,
 and distribution is a build from a named commit with no installer or
 self-update. The plan's one adjustment: the guides also defer to the loading
-entrypoint where a repository has no instructions (G-082 finding 2).
+entrypoint where a repository has no instructions (G-260922-fqf3b finding 2).
 
 Verification at `3113280`, the last code change, uncached: `gofmt -l .` clean, `go vet ./...` ok,
 `go run ./cmd/grove check` → `OK: 80 records`, `go test -count=1 -timeout
 120s ./...` ok in every package (`internal/versions` 7.2 s, the known Git
-process ceiling). Every link written here and in G-082 resolves in this
+process ceiling). Every link written here and in G-260922-fqf3b resolves in this
 checkout.
 
 Limits: interactive typing of `/grove-work` and `$grove-shape` in a target
@@ -120,11 +120,11 @@ this branch.
 
 In Review. The candidate is the evidence commit named in `candidate`; the
 branch tip adds only this status change. To judge it, from a checkout of
-`worktree-G-040`:
+`worktree-G-260921-5gz9a`:
 
 ```sh
-go run ./cmd/grove context G-040 --include grove/G-080-portable-bootstrap-plan.md
-go run ./cmd/grove show G-082
+go run ./cmd/grove context G-260921-5gz9a --include grove/G-260922-6d6jg-portable-bootstrap-plan.md
+go run ./cmd/grove show G-260922-fqf3b
 git diff --stat ccdc92d..HEAD
 go test -count=1 -timeout 120s ./...
 # demo in a disposable repository, with a binary from a clone of this commit:
@@ -132,9 +132,9 @@ git clone -q --no-hardlinks . /tmp/grove-build && (cd /tmp/grove-build && go bui
 mkdir -p /tmp/grove-target && cd /tmp/grove-target && git init -q && PATH=/tmp/grove-bin:$PATH grove version && PATH=/tmp/grove-bin:$PATH grove init && PATH=/tmp/grove-bin:$PATH grove check
 ```
 
-Approve: on `main`, `git merge --ff-only worktree-G-040`, then there quote
+Approve: on `main`, `git merge --ff-only worktree-G-260921-5gz9a`, then there quote
 the verdict in this record and run
-`go run ./cmd/grove update G-040 --expect REVISION --set status=done`
-(revision from `show G-040 --json` after the edit), and commit both.
+`go run ./cmd/grove update G-260921-5gz9a --expect REVISION --set status=done`
+(revision from `show G-260921-5gz9a --json` after the edit), and commit both.
 Feedback: `--set status=active` on the branch with the feedback here. Then
-G-041, which depends on this record, can be prepared.
+G-260921-905y3, which depends on this record, can be prepared.

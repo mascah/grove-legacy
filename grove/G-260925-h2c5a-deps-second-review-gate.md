@@ -1,21 +1,21 @@
 ---
-id: "G-175"
+id: "G-260925-h2c5a"
 type: review
-title: "G-161 deps: second review gate on the board's dependency view"
+title: "G-260925-g39ga deps: second review gate on the board's dependency view"
 status: current
 created: "2026-09-25T21:33:16Z"
 updated: "2026-09-25T21:33:37Z"
-work: ["G-161"]
+work: ["G-260925-g39ga"]
 examined: "ffaca01"
 ---
 
 ## Examined
 
-The board's dependency view of [G-161](G-161-dependency-view.md), plan
-[G-165](G-165-g-161-dependency-view-plan.md) step 4 in layout B as
-[G-166](G-166-g-161-dependency-layout.md) answered it, and the combined
+The board's dependency view of [G-260925-g39ga](G-260925-g39ga-see-work-dependencies-an.md), plan
+[G-260925-e5qhz](G-260925-e5qhz-dependency-view-layouts.md) step 4 in layout B as
+[G-260925-t2nb3](G-260925-t2nb3-which-dependency-view-la.md) answered it, and the combined
 candidate `05892a2..ffaca01` for regressions against the first gate
-([G-168](G-168-g-161-deps-review.md)). Round 1 examined `476b5ac`; round 2
+([G-260925-be4e3](G-260925-be4e3-deps-first-review-gate-o.md)). Round 1 examined `476b5ac`; round 2
 examined the fixes in `476b5ac..ffaca01`. Two fresh `grove-reviewer` agents
 did the work, read-only. Each ran:
 
@@ -36,8 +36,8 @@ Each also ran throwaway probes in a `git archive` copy, deleted afterwards:
 Round 1:
 
 1. High: the trees panicked below 60 columns at height 10.
-2. Medium: indentation stopped at `min(layer, w/16)`, which drew G-040
-   level with G-039, its prerequisite.
+2. Medium: indentation stopped at `min(layer, w/16)`, which drew G-260921-5gz9a
+   level with G-260921-9t178, its prerequisite.
 3. Medium: after a failed re-read the preview stayed open. It then read Git
    on the board.
 4. Medium: divergent work took the first current state, not the one the

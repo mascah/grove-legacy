@@ -1,20 +1,20 @@
 ---
-id: "G-074"
+id: "G-260922-fvqpv"
 type: review
-title: "G-038 review lifecycle review"
+title: "G-260921-9wkjt review lifecycle review"
 status: current
 created: "2026-09-22T04:33:20Z"
 updated: "2026-09-22T04:45:04Z"
-work: ["G-038"]
+work: ["G-260921-9wkjt"]
 examined: "4109c95"
 ---
 
 ## Examined
 
-Independent review of [G-038](G-038-review-lifecycle.md) against its
-acceptance and the plan [G-073](G-073-review-lifecycle-plan.md), by a
+Independent review of [G-260921-9wkjt](G-260921-9wkjt-hand-implementation-cand.md) against its
+acceptance and the plan [G-260922-4fr84](G-260922-4fr84-review-lifecycle-plan.md), by a
 reviewer session with no write access to the checkout, on 2026-09-22.
-Round 1 examined `f9f6c0d` on `worktree-G-038` (diff from main `a28a24b`);
+Round 1 examined `f9f6c0d` on `worktree-G-260921-9wkjt` (diff from main `a28a24b`);
 round 2 examined the fix commit `12b7752`; round 3 examined `4109c95`,
 the value of `examined`. The reviewer mutation-tested both
 new rules in a scratch copy: forcing `integrated` to return nil fails
@@ -32,11 +32,11 @@ Round 1, consequential:
 2. `context` printed "done without a candidate is not integration" above
    Requirements lines that carried no candidate, so a reader could not tell
    the two apart.
-3. The G-038 record had no Evidence and a stale Next, so acceptance 2 was not
+3. The G-260921-9wkjt record had no Evidence and a stale Next, so acceptance 2 was not
    met as the branch stood.
 4. The plan said `candidate` is refused while `proposed`; the code allows it.
 5. The README said "a `review` record" where it meant a work record in
-   Review status, the distinction the term G-058 draws in the same commit.
+   Review status, the distinction the term G-260921-rz7bn draws in the same commit.
 
 Round 1, minor:
 
@@ -50,7 +50,7 @@ Round 1, minor:
 11. The plan promised a connected terminal check at 100 and 80 columns; the
     diff widened the connected test to 160 instead, and five columns at 100
     cells truncate titles sooner.
-12. The brief still says Done "will" mean integrated and that G-038 "must"
+12. The brief still says Done "will" mean integrated and that G-260921-9wkjt "must"
     migrate it.
 
 Acceptance as the reviewer read it at `f9f6c0d`: 1, 4 and 5 met; 3 met in
@@ -69,10 +69,10 @@ text; 6 by a line in the not-enforced list; 7 and 8 by separate messages
 not an ancestor, anything else as could not be checked), each with a test;
 9 by a quoting test; 10 by an array sized from the status count.
 
-Finding 3 is the evidence and Next written into G-038 with the handoff.
+Finding 3 is the evidence and Next written into G-260921-9wkjt with the handoff.
 Finding 11: the 100- and 80-column checks were run on a pseudo-terminal and
-are in G-038's evidence; the truncation is reported there for the owner, and
-G-043 owns the visual redesign. Finding 12 is left for the owner: AGENTS.md
+are in G-260921-9wkjt's evidence; the truncation is reported there for the owner, and
+G-260921-k0mwk owns the visual redesign. Finding 12 is left for the owner: AGENTS.md
 reserves the brief for direction changes, not progress.
 
 Round 2, on `12b7752`, consequential: (13) the round-1 fix for finding 2

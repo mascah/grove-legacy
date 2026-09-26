@@ -1,15 +1,15 @@
 ---
-id: "G-019"
+id: "G-260919-w7ccc"
 type: plan
-title: "G-015 source-preserving update repair plan"
+title: "G-260919-z9w13 source-preserving update repair plan"
 status: current
 formerly: "docs/plans/W-007-preserve-updates.md"
-work: ["G-015"]
+work: ["G-260919-z9w13"]
 created: "2026-09-19T20:32:24Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-015 source-preserving update repair plan
+# G-260919-z9w13 source-preserving update repair plan
 
 > For Fable: implement one task at a time in an isolated worktree using the
 > repository instructions and an inline execution workflow (for Codex,
@@ -28,7 +28,7 @@ Keep lexical edit planning in `edit.go` (extract a private span planner only if
 needed); use `Project.Config` already supplied by the loader for exact comparisons.
 No YAML reserialization or parser replacement.
 
-**Spec:** [G-015](G-015-preserve-updates.md).
+**Spec:** [G-260919-z9w13](G-260919-z9w13-preserve-accepted-frontm.md).
 
 ## Global constraints and review focus
 
@@ -158,14 +158,14 @@ This requires no new exported failure hook or timing-sensitive test.
 ## Implementation notes, 2026-09-19
 
 Implemented on branch `worktree-W-006-W-008`; the
-[work record](G-015-preserve-updates.md) owns the evidence.
+[work record](G-260919-z9w13-preserve-accepted-frontm.md) owns the evidence.
 Bounded adjustments to this plan, and why:
 
 - Tasks 1 and 2 share one commit (`2cc7814`). Both rewrite the same functions
   of `edit.go` (`edit`, the entry offsets, and the flow planner that replaces
   the flow half of `append`), so separate commits would not each build.
 - A later-line value with no comment between its colon and itself keeps the
-  G-009 behaviour and collapses onto the key's line; existing fixtures depend
+  G-260919-shnj5 behaviour and collapses onto the key's line; existing fixtures depend
   on it. Only when a comment is present is the value replaced in place. A
   block sequence at its key's indentation is the one value that may start
   there, so its replacement is indented two further columns to stay valid.
@@ -178,5 +178,5 @@ Bounded adjustments to this plan, and why:
   follows a trailing comma after the last entry; standalone comment lines stay.
 - Refused safely, as a truly ambiguous span: a flow separator on a later line
   than its entry's value (`{a: 1\n, b: 2}`, removing `a`).
-- Review found `keyStartsAt`'s plain-key branch always true (from G-009).
+- Review found `keyStartsAt`'s plain-key branch always true (from G-260919-shnj5).
   `dedac73` makes the guard compare the source with the parsed key.

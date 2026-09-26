@@ -1,5 +1,5 @@
 ---
-id: "G-044"
+id: "G-260921-jwk4e"
 type: work
 title: "Review candidates and integrate approved work locally"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-23T02:07:54Z"
 kind: feature
 size: large
 priority: 3
-depends_on: ["G-038", "G-043"]
-relates_to: ["G-035", "G-046", "G-064"]
+depends_on: ["G-260921-9wkjt", "G-260921-k0mwk"]
+relates_to: ["G-260921-tkdwh", "G-260921-7trd7", "G-260921-gtydy"]
 formerly: "W-026"
 candidate: "93b971b"
 approved: "93b971b"
@@ -24,7 +24,7 @@ candidate, and integrate approved work locally with an explicit result.
 
 Lead with outcome, changed behavior, consequential decisions, verification,
 open findings and follow-ups; progressively disclose artifacts, changed files
-and optional diffs. Reuse G-038's review evidence rather than creating another
+and optional diffs. Reuse G-260921-9wkjt's review evidence rather than creating another
 editable final report. Provide equivalent CLI operations for supported actions.
 
 Bind approval to the candidate and relevant inputs/target state. Revalidate
@@ -34,7 +34,7 @@ worktrees after integration is proven and retained files/evidence are safe.
 Local integration only; no remote PR/push/deployment requirement.
 
 Cleanup means safe branch/worktree cleanup, not moving completed records.
-G-064's stable identity and placement apply to integration and feedback too.
+G-260921-gtydy's stable identity and placement apply to integration and feedback too.
 
 ## Acceptance
 
@@ -44,7 +44,7 @@ G-064's stable identity and placement apply to integration and feedback too.
    a changed candidate cannot silently inherit approval.
 3. Feedback requesting implementation returns work to Active and preserves the
    earlier review. Before a runner exists, it produces an actionable interactive
-   continuation; automatic relaunch is added in G-046.
+   continuation; automatic relaunch is added in G-260921-7trd7.
 4. Exercise local merge success, conflict/refusal, changed target, stale approval,
    uncommitted changes and cleanup refusal. Integration failure does not mark
    Done or discard work. Report approval and integration as separate facts.
@@ -52,10 +52,10 @@ G-064's stable identity and placement apply to integration and feedback too.
 
 ## Evidence
 
-Branch `worktree-G-044` in `.claude/worktrees/G-044`, base `main` c4b3aea,
-plan [G-098](G-098-g-044-review-integration-plan.md) (b17784d; the owner's
+Branch `worktree-G-260921-jwk4e` in `.claude/worktrees/G-260921-jwk4e`, base `main` c4b3aea,
+plan [G-260923-twv25](G-260923-twv25-review-actions-and-local.md) (b17784d; the owner's
 four choices recorded in 35992ac, which also set this record active at
-revision `sha256:8577d1b1…`). Review [G-099](G-099-g-044-review-integration-review.md).
+revision `sha256:8577d1b1…`). Review [G-260923-r1w6p](G-260923-r1w6p-review-integration-revie.md).
 The candidate is the commit that records this evidence; `candidate` names
 it. Commits: 11b5e37 `approved` and done-on-target; 2b899f1 approve and
 feedback; 1bb3af8 integrate; cc6335b changes and diffs; d666dc3 and 660ac99
@@ -69,7 +69,7 @@ Against the acceptance:
    changed since it, whether the target holds it, where `a`/`f`/`i` run),
    its content at `## Evidence`, the linked reviews with their `examined`
    against the candidate, and the changed files against the target with
-   counts; Enter on a file shows its diff, escaped. `context G-044` and
+   counts; Enter on a file shows its diff, escaped. `context G-260921-jwk4e` and
    `show` remain the noninteractive route.
 2. **Attributable, bound to the candidate.** `approve` sets the work field
    `approved`, valid only when equal to `candidate` and in review or done,
@@ -78,7 +78,7 @@ Against the acceptance:
    re-checks the tip and merges the inspected commit. Every write is a
    commit of the record alone with a generated message.
 3. **Feedback.** `feedback` appends `Feedback on candidate X, DATE: …`,
-   sets `active`, unsets `approved`, keeps `candidate` so G-099-style
+   sets `active`, unsets `approved`, keeps `candidate` so G-260923-r1w6p-style
    reviews still compare, and prints `Next: … continue there with
    /grove-work ID`; the board shows the same as a fact.
 4. **Integration paths.** Exercised on a disposable clone with the built
@@ -123,16 +123,16 @@ The owner judges this candidate, which is the first use of the review view.
 `main`'s build lacks these commands, so build this branch once:
 
 ```sh
-cd /Users/mascah/GitHub/mascah/grove/.claude/worktrees/G-044
-go build -o /tmp/grove-G-044 ./cmd/grove
+cd /Users/mascah/GitHub/mascah/grove/.claude/worktrees/G-260921-jwk4e
+go build -o /tmp/grove-G-260921-jwk4e ./cmd/grove
 ```
 
 Then either open the board from a clean checkout of `main` and press Enter
-on G-044, `a` for the verdict and `i` to merge (answer the cleanup prompt
+on G-260921-jwk4e, `a` for the verdict and `i` to merge (answer the cleanup prompt
 `y` to remove this worktree and branch):
 
 ```sh
-cd /Users/mascah/GitHub/mascah/grove && /tmp/grove-G-044
+cd /Users/mascah/GitHub/mascah/grove && /tmp/grove-G-260921-jwk4e
 ```
 
 or run the commands, `approve` in this worktree and `integrate` in `main`'s
@@ -140,11 +140,11 @@ checkout, whose tracked files must be clean (it had an uncommitted
 `internal/tui/testdata/terminal.py` edit on 2026-09-23):
 
 ```sh
-/tmp/grove-G-044 --project /Users/mascah/GitHub/mascah/grove/.claude/worktrees/G-044 approve G-044 "VERDICT"
-cd /Users/mascah/GitHub/mascah/grove && /tmp/grove-G-044 integrate G-044 --cleanup
+/tmp/grove-G-260921-jwk4e --project /Users/mascah/GitHub/mascah/grove/.claude/worktrees/G-260921-jwk4e approve G-260921-jwk4e "VERDICT"
+cd /Users/mascah/GitHub/mascah/grove && /tmp/grove-G-260921-jwk4e integrate G-260921-jwk4e --cleanup
 ```
 
-Feedback instead: `/tmp/grove-G-044 --project …/G-044 feedback G-044 "TEXT"`
-or `f` on the board, then `/grove-work G-044` in this worktree.
+Feedback instead: `/tmp/grove-G-260921-jwk4e --project …/G-260921-jwk4e feedback G-260921-jwk4e "TEXT"`
+or `f` on the board, then `/grove-work G-260921-jwk4e` in this worktree.
 
 Verdict on candidate 93b971b, 2026-09-23: looks good to merge

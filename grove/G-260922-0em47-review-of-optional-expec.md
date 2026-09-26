@@ -1,19 +1,19 @@
 ---
-id: "G-083"
+id: "G-260922-0em47"
 type: review
-title: "G-079 review of optional --expect and --commit"
+title: "G-260922-q3cr9 review of optional --expect and --commit"
 status: current
 created: "2026-09-22T16:18:22Z"
 updated: "2026-09-22T16:18:30Z"
-work: ["G-079"]
+work: ["G-260922-q3cr9"]
 examined: "5e4b3a1"
 ---
 
 ## Examined
 
 Independent review by a reviewer agent that did not edit the interfaces under
-review, on 2026-09-22, of `git diff 17667d6 5e4b3a1` on `worktree-G-079`
-against [G-079](G-079-update-a-record-by-hand-without.md)'s Design and
+review, on 2026-09-22, of `git diff 17667d6 5e4b3a1` on `worktree-G-260922-q3cr9`
+against [G-260922-q3cr9](G-260922-q3cr9-update-a-record-by-hand.md)'s Design and
 Acceptance: `internal/update/update.go`, `internal/cli/cli.go`, their tests,
 `README.md`, `docs/record-model.md`, `docs/work-execution.md` and
 `docs/work-shaping.md`. The reviewer ran `go test -short -count=1

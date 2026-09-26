@@ -1,19 +1,19 @@
 ---
-id: "G-156"
+id: "G-260925-00h58"
 type: review
-title: "G-151 review: shipped guides and model free of Grove pointers"
+title: "G-260925-ej1xh review: shipped guides and model free of Grove pointers"
 status: current
 created: "2026-09-25T19:31:29Z"
 updated: "2026-09-25T19:31:41Z"
-work: ["G-151"]
+work: ["G-260925-ej1xh"]
 examined: "02a0e08"
 ---
 
 ## Examined
 
-Three independent `grove-reviewer` rounds on `worktree-G-151`, each a fresh
+Three independent `grove-reviewer` rounds on `worktree-G-260925-ej1xh`, each a fresh
 agent, read-only, against
-[G-151](G-151-strip-grove-repository-pointers.md)'s acceptance (no plan: the
+[G-260925-ej1xh](G-260925-ej1xh-strip-grove-repository-p.md)'s acceptance (no plan: the
 record is its own):
 
 - Round 1: `28aaf95..114db6b`.
@@ -23,7 +23,7 @@ record is its own):
 Each ran `go test -short ./internal/cli`, `go vet ./...`, `gofmt -l .` and
 `grove check`, all passing, rendered `grove guide work|shape|model` and
 mutation-checked the test in a `/tmp` copy; none ran the full suite, which
-the author ran (G-151 Evidence).
+the author ran (G-260925-ej1xh Evidence).
 
 ## Findings
 
@@ -31,9 +31,9 @@ Round 1 (4 notes, none blocking):
 
 1. The phrase check was case-sensitive and narrow: "Command reference",
    "The Predecessor tool" and "Grove's repository" passed.
-2. [G-146](G-146-how-should-an-adopting-project-r.md)'s Answer says the
-   model cites the command reference by name; G-151 drops that, and a later
-   `https://` link to it ([G-110](G-110-external-preview.md)) would also
+2. [G-260925-02jsj](G-260925-02jsj-how-should-an-adopting-p.md)'s Answer says the
+   model cites the command reference by name; G-260925-ej1xh drops that, and a later
+   `https://` link to it ([G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md)) would also
    need the test's denylist changed.
 3. "predecessor" is a common English word a future sentence could use.
 4. AGENTS.md's "never names a record" read as forbidding the example IDs.
@@ -53,9 +53,9 @@ in the current documents. Two notes: `guides.go`'s comment says the model
 
 - Fixed in `be4efcb`: round 1's 1 and 4. Fixed in `02a0e08`: round 2's
   should-fix, apostrophe and wording.
-- Round 1's 2: G-146 stays as answered; G-151's Evidence records the
-  reversal and its Next the G-110 consequence.
+- Round 1's 2: G-260925-02jsj stays as answered; G-260925-ej1xh's Evidence records the
+  reversal and its Next the G-260923-gsthp consequence.
 - Not changed: round 1's 3 (a failure names its cause); round 3's comment
   note (example IDs are not records, so it is true as read) and Markdown
-  note (a phrase denylist's accepted limit, like G-149 finding 7's example
+  note (a phrase denylist's accepted limit, like G-260925-w62y4 finding 7's example
   ceiling).

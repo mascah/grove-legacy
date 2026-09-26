@@ -1,23 +1,23 @@
 ---
-id: "G-128"
+id: "G-260924-w0h5g"
 type: review
-title: "G-114 independent review of the knowledge rules"
+title: "G-260923-h9c30 independent review of the knowledge rules"
 status: current
 created: "2026-09-24T04:42:56Z"
 updated: "2026-09-24T04:43:14Z"
-work: ["G-114"]
+work: ["G-260923-h9c30"]
 examined: "ebfcb7b"
 ---
 
 ## Examined
 
-The combined diff of [G-114](G-114-capture-and-reuse-terms-question.md)
-against its base, `git diff 25525cf HEAD -- docs grove/G-056-attempt.md`:
+The combined diff of [G-260923-h9c30](G-260923-h9c30-capture-and-reuse-terms.md)
+against its base, `git diff 25525cf HEAD -- docs grove/G-260921-sth8q-attempt.md`:
 both guides, `docs/record-model.md`, `docs/commands.md` and
-[G-056](G-056-attempt.md). The headless `/grove-work G-114` session asked a
+[G-260921-sth8q](G-260921-sth8q-attempt.md). The headless `/grove-work G-260923-h9c30` session asked a
 separate reviewer subagent (Claude Opus 5.5, read-only, no edits), which
 did not write the change. It checked the record's In and Out of scope, the
-anchors, G-051 and the settled terms, and the new knowledge check.
+anchors, G-260921-e8bva and the settled terms, and the new knowledge check.
 
 Rounds:
 
@@ -34,12 +34,12 @@ Rounds:
 
 Round 2, at `70ecd0c`:
 
-1. Consequential. The resolution rule would record G-118's preference as an
+1. Consequential. The resolution rule would record G-260923-659zw's preference as an
    accepted decision. The Out of scope list forbids that. The rule did not
    separate an answer that decides from one that prefers or defers.
 2. Consequential. The shaping and work guides explained why a note in Next
    is not enough by saying it "blocks nothing". That leaned toward the
-   "block" answer on the headless bound (G-118, G-122), which the text must
+   "block" answer on the headless bound (G-260923-659zw, G-260924-frzeg), which the text must
    leave open.
 3. Consequential. The work guide said "a concept" where shaping says
    "domain vocabulary". Nearly every candidate introduces some concept, so
@@ -52,12 +52,12 @@ Round 2, at `70ecd0c`:
 6. Minor. The knowledge check sat between self-review sentences, so it was
    unclear whether a self-check runs it.
 7. Minor. The record-model sentence was awkward.
-8. Minor. The guides digest in G-114's Next was stale.
+8. Minor. The guides digest in G-260923-h9c30's Next was stale.
 
 Round 3, at `54cb163`: the reviewer judged findings 1 to 7 resolved. It
 accepted the author's reply to finding 2: the work guide keeps `blocks` for
 an interactive question, because a missing decision there stops the unit,
-and the G-118 bound concerns only headless shaping proposals. It raised two
+and the G-260923-659zw bound concerns only headless shaping proposals. It raised two
 new minor findings:
 
 9. Minor. "A part left open stays in the question" leaves an open choice
@@ -67,21 +67,21 @@ new minor findings:
 
 Knowledge check on the candidate: no domain concept without a term, and no
 contradiction of a settled term or of
-[G-051](G-051-typed-knowledge-records.md). The only conflict with an open
+[G-260921-e8bva](G-260921-e8bva-represent-terms-plans-an.md). The only conflict with an open
 choice was finding 2. The threshold is guide text that is cheap to reverse,
 so by its own rule it needs no decision record.
 
 ## Disposition
 
 - Findings 1 to 7 were fixed in `54cb163`.
-- Finding 8 is fixed in G-114's Evidence, which records the final guides
+- Finding 8 is fixed in G-260923-h9c30's Evidence, which records the final guides
   digest.
 - Findings 9 and 10 were fixed in `ebfcb7b` with the reviewer's suggested
   wording.
 
 That keeps the fixes within three rounds for this gate. Nothing is open.
 
-Finding 9 describes G-118 as it stands: the owner's preference on the
+Finding 9 describes G-260923-659zw as it stands: the owner's preference on the
 headless bound, left open, sits only in a resolved question's body and in
-G-122. This review does not create a question for it. That belongs to
-whoever acts on G-118 or G-122, and G-114 keeps the bound out of scope.
+G-260924-frzeg. This review does not create a question for it. That belongs to
+whoever acts on G-260923-659zw or G-260924-frzeg, and G-260923-h9c30 keeps the bound out of scope.

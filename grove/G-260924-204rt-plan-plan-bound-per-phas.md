@@ -1,20 +1,20 @@
 ---
-id: "G-136"
+id: "G-260924-204rt"
 type: plan
-title: "G-134 plan: plan bound, per-phase effort and the grove-reviewer definition"
+title: "G-260924-5b6pz plan: plan bound, per-phase effort and the grove-reviewer definition"
 status: current
 created: "2026-09-24T22:06:52Z"
 updated: "2026-09-24T22:07:12Z"
-work: ["G-134"]
+work: ["G-260924-5b6pz"]
 ---
 
 ## Design
 
-Written at `98ce628` from the code G-134's Constraints name, read in full:
+Written at `98ce628` from the code G-260924-5b6pz's Constraints name, read in full:
 `internal/attempt/{attempt,facts}.go`, `internal/cli/{cli,init}.go`,
 `guides.go`, `internal/tui/{attempts,review}.go`, both `grove-work`
 adapters, and the provider's own help (`claude --help`, 2.1.282) and a
-real result event (`G-108.20260924T010336Z`).
+real result event (`G-260923-p5pt6.20260924T010336Z`).
 
 - **The bound is data in the assignment.** The assignment grammar becomes
   IDs, then optionally `--until plan`, then optionally `--interaction MODE`.
@@ -52,10 +52,10 @@ real result event (`G-108.20260924T010336Z`).
   effort beside the actual model, and the per-model cost.
 - **Docs.** `docs/commands.md` (run flags, attempt facts, init output),
   `docs/board.md` (the prompts and the outcome), and one sentence in
-  G-055.
+  G-260921-dqdde.
 
 Not done here: acceptance 5 is the experiment on the first real assignment
-after this lands (G-135), outside this work by its own terms.
+after this lands (G-260924-59f5k), outside this work by its own terms.
 
 ## Steps
 
@@ -63,7 +63,7 @@ after this lands (G-135), outside this work by its own terms.
 2. Runner fields, command, reviewer digest, per-model cost, facts; CLI
    flags and usage.
 3. Board prompts, plan-ready outcome, attempt screen.
-4. Docs and G-055.
+4. Docs and G-260921-dqdde.
 5. Tests: runner command/facts with the fake provider, init verdicts for
    the new file, board standings and prompts; full verification; the
    pseudo-terminal script.

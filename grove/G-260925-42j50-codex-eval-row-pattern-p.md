@@ -1,26 +1,26 @@
 ---
-id: "G-143"
+id: "G-260925-42j50"
 type: review
-title: "G-135 Codex eval row: pattern, plan use and disposition"
+title: "G-260924-59f5k Codex eval row: pattern, plan use and disposition"
 status: current
 created: "2026-09-25T03:48:34Z"
 updated: "2026-09-25T03:49:22Z"
-work: ["G-135"]
+work: ["G-260924-59f5k"]
 examined: "1e1a345"
 ---
 
 ## Examined
 
-The Codex row of [G-135](G-135-run-the-g-108-eval-pair-on-codex.md)
+The Codex row of [G-260924-59f5k](G-260924-59f5k-run-the-eval-pair-on-cod.md)
 acceptance 4, run 2026-09-24 23:42 to 2026-09-25 00:06 UTC by the headless
-`/grove-work G-135` attempt from `worktree-G-135` at `1e1a345`, the
+`/grove-work G-260924-59f5k` attempt from `worktree-G-260924-59f5k` at `1e1a345`, the
 `examined` commit, and a same-digest Claude pair started beside it at
 23:45. The attempt used `gpt-6-astra` at `high`, which
-[G-139](G-139-what-mandate-and-login-should-th.md) recommended and the
-owner never approved: G-139 said a blank item took the recommendation and
+[G-260924-7x7p7](G-260924-7x7p7-what-mandate-and-login-s.md) recommended and the
+owner never approved: G-260924-7x7p7 said a blank item took the recommendation and
 the owner's answer covered only the login. The owner stopped the attempt at
 95% of the ChatGPT Plus five-hour window; the rule that follows is
-[G-141](G-141-never-run-gpt-6-astra-unless-the.md), and the runner's
+[G-260925-04ccr](G-260925-04ccr-never-run-gpt-6-astra-un.md), and the runner's
 `--max-plan-percent` (`48358b7`) now bounds it. Nothing more was spent:
 this report covers the nine completed Codex runs, as the owner directed.
 
@@ -32,7 +32,7 @@ python3 evals/run.py run --runs 5 --budget 5 --model claude-opus-5-5 \
     --permission-mode auto --config-dir ~/.cache/grove-evals/claude
 ```
 
-Output under `~/.cache/grove-evals/runs/2026-09-24-G-135-codex-probe`,
+Output under `~/.cache/grove-evals/runs/2026-09-24-G-260924-59f5k-codex-probe`,
 `…-codex-missing-choice`, `…-codex-companion` and `…-claude`, outside every
 checkout and not committed. Configuration from the reports and the
 rollouts' `turn_context`: codex-cli 0.156.1, reported model and effort
@@ -41,7 +41,7 @@ rollouts' `turn_context`: codex-cli 0.156.1, reported model and effort
 Plus login; Claude Code 2.1.282, `claude-opus-5-5`, `auto`. Both rows ran
 at guides digest `0c163c41a0f2`, on fixtures built per batch (`bd0a558`,
 `9ac09e6`, `063d319`, Claude `5603b49`) that differ only in one record's
-`created` and `updated`; G-122 ran at
+`created` and `updated`; G-260924-frzeg ran at
 `3f5487904c61`. The companion batch's `grove version` reads `+dirty`: the
 checkout had uncommitted changes when it built, which are not recorded;
 the guides digest is the same as the other batches'. Scores below are this
@@ -57,7 +57,7 @@ stated for both answers without presuming one. Companion: 4 of 4 proposed
 repeatable `--tag` with any-tag matching, AND with `--status`, no index,
 and no question. Every clone check passed in all nine. The same-digest
 Claude pair: 5 of 5 blocking, 5 of 5 without a question, every check
-passing, as G-122.
+passing, as G-260924-frzeg.
 
 **2. Codex read outside the clone, through the owner's home.** All nine
 Codex runs read outside the clone. In 5 of 9 (probe,
@@ -69,7 +69,7 @@ directory recursively, and the probe, missing-choice 4 and companion 3
 listed it and searched other top-level directories there, the probe also
 `/private/tmp`. Missing-choice 3, companion 1, 2 and 4 stayed under
 `~/.cache/grove-evals`, the eval's own output. The workspace-write sandbox
-confines writes, not reads. The Claude pair and G-122 read nothing outside
+confines writes, not reads. The Claude pair and G-260924-frzeg read nothing outside
 the clone. The listings sit in the retained transcripts, outside every
 checkout; this record names no file from them.
 
@@ -89,7 +89,7 @@ finding 2 and, in companion 4, `.gitignore` and the root `brief.md`. The
 Claude pair: two runs without `context` or `show`, one `.gitignore` read.
 
 Rubric ([`evals/README.md`](../evals/README.md)), scorer `judge`, owner
-column open; "presumes choice" by the anchor's letter, as G-122 scored it:
+column open; "presumes choice" by the anchor's letter, as G-260924-frzeg scored it:
 
 | row | case | runs | presumes choice | planted question | brief constraint | handoff |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -106,14 +106,14 @@ second model in each run; no owner scoring.
 guide works on Codex as on Claude, so the text needs no Codex-specific
 change, but a provider would need what these runs lacked: a spend bound
 for a plan login (the runner's plan-percent guard is the model), a model
-the owner names (G-141), a read scope a sandbox enforces, since
+the owner names (G-260925-04ccr), a read scope a sandbox enforces, since
 workspace-write lets a session read the owner's home, and a choice about
 the guardian. The seam itself would be the command line
 ([attempt.go](../internal/attempt/attempt.go)), Codex's item events in the
 activity feed ([activity.go](../internal/attempt/activity.go)), a thread id
 Codex generates, Stop by process group as today, and a review gate whose
 `grove-reviewer` is a Claude agent definition; it revisits
-[G-101](G-101-attempt-mechanism.md). Worth revisiting if a cheaper model
+[G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md). Worth revisiting if a cheaper model
 the owner names shows the same pattern with confined reads.
 
 **A general guide finding.** The shaping guide sends a session to "the
@@ -121,4 +121,4 @@ record model", which a project that installed Grove has no copy of; Claude
 did without it, Codex searched the owner's disk for it. Printing it from
 the binary (as `grove guide` prints the guides) or naming where it lives
 is a product choice for the owner, not made here; captured as
-[G-144](G-144-give-adopting-projects-the-recor.md).
+[G-260925-ced1h](G-260925-ced1h-give-adopting-projects-t.md).

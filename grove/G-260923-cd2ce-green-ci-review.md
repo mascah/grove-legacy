@@ -1,17 +1,17 @@
 ---
-id: "G-106"
+id: "G-260923-cd2ce"
 type: review
-title: "G-105 green CI review"
+title: "G-260923-q7tm6 green CI review"
 status: current
 created: "2026-09-23T04:59:33Z"
 updated: "2026-09-23T04:59:37Z"
-work: ["G-105"]
+work: ["G-260923-q7tm6"]
 examined: "64f0a0c"
 ---
 
-# G-105 green CI review
+# G-260923-q7tm6 green CI review
 
-Evidence for [G-105](G-105-restore-green-ci-linux-build-go.md). Independent
+Evidence for [G-260923-q7tm6](G-260923-q7tm6-restore-green-ci-linux-b.md). Independent
 review by a read-only reviewer subagent in this harness (Claude Code, the
 `reviewer` agent), which ran commands and edited nothing. A review is
 evidence, not approval.
@@ -57,7 +57,7 @@ Nothing blocking; three notes.
    `TMPDIR` 60 characters longer the approve check now passes and the
    integrate check fails on the product limit the reviewer observed: the
    detail's review card has no room for a third wrapped row. That limit is
-   G-043/G-044's card, outside G-105, and is left open. Default temp paths on
+   G-260921-k0mwk/G-260921-jwk4e's card, outside G-260923-q7tm6, and is left open. Default temp paths on
    macOS and Linux pass.
 2. No change; recorded here to watch if the test flakes.
 3. Fixed in `1be9030`: the comment says "shown while it runs".

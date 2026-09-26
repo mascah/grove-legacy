@@ -1,18 +1,18 @@
 ---
-id: "G-117"
+id: "G-260923-hvnqh"
 type: question
-title: "Which Attempts list and detail layout should G-109 implement?"
+title: "Which Attempts list and detail layout should G-260923-895zb implement?"
 status: resolved
 created: "2026-09-23T19:51:07Z"
 updated: "2026-09-23T19:53:32Z"
-blocks: ["G-109"]
+blocks: ["G-260923-895zb"]
 ---
 
 ## Question
 
-[G-109](G-109-attempts-usability.md) requires comparing concrete Attempts
+[G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md) requires comparing concrete Attempts
 layouts with the owner before implementing one. Plan
-[G-116](G-116-g-109-attempts-layouts-observed.md) draws both at 80×24 from
+[G-260923-rz01m](G-260923-rz01m-attempts-layouts-observe.md) draws both at 80×24 from
 this repository's real attempts and sanitized examples of the other states.
 Answer three parts:
 
@@ -33,7 +33,7 @@ Answer three parts:
 
 ## Evidence
 
-G-116's Observed section: the current list shows the timestamped attempt ID
+G-260923-rz01m's Observed section: the current list shows the timestamped attempt ID
 but not the work title, and says `candidate ready` for work integrated since.
 At 80×24 the report starts on page two, after 18 lines of provenance. Most
 of a running attempt's activity is `system: thinking_tokens`.
@@ -48,8 +48,8 @@ while attempts are few.
 
 ## Next
 
-Open; blocks G-109. Answer here (for example "A as drawn", or which parts
-change), set `status=resolved`, and relaunch G-109; implementation follows
-G-116's Steps for the chosen option.
+Open; blocks G-260923-895zb. Answer here (for example "A as drawn", or which parts
+change), set `status=resolved`, and relaunch G-260923-895zb; implementation follows
+G-260923-rz01m's Steps for the chosen option.
 
 Answer: I like the list page layout. As far as the detail page, I'm expecting better presentation of the configuration of the run at the top of the page. More colors, visual indicators. As far as the activity timeline, I think we need to make this look much prettier as well. It could be a column on the right hand side of the page. What goes on the left im not sure of at the moment. The way we display events to the user makes it very difficult to parse at a glance. When an event repeats with nothing else between (i.e. `system: thinking_tokens` 20 times, instead of showing 20 rows we can just incrememnt a counter next to it until the next different event i.e. `system: thinking_tokens (x14)`). We should also have some nicely formatted timestamps as well so we know when things happened. We did a pretty good job of this in the old tmux orchestrator in /Users/mascah/GitHub/mascah/bench/scripts/bench_worker.py . Being able to see how many tokens have been used, current context size, number of sub agents, number of compactions, turns, other metrics etc would be helpful. We'll eventually want to make sure we're capturing the right data to be able properly understand what's happening, but also not entirely coupling ourselves to claude, we need to support other harnesses as well.

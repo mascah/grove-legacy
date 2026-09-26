@@ -1,5 +1,5 @@
 ---
-id: "G-065"
+id: "G-260921-ebsby"
 type: work
 title: "Decouple record identity and storage from knowledge classification"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-21T16:45:05Z"
 kind: feature
 size: medium
 priority: 1
-depends_on: ["G-037"]
-relates_to: ["G-064", "G-036", "G-052", "G-038"]
+depends_on: ["G-260921-w9x25"]
+relates_to: ["G-260921-gtydy", "G-260921-407n6", "G-260921-r491p", "G-260921-9wkjt"]
 formerly: "W-030"
 ---
 
@@ -18,13 +18,13 @@ formerly: "W-030"
 People and agents can keep ordinary project knowledge alongside work and
 evidence without choosing a schema category first, while Grove keeps identity,
 placement and operational validation dependable. Owner-selected direction,
-2026-09-21: [G-064](G-064-stable-knowledge.md). This is the one
-foundation change before G-052's migration, not another product restart.
+2026-09-21: [G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md). This is the one
+foundation change before G-260921-r491p's migration, not another product restart.
 
 ## Constraints
 
-Start from G-037's delivered schema 2. Preserve existing records, IDs, paths
-and relationships during ordinary operations; G-052 owns the owner's explicit
+Start from G-260921-w9x25's delivered schema 2. Preserve existing records, IDs, paths
+and relationships during ordinary operations; G-260921-r491p owns the owner's explicit
 one-time reconciliation of this repo's existing IDs and paths. Preserve brief
 discovery, staged context and safe writes. New records share a neutral
 sequential namespace; suggested spelling is `G-NNN` with the
@@ -39,16 +39,16 @@ operational lifecycle. Retain known work/question/decision/term/plan/review
 contracts and relationships where software depends on them. Reclassification
 does not grant authority and must satisfy any newly applicable contract.
 
-Out: migrating this repo's content (G-052), review lifecycle changes (G-038),
+Out: migrating this repo's content (G-260921-r491p), review lifecycle changes (G-260921-9wkjt),
 custom field/schema plugins, arbitrary lifecycle engines, per-type routing or
 prefix settings, root relocation, automatic renames/moves, archive commands,
 semantic search, wikilink syntax, a new TUI design or sibling migrations.
 
-Provide a supported conversion path for G-052 to allocate neutral replacement
+Provide a supported conversion path for G-260921-r491p to allocate neutral replacement
 IDs through Grove, retain original metadata/provenance and rebuild references.
 Preparation may choose a bounded conversion interface rather than a general
 migration engine. Never require hand-numbered IDs or an ordinary field update
-that silently changes identity. G-065 ships the foundation; G-052 performs the
+that silently changes identity. G-260921-ebsby ships the foundation; G-260921-r491p performs the
 repository-wide reconciliation and owns its mapping and verification.
 
 Observed at `76da081`: the loader recursively walks the record root but filters
@@ -57,7 +57,7 @@ creation chooses `TypeInfo.Folder` and allocates per type prefix. Prefix parsing
 CLI argument validation, shared counter recovery and source selectors need
 inspection too: this is not just removing the folder check. Existing filenames
 are not identities. Content revisions and exact source/path targeting must stay
-honest. G-031's batched Git reads and G-030's on-demand history remain constraints.
+honest. G-260920-z8vfp's batched Git reads and G-260920-svpbc's on-demand history remain constraints.
 
 ## Acceptance
 
@@ -89,7 +89,7 @@ honest. G-031's batched Git reads and G-030's on-demand history remain constrain
    on-demand history and batched Git reads; test connected terminal behavior
    where affected. Routine reads remain read-only and require no allocator.
 7. README, record model, guides and agent instructions describe actual shipped
-   behavior and give G-052 an unambiguous conversion path for existing records
+   behavior and give G-260921-r491p an unambiguous conversion path for existing records
    as well as legacy documents. Exercise conversion on a disposable set with
    cross-record and shared-artifact references, preserving original metadata
    and examined commits. A rerun must not duplicate already converted records
@@ -99,13 +99,13 @@ honest. G-031's batched Git reads and G-030's on-demand history remain constrain
 ## Evidence
 
 Branch `worktree-W-030` from main `bd6debe`. Plan
-[G-066](G-066-flexible-records-plan.md); independent review
-[G-067](G-067-flexible-records-review.md), two rounds, all findings
+[G-260921-6n3da](G-260921-6n3da-flexible-records-schema.md); independent review
+[G-260921-kfd06](G-260921-kfd06-independent-review-of-fl.md), two rounds, all findings
 fixed. Verified on the final revision, uncached: `gofmt -l .` and `go vet
 ./...` clean, `go test -count=1 ./...` ok, `go test -race -count=1 -p 1 ./...`
 ok, `grove check` ok. Known flakes that predate this work:
 `TestContextLeavesEverythingUnchanged` against Git's maintenance lock, and
-`internal/tui TestTerminal` in a parallel whole-suite race run (G-067
+`internal/tui TestTerminal` in a parallel whole-suite race run (G-260921-kfd06
 reproduced it at the base).
 
 1. `internal/cli/flexible_test.go` creates, shows, lists, updates and checks a
@@ -117,7 +117,7 @@ reproduced it at the base).
    nested record in a ref and in another worktree, 12 concurrent creations
    across two worktrees. With a binary from `bd6debe` in a disposable clone,
    the old CLI kept issuing `W-` IDs for a schema-2 worktree and never saw the
-   neutral counter; G-067 repeated this concurrently.
+   neutral counter; G-260921-kfd06 repeated this concurrently.
 4. `internal/update/convert_test.go` `TestReclassifyKeepsIdentityAndPath`.
 5. The record model's schema-3 section; the old CLI refuses a schema-3
    checkout with "unsupported version 3; expected 1 or 2". No command edits
@@ -133,11 +133,11 @@ reproduced it at the base).
 ## Next
 
 Implementation complete and independently reviewed; not merged or pushed.
-The owner accepted the page envelope, `G-NNN`, and `convert` as G-052's
+The owner accepted the page envelope, `G-NNN`, and `convert` as G-260921-r491p's
 interface on 2026-09-21, and directed that Grove keep no backward
 compatibility before its first release: schemas 1 and 2 are kept only until
-G-052 converts this repository, then deleted. Next: merge `worktree-W-030` and
-assign G-052, which sets `schema_version: 3` here, converts every record and
+G-260921-r491p converts this repository, then deleted. Next: merge `worktree-W-030` and
+assign G-260921-r491p, which sets `schema_version: 3` here, converts every record and
 legacy document with `convert`, collects the mapping lines, moves the brief by
 hand, repairs body links (none of which `convert` does), and then removes the
 schema 1/2 support.

@@ -1,20 +1,20 @@
 ---
-id: "G-147"
+id: "G-260925-9ptz2"
 type: review
-title: "G-140 launch defaults review, 2026-09-25"
+title: "G-260924-ecs9m launch defaults review, 2026-09-25"
 status: current
 created: "2026-09-25T04:27:49Z"
 updated: "2026-09-25T04:28:44Z"
-work: ["G-140"]
+work: ["G-260924-ecs9m"]
 examined: "ad52710ff3d7ead867d0b2a68df80d82b0e051eb"
 ---
 
 ## Examined
 
 Independent review by a fresh `grove-reviewer` agent, 2026-09-25, of
-`worktree-G-140` from base `670ca9c` to `ad52710` (the implementation
+`worktree-G-260924-ecs9m` from base `670ca9c` to `ad52710` (the implementation
 `d9ca2ef` and this repository's `run:` defaults `ad52710`), against
-[G-140](G-140-default-an-attempt-s-budget-mode.md)'s acceptance and
+[G-260924-ecs9m](G-260924-ecs9m-default-an-attempt-s-bud.md)'s acceptance and
 constraints, with no plan beyond the record's design.
 
 The reviewer ran these at `ad52710`: `gofmt -l .` (clean), `go vet ./...`,
@@ -32,36 +32,36 @@ Acceptance 1 to 5 met. `check` also refuses `1e3`, `.5`, `"50 "`, `~`,
 found in CLI option parsing, the `parseMapping` refactor or `versions`
 (`Source.Run` is never serialized).
 
-1. **Knowledge, medium.** G-140 does not mention accepted decision
-   [G-141](G-141-never-run-gpt-6-astra-unless-the.md): "what a paid run
+1. **Knowledge, medium.** G-260924-ecs9m does not mention accepted decision
+   [G-260925-04ccr](G-260925-04ccr-never-run-gpt-6-astra-un.md): "what a paid run
    spends … is the owner's explicit answer". The reviewer called the reading
    that a committed, owner-authored `run:` is that answer defensible but
-   unrecorded. G-101's required budget and mode still hold, now from a flag
+   unrecorded. G-260923-tnn5e's required budget and mode still hold, now from a flag
    or `grove.yaml`.
 2. **Scope, low to medium.** The defaults come from the checkout that
    launches, so `grove run` inside a work branch's worktree takes that
    branch's `run:`, which an attempt could have edited. The CLI prints the
    values only after the start; the board shows them before Enter.
-3. **Compatibility, low.** A binary older than G-140 refuses the merged
+3. **Compatibility, low.** A binary older than G-260924-ecs9m refuses the merged
    `grove.yaml` (`run: unknown configuration key`), including the installed
    `~/.local/bin/grove` at `670ca9c` and older branches reading `main`.
 4. **Documentation, low.** The work guide's invocation table still wrote
    both flags as mandatory.
-5. **Record, low.** G-140's Next still said "Proposed, unassigned".
+5. **Record, low.** G-260924-ecs9m's Next still said "Proposed, unassigned".
 6. **Notes, not defects.** `run` in an invalid or missing project now exits
    1 before the usage check; control characters in `model` and similar
    values pass `check` but are escaped wherever they are shown.
 
 ## Disposition
 
-1. Recorded in G-140's Evidence as the author's reading, with G-141 added
+1. Recorded in G-260924-ecs9m's Evidence as the author's reading, with G-260925-04ccr added
    to `relates_to`, and put first among the owner's judgments. Not settled
    by the author.
-2. Recorded as a limit in G-140. The record chose the launching checkout,
+2. Recorded as a limit in G-260924-ecs9m. The record chose the launching checkout,
    and a worktree's other files (its `AGENTS.md`, for one) already shape
    what launches from it. Owner's judgment.
-3. Recorded in G-140's Next: rebuild the installed binary when integrating.
-   No compatibility is kept before the first release (G-065).
+3. Recorded in G-260924-ecs9m's Next: rebuild the installed binary when integrating.
+   No compatibility is kept before the first release (G-260921-ebsby).
 4. Fixed in `b917fc2`: the guide's row now says either flag is optional
    where `grove.yaml` sets it under `run:`.
 5. Fixed with the handoff.

@@ -1,41 +1,41 @@
 ---
-id: "G-027"
+id: "G-260919-p1dgm"
 type: plan
-title: "G-023/G-025 agent handoffs implementation plan"
+title: "G-260919-nddsf/G-260919-04z88 agent handoffs implementation plan"
 status: current
 formerly: "docs/plans/W-010-W-011-agent-handoffs.md"
-work: ["G-023", "G-025"]
+work: ["G-260919-nddsf", "G-260919-04z88"]
 created: "2026-09-19T21:39:23Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-023/G-025 agent handoffs implementation plan
+# G-260919-nddsf/G-260919-04z88 agent handoffs implementation plan
 
-**Historical handoff, superseded for new assignments on 2026-09-20:** G-023 is
-done and integrated. G-025's current scope and preparation instruction are in
-[its record](G-025-shaping-entrypoint.md), revised under
-[G-035](G-035-interactive-adoption.md). Do not execute this
+**Historical handoff, superseded for new assignments on 2026-09-20:** G-260919-nddsf is
+done and integrated. G-260919-04z88's current scope and preparation instruction are in
+[its record](G-260919-04z88-shape-project-work-throu.md), revised under
+[G-260921-tkdwh](G-260921-tkdwh-adopt-the-interactive-ad.md). Do not execute this
 combined task list again or load its predecessor research by default. Retain it
-as evidence of the delivered G-023 design and the earlier G-025 proposal.
+as evidence of the delivered G-260919-nddsf design and the earlier G-260919-04z88 proposal.
 
 > For Fable: execute serially in one isolated worktree, using this repository's
 > instructions and `superpowers:executing-plans` if available. No automatic merge.
 > This is an implementation handoff, not implementation or harness-test evidence.
 
-**Status, 2026-09-20:** the G-023 parts of Tasks 1–5 were carried out on branch
+**Status, 2026-09-20:** the G-260919-nddsf parts of Tasks 1–5 were carried out on branch
 `worktree-W-010`, and the owner then revised the design before integration. The
 [revision](#revision-2026-09-20-owner-decisions) below supersedes anything in
 this plan that conflicts with it; the interface sections have been rewritten to
 describe what is implemented. The task lists are kept as the original handoff
 and were not used as a checkpoint: the
-[dogfooding evidence](G-032-dogfood-review.md) says what was done
-and observed. G-025's tasks are not started.
+[dogfooding evidence](G-260920-j2eyp-dogfooding-evidence.md) says what was done
+and observed. G-260919-04z88's tasks are not started.
 
 **Goal:** one short invocation shapes project records or carries selected work
 through preparation, implementation, review, and a recoverable handoff.
 
-**Specs:** [G-023](G-023-work-handoffs.md) owns work assignments;
-[G-025](G-025-shaping-entrypoint.md) owns authoring instructions.
+**Specs:** [G-260919-nddsf](G-260919-nddsf-prepare-reusable-work-in.md) owns work assignments;
+[G-260919-04z88](G-260919-04z88-shape-project-work-throu.md) owns authoring instructions.
 Read their acceptance and both linked predecessor reviews before implementation.
 
 **Architecture:** `internal/handoff` assembles bounded, read-only context from
@@ -64,7 +64,7 @@ report that limitation rather than pretending self-review is independent.
    `go run ./cmd/grove` invocation, branch conventions, coexistence with the
    predecessor) lives once in `AGENTS.md`. The workflow never requires the
    predecessor's `grove:work`, `grove:close`, or `grove:shape` skills, and the
-   predecessor comparison is review evidence, not required reading. G-025's
+   predecessor comparison is review evidence, not required reading. G-260919-04z88's
    shaping guide should reuse the same split.
 2. **Staged retrieval.** `context` reads the configuration, the selected
    records, and explicit includes in full, and lists everything else. The
@@ -85,21 +85,21 @@ report that limitation rather than pretending self-review is independent.
    agents, real harness execution, and owner acceptance are reported apart.
 
 Out of scope for this revision: plugin distribution, nullsec migration,
-attachment reorganization, G-025's implementation, supervised launching.
+attachment reorganization, G-260919-04z88's implementation, supervised launching.
 
 ## Base, ownership, and boundaries
 
 Inspected main `33bffb6`; the separate repair worktree was at `9e8430c` during
 preparation. Its presence is not integration proof. Before Go implementation,
-verify G-014–G-016 repair/review commits are integrated. Reuse the delivered
-G-016 path helpers; do not copy unfinished branch code. The owner has scheduled
-G-017 after repairs. Prefer this implementation after that handoff to avoid
-concurrent edits to `internal/cli/cli.go`, README, and the brief. G-017 is not a
+verify G-260919-8bbvy–G-260919-7qv4x repair/review commits are integrated. Reuse the delivered
+G-260919-7qv4x path helpers; do not copy unfinished branch code. The owner has scheduled
+G-260919-k7b8j after repairs. Prefer this implementation after that handoff to avoid
+concurrent edits to `internal/cli/cli.go`, README, and the brief. G-260919-k7b8j is not a
 semantic prerequisite; if scheduling differs, coordinate ownership explicitly.
 
-Keep G-023 and G-025 proposed until their implementation starts. Retain individual
+Keep G-260919-nddsf and G-260919-04z88 proposed until their implementation starts. Retain individual
 acceptance/evidence even with a shared plan; no release umbrella or new metadata.
-Preserve the existing explicit commands and G-017's default TUI invocation.
+Preserve the existing explicit commands and G-260919-k7b8j's default TUI invocation.
 No agent launch, branch creation by `context`, automatic merge, claim, run schema,
 timer, board mutation, global skill installation, or changes to sibling projects.
 
@@ -111,10 +111,10 @@ Proposed user invocations after implementation:
 
 ```text
 Claude: /grove-shape <idea or existing work ID>
-Claude: /grove-work G-023 G-025
+Claude: /grove-work G-260919-nddsf G-260919-04z88
 Codex:  $grove-shape <idea or existing work ID>
-Codex:  $grove-work G-023 G-025
-CLI:    go run ./cmd/grove context G-023 G-025 --json
+Codex:  $grove-work G-260919-nddsf G-260919-04z88
+CLI:    go run ./cmd/grove context G-260919-nddsf G-260919-04z88 --json
 ```
 
 Use `.claude/skills/{grove-work,grove-shape}/SKILL.md` and
@@ -138,8 +138,8 @@ Make interaction mode explicit in adapter inputs and forward it to `context`
 and the shared guide. Examples:
 
 ```text
-/grove-work G-030 --interaction interactive
-claude -p "/grove-work G-030 --interaction headless"
+/grove-work G-260920-svpbc --interaction interactive
+claude -p "/grove-work G-260920-svpbc --interaction headless"
 ```
 
 These are intended interfaces after implementation, not commands to run during
@@ -274,7 +274,7 @@ UTF-8 source strings and the same revisions. Source hashes always use original
 bytes. Exit 0 means context assembled, not ready/accepted/authorized; exit 1 means
 read/validation/change/output failure; usage is 2. Help requires no project/Git.
 
-## Task 1: Assemble selection, relationships, and provenance (G-023)
+## Task 1: Assemble selection, relationships, and provenance (G-260919-nddsf)
 
 Files: new `internal/handoff/context.go`, `selection.go`, `git.go`, and their
 tests. Reuse `project.Load`, `project.Revision`, and the integrated repo path
@@ -343,7 +343,7 @@ No timestamp/random bundle ID that makes unchanged output differ.
   between reads. Missing HEAD in an unborn repository is explicit, not a crash.
 - [ ] Run targeted tests, then commit `feat(context): assemble selected work facts`.
 
-## Task 2: Add bounded source inclusion and consistent output (G-023)
+## Task 2: Add bounded source inclusion and consistent output (G-260919-nddsf)
 
 Files: new `internal/handoff/sources.go`, `links.go`, `render.go`, their tests,
 `go.mod`, `go.sum`. Complete Build and Text from Task 1; add no public second API.
@@ -385,12 +385,12 @@ err := ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 - [ ] Run `go test -race ./internal/handoff -count=1`, review the new dependency,
   then commit `feat(context): include bounded revisioned source documents`.
 
-## Task 3: Expose the read-only command (G-023)
+## Task 3: Expose the read-only command (G-260919-nddsf)
 
 Files: `internal/cli/cli.go`, new `context.go`, `context_test.go`, README.
 Keep `cli.Run` unchanged. Add invocation fields only for this command. Existing
 global parsing accepts `--project` on either side; extend JSON allowlisting and
-reject context-only options on other commands, including G-017's default TUI.
+reject context-only options on other commands, including G-260919-k7b8j's default TUI.
 
 - [ ] Add CLI cases for the complete grammar, repeated includes, duplicate IDs,
   duplicate single-value flags, unknown interaction, invalid/overflow budget,
@@ -410,7 +410,7 @@ if !reflect.DeepEqual(got.Selected, []string{"W-001"}) { t.Fatal(got.Selected) }
   `root` is a valid local test fixture with W-001; add a real linked plan for
   the inclusion test and compare its exact source/revision, not just its title.
 - [ ] Dispatch Build with `context.Background()` from the ordinary CLI. Preserve
-  any context-aware repo APIs delivered by G-017 rather than creating duplicates.
+  any context-aware repo APIs delivered by G-260919-k7b8j rather than creating duplicates.
   Write all diagnostics to stderr and only completed text/JSON to stdout through
   existing output error handling. No partial stdout for missing/oversized sources.
 - [ ] Hash files in the project, Git common directory, and linked checkout before
@@ -420,7 +420,7 @@ if !reflect.DeepEqual(got.Selected, []string{"W-001"}) { t.Fatal(got.Selected) }
   commit `feat(cli): expose read-only work context`. Fix consequential findings
   before the guides depend on the output contract.
 
-## Task 4: Deliver the shared guides and thin adapters (G-023/G-025)
+## Task 4: Deliver the shared guides and thin adapters (G-260919-nddsf/G-260919-04z88)
 
 Files: update `docs/work-execution.md`; add `docs/work-shaping.md`; the four
 SKILL.md files and two Codex `agents/openai.yaml` files listed above; README and
@@ -493,8 +493,8 @@ argument-hint: "W-ID [W-ID ...] [--interaction interactive|headless]"
 
 Files: new `docs/reviews/W-010-W-011-dogfood.md`, owning work/plan bodies, brief.
 
-- [ ] In disposable repositories, exercise serial G-014–G-016-shaped repair
-  selection and a G-017-shaped dependent item: external blockers remain visible,
+- [ ] In disposable repositories, exercise serial G-260919-8bbvy–G-260919-7qv4x-shaped repair
+  selection and a G-260919-k7b8j-shaped dependent item: external blockers remain visible,
   status alone does not establish integration, and a missing plan is prepared
   rather than refused. Use current real records read-only as an additional
   context example; do not reactivate or rerun delivered repairs to test a skill.
@@ -517,7 +517,7 @@ Files: new `docs/reviews/W-010-W-011-dogfood.md`, owning work/plan bodies, brief
   paid nested agents or enable settings merely to manufacture evidence.
 - [ ] Run `go test -count=1 ./...`, `go test -race -count=1 ./...`, `go vet ./...`,
   gofmt, `go run ./cmd/grove check`, links, and independent combined review.
-  With G-017 integrated, verify the new explicit command does not disturb bare
+  With G-260919-k7b8j integrated, verify the new explicit command does not disturb bare
   invocation/help/nonterminal behavior using its existing tests.
 - [ ] Reconcile each unit independently through current CLI/body edits. Return
   branch/worktree, commits, actual acceptance evidence, remaining trials and
@@ -525,8 +525,8 @@ Files: new `docs/reviews/W-010-W-011-dogfood.md`, owning work/plan bodies, brief
 
 ## Acceptance trace and next investment
 
-G-023 acceptance 1–3: Tasks 1–3 and fixtures in Task 5; 4, 6–8: Task 4 plus
-observed scenarios in Task 5; 5: real assignment trial. G-025 acceptance 1 and 5:
+G-260919-nddsf acceptance 1–3: Tasks 1–3 and fixtures in Task 5; 4, 6–8: Task 4 plus
+observed scenarios in Task 5; 5: real assignment trial. G-260919-04z88 acceptance 1 and 5:
 Task 4 discovery trials; 2–4 and 6: guide behavior and Task 5 fixtures/real conversation.
 
 Review focus: context mistaken for authority; a link escaping project ownership;

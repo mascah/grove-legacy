@@ -1,5 +1,5 @@
 ---
-id: "G-076"
+id: "G-260922-w53bz"
 type: work
 title: "Filter grove list by status"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-22T15:01:38Z"
 updated: "2026-09-22T15:24:39Z"
 kind: feature
 size: small
-relates_to: ["G-039"]
+relates_to: ["G-260921-9t178"]
 candidate: "840a78b"
 ---
 
@@ -17,8 +17,8 @@ candidate: "840a78b"
 agent finds open work in one command instead of piping the whole table
 through `grep`. The owner asked for this on 2026-09-22, in the `/grove-shape`
 session that wrote this record, as the real change for the
-[G-039](G-039-interactive-loop.md) interactive-loop trial (its plan G-075,
-step 1, exists only on branch `worktree-G-039` until that work is
+[G-260921-9t178](G-260921-9t178-prove-the-complete-inter.md) interactive-loop trial (its plan G-260922-10dj4,
+step 1, exists only on branch `worktree-G-260921-9t178` until that work is
 integrated, so it is not linked here).
 
 ## Constraints
@@ -70,8 +70,8 @@ model's `list` contract say so.
 
 ## Evidence
 
-Implemented 2026-09-22 on branch `worktree-G-076` (worktree
-`.claude/worktrees/G-076`) from main `ff0f3e9`, starting from this record at
+Implemented 2026-09-22 on branch `worktree-G-260922-w53bz` (worktree
+`.claude/worktrees/G-260922-w53bz`) from main `ff0f3e9`, starting from this record at
 revision `sha256:b5c9464e…` with no plan record (none needed: the proposed
 design above fixes every choice). Commits: `32b7b40` the feature, `cd1067d`
 the review fixes, `a28f3d5` the review record; the candidate is the commit
@@ -85,7 +85,7 @@ Behavior against the acceptance:
    tabwriter fits column widths to the rows it prints, so a filtered table
    is narrower than the unfiltered one; "same format" is read as the same
    four columns, since the unfiltered widths already float with the records
-   present. The reviewer accepted that reading (G-077).
+   present. The reviewer accepted that reading (G-260922-22hyw).
 2. `list` without the option is unchanged: the reviewer built `ff0f3e9` and
    `32b7b40` and compared their `list` output on this checkout byte for byte.
 3. A value outside the union of the type table's vocabularies, an empty or
@@ -102,7 +102,7 @@ Behavior against the acceptance:
    `-short`).
 6. Owner's judgment: pending, see Next.
 
-Review: [G-077](G-077-g-076-independent-review-of-the.md), independent,
+Review: [G-260922-22hyw](G-260922-22hyw-independent-review-of-th.md), independent,
 examined `32b7b40`: nothing consequential; two minor findings and one nit,
 each fixed in `cd1067d` or being this handoff. Limits: the `cd1067d` fixes
 (one documentation sentence, one test helper) were self-checked, not
@@ -113,7 +113,7 @@ re-reviewed.
 Candidate awaits the owner's judgment (acceptance 6). Demo on this repository:
 
 ```sh
-cd .claude/worktrees/G-076
+cd .claude/worktrees/G-260922-w53bz
 go run ./cmd/grove list --status active --status review
 go run ./cmd/grove list --status proposed
 go run ./cmd/grove list --status bogus   # exit 2
@@ -122,10 +122,10 @@ go run ./cmd/grove list --status bogus   # exit 2
 Integrate on approval, from the main checkout:
 
 ```sh
-git merge --ff-only worktree-G-076
-go run ./cmd/grove show G-076 --json    # take the revision
-go run ./cmd/grove update G-076 --expect REVISION --set status=done
-git commit -am "docs(G-076): mark done on the owner's acceptance and merge"
+git merge --ff-only worktree-G-260922-w53bz
+go run ./cmd/grove show G-260922-w53bz --json    # take the revision
+go run ./cmd/grove update G-260922-w53bz --expect REVISION --set status=done
+git commit -am "docs(G-260922-w53bz): mark done on the owner's acceptance and merge"
 ```
 
 Feedback instead: write it here and set `status=active` on the branch.

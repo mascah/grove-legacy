@@ -1,5 +1,5 @@
 ---
-id: "G-023"
+id: "G-260919-nddsf"
 type: work
 title: "Prepare reusable work instructions and execution handoffs"
 status: done
@@ -8,7 +8,7 @@ updated: "2026-09-20T16:41:22Z"
 kind: feature
 priority: 2
 size: medium
-relates_to: ["G-014", "G-015", "G-016", "G-017"]
+relates_to: ["G-260919-8bbvy", "G-260919-z9w13", "G-260919-7qv4x", "G-260919-k7b8j"]
 formerly: "W-010"
 ---
 
@@ -30,7 +30,7 @@ must consume the same workflow, with explicit handling of human availability.
 
 The owner has repeatedly requested execution prompts because the predecessor's
 `/work` workflow was intentionally not adopted for this restart. In this
-conversation they requested G-014–G-016 together, then G-017 separately, and
+conversation they requested G-260919-8bbvy–G-260919-7qv4x together, then G-260919-k7b8j separately, and
 identified a future Kanban control launching `claude -p` with the right work
 instructions. Reusable preparation is useful before automatic launch exists.
 
@@ -49,7 +49,7 @@ That was the baseline before this work. The guide is now the workflow the
 
 The owner explicitly requested review of the actual
 `../skills/skills/work/SKILL.md`. The
-[2026-09-19 predecessor review](G-024-predecessor-work-review.md)
+[2026-09-19 predecessor review](G-260919-ph0w1-predecessor-work-review.md)
 inspected that skill, its supporting instructions, instruction-generator code,
 and headless adapter at sibling revision `ec87bb2`. It is required design input
 for this work, not authority to invoke predecessor workflows here.
@@ -71,7 +71,7 @@ Keep one owner for the guide: an adapter should reference it, not fork its rules
 Thin describes the harness adapter, not reduced workflow responsibilities. The
 shared guide owns the substantive behavior, including which CLI operations to
 use and when to stop, wait, resume, or hand off.
-The [shared implementation plan](G-027-agent-handoffs-plan.md)
+The [shared implementation plan](G-260919-p1dgm-agent-handoffs-implement.md)
 now proposes `grove context` plus repository-local `grove-work` adapters for
 Claude and Codex. The command assembles facts; adapters explicitly load the
 shared guide and the repository's agent instructions. Both are implemented on
@@ -96,7 +96,7 @@ Owner revision, 2026-09-20, superseding the conflicting prepared design:
   implementing a unit. A listing never stands in for required evidence, and no
   filename decides which artifact is current.
 - The execution checkout is established and verified before the first write.
-- G-025's shaping workflow should be able to reuse these boundaries; it is not
+- G-260919-04z88's shaping workflow should be able to reuse these boundaries; it is not
   part of this work.
 
 Use the review's responsibility mapping to select the supported execution path:
@@ -130,7 +130,7 @@ files and the CLI without a daemon or provider account.
 The owner described two proposal sources and a later board action on 2026-09-19:
 interactive shaping, unattended research/planning, then an option to start
 headless implementation when activating selected work. The companion
-[G-025](G-025-shaping-entrypoint.md) owns authoring instructions; this record
+[G-260919-04z88](G-260919-04z88-shape-project-work-throu.md) owns authoring instructions; this record
 continues to own the implementation assignment. Do not turn it into a combined
 shaping, scheduler, TUI mutation, and runner project.
 
@@ -154,7 +154,7 @@ Do not smuggle these policies into the first board or add a run schema here.
 
 Settled lifecycle requirement: closing the TUI leaves running sessions working;
 reopening reconnects to them, while Stop is a separate action. The
-[shaping and runner evidence review](G-026-shaping-and-runner-evidence-review.md)
+[shaping and runner evidence review](G-260919-rr3ae-shaping-and-headless-run.md)
 examines Bench's stream capture and tmux host as possible sources of mechanisms.
 No runtime choice is settled. Raw events, provider completion, verified work
 acceptance, and integration must remain distinct. Status updates alone must not
@@ -165,7 +165,7 @@ explicitly starting implementation.
 
 1. A single short invocation for selected IDs retrieves the reusable guide and
    correct current records/plans/evidence, without composing a bespoke prompt.
-2. G-014–G-016 serial and G-017 prerequisite-gated handoffs can be reproduced from
+2. G-260919-8bbvy–G-260919-7qv4x serial and G-260919-k7b8j prerequisite-gated handoffs can be reproduced from
    their owning artifacts. Changes to a record produce changed revision/context;
    no duplicated specification or stale copied acceptance silently wins.
 3. Tests cover missing/invalid records and links, explicit order, multi-ID scope,
@@ -202,7 +202,7 @@ Reuse current records and plain linked artifacts; no predecessor storage model,
 workflow metadata, or mandatory service. Keep ../skills and ../nullsec unchanged.
 Their instructions/own Grove CLI may supply read-only evidence during preparation;
 do not invoke predecessor work/close behavior here. No hard dependency on the
-Kanban implementation, and this record does not block G-017. Avoid shared-code
+Kanban implementation, and this record does not block G-260919-k7b8j. Avoid shared-code
 implementation concurrency with the repair branch.
 
 ## Evidence
@@ -211,7 +211,7 @@ Implemented on branch `worktree-W-010` from main `91edc0b`, in
 `.claude/worktrees/W-010`, and revised there on 2026-09-20. On the owner's
 instruction the branch was merged into `main` on 2026-09-20 with this work
 still active: integration is not acceptance (establish it by Git ancestry, as
-always). Not pushed. The [dogfooding evidence](G-032-dogfood-review.md)
+always). Not pushed. The [dogfooding evidence](G-260920-j2eyp-dogfooding-evidence.md)
 holds the detail and keeps source inspection, tests, simulated runs, real
 harness trials, and the owner's acceptance apart.
 
@@ -232,8 +232,8 @@ harness trials, and the owner's acceptance apart.
   `go mod tidy -diff`, `go run ./cmd/grove check`, and a relative-link and
   anchor check of the changed documents all pass. `FuzzResolve` ran 4.7 million
   inputs cleanly with Markdown-escaped traversal seeds.
-- Measured context: `G-030` 99229 to 2719 source bytes at the start; `G-017`
-  210956 to 17383, 32579 with its plan; `G-023 G-025` 193078 to 20694,
+- Measured context: `G-260920-svpbc` 99229 to 2719 source bytes at the start; `G-260919-k7b8j`
+  210956 to 17383, 32579 with its plan; `G-260919-nddsf G-260919-04z88` 193078 to 20694,
   47932 with the shared plan (like for like, before this revision's text
   enlarged this record and the plan). The evidence has composition and what each
   stage reads.
@@ -252,8 +252,8 @@ harness trials, and the owner's acceptance apart.
   and both carried a small fixture assignment through staged reads, a worktree
   before the first write, a resolved blocking question read in full and
   honoured, and a handoff with `main` untouched.
-- Acceptance 1–3: met by the command, tests, and the real G-014–G-016, G-017,
-  and G-023/G-025 contexts, under the owner's staged-retrieval clarification.
+- Acceptance 1–3: met by the command, tests, and the real G-260919-8bbvy–G-260919-7qv4x, G-260919-k7b8j,
+  and G-260919-nddsf/G-260919-04z88 contexts, under the owner's staged-retrieval clarification.
   4, 6, 7: met for the supported path by the guide, the two simulated headless
   runs against the first guide (durable question and wait, unacquired external
   blocker, missing-plan preparation, serial batch, resume from a checkpoint),
@@ -261,12 +261,12 @@ harness trials, and the owner's acceptance apart.
   and the wait path was not rerun against the revised guide. 8: both
   invocations are documented and both were exercised headlessly on a fixture;
   the interactive invocations were not. 5: met on 2026-09-20 by the owner's
-  interactive `/grove-work G-030` run, from the ID through the asked question,
+  interactive `/grove-work G-260920-svpbc` run, from the ID through the asked question,
   plan, code, three review rounds, and a handoff that left merging to the
   owner. Their verdict: it "appears to have worked as expected and that's
   enough to at least start dogfooding with." The retained handoff and the one
   shortcoming observed (a checkpoint that lagged six commits) are in the
-  [evidence](G-032-dogfood-review.md#owners-interactive-run-on-a-real-assignment-2026-09-20).
+  [evidence](G-260920-j2eyp-dogfooding-evidence.md#owners-interactive-run-on-a-real-assignment-2026-09-20).
 
 ## Next
 
@@ -279,10 +279,10 @@ Owner: start a fresh interactive Claude Code session in the main checkout,
 where the skill and `context` now are, and run
 
 ```text
-/grove-work G-030
+/grove-work G-260920-svpbc
 ```
 
-G-030 is the dogfooding target the owner chose on 2026-09-20: it is real Go
+G-260920-svpbc is the dogfooding target the owner chose on 2026-09-20: it is real Go
 work in the board, lists three related records to retrieve when needed, has no
 plan yet, and its Next holds an undecided owner choice (whether lineage
 replaces a card's version list or sits beside it). The run should establish
@@ -296,7 +296,7 @@ resume. Then say whether this replaces asking for a prompt, and record what
 happened in the dogfooding evidence before marking this done. Optionally try
 `$grove-work` in the Codex TUI.
 
-An earlier draft of this Next proposed `/grove-work G-025` from the G-023
+An earlier draft of this Next proposed `/grove-work G-260919-04z88` from the G-260919-nddsf
 worktree, stacked on the then-unmerged branch. The owner questioned it and it
 was dropped: it would have stacked work on an unaccepted branch, was chosen
 partly because it exercised a rule this revision had just written, and is
@@ -304,7 +304,7 @@ documentation-only work that mirrors the guide under test. The guide's rule
 for records that exist only on another branch therefore stays untested beyond
 reading.
 
-[G-025](G-025-shaping-entrypoint.md) (`grove-shape`, `docs/work-shaping.md`) is
+[G-260919-04z88](G-260919-04z88-shape-project-work-throu.md) (`grove-shape`, `docs/work-shaping.md`) is
 not started; it is ordinary later work from `main` and can reuse the adapter shape, the interaction-mode convention,
 the workflow/policy split, staged reading, and isolation before the first
 write. The shared ID counter stands at `W 18` after a fixture mistake recorded

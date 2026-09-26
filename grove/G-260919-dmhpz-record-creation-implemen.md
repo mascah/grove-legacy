@@ -1,23 +1,23 @@
 ---
-id: "G-008"
+id: "G-260919-dmhpz"
 type: plan
-title: "G-007 record creation implementation plan"
+title: "G-260919-92n2y record creation implementation plan"
 status: current
 formerly: "docs/plans/W-002-create.md"
-work: ["G-007"]
+work: ["G-260919-92n2y"]
 created: "2026-09-19T15:31:29Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-007 record creation implementation plan
+# G-260919-92n2y record creation implementation plan
 
-Goal: deliver `grove new` per [G-007](G-007-create-records.md)
-using the accepted [G-006](G-006-allocator-mechanism.md)
+Goal: deliver `grove new` per [G-260919-92n2y](G-260919-92n2y-create-records-with-shar.md)
+using the accepted [G-260919-5f89v](G-260919-5f89v-allocate-ids-with-flock.md)
 mechanism. Spec: [record model](../docs/record-model.md#identity-and-dates).
 
 Execution: single agent, sequential allocator → creation → command integration.
 Reason: one new package with one owner; the command depends on the allocator,
-and G-003's reader is reused unchanged. Dispatching implementers and reviewers
+and G-260919-rt9h9's reader is reused unchanged. Dispatching implementers and reviewers
 for roughly three hundred lines would cost more than one independent review of
 the finished diff, which this plan schedules before close.
 Delegation: one independent review of the whole branch before close.
@@ -58,8 +58,8 @@ Reassess: if the allocator needs a second lock primitive or Windows support.
   overwritten, usage errors, read commands leave `<common>/grove` absent.
 - [x] Verify: `go test ./...`, `go test -race ./...`, `go vet ./...`, `gofmt -l`;
   create a real record in this worktree and confirm `list`/`check`; confirm the
-  kill-while-locked probe from G-006 against the built binary; independent
-  review of the branch; reconcile G-007 and docs.
+  kill-while-locked probe from G-260919-5f89v against the built binary; independent
+  review of the branch; reconcile G-260919-92n2y and docs.
 
 ## Progress and evidence
 
@@ -76,7 +76,7 @@ test `17cea9d`). Tests were written first and failed to compile before each step
   worktrees receive 2..21 without duplicates; a non-Git directory is refused
   with no state written.
 - Creation tests: `W-002-title-with-quotes-more.md` with a title containing a
-  colon and quotes validates through the G-003 reader with equal timestamps;
+  colon and quotes validates through the G-260919-rt9h9 reader with equal timestamps;
   question and decision defaults; an existing target path fails creation and
   the next attempt receives the following number; bad slugs and types create
   nothing; CLI usage errors exit 2; read commands leave `<common>/grove` absent;
@@ -85,7 +85,7 @@ test `17cea9d`). Tests were written first and failed to compile before each step
   200 ms, the helper is killed with SIGKILL, and the parent acquires it at once.
 - Real use: `go run ./cmd/grove new work "Update record status and fields from
   the CLI" --slug update-records` in this worktree reported initialization at 3
-  from local refs and worktrees, wrote `grove/G-009-update-records.md`,
+  from local refs and worktrees, wrote `grove/G-260919-shnj5-update-record-status-and.md`,
   and `check` reported 7 valid records; `.git/grove/next-ids` holds `W 4`.
 - Independent review (opus reviewer agent, `dcbcdb7..17cea9d`): one blocking
   finding, the worktree walk discarded I/O errors so an unreadable record in

@@ -1,5 +1,5 @@
 ---
-id: "G-014"
+id: "G-260919-8bbvy"
 type: work
 title: "Bind workspace routing to the actual project and live checkout"
 status: done
@@ -8,7 +8,7 @@ updated: "2026-09-19T22:07:49Z"
 kind: fix
 priority: 1
 size: medium
-relates_to: ["G-010", "G-011", "G-002"]
+relates_to: ["G-260919-zb0s8", "G-260919-n9t4p", "G-260919-8jb5s"]
 formerly: "W-006"
 ---
 
@@ -16,14 +16,14 @@ formerly: "W-006"
 
 A selected version resolves only to the actual project in its registered
 checkout, and an observed disappearing/foreign checkout cannot yield a success
-path. This repairs G-010/G-011's existing contracts (implemented; see
-Evidence); it is not a new workspace-opening feature. [Review R1/R2](G-022-integrated-cli-review.md)
+path. This repairs G-260919-zb0s8/G-260919-n9t4p's existing contracts (implemented; see
+Evidence); it is not a new workspace-opening feature. [Review R1/R2](G-260919-zrk8t-integrated-cli-review-20.md)
 reproduced wrong-repository attribution and success for a deleted checkout at
-`9b7f730`. [Implementation plan](G-018-workspace-provenance-plan.md).
+`9b7f730`. [Implementation plan](G-260919-72c95-workspace-provenance-imp.md).
 
 ## Constraints
 
-Keep G-002's explicit selection and per-source status policy. Keep commands
+Keep G-260919-8jb5s's explicit selection and per-source status policy. Keep commands
 read-only: no refs, index, worktree administration, records, configuration,
 allocator state, editor, shell, or agent writes. Keep plain-directory inspection
 unchanged. No selector grammar or schema change, caching, or new dependencies.
@@ -70,9 +70,9 @@ check is promised.
 
 ## Dependencies and handoff
 
-G-010/G-011 and review fixes are integrated in main. No unfinished product
+G-260919-zb0s8/G-260919-n9t4p and review fixes are integrated in main. No unfinished product
 prerequisite. Recommend one Fable agent in an isolated worktree, serial with
-G-015/G-016 because repo/loader/CLI ownership overlaps. The plan supplies the
+G-260919-z9w13/G-260919-7qv4x because repo/loader/CLI ownership overlaps. The plan supplies the
 reproducers and implementation boundaries. Leave the retained implementation
 worktree alone. Completion here is separate from integration into main.
 
@@ -83,7 +83,7 @@ yet integrated into main. Code: `d5666dd` (committed projects two or more
 levels deep), `5316dbe` (ownership through the prefix, second-inventory
 re-entry), `892a842` (final check in `Resolve`), `9e8430c` (review fixes), `7f02b71`
 (combined-review fix).
-The [plan](G-018-workspace-provenance-plan.md#implementation-notes-2026-09-19)
+The [plan](G-260919-72c95-workspace-provenance-imp.md#implementation-notes-2026-09-19)
 records the bounded adjustments. Selector grammar, JSON, schema, and CLI
 surface are unchanged; both commands still write nothing.
 
@@ -111,7 +111,7 @@ registration, HEAD, branch, detaching, second checkout of a committed
 route's branch) each refuse without writing; `TestResolveFinalCheckAdmits`
 keeps unchanged live and committed routes, an unrelated invalid source, a
 dirty unrelated file, and an explicit live selection beside a new duplicate.
-(4) The existing G-010/G-011 fixtures pass unchanged.
+(4) The existing G-260919-zb0s8/G-260919-n9t4p fixtures pass unchanged.
 
 Independent review (separate reviewer agent, range `2d6de36..892a842`, own
 export): no P1/P2; reproducer confirmed real; five adversarial probes of its
@@ -121,7 +121,7 @@ check's hook) were all refused. P3 findings fixed in `9e8430c`: configuration
 vanishing during the read, an over-broad parent-entry filter, the cost note,
 and a CLI-level proof for acceptance 1.
 
-The combined review then found a P1 introduced by a G-016 review fix: a
+The combined review then found a P1 introduced by a G-260919-7qv4x review fix: a
 foreign repository registered below `<common>/worktrees` was admitted once
 the common-directory comparison had been removed. `7f02b71` restores it with
 `TestInspectForeignRepositoryRegisteredAsWorktree`, which fails at `40e882f`.
@@ -133,10 +133,10 @@ Git directory is not detected; a live checkout now costs about eight
 cost one (for main plus three worktrees, 10 Git processes became 39, or 55
 nested, measured at the final revision); macOS only,
 no Windows or case-insensitive collision testing. Suite results are in the
-[combined repair evidence](G-028-repairs-review.md).
+[combined repair evidence](G-260919-syk45-cli-repairs-to-evidence.md).
 
 ## Next
 
 Integrate branch `worktree-W-006-W-008` into main as a separate, explicit
-step; this record being done asserts completion on that branch only. G-017's
+step; this record being done asserts completion on that branch only. G-260919-k7b8j's
 board can then depend on `versions` and `workspace` for routing.

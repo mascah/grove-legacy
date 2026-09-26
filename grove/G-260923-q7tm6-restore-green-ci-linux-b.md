@@ -1,5 +1,5 @@
 ---
-id: "G-105"
+id: "G-260923-q7tm6"
 type: work
 title: "Restore green CI: Linux build, Go patch, and dependency advisories"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-23T04:44:12Z"
 updated: "2026-09-23T05:22:22Z"
 kind: fix
 size: small
-relates_to: ["G-081", "G-045", "G-046"]
+relates_to: ["G-260922-jtsed", "G-260921-h46pb", "G-260921-7trd7"]
 candidate: "e30f90c6572edf3493e9f2c24504b6477e64053e"
 approved: "e30f90c6572edf3493e9f2c24504b6477e64053e"
 ---
@@ -25,24 +25,24 @@ vulnerability on mascah/grove's default branch (1 moderate)".
 **Observed on 2026-09-23 at `main` ff43559** (`gh run list`, `gh run view`,
 `gh api repos/mascah/grove/dependabot/alerts`, and local runs):
 
-- CI was green through the G-041 merge (run 35783200988, 2026-09-22 20:53Z)
-  and has failed on every `main` push since the G-043 merge (run 35800657182,
+- CI was green through the G-260921-905y3 merge (run 35783200988, 2026-09-22 20:53Z)
+  and has failed on every `main` push since the G-260921-k0mwk merge (run 35800657182,
   2026-09-23 00:07Z). Three independent causes, in the order they appeared:
   1. **govulncheck, both jobs' first failure.** Four advisories in symbols the
      code calls: GO-2026-6218 (`net/url`) and GO-2026-6088 (`encoding/xml`),
      both fixed in the Go 1.26.6 standard library while `go.mod` pins
-     `go 1.26.5` and `setup-go` installs exactly that (a limit G-081 recorded);
+     `go 1.26.5` and `setup-go` installs exactly that (a limit G-260922-jtsed recorded);
      GO-2026-5970 in `golang.org/x/text` v0.24.0, fixed in v0.39.0; and
      GO-2026-5320 in `github.com/yuin/goldmark` v1.7.13, fixed in v1.7.17.
      Reached through `internal/tui` (glamour → x/text, x/net/html) and
      `internal/handoff` (goldmark `ast.Walk`). The same four fail locally with
      `go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...`.
-  2. **`check (ubuntu-latest)`, since the G-045/G-046 merges** (first seen on
+  2. **`check (ubuntu-latest)`, since the G-260921-h46pb/G-260921-7trd7 merges** (first seen on
      run 35809197292): `internal/attempt/attempt.go:1012` and
      `attempt_test.go:246` call `syscall.Getsid`, which Go's `syscall` package
      defines on Darwin but not on Linux, so `go vet` fails with
      `undefined: syscall.Getsid`. `GOOS=linux go vet ./internal/attempt/`
-     reproduces it on the Mac. G-046's evidence records "Linux not run".
+     reproduces it on the Mac. G-260921-7trd7's evidence records "Linux not run".
      Once this compile error landed, the govulncheck job stopped reporting
      advisories and fails at "loading packages" instead, which hides cause 1.
   3. **Dependabot alert #1** (GHSA-5cv4-jp36-h3mw, CVE-2026-25680, moderate):
@@ -82,8 +82,8 @@ dependency-graph update. Alternative: merge PR #6 then PR #5 first and add only
 the Getsid fix, the `go` directive and the x/text bump; same end state, three
 merges instead of one. Out of scope: raising the `go` directive to 1.27, a
 `go-version: stable` or `check-latest` change in `ci.yml` that would decouple
-the runner's toolchain from `go.mod` (G-084 finding 5 recorded that limit;
-reopen it in G-081's neighbourhood if patch releases keep breaking the
+the runner's toolchain from `go.mod` (G-260922-q88hk finding 5 recorded that limit;
+reopen it in G-260922-jtsed's neighbourhood if patch releases keep breaking the
 signal), and CodeQL.
 
 ## Acceptance
@@ -104,7 +104,7 @@ signal), and CodeQL.
 
 ## Evidence
 
-Implemented 2026-09-23 on `worktree-G-105` from `main` 8310af1 (the record
+Implemented 2026-09-23 on `worktree-G-260923-q7tm6` from `main` 8310af1 (the record
 at `sha256:ad7123fd…`; no plan, as Next said). Commits after the `active`
 update e7dd366:
 
@@ -143,22 +143,22 @@ and the owner's push-time notice. Not run: CI itself (nothing was pushed), a
 Linux amd64 suite (the reviewer vetted amd64; the suite ran on arm64), and
 `-race` on `internal/attempt`.
 
-Review: [G-106](G-106-g-105-green-ci-review.md), independent, examined
+Review: [G-260923-cd2ce](G-260923-cd2ce-green-ci-review.md), independent, examined
 `64f0a0c`; nothing blocking, three notes, two fixed in `1be9030`. Open, out
 of scope: with a checkout path long enough to wrap the board's review card
-three rows deep, the card drops the row naming the integrate target (G-043
-and G-044's card).
+three rows deep, the card drops the row naming the integrate target (G-260921-k0mwk
+and G-260921-jwk4e's card).
 
 ## Next
 
 In review. Candidate is the commit that set this record's evidence; the
-branch is `worktree-G-105`. To judge and integrate:
+branch is `worktree-G-260923-q7tm6`. To judge and integrate:
 
 ```sh
-# in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-105
-go run ./cmd/grove approve G-105 "VERDICT"
+# in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-260923-q7tm6
+go run ./cmd/grove approve G-260923-q7tm6 "VERDICT"
 # in main's checkout, /Users/mascah/GitHub/mascah/grove
-go run ./cmd/grove integrate G-105
+go run ./cmd/grove integrate G-260923-q7tm6
 git push
 gh run list --branch main --limit 1
 gh api repos/mascah/grove/dependabot/alerts --jq '.[] | [.number, .state] | @tsv'

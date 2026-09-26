@@ -1,5 +1,5 @@
 ---
-id: "G-016"
+id: "G-260919-7qv4x"
 type: work
 title: "Preserve Git paths through discovery and coordination"
 status: done
@@ -8,7 +8,7 @@ updated: "2026-09-19T22:07:50Z"
 kind: fix
 priority: 2
 size: medium
-relates_to: ["G-007", "G-009", "G-010", "G-011"]
+relates_to: ["G-260919-92n2y", "G-260919-shnj5", "G-260919-zb0s8", "G-260919-n9t4p"]
 formerly: "W-008"
 ---
 
@@ -17,9 +17,9 @@ formerly: "W-008"
 Git paths containing control characters retain their exact identity through
 inspection, workspace resolution, and mutation coordination. All mutation locks
 and counters stay under the actual Git common directory. Repairs existing
-path/side-effect contracts (implemented; see Evidence). [Review R6](G-022-integrated-cli-review.md)
+path/side-effect contracts (implemented; see Evidence). [Review R6](G-260919-zrk8t-integrated-cli-review-20.md)
 reproduced incorrect provenance and a stray write lock for a main checkout whose
-name contains a newline. [Implementation plan](G-020-git-paths-plan.md).
+name contains a newline. [Implementation plan](G-260919-jyfpb-git-path-identity-implem.md).
 
 ## Constraints
 
@@ -53,13 +53,13 @@ scope. This work does not replace its ID prefilter with the full record parser.
    even with no persistent counter. Ref scans, unrelated prefixes, missing roots,
    and inaccessible worktrees keep their documented behavior. No path is parsed
    as shell text or silently dropped due to Git's display quoting.
-4. Existing G-007/G-009 and G-010/G-011 tests plus full/race suites, vet,
+4. Existing G-260919-92n2y/G-260919-shnj5 and G-260919-zb0s8/G-260919-n9t4p tests plus full/race suites, vet,
    formatting, Grove `check`, and independent path/side-effect review pass.
 
 ## Dependencies and handoff
 
 Shared repo helpers and all affected commands are integrated. No unfinished
-product prerequisite. Work serially after G-014/G-015 to avoid shared helper
+product prerequisite. Work serially after G-260919-8bbvy/G-260919-z9w13 to avoid shared helper
 conflicts; this is implementation scheduling, not a semantic dependency.
 Use one Fable agent in an isolated worktree; preserve the retained old worktree.
 Do not clean up hypothetical stray state automatically.
@@ -69,7 +69,7 @@ Do not clean up hypothetical stray state automatically.
 Implemented 2026-09-19 on branch `worktree-W-006-W-008` (base `2d6de36`), not
 yet integrated into main. Code: `2e18866` (`repo.GitPath`, `Locate`,
 `repo.Worktrees`, versions), `9d11bdb` (allocator), `40e882f` and its correction (review fixes).
-The [plan](G-020-git-paths-plan.md#implementation-notes-2026-09-19)
+The [plan](G-260919-jyfpb-git-path-identity-implem.md#implementation-notes-2026-09-19)
 records the bounded adjustments. Selector grammar, allocation and counter
 protocol, the Git-required mutation boundary, and path escaping are unchanged.
 
@@ -97,7 +97,7 @@ prefix, and treats a checkout without the record folder as normal;
 `TestAllocateConcurrentAcrossWorktrees` now allocates concurrently from a
 path Git quotes for display; `TestParseWorktrees` covers bare, detached,
 locked, and prunable entries with exact fields and order. The inaccessible
-scan refusal is unchanged. (4) Existing G-007 and G-009 to G-011 tests pass unchanged.
+scan refusal is unchanged. (4) Existing G-260919-92n2y and G-260919-shnj5 to G-260919-n9t4p tests pass unchanged.
 
 Independent review (separate reviewer agent, commits `2e18866` and `9d11bdb`,
 own export): no correctness finding. It confirmed on a base export that the
@@ -116,7 +116,7 @@ absent record root from an unreadable one by error text; old stray
 directories from the defect are not cleaned up; inspection costs more Git
 processes than before (10 to 39 in the measured case, 55 with a nested
 prefix). Suite results are in
-the [combined repair evidence](G-028-repairs-review.md).
+the [combined repair evidence](G-260919-syk45-cli-repairs-to-evidence.md).
 
 ## Next
 

@@ -1,17 +1,17 @@
 ---
-id: "G-148"
+id: "G-260925-6ykpv"
 type: plan
-title: "G-144 plan: ship the record model as grove guide model"
+title: "G-260925-ced1h plan: ship the record model as grove guide model"
 status: current
 created: "2026-09-25T04:29:20Z"
 updated: "2026-09-25T04:29:23Z"
-work: ["G-144"]
+work: ["G-260925-ced1h"]
 ---
 
 ## Design
 
-As [G-146](G-146-how-should-an-adopting-project-r.md) resolved it, at
-`worktree-G-144` `2d5777e`:
+As [G-260925-02jsj](G-260925-02jsj-how-should-an-adopting-p.md) resolved it, at
+`worktree-G-260925-ced1h` `2d5777e`:
 
 - `guides.go` adds `docs/record-model.md` to the embedded `Guides`; `grove
   guide model` prints it verbatim, beside `work` and `shape`, needing no
@@ -19,7 +19,7 @@ As [G-146](G-146-how-should-an-adopting-project-r.md) resolved it, at
   names everything `guide` prints (acceptance 2 asks only for the guides;
   the model is one more list entry, and a schema change then shows in it).
 - The model is edited first to hold no `G-` identifier except its ID-format
-  examples (`G-001`, `G-1000`, `G-NNN`, the `G-003-inspect-records.md`
+  examples (`G-260919-6mpmw`, `G-1000`, `G-NNN`, the `G-260919-rt9h9-inspect-grove-project-re.md`
   folder example) and no link except in-document anchors and `https://`
   URLs: provenance parentheticals are deleted, "G-NNN owns X" sentences
   become plain statements or are dropped where the model already states the
@@ -39,8 +39,8 @@ As [G-146](G-146-how-should-an-adopting-project-r.md) resolved it, at
   pointer names `grove guide model`, and one line says a document the binary
   ships links only to other shipped documents, never to a record.
 
-Not changed: the guides' own mentions of Grove's records (G-035, G-038,
-G-032), which already say they are Grove's; `grove init` writes nothing new.
+Not changed: the guides' own mentions of Grove's records (G-260921-tkdwh, G-260921-9wkjt,
+G-260920-j2eyp), which already say they are Grove's; `grove init` writes nothing new.
 
 ## Steps
 
@@ -56,4 +56,4 @@ G-032), which already say they are Grove's; `grove init` writes nothing new.
    hand off into Review.
 
 Status 2026-09-25: steps 1 to 5 done at `7b841f9`, `3b62bff` and
-`fa18712`; review [G-149](G-149-g-144-review.md). Evidence is in G-144.
+`fa18712`; review [G-260925-w62y4](G-260925-w62y4-review-record-model-ship.md). Evidence is in G-260925-ced1h.

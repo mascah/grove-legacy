@@ -1,18 +1,18 @@
 ---
-id: "G-130"
+id: "G-260924-380hs"
 type: review
-title: "Review of G-124 board re-reads on focus and moved tips"
+title: "Review of G-260924-zxvqf board re-reads on focus and moved tips"
 status: current
 created: "2026-09-24T05:08:09Z"
 updated: "2026-09-24T05:08:23Z"
-work: ["G-124"]
+work: ["G-260924-zxvqf"]
 examined: "70509fba23b50e57f3c66441423706879b5debea"
 ---
 
 ## Examined
 
 Commit `a6807a4` (round 1) and the fixes in `70509fb` (round 2) on
-`worktree-G-124`, against G-124's Outcome, Constraints and Acceptance, by an
+`worktree-G-260924-zxvqf`, against G-260924-zxvqf's Outcome, Constraints and Acceptance, by an
 independent reviewer subagent that edited nothing. It read the diff from
 `2491eda`, and ran `go test -short ./internal/tui`, `TestTerminal` without
 `-short`, `go vet` and `gofmt -l`. Round 2 also reviewed the combined diff

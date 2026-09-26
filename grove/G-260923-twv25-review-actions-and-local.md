@@ -1,42 +1,42 @@
 ---
-id: "G-098"
+id: "G-260923-twv25"
 type: plan
-title: "G-044 review actions and local integration plan"
+title: "G-260921-jwk4e review actions and local integration plan"
 status: current
 created: "2026-09-23T00:17:01Z"
 updated: "2026-09-23T00:17:10Z"
-work: ["G-044"]
+work: ["G-260921-jwk4e"]
 ---
 
 ## Inputs
 
-Prepared on 2026-09-22 for [G-044](G-044-review-integration.md) at revision
-`493bf1c6`, on branch `worktree-G-044` from `main` `c4b3aea`, which holds
-both prerequisites merged: G-038 (candidate `fae1e4c`) and G-043 (candidate
-`178b305`). Read in full: G-044, G-038 with its plan
-[G-073](G-073-review-lifecycle-plan.md), G-043 with its plan
-[G-096](G-096-g-043-board-and-detail-design-vi.md) (whose "review view"
-section this plan builds), G-035, G-046, G-064, the terms G-057 to G-060, the
+Prepared on 2026-09-22 for [G-260921-jwk4e](G-260921-jwk4e-review-candidates-and-in.md) at revision
+`493bf1c6`, on branch `worktree-G-260921-jwk4e` from `main` `c4b3aea`, which holds
+both prerequisites merged: G-260921-9wkjt (candidate `fae1e4c`) and G-260921-k0mwk (candidate
+`178b305`). Read in full: G-260921-jwk4e, G-260921-9wkjt with its plan
+[G-260922-4fr84](G-260922-4fr84-review-lifecycle-plan.md), G-260921-k0mwk with its plan
+[G-260922-1w0hn](G-260922-1w0hn-board-and-detail-design.md) (whose "review view"
+section this plan builds), G-260921-tkdwh, G-260921-7trd7, G-260921-gtydy, the terms G-260921-jatts to G-260921-3qgsf, the
 brief, the record model, the work guide's "Judging and integrating" section,
-the G-039 trial evidence [G-078](G-078-g-039-trial-evidence-for-the-in.md),
+the G-260921-9t178 trial evidence [G-260922-08wxx](G-260922-08wxx-g-039-trial-evidence-for-the-in.md),
 and the code: `internal/update`, `internal/cli`, `internal/repo`,
 `internal/tui` (`model.go`, `detail.go`, `view.go`, `search.go`, `run.go`),
 `internal/versions` (`versions.go`, `current.go`), the justfile's
 `clean-merged` recipe, and the merges on `main`.
 
-What the loop lacks today, from G-078 and the guide: approval "has no CLI
+What the loop lacks today, from G-260922-08wxx and the guide: approval "has no CLI
 form: it is either told to an agent or a merge, a hand edit and an `update`
-run by hand"; the verdict was not quoted when G-076 was closed; `update`
+run by hand"; the verdict was not quoted when G-260922-w53bz was closed; `update`
 cannot tell the target from the work branch; the board shows a review's
 `examined` against the candidate but offers no action; and nothing in Grove
 merges, cleans up, or shows a candidate's changed files.
 
 ## Design
 
-The four choices G-044 asks to resolve before building, each with the
+The four choices G-260921-jwk4e asks to resolve before building, each with the
 alternative not taken. They are proposed here and put to the owner (see
 Open choices); everything after them is a routine technical choice inside
-G-044's outcome.
+G-260921-jwk4e's outcome.
 
 ### 1. Approval representation: an `approved` field bound to the candidate
 
@@ -44,7 +44,7 @@ Work gains one optional field, `approved`: a quoted Git commit in the same
 form as `candidate`. The record is valid only when `approved` names the
 `candidate` exactly and the status is `review` or `done`. So:
 
-- Approval is a fact software acts on (G-064), not prose. `grove approve`
+- Approval is a fact software acts on (G-260921-gtydy), not prose. `grove approve`
   writes it; `integrate` requires it; `check` verifies the binding.
 - A changed candidate cannot inherit approval: `update --set candidate=NEW`
   on an approved record is refused unless the same call unsets `approved`,
@@ -52,7 +52,7 @@ form as `candidate`. The record is valid only when `approved` names the
   (below), since the tip then differs from the candidate in more than the
   record file. Feedback that returns work to `active` must unset
   `approved` in the same update, so nothing survives silently.
-- The verdict stays where G-059 puts it, quoted in the record: `approve`
+- The verdict stays where G-260921-btyck puts it, quoted in the record: `approve`
   appends one paragraph to the end of the body, `Verdict on candidate
   178b305, 2026-09-22: <the owner's words>`, and commits the record alone.
   Feedback appends `Feedback on candidate 178b305, 2026-09-22: <text>` the
@@ -66,14 +66,14 @@ form as `candidate`. The record is valid only when `approved` names the
 Not taken: verdict only at integration (one command that merges and closes);
 it leaves nothing recorded when the merge is refused, and cannot show a
 stale approval. Also not taken: an approval record type; a review record is
-evidence and G-038 chose no disposition field.
+evidence and G-260921-9wkjt chose no disposition field.
 
 ### 2. Merge strategy: a plain merge into the target's checkout
 
 `integrate` runs `git merge --no-edit BRANCH` in a checkout whose HEAD is
 the configured `target`: a fast-forward when `main` has not moved, a merge
 commit otherwise, which is how every integration on this `main` was done
-(`Merge branch 'worktree-G-040'`). The candidate keeps its identity through
+(`Merge branch 'worktree-G-260921-5gz9a'`). The candidate keeps its identity through
 either, so the merged record's `candidate` still names the commit that was
 reviewed and approved, and `done`'s ancestry check holds. A conflict is
 aborted (`git merge --abort`) and reported with Git's words; the target is
@@ -97,7 +97,7 @@ changes nothing.
 
 After the merge succeeds, `integrate` runs the existing update path in the
 target's checkout: `status=done`, the candidate unchanged, committed alone
-(`docs(G-044): set status=done`). The merge brought `approved` and the
+(`docs(G-260921-jwk4e): set status=done`). The merge brought `approved` and the
 verdict with the record. A merge that succeeds but a done write that fails
 (the merged project does not validate, or Git refuses the commit) is
 reported as exactly that: the merge stands, the record is not done, and the
@@ -106,15 +106,15 @@ command to finish is printed. Nothing undoes a merge.
 `update` itself gains the one enforcement it could not have before:
 where `grove.yaml` names a target, `--set status=done` is refused in a
 checkout whose branch is not that target, naming both. Without a target
-(nullsec today) the behaviour is unchanged. This closes G-074's first
-finding with configuration the owner added in G-042.
+(nullsec today) the behaviour is unchanged. This closes G-260922-fvqpv's first
+finding with configuration the owner added in G-260921-ms6ev.
 
 Output is one line per fact, in order, on stdout as each completes:
 `approval:` (the candidate, who approved it as the commit, the verdict),
 `merge:` (fast-forward or merge commit and its hash, or the refusal),
 `done:` (the commit), `cleanup:` (what was removed or kept). A refusal goes
 to stderr with exit 1; the facts already printed stand. Approval and
-integration are therefore always separate facts, as G-044 acceptance 4
+integration are therefore always separate facts, as G-260921-jwk4e acceptance 4
 asks.
 
 ### 4. Cleanup: opt-in, after done, by Git's own refusals
@@ -128,7 +128,7 @@ of its own: a worktree that holds the running process's working directory
 is kept. A refusal is a `cleanup: kept …` fact with Git's reason and exit 1;
 the integration stands. No branch or worktree is ever touched by `approve`,
 `feedback`, a refused merge, or a failed done write. Records are never
-moved (G-064).
+moved (G-260921-gtydy).
 
 Not taken: cleaning up by default (a kept worktree is cheap, a lost one is
 not), and a standalone `cleanup` command (the justfile's `clean-merged` and
@@ -151,7 +151,7 @@ by these commands), and, for `approve`, a tip that differs from the
 candidate in any file but the record (a new candidate). `approve` sets
 `approved` to the candidate and appends the verdict; `feedback` sets
 `status=active`, unsets `approved` when present, keeps the candidate (as
-G-038 chose: the earlier review's `examined` still compares to it) and
+G-260921-9wkjt chose: the earlier review's `examined` still compares to it) and
 appends the text. Both print what `update` prints, and `feedback` adds a
 `Next:` line on stderr naming the branch, its checkout and `/grove-work ID`
 there: the actionable interactive continuation of acceptance 3.
@@ -161,7 +161,7 @@ branch through the same inspection `versions` does, in one Git process.
 
 ### The board
 
-The detail of a work record in `review` (G-096's review view) gains:
+The detail of a work record in `review` (G-260922-1w0hn's review view) gains:
 
 - **A Review block** in the header, facts only: the candidate; `approved` or
   `not approved`; whether the branch tip is the candidate (only the record
@@ -193,7 +193,7 @@ The detail of a work record in `review` (G-096's review view) gains:
   need a clean checkout of the branch; `i` a checkout of the target; the
   board says which is missing rather than acting elsewhere.
 
-Everything G-043 fixed stays: `safe` before any style, glamour only for
+Everything G-260921-k0mwk fixed stays: `safe` before any style, glamour only for
 record bodies, focus and paging, on-demand history, one read at a time,
 the explicit subcommands' contracts.
 
@@ -227,7 +227,7 @@ the explicit subcommands' contracts.
    model (`approved`, the lifecycle bullets, the "no approval field" note),
    `docs/work-execution.md` (step 8's integrator commands and the Judging
    section become the three commands), AGENTS.md's lifecycle sentence, the
-   terms G-059 and G-060, and this plan's adjustments.
+   terms G-260921-btyck and G-260921-3qgsf, and this plan's adjustments.
 7. **Verification.** Per package while iterating; then `go vet ./...`,
    `gofmt -l .`, `go run ./cmd/grove check`, `go test -count=1 -timeout
    120s ./...`, `-race` for `internal/tui` and `internal/integrate` alone;
@@ -235,9 +235,9 @@ the explicit subcommands' contracts.
    built binary; a real-terminal pass of the review detail, changes, a diff,
    and each action on the clone.
 8. **Review and handoff.** An independent review of the final diff as a
-   review record with `examined`; then G-044's Evidence and Next, and
+   review record with `examined`; then G-260921-jwk4e's Evidence and Next, and
    `status=review` with the candidate. The owner's judgment (acceptance 5)
-   is the first real use: reviewing and integrating G-044 itself with
+   is the first real use: reviewing and integrating G-260921-jwk4e itself with
    `approve` and `integrate` from the board.
 
 ## Open choices
@@ -272,7 +272,7 @@ Made while implementing, none changing the four designs:
 - `integrate` reads the process's working directory to keep a worktree it is
   running from; the board passes the same, so `i` from inside the branch's
   worktree keeps that worktree with the reason shown.
-- After the independent review (G-099): `integrate` merges the commit it
+- After the independent review (G-260923-r1w6p): `integrate` merges the commit it
   inspected, never the branch name, so a branch that moves between the check
   and the merge, or a tag of the same name, cannot be merged unchecked; the
   approval fact names that tip. `--cleanup` also keeps a worktree holding
@@ -292,7 +292,7 @@ Made while implementing, none changing the four designs:
 
 Local integration only: no push, PR or deployment. Autonomous judging has no
 policy here; every action is a person's key or command. Automatic relaunch
-after feedback is G-046's. A branch without a checkout cannot be approved
+after feedback is G-260921-7trd7's. A branch without a checkout cannot be approved
 from the board; `git worktree add` one. Diffs are per file from the merge
 base; a whole-branch diff is `git diff` at a shell. Bodies other than the
 appended paragraph are still edited by hand. Ctrl-C during a board action

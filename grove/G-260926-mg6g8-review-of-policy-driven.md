@@ -1,20 +1,20 @@
 ---
-id: "G-198"
+id: "G-260926-mg6g8"
 type: review
-title: "Review of G-180 policy-driven integration"
+title: "Review of G-260925-5wrn8 policy-driven integration"
 status: current
 created: "2026-09-26T03:45:33Z"
 updated: "2026-09-26T03:45:52Z"
-work: ["G-180"]
+work: ["G-260925-5wrn8"]
 examined: "8eb741f1e5c82be5b1b3b679243f6ca57eb4bb8b"
 ---
 
 ## Examined
 
-[G-180](G-180-policy-driven-integration.md) on `worktree-G-180`: the
+[G-260925-5wrn8](G-260925-5wrn8-resolve-approve-and-inte.md) on `worktree-G-260925-5wrn8`: the
 change from main `fd7744e` to `8eb741f`, against the record's acceptance,
-plan [G-196](G-196-plan-for-g-180-policy-integration.md), decision
-[G-182](G-182-standing-policy-delegation.md) and the repository's
+plan [G-260926-vpvhf](G-260926-vpvhf-plan-for-policy-driven-i.md), decision
+[G-260925-wh9ax](G-260925-wh9ax-delegate-conflict-resolu.md) and the repository's
 instructions. Three rounds, each by a fresh `grove-reviewer` agent,
 read-only; each ran the tests it needed and exercised the built binary or
 the package tests on disposable repositories.
@@ -22,7 +22,7 @@ the package tests on disposable repositories.
 - Round 1 examined `2edcb1a`.
 - Round 2 examined `6aba90e`.
 - Round 3 examined `8eb741f`, the code of the candidate. The candidate
-  adds only this record and G-180's evidence.
+  adds only this record and G-260925-5wrn8's evidence.
 
 ## Findings
 
@@ -52,13 +52,13 @@ Round 1 (`2edcb1a`), six findings:
    repository; it stays open for the owner.
 6. The record model still said Review "awaits human judgment" beside the
    new delegate sentence. Reworded; round 2 found the rewording contradicted
-   the settled term [G-058](G-058-review.md), and it now reads "awaits
+   the settled term [G-260921-rz7bn](G-260921-rz7bn-review.md), and it now reads "awaits
    human judgment: the owner's own, or given in advance as a standing
    `policy:`".
 
 Round 2 (`6aba90e`): findings 1, 2, 4 and 6 resolved; finding 3 partly
 (model and effort still leaked through `prepare`); one knowledge finding
-(the Review wording against G-058). Both fixed in `8eb741f`.
+(the Review wording against G-260921-rz7bn). Both fixed in `8eb741f`.
 
 Round 3 (`8eb741f`): both round-2 findings resolved, the first verified by
 reverting the fix in a copy and watching the test fail. No new finding of
@@ -68,10 +68,10 @@ its resolution attempt, which runs in the branch's checkout, since `never`
 guards approval, not resolution; a few lines of `docs/record-model.md` are
 over 80 columns.
 
-Knowledge: the term [G-197](G-197-policy.md) (proposed) defines the
+Knowledge: the term [G-260926-a8vyj](G-260926-a8vyj-policy.md) (proposed) defines the
 policy and a delegated act. The work contradicts no settled term or
 accepted decision: approval by a delegate is inside
-[G-059](G-059-approval.md), and a review stays evidence the policy reads.
+[G-260921-btyck](G-260921-btyck-approval.md), and a review stays evidence the policy reads.
 
 ## Disposition
 

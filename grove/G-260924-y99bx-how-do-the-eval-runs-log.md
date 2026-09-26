@@ -1,29 +1,29 @@
 ---
-id: "G-121"
+id: "G-260924-y99bx"
 type: question
-title: "How do the G-108 eval runs log in to the clean config directory?"
+title: "How do the G-260923-p5pt6 eval runs log in to the clean config directory?"
 status: resolved
 created: "2026-09-24T00:55:29Z"
 updated: "2026-09-24T00:55:54Z"
-blocks: ["G-108"]
+blocks: ["G-260923-p5pt6"]
 ---
 
 ## Question
 
-[G-118](G-118-what-mandate-should-the-g-108-pa.md) is resolved: opus 5.5,
+[G-260923-659zw](G-260923-659zw-what-mandate-should-the.md) is resolved: opus 5.5,
 5 runs per case, $5 per run, permission mode `auto`, the fixture approved as
 built. Its last item, where the clean `CLAUDE_CONFIG_DIR` lives and how it
 logs in, has no answer, and it is the one input a headless session cannot
 supply: the runner refuses the owner's own configuration on purpose, and a
 new directory has no login.
 
-Observed 2026-09-23 on `worktree-G-108` at `433e338`, Claude Code 2.1.281:
+Observed 2026-09-23 on `worktree-G-260923-p5pt6` at `433e338`, Claude Code 2.1.281:
 `CLAUDE_CONFIG_DIR=~/.cache/grove-evals/claude claude -p` with `--model
 claude-opus-5-5 --permission-mode auto` and a $0.10 cap returned `Not
 logged in · Please run /login` at no cost. `/login` needs a browser, so the
 runs cannot start until the owner does one of:
 
-1. **Log in once** (recommended, matches G-118's recommendation and what a
+1. **Log in once** (recommended, matches G-260923-659zw's recommendation and what a
    preview user gets): run `CLAUDE_CONFIG_DIR=~/.cache/grove-evals/claude
    claude`, then `/login`, then quit. The directory then holds only that
    login; the runner still refuses it if a `CLAUDE.md`, skills, plugins or
@@ -33,8 +33,8 @@ runs cannot start until the owner does one of:
    `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token`; both pass through the
    runner's scrubbed environment.
 
-Then assign `/grove-work G-108` again on `worktree-G-108`. The successor
-runs, with exactly G-118's values:
+Then assign `/grove-work G-260923-p5pt6` again on `worktree-G-260923-p5pt6`. The successor
+runs, with exactly G-260923-659zw's values:
 
 ```sh
 python3 evals/run.py run --runs 5 --budget 5 --model claude-opus-5-5 \

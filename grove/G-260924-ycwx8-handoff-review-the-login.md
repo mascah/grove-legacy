@@ -1,22 +1,22 @@
 ---
-id: "G-126"
+id: "G-260924-ycwx8"
 type: review
-title: "G-108 handoff review: the login change and G-122"
+title: "G-260923-p5pt6 handoff review: the login change and G-260924-frzeg"
 status: current
 created: "2026-09-24T01:25:14Z"
 updated: "2026-09-24T01:30:26Z"
-work: ["G-108"]
+work: ["G-260923-p5pt6"]
 examined: "c3386ae"
 ---
 
 ## Examined
 
-An independent review of everything on `worktree-G-108` after
-[G-119](G-119-g-108-eval-skeleton-review.md)'s `1f03a12`: the runner's
+An independent review of everything on `worktree-G-260923-p5pt6` after
+[G-260923-50gkk](G-260923-50gkk-eval-skeleton-review.md)'s `1f03a12`: the runner's
 login change (`433e338`, `d565fcf`), the records of the paid runs
-([G-122](G-122-g-108-baseline-runs-the-missing.md),
-[G-108](G-108-workflow-evals.md),
-[G-115](G-115-g-108-eval-skeleton-plan.md)) and the fixes each round
+([G-260924-frzeg](G-260924-frzeg-baseline-runs-the-missin.md),
+[G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md),
+[G-260923-v9wby](G-260923-v9wby-eval-skeleton-plan.md)) and the fixes each round
 produced. A separate reviewer agent (Claude Code 2.1.281 subagent,
 read-only, told not to edit, commit or run the real `claude`) examined
 `fdf5d4e`, then `b6b3c7a`, then `c3386ae`; `examined` is the last. Its
@@ -34,13 +34,13 @@ Round 1, on `fdf5d4e`, seven findings:
    under the config directory and a reused `--out` could carry it between
    runs) and an authored skill under `skills/synced/ID/` that the sync's
    manifest does not name; accepting synced content at all was the
-   session's decision, not G-121's, and unrecorded.
+   session's decision, not G-260924-y99bx's, and unrecorded.
 2. Low: a manifest entry without `name` and a `settings.json` that is a
    list crashed before spending instead of refusing.
 3. Medium: the selftest never executed the `surfaced, not blocking`
-   reason that G-122's Disposition relies on, and compared only which
+   reason that G-260924-frzeg's Disposition relies on, and compared only which
    checks failed, not why.
-4. Medium: G-122 scored "presumes choice" 2 for every run, but the
+4. Medium: G-260924-frzeg scored "presumes choice" 2 for every run, but the
    rubric's 2 anchor says no item depends on the answer, and every run's
    acceptance does, while saying it is open: the 1 anchor's letter.
 5. Medium: Disposition claims beyond the evidence: "blocking ten times
@@ -57,7 +57,7 @@ Round 1, on `fdf5d4e`, seven findings:
    wrong for two companion runs; only one of two connector mentions named.
 
 Verified in round 1 against the output directory: every cost, turn count,
-duration, check result, exit and denial count in G-122; 68 `Bash` and one
+duration, check result, exit and denial count in G-260924-frzeg; 68 `Bash` and one
 `Read`; fourteen MCP servers and 36 skills per session; no absolute path
 outside the clone in any tool input (a regex over `/Users`, `/tmp`,
 `/private`, `/var`, `/etc`, `/home`, `~`, `../` and `cd /`); the guides
@@ -86,7 +86,7 @@ a `manifest.json` that is a directory crashed before spending.
 ## Disposition
 
 1. Fixed `b6b3c7a`: `autoMemoryEnabled` true refused, unlisted entries
-   under a synced ID refused; G-108's Evidence records the decision.
+   under a synced ID refused; G-260923-p5pt6's Evidence records the decision.
    Round 2's A fixed `c3386ae`: the key must be present and false, the
    README says so.
 2. Fixed `b6b3c7a` (`.get("name")`, a non-object settings file refused);
@@ -100,7 +100,7 @@ a `manifest.json` that is a directory crashed before spending.
 5. Fixed `b6b3c7a`, E fixed `c3386ae`: each sentence now states what the
    runs show and labels the confound and the untested flag.
 6. Fixed `b6b3c7a`: starting revisions, verification and this record
-   named in G-108's Evidence; the candidate is set by the status change
+   named in G-260923-p5pt6's Evidence; the candidate is set by the status change
    that follows the commit holding this record.
 7. Fixed `b6b3c7a`.
 

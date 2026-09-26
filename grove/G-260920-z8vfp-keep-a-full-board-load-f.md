@@ -1,5 +1,5 @@
 ---
-id: "G-031"
+id: "G-260920-z8vfp"
 type: work
 title: "Keep a full board load fast with hundreds of branches and worktrees"
 status: done
@@ -8,7 +8,7 @@ updated: "2026-09-20T05:06:02Z"
 kind: fix
 priority: 2
 size: small
-relates_to: ["G-010", "G-014", "G-016", "G-017", "G-030"]
+relates_to: ["G-260919-zb0s8", "G-260919-8bbvy", "G-260919-7qv4x", "G-260919-k7b8j", "G-260920-svpbc"]
 formerly: "W-013"
 ---
 
@@ -32,7 +32,7 @@ binary on the owner's Mac, second run; processes counted with `GIT_TRACE`.
 | --- | --- | --- |
 | This repository: 4 branches, 4 checkouts | 0.57 s, 44 processes | 0.24 s, 18 processes |
 | 300 branches differing only outside `grove/`, 6 checkouts | 27.7 s, 656 processes | 0.35 s, 24 processes |
-| 1,000 branches, each with its own edit to G-003, 6 checkouts | 91.0 s | 0.45 s |
+| 1,000 branches, each with its own edit to G-260919-rt9h9, 6 checkouts | 91.0 s | 0.45 s |
 
 `versions` output before and after is byte-identical on the 300-branch
 repository (5,529 lines) and on this one.
@@ -48,7 +48,7 @@ What was slow, and what changed:
   and branches that agree on all of that share one loaded, validated project.
   A branch now costs a few object lookups and no process.
 - Each checkout ran eight single-path `rev-parse` processes (twelve with a
-  nested project), because a path may contain a newline (G-016). They are now
+  nested project), because a path may contain a newline (G-260919-7qv4x). They are now
   asked together, three per checkout (five nested). A combined reply is used
   only when it holds exactly one terminator per option, which is only possible
   when no path holds a newline; otherwise each is asked alone as before.
@@ -58,7 +58,7 @@ record folder no longer fails its branch, because it is no longer read.
 
 ## Constraints
 
-Reads only. Keep G-014 and G-016 provenance checks, the second worktree
+Reads only. Keep G-260919-8bbvy and G-260919-7qv4x provenance checks, the second worktree
 inventory, cancellation of every Git process, and identical `versions` and
 `workspace` results. No cache between runs, no index, no daemon.
 
@@ -95,5 +95,5 @@ inventory, cancellation of every Git process, and identical `versions` and
 ## Next
 
 Nothing under this record. The owner accepted the numbers on 2026-09-19 and it
-was integrated into main with G-017. Reopen as new work if dozens of worktrees
+was integrated into main with G-260919-k7b8j. Reopen as new work if dozens of worktrees
 or the every-branch question start to matter.

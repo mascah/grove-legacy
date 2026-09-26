@@ -1,29 +1,29 @@
 ---
-id: "G-159"
+id: "G-260925-yygmz"
 type: review
-title: "G-154 runner cases review"
+title: "G-260925-pbx81 runner cases review"
 status: current
 created: "2026-09-25T20:07:54Z"
 updated: "2026-09-25T20:08:15Z"
-work: ["G-154"]
+work: ["G-260925-pbx81"]
 examined: "47223ed"
 ---
 
 ## Examined
 
-The runner built for [G-154](G-154-listed-constraint-eval.md) acceptance 1,
+The runner built for [G-260925-pbx81](G-260925-pbx81-evaluate-whether-agents.md) acceptance 1,
 at the consequential boundary of plan
-[G-155](G-155-g-154-listed-and-code-constraint.md) step 3: the two cases,
+[G-260925-a4kn8](G-260925-a4kn8-listed-and-code-constrai.md) step 3: the two cases,
 their fixture records, the retrieval facts `search`, `holding read` and
 `distractors read`, per-case rubric columns, and the README. Three rounds by
-fresh `grove-reviewer` agents on `worktree-G-154`, 2026-09-25, each told
+fresh `grove-reviewer` agents on `worktree-G-260925-pbx81`, 2026-09-25, each told
 it may run the free selftest and never a paid harness: round 1 examined
 `b684951..b2c7ef0 -- evals/`, round 2 `b2c7ef0..946459a` and the combined
 change, round 3 `946459a..47223ed` and the combined change, the `examined`
 commit. `c895666` came after the cap and is self-checked only (below).
 This is evidence for the runner, not the eval's result: acceptance 2 and 3
 wait on the mandate in
-[G-158](G-158-what-mandate-should-the-g-154-wi.md).
+[G-260925-gymkr](G-260925-gymkr-what-mandate-should-the.md).
 
 ## Findings
 
@@ -37,15 +37,15 @@ Round 1 (at `b2c7ef0`):
    reason the case does not test. Fixed: the due-date record's owner note
    says "a `due` frontmatter key".
 3. Low. "The decision's title shares no word with the topic" was false
-   ("task"). Wording corrected in the README and G-155.
+   ("task"). Wording corrected in the README and G-260925-a4kn8.
 4. Low. Selftest gaps: `context` by ID, a listing not being a reading, a
    distractor read through `show`, the default case set, the decision's
    status. Each now exercised by the fake and asserted; the default-set
    and include assertions were mutation-checked.
 5. Info. `distractors read` counts `show`, `unneeded` counts files only.
    Documented: compare the two together.
-6. Low. "Claude only" read as a runner rule. Reworded as a rule of G-154
-   and G-141.
+6. Low. "Claude only" read as a runner rule. Reworded as a rule of G-260925-pbx81
+   and G-260925-04ccr.
 7. Low. The listed-constraint rubric's top anchor was ambiguous for a
    proposal citing only the brief. Scored 1, with `holding read` noted.
 
@@ -59,11 +59,11 @@ Round 2 (at `946459a`):
   clone; that a refused command still counts is documented as a limit.
 - C. Low. The spaced `--include PATH` form was unexercised. The Claude fake
   uses it, the Codex fake `--include=`. Mutation-checked.
-- D. Info. G-158 had duplicate empty headings. Removed.
+- D. Info. G-260925-gymkr had duplicate empty headings. Removed.
 
 Round 3 (at `47223ed`): every round 2 disposition verified, two by the
 reviewer's own mutations; the pair's fixture, default and columns
-unchanged; G-158 accurate. Two new points:
+unchanged; G-260925-gymkr accurate. Two new points:
 
 - Low. An absolute `--include` path counted as a read, though `context`
   refuses one. Fixed after the cap in `c895666` and self-checked only: a
@@ -73,14 +73,14 @@ unchanged; G-158 accurate. Two new points:
   the existence filter would still pass the selftest.
 
 Knowledge: no term needed ("holding record", "distractor" and "row" are
-the eval's own words); nothing contradicts G-141, G-064 or the rule that
+the eval's own words); nothing contradicts G-260925-04ccr, G-260921-gtydy or the rule that
 fixture records are made only in disposable directories.
 
 ## Disposition
 
 Acceptance 1 and 4 are met by the runner at `c895666`. Every consequential
 finding is fixed; one informational coverage gap stays open. The runner is
-ready for the `without` row once G-158 is answered. Limits: no real
+ready for the `without` row once G-260925-gymkr is answered. Limits: no real
 harness has run the new cases, so whether a real agent's reads land in the
 facts as the fakes' do is unobserved; the facts come from commands, not
 their results, and `grep` output is never a read, so any `holding read`

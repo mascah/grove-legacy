@@ -1,5 +1,5 @@
 ---
-id: "G-041"
+id: "G-260921-905y3"
 type: work
 title: "Cut nullsec over to this Grove and uninstall the predecessor"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-22T20:52:32Z"
 kind: tooling
 size: large
 priority: 2
-depends_on: ["G-040"]
-relates_to: ["G-035", "G-036", "G-064", "G-065"]
+depends_on: ["G-260921-5gz9a"]
+relates_to: ["G-260921-tkdwh", "G-260921-407n6", "G-260921-gtydy", "G-260921-ebsby"]
 formerly: "W-023"
 candidate: "b6db474"
 ---
@@ -19,13 +19,13 @@ candidate: "b6db474"
 Nullsec runs on this Grove, and the predecessor no longer answers anywhere on
 the owner's machine. The owner set this outcome in a shaping session on
 2026-09-22, in four points: nullsec is bootstrapped with the new CLI; its
-records are converted to the same shape G-052 gave this repository; nullsec
+records are converted to the same shape G-260921-r491p gave this repository; nullsec
 development uses the new CLI from then on; and the old CLI is off `PATH` and
 interferes with nothing.
 
 Also decided in that session: the first real nullsec change through shape →
 implement → review → integrate, and the owner's continue/revise verdict,
-belong to [G-036](G-036-interactive-adoption.md), not to this record. They
+belong to [G-260921-407n6](G-260921-407n6-complete-the-interactive.md), not to this record. They
 happen after this cutover, as ordinary nullsec work shaped in nullsec.
 
 ## Scope and constraints
@@ -95,7 +95,7 @@ from this repository):
     `.claude/settings.json` enables a `grove@grove-local` that no marketplace
     provides.
   - `~/.codex/config.toml` enables the Codex `grove@grove-local` plugin from
-    the `grove-local` marketplace (`../skills`). G-040 saw it load first.
+    the `grove-local` marketplace (`../skills`). G-260921-5gz9a saw it load first.
   - Both marketplaces contain only `grove`.
   - nullsec's `CLAUDE.md` and `AGENTS.md` both carry the predecessor's
     `grove:begin` block, and the two files have drifted apart (9 against 17
@@ -107,9 +107,9 @@ from this repository):
 - The target matches this repository: `grove.yaml` from `grove init`,
   `schema_version: 3`, root `grove/`, brief `grove/brief.md`, neutral `G-`
   IDs flat under the root, the `grove-work` and `grove-shape` entrypoints, and
-  a migration map page like [G-069](G-069-migration-map.md).
+  a migration map page like [G-260921-czt8x](G-260921-czt8x-identity-and-path-migrat.md).
 - Old IDs are rewritten everywhere in tracked text, code, tests and the
-  retrospective generator included, as G-052 did here. The owner chose this
+  retrospective generator included, as G-260921-r491p did here. The owner chose this
   after comparing its cost with a records-and-docs-only rewrite. What cannot
   change stays and is resolved by the map page: commit messages, branch
   names and art capture file and folder names. Exceptions (verbatim quotes,
@@ -119,7 +119,7 @@ from this repository):
 
 **Proposed design, for preparation to confirm in a plan record:**
 
-- Follow the G-052 method ([G-068](G-068-reconciliation-plan.md)): a one-off
+- Follow the G-260921-r491p method ([G-260921-awvk8](G-260921-awvk8-reconciliation-mapping-c.md)): a one-off
   script that is not committed to either repository's product code. It runs
   `convert` over each predecessor file (the new root is outside `docs/grove`,
   so `convert` accepts them and writes `formerly`), strips the old frontmatter
@@ -151,7 +151,7 @@ from this repository):
   predecessor and install the binary, and then run the fresh-session checks.
 
 **Limits to keep visible:** nullsec's `G-` numbers are independent of this
-repository's, so this repository's G-041 and nullsec's G-041 will be
+repository's, so this repository's G-260921-905y3 and nullsec's G-041 will be
 different records. Conversations spanning both need to name the repository.
 Keyborg is not migrated alongside nullsec.
 
@@ -191,8 +191,8 @@ Keyborg is not migrated alongside nullsec.
 
 ## Evidence
 
-Plan [G-091](G-091-nullsec-cutover-plan.md), review
-[G-092](G-092-nullsec-cutover-review.md). Grove branch `worktree-G-041` from
+Plan [G-260922-r1dhw](G-260922-r1dhw-nullsec-cutover-mapping.md), review
+[G-260922-9d399](G-260922-9d399-nullsec-cutover-review.md). Grove branch `worktree-G-260921-905y3` from
 `main` `77b4111`: plan `499f11e`, active `2c349bc`, `superseded` status
 `1452c6f`, the migration script `5ef2978` (removed in `db819bf`; read it with
 `git show 5ef2978:scripts/g041-nullsec-cutover.py`), docs `1dc3922`, then the
@@ -238,7 +238,7 @@ Against each acceptance item:
    both `366b063` and `ecbb036`, and a full smoke run at `366b063` also failed
    one test in one of two runs, so it is an existing flake, not the migration
    (load averages 3 to 4). The string changes were read line by line by the
-   first reviewer (G-092, round 1): test titles, assert messages and comments,
+   first reviewer (G-260922-9d399, round 1): test titles, assert messages and comments,
    none compared by code. The review fixes `3eb2785` touch Markdown only;
    `grove check` passes after them.
 3. **The predecessor is gone.** `uv tool uninstall grove`; `grove@mascah`
@@ -321,12 +321,12 @@ records and the README.
 In Review. To judge it:
 
 ```sh
-cd ~/GitHub/mascah/grove/.claude/worktrees/G-041
-go run ./cmd/grove context G-041 --include grove/G-091-nullsec-cutover-plan.md
-go run ./cmd/grove show G-092
+cd ~/GitHub/mascah/grove/.claude/worktrees/G-260921-905y3
+go run ./cmd/grove context G-260921-905y3 --include grove/G-260922-r1dhw-nullsec-cutover-mapping.md
+go run ./cmd/grove show G-260922-9d399
 git diff --stat b6db474 HEAD     # only this record
 cd ~/GitHub/mascah/nullsec/.claude/worktrees/grove-cutover
-grove check && grove show G-127 | less
+grove check && grove show G-260924-tbx21 | less
 grove                              # the board, in a real terminal (acceptance 6)
 ```
 
@@ -334,13 +334,13 @@ Approve and integrate, nullsec first, since its `main` needs the new layout:
 
 ```sh
 cd ~/GitHub/mascah/nullsec && git merge worktree-grove-cutover && grove check
-cd ~/GitHub/mascah/grove && git merge worktree-G-041
+cd ~/GitHub/mascah/grove && git merge worktree-G-260921-905y3
 # quote the verdict in this record's Evidence, then:
-go run ./cmd/grove update G-041 --set status=done --commit
+go run ./cmd/grove update G-260921-905y3 --set status=done --commit
 git push    # both repositories, when wanted
 rm -rf /tmp/grove-install && git clone -q --no-hardlinks . /tmp/grove-install && (cd /tmp/grove-install && go build -o ~/.local/bin/grove ./cmd/grove) && grove version
 ```
 
-Feedback: write it here and `--set status=active` on `worktree-G-041`.
+Feedback: write it here and `--set status=active` on `worktree-G-260921-905y3`.
 Rejection: `status=abandoned` with the reasons, and the rollback above. After
-done, G-036's Next takes the first real nullsec change, shaped in nullsec.
+done, G-260921-407n6's Next takes the first real nullsec change, shaped in nullsec.

@@ -1,5 +1,5 @@
 ---
-id: "G-150"
+id: "G-260925-3pj9a"
 type: work
 title: "Launch attempts only where the worktree holds the entrypoints init wrote"
 status: done
@@ -8,7 +8,7 @@ updated: "2026-09-25T20:12:11Z"
 kind: fix
 priority: 1
 size: small
-relates_to: ["G-040", "G-101", "G-110", "G-134", "G-152"]
+relates_to: ["G-260921-5gz9a", "G-260923-tnn5e", "G-260923-gsthp", "G-260924-5b6pz", "G-260925-khfe7"]
 candidate: "ac1b787b820190c102a9b4f11a21b8579c96e2fc"
 approved: "ac1b787b820190c102a9b4f11a21b8579c96e2fc"
 ---
@@ -52,11 +52,11 @@ Observed at `main` `001b271` (this checkout), 2026-09-25:
   The work guide's step 6 dispatches the reviewer only "where the checkout
   holds" the definition, so a worktree without it runs with no independent
   review and, where the record requires one, cannot hand off.
-- No trial exercised this path: [G-082](G-082-portable-bootstrap-review.md)'s
+- No trial exercised this path: [G-260922-fqf3b](G-260922-fqf3b-portable-bootstrap-revie.md)'s
   disposable repositories were committed before their headless runs, the
   eval fixture (`evals/run.py`, `build`) commits right after `init`, and
-  [G-134](G-134-bound-an-attempt-at-its-plan-and.md)'s real trial ran in a
-  clone of this repository, where the files are committed. G-134 chose to
+  [G-260924-5b6pz](G-260924-5b6pz-bound-an-attempt-at-its.md)'s real trial ran in a
+  clone of this repository, where the files are committed. G-260924-5b6pz chose to
   record the reviewer's digest or absence as a fact; it did not consider a
   launch whose absence comes from an uncommitted `init`.
 
@@ -76,13 +76,13 @@ Proposed design, labelled proposed:
    before the first attempt; `grove --help`'s `run` text lists the refusal.
 3. The runner's fake-provider tests cover the refusal and the warning. No
    file is copied into the worktree: passing the reviewer with `--agents`
-   was rejected in G-134 because an interactive `/grove-work` session would
+   was rejected in G-260924-5b6pz because an interactive `/grove-work` session would
    not get it, and copying uncommitted files onto the work branch would let
    the attempt commit them.
 
 Out of scope: gating the check on the provider's version (the file is what
 the guide reads, whatever the harness does), a Codex runner
-([G-143](G-143-g-135-codex-eval-row-pattern-pla.md)), and the predecessor.
+([G-260925-42j50](G-260925-42j50-codex-eval-row-pattern-p.md)), and the predecessor.
 
 ## Acceptance
 
@@ -105,8 +105,8 @@ the guide reads, whatever the harness does), a Codex runner
 
 ## Evidence
 
-Implemented 2026-09-25 by a headless `/grove-work G-150` attempt on
-`worktree-G-150` from `main` `28aaf95`, record revision
+Implemented 2026-09-25 by a headless `/grove-work G-260925-3pj9a` attempt on
+`worktree-G-260925-3pj9a` from `main` `28aaf95`, record revision
 `sha256:085b9a43…` at start; no plan, as Next allowed. Implementation
 `cd3a1c5`, review fixes `b322825`.
 
@@ -141,7 +141,7 @@ Implemented 2026-09-25 by a headless `/grove-work G-150` attempt on
   `Reviewer == "none"`. By hand, `grove run` printed the warning before
   `attempt: … started`, `requested:` said `no reviewer definition`, and
   `attempt.json` held `"reviewer": "none"`. `terminal.py` asserts that the
-  board draws the warning. Open (G-157 finding 2): the board draws it only
+  board draws the warning. Open (G-260925-1n5x7 finding 2): the board draws it only
   once `Start` returns, after the provider has started.
 - **Acceptance 3.** `init`'s closing note (asserted in
   `internal/cli/init_test.go`), the README's adoption block (it now
@@ -151,42 +151,42 @@ Implemented 2026-09-25 by a headless `/grove-work G-150` attempt on
 - **Acceptance 4.** Run at `b322825`: `go vet ./...` was clean, `gofmt -l .`
   was empty, `go run ./cmd/grove check` reported `OK: 150 records`, and
   `go test -count=1 -timeout 120s ./...` passed every package. `python3
-  internal/tui/testdata/terminal.py` passed 11 of 11. Limit (G-157 finding
+  internal/tui/testdata/terminal.py` passed 11 of 11. Limit (G-260925-1n5x7 finding
   3): `go test -count=1 ./internal/attempt` alone took 5.06 to 5.22 s at
   `b322825`, and the same at base `28aaf95` (a `git archive` copy, three
   runs each, load average about 4). So the package was already over five
   seconds before this change.
-- **Review.** [G-157](G-157-g-150-skill-guard-review.md), two rounds.
+- **Review.** [G-260925-1n5x7](G-260925-1n5x7-skill-guard-review.md), two rounds.
   Findings 1, 4 and 5 were fixed. Finding 2 is left for the owner, and
   finding 3 is inherited.
 
 ## Next
 
 Proposed 2026-09-25 from the owner's self-containment review of `main`
-`001b271`. [G-110](G-110-external-preview.md) depends on it: its acceptance
+`001b271`. [G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md) depends on it: its acceptance
 4 executes a bounded assignment in a disposable repository from the preview
 documentation alone.
 
-In review 2026-09-25 on `worktree-G-150` (base `28aaf95`). The candidate
+In review 2026-09-25 on `worktree-G-260925-3pj9a` (base `28aaf95`). The candidate
 is the evidence commit this record names in `candidate`. For the owner:
 
 - Judge the guard and its order: `git diff 28aaf95 b322825 --
   internal/attempt/attempt.go`.
-- Decide on G-157 finding 2. The board draws the reviewer warning after
+- Decide on G-260925-1n5x7 finding 2. The board draws the reviewer warning after
   the provider has started. Either accept that as the design's "as it
   shows the other launch messages", or capture new work to stream launch
   facts into the board, or make a missing reviewer refuse. The record left
   that choice to you at assignment, and none was given, so it warns.
 - Demo: in a scratch `git init` repository, run `grove init`, then
   `grove new work "Try"`. Commit only `grove.yaml` and `grove`. Then
-  `GROVE_CLAUDE=/path/to/fake grove run G-001 --budget 1 --permission-mode
+  `GROVE_CLAUDE=/path/to/fake grove run G-260919-6mpmw --budget 1 --permission-mode
   auto` is refused, and after committing `.claude .agents` it starts.
 
 Integration, as given:
 
 ```sh
-go run ./cmd/grove approve G-150 "VERDICT"   # in this worktree
-go run ./cmd/grove integrate G-150           # in the main checkout
+go run ./cmd/grove approve G-260925-3pj9a "VERDICT"   # in this worktree
+go run ./cmd/grove integrate G-260925-3pj9a           # in the main checkout
 ```
 
 Verdict on candidate ac1b787, 2026-09-25: approved

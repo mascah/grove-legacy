@@ -1,20 +1,20 @@
 ---
-id: "G-090"
+id: "G-260922-fze8c"
 type: review
-title: "Review of G-089 ambient Git environment guard"
+title: "Review of G-260922-g6e7p ambient Git environment guard"
 status: current
 created: "2026-09-22T17:25:37Z"
 updated: "2026-09-22T17:28:10Z"
-work: ["G-089"]
+work: ["G-260922-g6e7p"]
 examined: "ca6a599"
 ---
 
 ## Examined
 
-Branch `worktree-G-089`, base `main` adce678. Round 1 examined 7924765
+Branch `worktree-G-260922-g6e7p`, base `main` adce678. Round 1 examined 7924765
 (`git diff main..7924765`); round 2 examined ca6a599, the fix commit, which
 is the `examined` field. The candidate differs from it only by this record
-and [G-089](G-089-ignore-ambient-git-environment-w.md)'s evidence.
+and [G-260922-g6e7p](G-260922-g6e7p-ignore-ambient-git-envir.md)'s evidence.
 
 ## Review
 
@@ -39,7 +39,7 @@ Round 1, no blocking findings:
 
 1. should-fix: the hook unset three of the seven variables while
    `AGENTS.md` said it scrubs them all.
-2. should-fix: the Docker reproduction sentence was welded onto the G-089
+2. should-fix: the Docker reproduction sentence was welded onto the G-260922-g6e7p
    rule in `AGENTS.md`, where it does not belong.
 3. nit: one `GROVE` spawn in `terminal.py` lacked `env=clean_env()`.
 4. nit: pre-commit jobs inherit the variables too, unscrubbed and unexplained.

@@ -1,27 +1,27 @@
 ---
-id: "G-034"
+id: "G-260920-0sakc"
 type: review
-title: "Card lineage G-030: evidence, 2026-09-20"
+title: "Card lineage G-260920-svpbc: evidence, 2026-09-20"
 status: current
 formerly: "docs/reviews/2026-09-20-card-lineage-W-012.md"
-work: ["G-030"]
+work: ["G-260920-svpbc"]
 created: "2026-09-20T16:11:14Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# Card lineage G-030: evidence, 2026-09-20
+# Card lineage G-260920-svpbc: evidence, 2026-09-20
 
 Branch `worktree-W-012`, worktree `.claude/worktrees/W-012`, base `a0fd23a`
-(main). Carried out through `/grove-work G-030` in an interactive session, the
-dogfooding run that G-023 was waiting for. One implementer; one separate
+(main). Carried out through `/grove-work G-260920-svpbc` in an interactive session, the
+dogfooding run that G-260919-nddsf was waiting for. One implementer; one separate
 reviewer agent that edited nothing. Nothing here was merged or pushed.
-[G-030](G-030-card-lineage.md) owns the outcome and
-acceptance; its [plan](G-033-card-lineage-plan.md) holds the design and the
+[G-260920-svpbc](G-260920-svpbc-show-a-work-item-s-linea.md) owns the outcome and
+acceptance; its [plan](G-260920-d1qjs-card-lineage-plan.md) holds the design and the
 adjustment made after review.
 
 **What this evidence is not.** Every check below is automated or an agent's
 review. Acceptance item 5 also asks for the owner's judgment of the view in a
-demo. The owner gave it on 2026-09-20 after running the demo below, and G-030
+demo. The owner gave it on 2026-09-20 after running the demo below, and G-260920-svpbc
 records it: a step in the right direction that works as described, with the
 TUI's information architecture left for later iteration.
 
@@ -30,7 +30,7 @@ TUI's information architecture left for later iteration.
 The record's Next asked whether lineage replaces the version list as what a
 card opens to, or sits beside it. Asked once at the start of the session, with
 a mock-up of each, the owner selected "beside, history first": the card screen
-and its version list stay (G-002 still needs an explicit version selection),
+and its version list stay (G-260919-8jb5s still needs an explicit version selection),
 and History leads the details pane. Everything else was a routine technical
 choice inside the record.
 
@@ -38,7 +38,7 @@ choice inside the record.
 
 | Commit | Change |
 | --- | --- |
-| `5dd8c3e` | Plan, the owner's choice in the record, G-030 set active through `grove update` |
+| `5dd8c3e` | Plan, the owner's choice in the record, G-260920-svpbc set active through `grove update` |
 | `e117759` | `versions.HistoryContext`; `Backend.History`, the history read, cache, and History section in `internal/tui`; tests; pseudo-terminal stages |
 | `49d2b47` | README: the card's History section |
 | `24c1264` | Review fix, round 1: merges that only brought commits in are not rows; merge and date tests |
@@ -88,7 +88,7 @@ choice inside the record.
    pseudo-terminal script blocks Git as a card opens and leaves with `q`,
    Ctrl-C, and Esc: the child is dead each time, terminal modes are restored,
    and after Esc the board still takes keys.
-5. **Suites.** Below. The owner's demo judgment is recorded in G-030.
+5. **Suites.** Below. The owner's demo judgment is recorded in G-260920-svpbc.
 
 ## Verification
 
@@ -174,6 +174,6 @@ and board-checkout guards) all failed the suite.
 cd .claude/worktrees/W-012 && go run ./cmd/grove
 ```
 
-Right to the Active column, Enter on G-030 or G-023: History leads the details
+Right to the Active column, Enter on G-260920-svpbc or G-260919-nddsf: History leads the details
 pane for this checkout. Down to a fold, Enter, and down through its places to
 see each branch's or checkout's lineage; Tab then PgDn scrolls a long one.

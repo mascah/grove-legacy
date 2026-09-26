@@ -1,12 +1,12 @@
 ---
-id: "G-161"
+id: "G-260925-g39ga"
 type: work
 title: "See work dependencies and preview a selected assignment"
 status: done
 created: "2026-09-25T20:35:15Z"
 updated: "2026-09-25T22:57:01Z"
 kind: feature
-relates_to: ["G-035", "G-042", "G-043", "G-023", "G-047", "G-054", "G-060", "G-162"]
+relates_to: ["G-260921-tkdwh", "G-260921-ms6ev", "G-260921-k0mwk", "G-260919-nddsf", "G-260921-466b5", "G-260921-vr8a8", "G-260921-3qgsf", "G-260925-7c8g9"]
 candidate: "83e7f3823f3444832b5c9866300e201f06691674"
 approved: "83e7f3823f3444832b5c9866300e201f06691674"
 ---
@@ -41,9 +41,9 @@ or an interactive selection preview.
 The main checkout contains 50 work records and 24 dependency edges; its largest
 connected component contains 13 items. Only four records there are unfinished,
 so this is layout evidence, not a representative ten-item proposed backlog.
-`versions --json` also shows active G-154 on its work branch while main still
+`versions --json` also shows active G-260925-pbx81 on its work branch while main still
 holds its proposed copy: the current view matters here. The [adoption
-roadmap](G-047-adoption-roadmap-plan.md) names dependency visualization as a
+roadmap](G-260921-466b5-adoption-roadmap.md) names dependency visualization as a
 later candidate; no existing proposal owns it.
 
 ### Proposed design and scope
@@ -69,7 +69,7 @@ later candidate; no existing proposal owns it.
   alone does not establish delivery. Old done records without candidates
   and unavailable evidence retain their uncertainty. The preview does not
   invent a requirement to merge between selected items; that execution
-  choice belongs to [G-163](G-163-selected-work-review-boundary.md).
+  choice belongs to [G-260925-80w3a](G-260925-80w3a-where-should-review-and.md).
 - Keep membership, preferred sequence, and actual prerequisites distinct.
   Equal graph depth means no declared ordering between those items, not
   permission or evidence for parallel writes. An absent dependency field
@@ -81,7 +81,7 @@ later candidate; no existing proposal owns it.
   separately editable graph file. Reconcile the owning command/board docs
   when behavior ships.
 
-Reuse [G-042's current view](G-042-current-view.md), including visible
+Reuse [G-260921-ms6ev's current view](G-260921-ms6ev-derive-a-project-wide-cu.md), including visible
 divergence, and the existing checkout selector. Conflicting branch versions
 must not be silently combined into a supposedly authoritative DAG or order;
 expose the ambiguity and bind a preview to a coherent source before acting.
@@ -90,7 +90,7 @@ and on-demand history. This work neither launches batches nor edits graph
 edges by gesture. New merge-gate fields and an editable scheduling system
 are outside this initial proposal.
 
-[G-162](G-162-bounded-work-selection.md) owns managed execution of several
+[G-260925-7c8g9](G-260925-7c8g9-execute-an-explicitly-se.md) owns managed execution of several
 selected items. Graph-first is the assistant's suggested investment order,
 not a technical prerequisite between the two proposals.
 
@@ -126,20 +126,20 @@ not a technical prerequisite between the two proposals.
 
 ## Next
 
-**Handoff into review, 2026-09-25, headless `/grove-work G-161`.** The
+**Handoff into review, 2026-09-25, headless `/grove-work G-260925-g39ga`.** The
 candidate is the commit holding this evidence, and `candidate` names it; the
 next commit sets only `status=review`. Awaiting the owner's judgment, including acceptance item 5.
 
-- **Branch and inputs.** Branch `worktree-G-161` in
-  `.claude/worktrees/worktree-G-161`, based on `main` `05892a2`. This
-  session resumed at `7e1acdb`, after [G-166](G-166-g-161-dependency-layout.md)
-  was resolved. It started from G-161 `sha256:ac898c03…` and plan
-  [G-165](G-165-g-161-dependency-view-plan.md) `sha256:f1062b6d…`. The plan
+- **Branch and inputs.** Branch `worktree-G-260925-g39ga` in
+  `.claude/worktrees/worktree-G-260925-g39ga`, based on `main` `05892a2`. This
+  session resumed at `7e1acdb`, after [G-260925-t2nb3](G-260925-t2nb3-which-dependency-view-la.md)
+  was resolved. It started from G-260925-g39ga `sha256:ac898c03…` and plan
+  [G-260925-e5qhz](G-260925-e5qhz-dependency-view-layouts.md) `sha256:f1062b6d…`. The plan
   is reconciled with what was built: the Binding and Freshness bullets, step
   4, and a "B as built" drawing.
 - **What was built.**
   - The first session (`c19e945`..`c92d16f`, review
-    [G-168](G-168-g-161-deps-review.md)): `internal/deps`, `grove deps`, and
+    [G-260925-be4e3](G-260925-be4e3-deps-first-review-gate-o.md)): `internal/deps`, `grove deps`, and
     the shaping guide's step 5.
   - This session (`476b5ac`, `ffaca01`, `867a9d8`): `g` on the board opens
     the dependency view in layout B (`internal/tui/deps.go`, documented in
@@ -157,8 +157,8 @@ next commit sets only `status=review`. Awaiting the owner's judgment, including 
     Git on demand in that checkout. Enter opens a record, and Esc returns
     here. `h` shows every work, and `b` chooses a checkout and returns here.
 - **Decisions.**
-  - Layout B and no printed handoff are the owner's G-166 answer. It is
-    linked from the plan and needs no decision record, following G-117's
+  - Layout B and no printed handoff are the owner's G-260925-t2nb3 answer. It is
+    linked from the plan and needs no decision record, following G-260923-hvnqh's
     precedent.
   - Divergent overview rows use the state the board places the card by, and
     the trees show each state's edges. This replaced the plan's per-item
@@ -206,8 +206,8 @@ next commit sets only `status=review`. Awaiting the owner's judgment, including 
     15.4s, since `TestTerminal` runs all 12 `terminal.py` scenarios,
     `dependencies` included.
 - **Reviews.**
-  - [G-168](G-168-g-161-deps-review.md) is the first gate.
-  - [G-175](G-175-g-161-deps-second-review-gate-on.md) is the board gate
+  - [G-260925-be4e3](G-260925-be4e3-deps-first-review-gate-o.md) is the first gate.
+  - [G-260925-h2c5a](G-260925-h2c5a-deps-second-review-gate.md) is the board gate
     and final combined candidate, examined at `ffaca01`. Its round 1 had one
     high, four medium and three low findings plus a docs gap, fixed with
     regressions in `ffaca01`; one low was documented. Its round 2 found
@@ -222,8 +222,8 @@ next commit sets only `status=review`. Awaiting the owner's judgment, including 
   - `-race` was not run, since this is not a concurrency change beyond
     one more read kind.
 - **Integrator's next action**, after the owner's judgment:
-  - In this checkout: `grove approve G-161 "VERDICT"`, or
-    `grove feedback G-161 "TEXT"`.
-  - In the target's checkout: `grove integrate G-161`.
+  - In this checkout: `grove approve G-260925-g39ga "VERDICT"`, or
+    `grove feedback G-260925-g39ga "TEXT"`.
+  - In the target's checkout: `grove integrate G-260925-g39ga`.
 
 Verdict on candidate 83e7f38, 2026-09-25: approved

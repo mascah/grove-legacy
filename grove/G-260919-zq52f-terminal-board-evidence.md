@@ -1,43 +1,43 @@
 ---
-id: "G-029"
+id: "G-260919-zq52f"
 type: review
-title: "Terminal board G-017: evidence, 2026-09-19"
+title: "Terminal board G-260919-k7b8j: evidence, 2026-09-19"
 status: current
 formerly: "docs/reviews/2026-09-19-board-W-009.md"
-work: ["G-017"]
+work: ["G-260919-k7b8j"]
 created: "2026-09-19T23:28:01Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# Terminal board G-017: evidence, 2026-09-19
+# Terminal board G-260919-k7b8j: evidence, 2026-09-19
 
 Branch `worktree-W-009`, worktree `.claude/worktrees/W-009`, base `acfc905`
 (main). One implementer owned the shared interfaces; a subagent made the
 cancellable-read change inside that worktree under review, and two separate
 reviewer agents examined the result. Nothing here was merged or pushed.
-[G-017](G-017-terminal-picker.md) owns the contract and
-acceptance; its [plan](G-021-terminal-picker-plan.md#adjustments-made-while-implementing-2026-09-19)
+[G-260919-k7b8j](G-260919-k7b8j-browse-a-terminal-kanban.md) owns the contract and
+acceptance; its [plan](G-260919-wxbsx-terminal-kanban-and-vers.md#adjustments-made-while-implementing-2026-09-19)
 records each bounded technical adjustment and why.
 
 **What this evidence is not.** Every check below is automated. Nobody has yet
 used the board and said whether it is pleasant, legible, or the right first
 screen. That judgment is the owner's, from the demo command at the end, and
-G-017 stays `active` until it is given.
+G-260919-k7b8j stays `active` until it is given.
 
 ## Prerequisite
 
-G-014 to G-016 were established in main by Git ancestry, not by status: all
+G-260919-8bbvy to G-260919-7qv4x were established in main by Git ancestry, not by status: all
 eleven repair and review-fix commits (`d5666dd` `5316dbe` `892a842` `2cc7814`
 `dac27fe` `2e18866` `9d11bdb` `9e8430c` `dedac73` `40e882f` `7f02b71`) and the
 four closing documentation commits are ancestors of `acfc905`, and
-`worktree-W-006-W-008` has no commit missing from main. No G-017
+`worktree-W-006-W-008` has no commit missing from main. No G-260919-k7b8j
 implementation or branch existed. The older worktrees were left untouched.
 
 ## Commits
 
 | Commit | Change |
 | --- | --- |
-| `17e560a` | G-017 set active through `grove update` |
+| `17e560a` | G-260919-k7b8j set active through `grove update` |
 | `188b325` | Cancellable source inspection: `repo.GitContext` and friends, `versions.InspectContext`, `versions.ResolveContext`; the old entrypoints are background wrappers |
 | `418ea31` | `versions.Result.GitDir` identifies the invocation's own checkout |
 | `522783c` | `internal/tui`: model, rendering, and `Run`; pins Bubble Tea v2.0.9 and x/ansi v0.11.7 |
@@ -162,7 +162,7 @@ Tea v2.0.9's own requirements.
   Git) is not interrupted by cancellation.
 - Every refresh and every resolve re-inspects all branch tips and worktrees
   (about 0.6 s for this repository's eight sources when this was written;
-  0.24 s after [G-031](G-031-load-scaling.md), which also
+  0.24 s after [G-260920-z8vfp](G-260920-z8vfp-keep-a-full-board-load-f.md), which also
   measures large repositories). No polling, watching,
   caching, search, filter, or mouse, by design of this slice.
 - Escaping also escapes the joiners inside emoji sequences and non-ASCII
@@ -174,14 +174,14 @@ Tea v2.0.9's own requirements.
 
 ## Integration handoff
 
-Integration into main is a separate, explicit step; G-017 being active or done
+Integration into main is a separate, explicit step; G-260919-k7b8j being active or done
 asserts the state of this branch only. Demo, from the worktree:
 
 ```sh
 cd .claude/worktrees/W-009 && go run ./cmd/grove
 ```
 
-It opens on this checkout's board, where G-017 is Active while main's version
+It opens on this checkout's board, where G-260919-k7b8j is Active while main's version
 says proposed: Enter on that card shows both. `b` switches the board to main's
 live files. Selecting a version prints its project directory after the screen
 is restored.

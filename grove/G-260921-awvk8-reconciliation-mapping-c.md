@@ -1,24 +1,24 @@
 ---
-id: "G-068"
+id: "G-260921-awvk8"
 type: plan
-title: "G-052 reconciliation: mapping, conversion, reference repair, schema 1/2 removal"
+title: "G-260921-r491p reconciliation: mapping, conversion, reference repair, schema 1/2 removal"
 status: current
 created: "2026-09-21T21:00:03Z"
 updated: "2026-09-21T21:00:03Z"
-work: ["G-052"]
+work: ["G-260921-r491p"]
 formerly: "P-002"
 ---
 
 ## Design
 
-Branch `worktree-W-029` from main `70de539`, which contains G-065. Every local
+Branch `worktree-W-029` from main `70de539`, which contains G-260921-ebsby. Every local
 branch is an ancestor of main, so no unmerged branch holds old-layout work;
 reintegration is rehearsed with a synthetic branch.
 
 **Inventory at `70de539`.** 46 records with this plan (26 work, 6 decisions,
 1 question, 9 terms, 2 plans, 2 reviews), 13 legacy plans in `docs/plans/`,
 9 legacy reviews in `docs/reviews/`, the brief, and 3 spent handoff prompts in
-`docs/prompts/`. The prompts are `.txt` evidence that G-023 links and its
+`docs/prompts/`. The prompts are `.txt` evidence that G-260919-nddsf links and its
 dogfood review already calls no longer needed: they stay where they are as
 historical literals, listed in the mapping page as kept, not converted.
 README, AGENTS.md, the adapters and the four `docs/*.md` guides keep their
@@ -32,12 +32,12 @@ mapping page is created last with `new page`.
 **Legacy documents.** `convert PATH --type plan|review --title H1`, slug from
 the old filename without its date or ID prefix. `work` is the work IDs in the
 filename; a review without one takes the work records that link it
-(`integrated-cli`: G-009 to G-011 and G-014 to G-016; `predecessor-work` and
-`shaping-and-runner-evidence`: G-023). `direction-evaluation` names no work
-and gets `relates_to` G-035, which links it. Status stays the type's first,
+(`integrated-cli`: G-260919-shnj5 to G-260919-n9t4p and G-260919-8bbvy to G-260919-7qv4x; `predecessor-work` and
+`shaping-and-runner-evidence`: G-260919-nddsf). `direction-evaluation` names no work
+and gets `relates_to` G-260921-tkdwh, which links it. Status stays the type's first,
 `current`: judging a plan superseded is not mechanical. No `examined` and no
 dates are set: those documents never declared one examined commit, and their
-commit tables stay in the body. G-063 and G-067 keep theirs through `convert`.
+commit tables stay in the body. G-260921-q6e5n and G-260921-kfd06 keep theirs through `convert`.
 The originals and the empty folders are removed in the same commit.
 
 **Script.** One Python script, `scripts/w029-migrate.py`, committed with the
@@ -97,23 +97,23 @@ owner's to delete, and the handoff says so.
 
 ## Steps
 
-1. [x] Commit this plan; set G-052 active (`1854d8c`).
+1. [x] Commit this plan; set G-260921-r491p active (`1854d8c`).
 2. [x] Script written and rehearsed three times in a disposable clone of this
    branch. An independent reader examined all 860 rewritten ID lines and found
    50 naming fixture, trial-clone or predecessor records, plus verbatim
    quotations; all are in the script's exception list and in
-   [G-069](G-069-migration-map.md). Reintegration: Git carried an edit of an
+   [G-260921-czt8x](G-260921-czt8x-identity-and-path-migrat.md). Reintegration: Git carried an edit of an
    old-layout record to its new path; a record added in the old layout
    conflicts on file location, and a restored old file fails `check`. A rerun
    is refused ("already has a neutral ID") and reserves nothing. Recovery by
    reset, clean and deleting `neutral-ids` reproduced the identical mapping.
 3. [x] Run here: 68 converted, mapping identical to the rehearsal's, `check`
    OK at 69 records, 0 broken links, `go test ./...` ok. The audit's remaining
-   typed IDs and old folder names are the historical literals G-069 accounts
+   typed IDs and old folder names are the historical literals G-260921-czt8x accounts
    for. Hand edits: AGENTS.md, README, the record model's schema-2 examples,
-   guide examples (corrected to `G-030 G-031` in round 1), one link label. [x] Independent review, round 1, fixed in `c08d213`.
+   guide examples (corrected to `G-260920-svpbc G-260920-z8vfp` in round 1), one link label. [x] Independent review, round 1, fixed in `c08d213`.
 4. [x] Schemas 1 and 2, `convert ID` and the script removed in `dd3a6f5`, docs
-   in `e1dcfbd`. Final independent review [G-070](G-070-reconciliation-review.md)
+   in `e1dcfbd`. Final independent review [G-260921-xs7wz](G-260921-xs7wz-independent-review-of-th.md)
    found lost test coverage, restored with its record.
-5. [x] G-052's evidence and Next, and the brief, reconciled. [ ] The owner's
+5. [x] G-260921-r491p's evidence and Next, and the brief, reconciled. [ ] The owner's
    judgment of the tree and board (acceptance 6).

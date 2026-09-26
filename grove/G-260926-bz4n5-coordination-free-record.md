@@ -1,22 +1,22 @@
 ---
-id: "G-199"
+id: "G-260926-bz4n5"
 type: plan
 title: "Coordination-free record IDs"
 status: current
 created: "2026-09-26T05:02:04Z"
 updated: "2026-09-26T05:02:30Z"
-work: ["G-195"]
+work: ["G-260926-pgj43"]
 ---
 
 ## Design
 
-Plan for [G-195](G-195-coordination-free-record-ids.md), from its revision
+Plan for [G-260926-pgj43](G-260926-pgj43-coordination-free-record.md), from its revision
 `sha256:dc126f3f…` at base `fa4acc1`, under the form
-[G-194](G-194-identify-records-by-creation-dat.md) selects.
+[G-260926-2da4n](G-260926-2da4n-identify-records-by-crea.md) selects.
 
 - **Validator.** `project.IDPattern` becomes
   `^G-([0-9]{3}|[0-9]{6}-[0-9a-hjkmnp-tv-z]{5})$`, and `validID` still
-  refuses `G-000`. Legacy IDs are exactly three digits, not `{3,}` as G-195
+  refuses `G-000`. Legacy IDs are exactly three digits, not `{3,}` as G-260926-pgj43
   proposes: its acceptance 2 requires a hand-authored `G-1234` to fail, and
   today's `{3,}` with canonical padding accepts it. Every legacy ID in this
   repository and in nullsec is below `G-1000`, and no numeric ID is issued
@@ -41,13 +41,13 @@ Plan for [G-195](G-195-coordination-free-record-ids.md), from its revision
   floor, `create.Allocate` and their notices are deleted; nothing is
   reserved, so the "reserved but not created" wording goes too. `convert`
   draws its ID the same way, under the lock it already takes.
-- **Attempts.** Contrary to G-195's observed note, `internal/attempt`
+- **Attempts.** Contrary to G-260926-pgj43's observed note, `internal/attempt`
   parses IDs back: `idPattern` (`^[A-Z]+-[0-9]+$`) refuses a date-form ID
   in `grove run`, and `attemptPattern` would hide its attempts. Both derive
   from `project.IDPattern`.
 - **Slug.** `create.Slug` caps at 24; the longest generated filename is
   `G-YYMMDD-xxxxx-` plus 24 plus `.md`, 42 characters.
-- **Tests.** Tests that expected `new` to issue `G-001` read the ID from its
+- **Tests.** Tests that expected `new` to issue `G-260919-6mpmw` read the ID from its
   output instead. Acceptance 1's two-clone check is a CLI test with two
   independent clones; the tail injection test lives in `internal/create`.
 

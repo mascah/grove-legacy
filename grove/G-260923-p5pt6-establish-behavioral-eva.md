@@ -1,11 +1,11 @@
 ---
-id: "G-108"
+id: "G-260923-p5pt6"
 type: work
 title: "Establish behavioral evaluations for Grove context and workflows"
 status: done
 created: "2026-09-23T16:05:04Z"
 updated: "2026-09-24T04:18:59Z"
-relates_to: ["G-078", "G-040", "G-107", "G-110"]
+relates_to: ["G-260922-08wxx", "G-260921-5gz9a", "G-260923-fwakw", "G-260923-gsthp"]
 candidate: "60c9537b95cd8968a33d47f7833797cb1bc96ef3"
 approved: "60c9537b95cd8968a33d47f7833797cb1bc96ef3"
 ---
@@ -37,11 +37,11 @@ Observed at main `4b2a01c`:
   [CLI tests](../internal/cli/context_test.go) cover source selection,
   revisions, ordering, refusals and read-only behavior. They do not measure an
   agent's decisions after reading that context.
-- [G-078](G-078-g-039-trial-evidence-for-the-int.md) finding 6 records a
+- [G-260922-08wxx](G-260922-08wxx-trial-evidence-for-the-i.md) finding 6 records a
   headless shaping run that made product choices instead of persisting a
   question; the guide's headless bound was tightened afterwards and never
   rerun. It is the seed case, not a current reproduction.
-  [G-040](G-040-portable-bootstrap.md) records interference from a
+  [G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) records interference from a
   then-installed global plugin; current interference is unknown.
 - `grove run` ([attempt.go](../internal/attempt/attempt.go)) already launches
   `claude -p "/grove-work ID --interaction headless"` with a budget and
@@ -54,16 +54,16 @@ Observed at main `4b2a01c`:
   runs, compares with and without the skill, caps cost, and grades by regex,
   tool use, tool order, file existence, file contents and an LLM judge. It
   cannot assert on Git state, commits or record status, and runs Claude only.
-- Codex 0.156.1 is installed; [G-050](G-050-shaping-review.md)
+- Codex 0.156.1 is installed; [G-260921-ahbrj](G-260921-ahbrj-shaping-entrypoint-evide.md)
   ran headless shaping through `codex exec` by hand.
-- `context G-108` prints 3,638 bytes of framing before the first source.
+- `context G-260923-p5pt6` prints 3,638 bytes of framing before the first source.
 
 **Owner choices, 2026-09-23 shaping session (routine, recorded here):** the
 fixture is a synthetic project created by `grove init`, so adapters load the
 binary's embedded guides and the suite tests what a preview user gets, not
 this repository's policy. The first increment is a walking skeleton: fixture,
 runner, checks and one case pair on Claude with a controlled configuration:
-the G-078 missing-choice seed, and a companion topic whose choice the
+the G-260922-08wxx missing-choice seed, and a companion topic whose choice the
 fixture's brief already answers, where the expected outcome is a proposal
 with no question. The pair is the owner's choice of 2026-09-23 after the
 external review: a guide change that makes agents ask more can only be seen
@@ -103,7 +103,7 @@ Paid trials require a separately authorized bounded execution mandate; the
 runner refuses without an explicit budget and cannot run as an ordinary Go
 test or CI check. Fixture record creation uses explicit absolute project paths
 in disposable directories and never consumes this repository's counter.
-[G-107](G-107-current-documentation.md) proceeds independently; pin the guide
+[G-260923-fwakw](G-260923-fwakw-reconcile-current-docume.md) proceeds independently; pin the guide
 digest under evaluation so later cleanup is comparable.
 
 ## Acceptance
@@ -129,16 +129,16 @@ digest under evaluation so later cleanup is comparable.
    missing choice, whether the question is the choice the fixture planted,
    whether the proposal respects a constraint the fixture's brief states,
    and whether the handoff is usable. Owner and judge scoring are labelled.
-5. A linked review record reports the pattern across runs against G-078
+5. A linked review record reports the pattern across runs against G-260922-08wxx
    finding 6 with configuration, cost and limits, names the lever it points
    at or concludes that no change is justified, and says whether a further
    case is worth building. No product change happens in this work.
 
 ## Evidence
 
-Headless `/grove-work G-108` session, 2026-09-23, on `worktree-G-108` from
+Headless `/grove-work G-260923-p5pt6` session, 2026-09-23, on `worktree-G-260923-p5pt6` from
 main `6208e82`, starting from this record at `sha256:ff01c9f0…`. Plan
-[G-115](G-115-g-108-eval-skeleton-plan.md) (`d9dbf23`) holds the design.
+[G-260923-v9wby](G-260923-v9wby-eval-skeleton-plan.md) (`d9dbf23`) holds the design.
 Built, all offline and spending nothing:
 
 - `evals/run.py` (`run` and `selftest`), `evals/fixture/` (the `tasks` tool,
@@ -163,47 +163,47 @@ Built, all offline and spending nothing:
   `grove check` OK; `go vet ./...` and `gofmt -l .` clean; the links in
   `evals/README.md` resolve. No Go code changed, so the Go suite was not
   rerun.
-- Independent review [G-119](G-119-g-108-eval-skeleton-review.md), three
+- Independent review [G-260923-50gkk](G-260923-50gkk-eval-skeleton-review.md), three
   rounds, examined `1f03a12`: eleven findings fixed, none open.
 
 Third headless session, 2026-09-24, same branch, starting from this record
-at `sha256:ae3f39de…` and G-115 at `sha256:c5db0353…`, after
-[G-118](G-118-what-mandate-should-the-g-108-pa.md) (`1d3ad82`) and
-[G-121](G-121-how-do-the-g-108-eval-runs-log-i.md) (`e57a4c6`) were
+at `sha256:ae3f39de…` and G-260923-v9wby at `sha256:c5db0353…`, after
+[G-260923-659zw](G-260923-659zw-what-mandate-should-the.md) (`1d3ad82`) and
+[G-260924-y99bx](G-260924-y99bx-how-do-the-eval-runs-log.md) (`e57a4c6`) were
 resolved:
 
 - The login left `settings.json` and the account's synced skills and
   plugins in the config directory, which the runner refused. Decision
-  taken by the session, beyond G-121's answer which covered settings only:
+  taken by the session, beyond G-260924-y99bx's answer which covered settings only:
   a login syncs that content and re-syncs it if removed, and a preview
   user's session carries it too, so the runner accepts it and records it
   in the report rather than refusing a directory no login can satisfy.
   `d565fcf` accepts settings holding only `tui`, `theme` and
   `autoMemoryEnabled` and the `synced` entries; after the handoff review
-  ([G-126](G-126-g-108-handoff-review-the-login-c.md)) it also requires
+  ([G-260924-ycwx8](G-260924-ycwx8-handoff-review-the-login.md)) it also requires
   `autoMemoryEnabled` to be present and false, refuses anything in a
   synced directory that its manifest does not name or whose manifest is
   unreadable, and the selftest exercises each refusal and the `surfaced,
   not blocking` reason (`selftest: ok`).
-- The paid runs, exactly G-118's mandate, from this checkout at `d565fcf`:
+- The paid runs, exactly G-260923-659zw's mandate, from this checkout at `d565fcf`:
   `python3 evals/run.py run --runs 5 --budget 5 --model claude-opus-5-5
   --permission-mode auto --config-dir ~/.cache/grove-evals/claude --out
-  ~/.cache/grove-evals/runs/2026-09-23-G-108`. Ten runs, every check
+  ~/.cache/grove-evals/runs/2026-09-23-G-260923-p5pt6`. Ten runs, every check
   passed in every run, $2.93 in all, no denials, timeouts or errors. The
   output directory is outside every checkout and not committed; the report
-  is read into [G-122](G-122-g-108-baseline-runs-the-missing.md).
+  is read into [G-260924-frzeg](G-260924-frzeg-baseline-runs-the-missin.md).
 - Acceptance 1 to 4 are now met in fact: the command ran on the real
   harness with a clean directory and retained everything listed (1); every
   check was judged on the clone per run (2); retrieval facts came from the
   trace, all uniform and with no unneeded read (3); the rubric was scored
   from the clone's records, labelled `judge`, the owner column open (4).
-- Acceptance 5: [G-122](G-122-g-108-baseline-runs-the-missing.md) reports
-  the pattern against G-078 finding 6 (5 of 5 blocked, 5 of 5 companions
+- Acceptance 5: [G-260924-frzeg](G-260924-frzeg-baseline-runs-the-missin.md) reports
+  the pattern against G-260922-08wxx finding 6 (5 of 5 blocked, 5 of 5 companions
   proposed without a question), configuration, cost and limits, concludes
   no change is justified, and says which further case pays. No product
   change happened.
 - Independent review of the runner change and these records:
-  [G-126](G-126-g-108-handoff-review-the-login-c.md), three rounds,
+  [G-260924-ycwx8](G-260924-ycwx8-handoff-review-the-login.md), three rounds,
   examined `c3386ae`; fourteen findings fixed (`b6b3c7a`, `c3386ae`,
   `7673723`), one left unverified (a skill at a synced ID level without a
   manifest), and round 3's two findings fixed after the cap and
@@ -217,33 +217,33 @@ resolved:
 
 ## Next
 
-**Handoff, 2026-09-24 (third headless session).** G-108 alone, on
-`worktree-G-108` in `.claude/worktrees/worktree-G-108`, base main `6208e82`
+**Handoff, 2026-09-24 (third headless session).** G-260923-p5pt6 alone, on
+`worktree-G-260923-p5pt6` in `.claude/worktrees/worktree-G-260923-p5pt6`, base main `6208e82`
 (main is now `28f5ddc`, which this branch does not contain; the runs' CLI
 was built from this branch). All five steps of
-[G-115](G-115-g-108-eval-skeleton-plan.md) are done. The paid runs and
-their reading are in Evidence and [G-122](G-122-g-108-baseline-runs-the-missing.md);
+[G-260923-v9wby](G-260923-v9wby-eval-skeleton-plan.md) are done. The paid runs and
+their reading are in Evidence and [G-260924-frzeg](G-260924-frzeg-baseline-runs-the-missin.md);
 the candidate is the commit holding this text, named by the status change
 that follows it. No command is still running.
 
-For the owner's judgment: read G-122, and if wanted the report at
-`~/.cache/grove-evals/runs/2026-09-23-G-108/report.md` and any run's
+For the owner's judgment: read G-260924-frzeg, and if wanted the report at
+`~/.cache/grove-evals/runs/2026-09-23-G-260923-p5pt6/report.md` and any run's
 `run.json` and proposal branch (`git -C .../missing-choice-1/p log
 --all`). Two decisions are open and are the owner's, not this work's: the
 rubric's `owner` column, and whether the headless bound should prefer a
-shippable proposal with a non-blocking question over blocking, which G-118
+shippable proposal with a non-blocking question over blocking, which G-260923-659zw
 says the owner would want and which every run did not do because the guide
 says to block. Neither blocks acceptance of this record.
 
-Integration: `go run ./cmd/grove approve G-108 "VERDICT"` in this checkout,
-then `go run ./cmd/grove integrate G-108` in the `main` checkout.
+Integration: `go run ./cmd/grove approve G-260923-p5pt6 "VERDICT"` in this checkout,
+then `go run ./cmd/grove integrate G-260923-p5pt6` in the `main` checkout.
 
 Follow-on candidates, shaped only if the skeleton's report says so: a case
 whose proposal must find and apply a constraint held in a listed
 prerequisite or plan amid plausible distractors, the only candidate that
 tests the `context` listing directly; the end-to-end knowledge sequence from the
 second external assessment of 2026-09-23, once
-[G-114](G-114-capture-and-reuse-terms-question.md) lands: shaping settles a
+[G-260923-h9c30](G-260923-h9c30-capture-and-reuse-terms.md) lands: shaping settles a
 term, work meets an unanswered choice, the answer becomes a decision, review
 catches a contradiction, and a fresh session retrieves the corrected
 knowledge, checked on the clone's records and links; an unchanged-wait rerun; a bounded

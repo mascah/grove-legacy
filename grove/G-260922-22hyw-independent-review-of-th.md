@@ -1,11 +1,11 @@
 ---
-id: "G-077"
+id: "G-260922-22hyw"
 type: review
-title: "G-076 independent review of the status filter"
+title: "G-260922-w53bz independent review of the status filter"
 status: current
 created: "2026-09-22T15:19:38Z"
 updated: "2026-09-22T15:20:03Z"
-work: ["G-076"]
+work: ["G-260922-w53bz"]
 examined: "32b7b40"
 ---
 
@@ -18,13 +18,13 @@ examined: "32b7b40"
 ## Review
 
 Independent reviewer: a fresh Claude Code reviewer agent (Fable 5.1), read-only,
-on 2026-09-22, examining branch `worktree-G-076` at candidate `32b7b40`
+on 2026-09-22, examining branch `worktree-G-260922-w53bz` at candidate `32b7b40`
 (base main `ff0f3e9`) against
-[G-076](G-076-filter-grove-list-by-status.md)'s constraints, proposed design
+[G-260922-w53bz](G-260922-w53bz-filter-grove-list-by-sta.md)'s constraints, proposed design
 and acceptance 1-5. Its evidence: `go test -short -count=1 ./internal/cli`
 green; ff0f3e9 and 32b7b40 built as separate binaries print byte-identical
 `list` output on this checkout (acceptance 2); `--status bogus`, `--status=`,
-a bare `--status`, a blank value, `show G-076 --status active` and
+a bare `--status`, a blank value, `show G-260922-w53bz --status active` and
 `check --status=open` all exit 2 naming the option with empty stdout and no
 `Project:` line (acceptance 3); `--status=review` prints the header alone
 (acceptance 4); three mutations of the implementation (filter, list-only

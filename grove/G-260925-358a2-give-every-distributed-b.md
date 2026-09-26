@@ -1,11 +1,11 @@
 ---
-id: "G-170"
+id: "G-260925-358a2"
 type: work
 title: "Give every distributed build and attempt attributable release identity"
 status: done
 created: "2026-09-25T21:04:55Z"
 updated: "2026-09-25T23:00:06Z"
-relates_to: ["G-062", "G-152", "G-169"]
+relates_to: ["G-260921-vz0v3", "G-260925-khfe7", "G-260925-p2k54"]
 candidate: "74ec79f"
 approved: "74ec79f"
 ---
@@ -49,11 +49,11 @@ Homebrew installation, cross-platform or reproducible-build evidence.
 - Keep release version, record schema and entrypoint compatibility distinct.
   Do not add independent release streams for guides or per-release churn in
   otherwise unchanged project adapters. Coordinate with
-  [G-169](G-169-harness-upgrade-compatibility.md) without requiring it to finish
+  [G-260925-p2k54](G-260925-p2k54-keep-installed-harness-e.md) without requiring it to finish
   before preparing this independent work.
-- Specify release build inputs so G-110 can stamp both source-based and packaged
+- Specify release build inputs so G-260923-gsthp can stamp both source-based and packaged
   builds. No timestamp or machine path should gratuitously prevent reproducible
-  artifacts. Packaging and byte-for-byte reproducibility claims belong to G-110.
+  artifacts. Packaging and byte-for-byte reproducibility claims belong to G-260923-gsthp.
 
 ## Acceptance
 
@@ -67,17 +67,17 @@ Homebrew installation, cross-platform or reproducible-build evidence.
    identity is usable outside Grove's development checkout. Any claim about the
    agent's resolved Grove executable is checked or explicitly marked unknown.
 4. The build contract, command documentation and attempt representation are
-   reconciled; applicable repository checks pass. G-110 receives exact stamping
+   reconciled; applicable repository checks pass. G-260923-gsthp receives exact stamping
    and verification instructions, with no release published by this work.
 
 ## Evidence
 
-Implemented headless on `worktree-G-170` from main `47852e3`, starting from
+Implemented headless on `worktree-G-260925-358a2` from main `47852e3`, starting from
 this record at `sha256:1f4e92a9…` and plan
-[G-174](G-174-plan-for-g-170-shared-build-iden.md) at `sha256:af39d944…`
+[G-260925-sv063](G-260925-sv063-plan-for-shared-build-id.md) at `sha256:af39d944…`
 (committed `bef952c`). Code and docs: `1961905`, `8f19762`, `217c703`; the
 candidate commit adds only this record's evidence and review
-[G-176](G-176-review-of-g-170-release-identity.md).
+[G-260925-cm2r8](G-260925-cm2r8-review-of-release-identi.md).
 
 Decisions, routine within the outcome:
 
@@ -88,7 +88,7 @@ Decisions, routine within the outcome:
   unchanged.
 - The stamp is `-X github.com/mascah/grove.version=…` and
   `-X github.com/mascah/grove.commit=…`: *commit*, not *revision*, which
-  settled term [G-062](G-062-revision.md) reserves for a file's sha256.
+  settled term [G-260921-vz0v3](G-260921-vz0v3-revision.md) reserves for a file's sha256.
 - The `guides` digest keeps its meaning (`sha256:67dab310de86` at base and
   candidate); a new `content` digest covers the three guides, the reviewer
   and every other `init` entrypoint template, each hashed with name and
@@ -123,7 +123,7 @@ Against acceptance:
    `-trimpath`), and the rule that every artifact of one release prints
    the same line without `vcs` or `modified`.
    [Attempts](../docs/commands.md#attempts) covers the new fields; README's
-   install check and term [G-152](G-152-shipped-document.md) are
+   install check and term [G-260925-khfe7](G-260925-khfe7-shipped-document.md) are
    reconciled. No release was published.
 
 Verification at `217c703` (Go 1.26.8, darwin/arm64): `go vet ./...` clean,
@@ -134,28 +134,28 @@ a fresh clone, printed `grove v0.1.0 (<HEAD>) guides sha256:67dab310de86
 content sha256:9fb4892e0afb`, `-trimpath=true`, and left `git status` clean
 (author at `8f19762`, round 3 at `217c703`).
 
-Review: [G-176](G-176-review-of-g-170-release-identity.md), three rounds,
+Review: [G-260925-cm2r8](G-260925-cm2r8-review-of-release-identi.md), three rounds,
 two consequential findings (the *revision* term; `-o grove` landing in the
 record directory), both fixed; round 3 found none remaining.
 
 Limits: no Linux or docker build, no byte-for-byte reproducibility check
-(G-110's), no live `grove run`. A linked worktree inside its repository
+(G-260923-gsthp's), no live `grove run`. A linked worktree inside its repository
 builds with the enclosing checkout's pseudo-version and commit, shown as
 `vcs OTHER` beside a stamp; build releases from a clone. Entrypoint
-compatibility revisions remain [G-169](G-169-harness-upgrade-compatibility.md)'s.
+compatibility revisions remain [G-260925-p2k54](G-260925-p2k54-keep-installed-harness-e.md)'s.
 
 ## Next
 
-In review on `worktree-G-170` (base `47852e3`); the owner judges the
-candidate this status change names. G-110 stamps release artifacts exactly
+In review on `worktree-G-260925-358a2` (base `47852e3`); the owner judges the
+candidate this status change names. G-260923-gsthp stamps release artifacts exactly
 as [Version and guide](../docs/commands.md#version-and-guide) says, choosing
 the version itself.
 
 ```sh
-grove approve G-170 "VERDICT"   # in this worktree, clean
-grove integrate G-170           # in the main checkout, clean
+grove approve G-260925-358a2 "VERDICT"   # in this worktree, clean
+grove integrate G-260925-358a2           # in the main checkout, clean
 ```
 
-Or `grove feedback G-170 "TEXT"` here to return it to active.
+Or `grove feedback G-260925-358a2 "TEXT"` here to return it to active.
 
 Verdict on candidate 74ec79f, 2026-09-25: approved

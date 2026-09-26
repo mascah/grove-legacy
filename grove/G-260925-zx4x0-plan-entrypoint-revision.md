@@ -1,15 +1,15 @@
 ---
-id: "G-184"
+id: "G-260925-zx4x0"
 type: plan
-title: "G-169 plan: entrypoint revisions, init --check and the review guide"
+title: "G-260925-p2k54 plan: entrypoint revisions, init --check and the review guide"
 status: current
 created: "2026-09-25T23:04:16Z"
 updated: "2026-09-25T23:04:44Z"
-work: ["G-169"]
+work: ["G-260925-p2k54"]
 ---
 
-Plan for [G-169](G-169-harness-upgrade-compatibility.md), prepared headless
-in `worktree-G-169` from main `6b14141`, record at `sha256:22d79d21…`.
+Plan for [G-260925-p2k54](G-260925-p2k54-keep-installed-harness-e.md), prepared headless
+in `worktree-G-260925-p2k54` from main `6b14141`, record at `sha256:22d79d21…`.
 Single implementer, sequential; one independent review on the final
 revision.
 
@@ -38,7 +38,7 @@ revision.
   record schema. Every managed file carries a line
   `grove entrypoint revision 2` (an HTML comment in Markdown, a `#` comment
   in YAML) after the marker. A marked file with no such line predates
-  revisions and is revision 1, the templates G-040 introduced: legacy.
+  revisions and is revision 1, the templates G-260921-5gz9a introduced: legacy.
   The generated adapters load `grove guide NAME --entrypoint 2`; `guide`
   refuses (exit 1) a revision outside `MIN..CURRENT` with the repair (use
   the grove that wrote it, or rerun `init` and commit), and a grove before
@@ -64,7 +64,7 @@ revision.
   the attempt directory and the provider when the worktree's `grove-work`
   skill or reviewer is marked with an unserved revision (`incompatible`,
   and after the adjustment `legacy`), naming the path, the revision and the
-  repair. A missing reviewer stays a warning (G-150).
+  repair. A missing reviewer stays a warning (G-260925-3pj9a).
 - **Repair path.** `grove init` (unchanged ownership rules) rewrites marked
   files and keeps unmarked ones, configuration, brief and records; the
   result must be committed, since worktrees hold only committed files. An
@@ -75,9 +75,9 @@ revision.
   Init and Attempts sections and `init`'s help; the guides add only the
   grammar and (after round 2) the legacy stop.
 
-**Adjustment after review round 1 (G-187), bounded and technical.** The
+**Adjustment after review round 1 (G-260925-jd94s), bounded and technical.** The
 plan served revision 1. The review showed that revision-less files are at
-least two generations: before G-134 the work skill rejected `--until plan`
+least two generations: before G-260924-5b6pz the work skill rejected `--until plan`
 and there was no reviewer, and the pilot adopter holds that generation. A
 `run --until plan` there would have launched and contradicted the guide
 after spend. Nothing in such a file says which generation it is, and every
@@ -85,8 +85,8 @@ revision-1 file carries a grammar and review brief that the next guide
 change would contradict. So revision 1 (`legacy`) is not served:
 `init --check` exits 1 on it and `run` refuses it. From revision 2 an
 entrypoint holds nothing the guides evolve, so the drift cannot recur.
-Also from that review: the term G-186 names the concept apart from
-[Revision](G-062-revision.md); the usage placeholder is `N`; the docs say
+Also from that review: the term G-260925-m9jcr names the concept apart from
+[Revision](G-260921-vz0v3-revision.md); the usage placeholder is `N`; the docs say
 `run` checks against the launching `grove`, not the session's; and the
 adapters' data rule no longer suggests passing the bound to commands. The
 shaping guide needed no new grammar sentence: its Inputs already said all
@@ -118,7 +118,7 @@ flag (it would break a person's read).
    refusals; shipped-document checks over the review guide.
 6. Documentation: `--help`, `docs/commands.md` (Init, guide, version,
    Attempts), README where adoption mentions the reviewer, CLAUDE.md's
-   shipped-document rule, term G-152's meaning, G-169's dangling G-172 link.
+   shipped-document rule, term G-260925-khfe7's meaning, G-260925-p2k54's dangling G-172 link.
 7. Verification per CLAUDE.md, including `terminal.py` (the runner's board
    path), then independent review.
 

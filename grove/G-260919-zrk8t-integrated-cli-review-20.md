@@ -1,10 +1,10 @@
 ---
-id: "G-022"
+id: "G-260919-zrk8t"
 type: review
 title: "Integrated CLI review, 2026-09-19"
 status: current
 formerly: "docs/reviews/2026-09-19-integrated-cli.md"
-work: ["G-009", "G-010", "G-011", "G-014", "G-015", "G-016"]
+work: ["G-260919-shnj5", "G-260919-zb0s8", "G-260919-n9t4p", "G-260919-8bbvy", "G-260919-z9w13", "G-260919-7qv4x"]
 created: "2026-09-19T20:32:24Z"
 updated: "2026-09-21T21:11:16Z"
 ---
@@ -12,7 +12,7 @@ updated: "2026-09-21T21:11:16Z"
 # Integrated CLI review, 2026-09-19
 
 Review base: `9b7f73000ecb52f151fb69d078f363df678e77dd` on main. Scope:
-G-009 updates, G-010 versions, G-011 workspace resolution, their shared
+G-260919-shnj5 updates, G-260919-zb0s8 versions, G-260919-n9t4p workspace resolution, their shared
 reader/coordination code, integration evidence, and next implementation handoffs.
 No product implementation or merge was performed during this review.
 
@@ -22,11 +22,11 @@ No product implementation or merge was performed during this review.
   at entry. The latter is on `worktree-W-004-W-005` at `c6b6e9d`.
   `git rev-list --left-right --count main...worktree-W-004-W-005` returned
   `2 0`: no branch-only commits await integration. Leave that worktree intact.
-- G-009's `14ed115` review fix and `6a5e297` closure are ancestors of main,
-  integrated by `b20d2b0`. G-010's `ca420f5` and G-011's `d232aa2`
+- G-260919-shnj5's `14ed115` review fix and `6a5e297` closure are ancestors of main,
+  integrated by `b20d2b0`. G-260919-zb0s8's `ca420f5` and G-260919-n9t4p's `d232aa2`
   review fixes and both closures are ancestors, integrated by `5041ae1`.
-- The [update plan](G-012-update-plan.md) and
-  [coordination plan](G-013-coordination-plan.md) retain reviewed
+- The [update plan](G-260919-50rcx-record-update-implementa.md) and
+  [coordination plan](G-260919-qprdw-and-coordination-plan.md) retain reviewed
   ranges, test mappings, fixes, and reviewer summaries. Their tests and fixes
   exist. The claimed historical fuzz run and original reviewer sessions were
   not independently replayed; these are retained author reports, not new evidence.
@@ -45,7 +45,7 @@ All commands below ran against the unchanged implementation at the review base:
 | `gofmt -l cmd internal` | No output |
 | `go run ./cmd/grove check` | PASS, 9 records before shaping |
 | `go test -count=1 -timeout=60s -v ./internal/versions` | PASS, all inspection and workspace tests |
-| Real `versions G-011 --json` → all four selectors → `workspace --json` → `show --project` | All resolved and read the exact selected bytes |
+| Real `versions G-260919-n9t4p --json` → all four selectors → `workspace --json` → `show --project` | All resolved and read the exact selected bytes |
 | Hashes before/after that real read workflow | All 395 Git metadata/configuration/record files unchanged, including both checkouts' records |
 
 Additional probes used a temporary copy of the Go sources and disposable Git
@@ -84,7 +84,7 @@ mutation was needed to demonstrate this mismatch.
 Reject symlink traversal through the project prefix and reject a prefix that
 belongs to a different nested repository. Check the selected project's actual
 worktree/common directory and prefix, including at final resolution. Keep absent
-projects distinct from invalid/foreign ones. Repair: [G-014](G-014-workspace-provenance.md).
+projects distinct from invalid/foreign ones. Repair: [G-260919-8bbvy](G-260919-8bbvy-bind-workspace-routing-t.md).
 
 ### R2 — P2: A worktree deleted during inspection remains selectable
 
@@ -102,7 +102,7 @@ final Git inventory; this is not merely the acknowledged race after return.
 
 Invalidate newly prunable/inaccessible/foreign identities; perform a final
 selected-source check before returning a workspace. Preserve the honest
-post-check race boundary. Repair: [G-014](G-014-workspace-provenance.md).
+post-check race boundary. Repair: [G-260919-8bbvy](G-260919-8bbvy-bind-workspace-routing-t.md).
 
 ### R3 — P2: An update silently removes a comment outside the value
 
@@ -116,11 +116,11 @@ title: # retain this comment
 ```
 
 Updating `title=New` succeeded but produced `title: "New"`, deleting the comment.
-The comment precedes the value's syntax span and is protected by G-009's
+The comment precedes the value's syntax span and is protected by G-260919-shnj5's
 preservation contract. Replace the value's bytes while retaining the key-line
 comment and surrounding standalone comments; exact-byte fixtures must cover
 LF, CRLF, quoted values, lists, and explicit keys.
-Repair: [G-015](G-015-preserve-updates.md).
+Repair: [G-260919-z9w13](G-260919-z9w13-preserve-accepted-frontm.md).
 
 ### R4 — P2: Valid multi-field and explicit-key updates are refused
 
@@ -139,11 +139,11 @@ request is valid. Separately, the reader accepts `? status` followed by
 `cannot locate the key's colon`. Both refusals leave bytes unchanged.
 
 Explicit keys were acknowledged in the previous review but waived on the basis
-that no accepted fixture used them. The actual reader accepts them; G-009 says
+that no accepted fixture used them. The actual reader accepts them; G-260919-shnj5 says
 accepted-form refusals are implementation gaps. Do not narrow the reader to
 silently ratify this limitation. Plan separators for the whole edit request
 and locate explicit-key colon tokens safely.
-Repair: [G-015](G-015-preserve-updates.md).
+Repair: [G-260919-z9w13](G-260919-z9w13-preserve-accepted-frontm.md).
 
 ### R5 — P2: Configuration-only changes evade update's snapshot comparison
 
@@ -151,14 +151,14 @@ Repair: [G-015](G-015-preserve-updates.md).
 parsed record directory and record sources but never `Project.Config`.
 A `compare` fault hook changing `grove.yaml` from the usual two lines to the
 same configuration with a comment let the update publish successfully.
-The configuration bytes changed before the comparison, so G-009 requires refusal.
+The configuration bytes changed before the comparison, so G-260919-shnj5 requires refusal.
 `internal/create/create.go:92` likewise compares only the parsed record root
 although the creation contract requires refusing a changed configuration after
 allocation; a second probe loaded the creation input, changed only a config comment,
 and `New` still created a record instead of refusing. Compare exact
 configuration bytes in both operations, retaining
 consumed reservations on creation failure.
-Repair: [G-015](G-015-preserve-updates.md).
+Repair: [G-260919-z9w13](G-260919-z9w13-preserve-accepted-frontm.md).
 
 ### R6 — P2: Newlines in Git paths corrupt discovery and misplace write locks
 
@@ -179,16 +179,16 @@ a newline-named linked checkout, with no counter state: allocation from main
 returned 2 instead of the required 91, silently omitting that live source.
 The old path tests cover a linked checkout's unusual name under a normal common
 directory, leaving this case untested.
-Repair: [G-016](G-016-git-paths.md).
+Repair: [G-260919-7qv4x](G-260919-7qv4x-preserve-git-paths-throu.md).
 
 ### R7 — P3: Current documentation mixes historical proposals and integrated facts
 
 **Demonstrated documentation drift, reconciled by this review's docs changes.**
-G-009's Next still asked for its already-completed integration; G-002 said no
-combined view was implemented; G-010/G-011 opened with proposed-only wording
+G-260919-shnj5's Next still asked for its already-completed integration; G-260919-8jb5s said no
+combined view was implemented; G-260919-zb0s8/G-260919-n9t4p opened with proposed-only wording
 despite later implementation evidence. Preserve historical review evidence and
-G-002's accepted answer, but make current Next actions and implementation state
-explicit. The record model's G-007 operational link also called creation proposed.
+G-260919-8jb5s's accepted answer, but make current Next actions and implementation state
+explicit. The record model's G-260919-92n2y operational link also called creation proposed.
 
 ## Design concerns and limits, not additional demonstrated bugs
 
@@ -221,7 +221,7 @@ explicit. The record model's G-007 operational link also called creation propose
 First make selecting an existing workspace trustworthy and make existing field
 updates meet their preservation contract. The three proposed repair records
 have linked plans and need no new product preference. Use one Fable worktree
-serially in order G-014 → G-015 → G-016; the order is execution coordination,
+serially in order G-260919-8bbvy → G-260919-z9w13 → G-260919-7qv4x; the order is execution coordination,
 not a semantic dependency between these independently testable fixes. Review
 each unit and the combined diff before separately deciding integration.
 
@@ -230,13 +230,13 @@ early Kanban value. The resulting recommendation is a board for a clearly
 labelled live checkout, with grouped cross-branch version inspection inside each
 card and explicit existing-workspace selection. Other sources expose branch-only
 work without an invented aggregate status. Incomplete results and stale-selection
-refusals remain visible. [G-017](G-017-terminal-picker.md)
+refusals remain visible. [G-260919-k7b8j](G-260919-k7b8j-browse-a-terminal-kanban.md)
 now owns the proposed detailed interaction and technical handoff. The terminal experience is selected and early Kanban value requested;
 the board-first interaction, framework recommendation and detailed design are
 proposals, not shipped behavior. Defer worktree creation to a separate bounded design:
 it introduces filesystem/Git writes and destination/failure policies. Agent
 launching, editing through the picker, claims, and run recovery follow later.
-This keeps G-002 intact and avoids building actions on the defects found here.
+This keeps G-260919-8jb5s intact and avoids building actions on the defects found here.
 
 ## Shaping artifact verification
 
@@ -244,6 +244,6 @@ After creating the follow-up records through this checkout's `new` command and
 setting their fields through `update`, `check` passed with 13 records. Local
 Markdown path/anchor checks passed across the review, plans, operational records,
 README, and direction/model documents. Product source files and go.mod/go.sum
-remain unchanged; the retained G-010/G-011 checkout remains clean. The only
+remain unchanged; the retained G-260919-zb0s8/G-260919-n9t4p checkout remains clean. The only
 intentional coordination writes were the new-record reservations and CLI
 mutation locks. No predecessor commands or sibling-project writes were used.

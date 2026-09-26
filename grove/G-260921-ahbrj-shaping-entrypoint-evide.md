@@ -1,19 +1,19 @@
 ---
-id: "G-050"
+id: "G-260921-ahbrj"
 type: review
-title: "G-025 shaping entrypoint: evidence"
+title: "G-260919-04z88 shaping entrypoint: evidence"
 status: current
 formerly: "docs/reviews/2026-09-20-W-011-shaping.md"
-work: ["G-025"]
+work: ["G-260919-04z88"]
 created: "2026-09-21T03:02:56Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-025 shaping entrypoint: evidence
+# G-260919-04z88 shaping entrypoint: evidence
 
 2026-09-20, branch `worktree-W-011` from `main` `70f19c5`.
-[G-025](G-025-shaping-entrypoint.md) owns acceptance;
-its [plan](G-049-shaping-entrypoint-plan.md) says what was to be shown.
+[G-260919-04z88](G-260919-04z88-shape-project-work-throu.md) owns acceptance;
+its [plan](G-260921-x53yt-plan-shaping-guide-and-g.md) says what was to be shown.
 Three kinds of evidence are kept apart below: source checks, observed agent
 behavior in real harnesses, and simulation with the CLI. What nobody exercised
 is listed at the end. The trials ran against the guide and adapters at
@@ -81,7 +81,7 @@ afterwards rather than trusting the report.
   worktree-shape-list-finished … main`, `new question --slug`, `update`,
   `check`, commit `8ca85d4`. Inspection: `main` clean at `a0f46af`; diff is
   W-029 and Q-002 only; Q-002 `open` with `blocks: ["W-029"]`; W-029
-  `proposed`. It retitled W-029 and set `relates_to` to G-042 and G-043, a
+  `proposed`. It retitled W-029 and set `relates_to` to G-260921-ms6ev and G-260921-k0mwk, a
   judgment the guide permits and the owner can reject in review. It set
   `GOCACHE` under `/private/tmp` because the sandbox refused the default.
 - **Unchanged wait, Claude:** the same command again in the same clone.
@@ -128,8 +128,8 @@ In the fixture clone, with a built binary and an absolute `--project`:
 
 ## Owner's disposition
 
-2026-09-20: the owner closed G-025 without the acceptance-2 conversation, for
-the reasons in the record, and will exercise `/grove-shape G-037` afterwards.
+2026-09-20: the owner closed G-260919-04z88 without the acceptance-2 conversation, for
+the reasons in the record, and will exercise `/grove-shape G-260921-w9x25` afterwards.
 Everything under "Not exercised" above was still unexercised at closure.
 
 ## Independent review
@@ -147,7 +147,7 @@ strings, and that the evidence does not overclaim. Findings:
 | Minor: link-check provenance pointed at the record, which held no command | Fixed above |
 | Minor: this section referred to findings that did not exist yet | Fixed: findings live here |
 | Minor: headless base rule did not say what to do when the default base lacks the records | Fixed in step 4, parallel to the work guide's step 3 |
-| Minor: G-023's Next still says G-025 is not started | Not changed: G-023 is a done record outside this assignment, and the brief and G-025 own current state |
+| Minor: G-260919-nddsf's Next still says G-260919-04z88 is not started | Not changed: G-260919-nddsf is a done record outside this assignment, and the brief and G-260919-04z88 own current state |
 
 Round 2, the same reviewer on `218d03e..8ae82a9`: the first fix resolved its
 objection and the headless base rule is a faithful parallel of the work guide,

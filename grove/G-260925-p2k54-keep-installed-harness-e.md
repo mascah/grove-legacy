@@ -1,11 +1,11 @@
 ---
-id: "G-169"
+id: "G-260925-p2k54"
 type: work
 title: "Keep installed harness entrypoints compatible with Grove upgrades"
 status: done
 created: "2026-09-25T21:04:46Z"
 updated: "2026-09-26T00:28:06Z"
-relates_to: ["G-101", "G-150", "G-152", "G-040", "G-110", "G-170", "G-186"]
+relates_to: ["G-260923-tnn5e", "G-260925-3pj9a", "G-260925-khfe7", "G-260921-5gz9a", "G-260923-gsthp", "G-260925-358a2", "G-260925-m9jcr"]
 candidate: "f2ba8d0f8a13c3de41a6bc119790ba2e5aeb1d04"
 approved: "f2ba8d0f8a13c3de41a6bc119790ba2e5aeb1d04"
 ---
@@ -26,7 +26,7 @@ Evidence records what was implemented.
 ## Observed evidence
 
 At main `05892a2`, [init.go](../internal/cli/init.go) generates skills which
-load `grove guide work|shape`, but also encode allowed arguments. G-040's
+load `grove guide work|shape`, but also encode allowed arguments. G-260921-5gz9a's
 candidate `4edd800` rejects input other than IDs and interaction mode; today's
 template accepts `--until plan`. An older installed adapter can therefore
 contradict a newer guide. The full [reviewer](../.claude/agents/grove-reviewer.md)
@@ -37,7 +37,7 @@ Git repository with a stripped environment. After simulated edits to managed
 skill and reviewer files, `check` still printed `OK: 0 records`; rerunning
 `init` restored both and preserved an unmarked custom skill. This proves current
 refresh and ownership behavior, not a real two-release or harness upgrade trial.
-[G-150](G-150-launch-attempts-only-where-the-w.md) checks skill presence before
+[G-260925-3pj9a](G-260925-3pj9a-launch-attempts-only-whe.md) checks skill presence before
 launch; it does not establish compatibility. Existing worktrees retain their
 own files after another checkout runs `init`.
 
@@ -68,9 +68,9 @@ own files after another checkout runs `init`.
 Alternatives: separately released harness plugins add an installation/version
 lifecycle; full copied guides add synchronization work. Neither is proposed.
 No new execution provider, daemon, self-update, schema migration or broad
-compatibility promise is authorized. [G-101](G-101-attempt-mechanism.md) remains
-the runner decision; [G-152](G-152-shipped-document.md) names the shipped-document
-boundary. G-040's marker-only approach would be extended, with existing
+compatibility promise is authorized. [G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md) remains
+the runner decision; [G-260925-khfe7](G-260925-khfe7-shipped-document.md) names the shipped-document
+boundary. G-260921-5gz9a's marker-only approach would be extended, with existing
 project ownership preserved. Release policy belongs to a first-release
 policy record (named G-172 when this was shaped, a record no branch holds),
 not an inferred schema change here.
@@ -94,9 +94,9 @@ not an inferred schema change here.
 
 ## Evidence
 
-Implemented 2026-09-25 by a headless `/grove-work G-169` session on
-`worktree-G-169` from `main` `6b14141`, record at `sha256:22d79d21…` and plan
-[G-184](G-184-g-169-plan-entrypoint-revisions.md) at `sha256:b8613345…` when
+Implemented 2026-09-25 by a headless `/grove-work G-260925-p2k54` session on
+`worktree-G-260925-p2k54` from `main` `6b14141`, record at `sha256:22d79d21…` and plan
+[G-260925-zx4x0](G-260925-zx4x0-plan-entrypoint-revision.md) at `sha256:b8613345…` when
 implementation started. Commits: `0cb2251` plan, `dca444b` active,
 `bde8bd8` implementation, `2b54de0` records, `d6c53df` and `549e477` round-1
 fixes, `c5c5ffe` and `5a163a1` round-2 fixes, then the evidence commit named
@@ -108,7 +108,7 @@ binary: the work guide's Inputs own the grammar, and the reviewer's brief is
 keep only the argument-as-data rule, harness metadata and (for the reviewer)
 its read-only authority, and load their guide with `grove guide NAME
 --entrypoint 2`. Each managed file names its
-[entrypoint revision](G-186-entrypoint-revision.md), an integer apart from
+[entrypoint revision](G-260925-m9jcr-entrypoint-revision.md), an integer apart from
 the release version and schema. This binary writes and serves revision 2. A
 marked file with no revision line is revision 1, `legacy`, and is not served
 (review round 1 found that its generations disagree). `init --check` reports
@@ -121,7 +121,7 @@ existing one. The work and shaping guides tell a session loaded through a
 revision-less managed skill to stop and name the repair. This repository's
 reviewer became a development adapter like its skills (no marker, reads
 `docs/work-review.md`), and all its adapters dropped the grammar.
-[G-152](G-152-shipped-document.md) now names the review guide. The dangling
+[G-260925-khfe7](G-260925-khfe7-shipped-document.md) now names the review guide. The dangling
 G-172 link was replaced by text: no branch holds that record.
 
 **Against acceptance.**
@@ -141,7 +141,7 @@ G-172 link was replaced by text: no branch holds that record.
    `TestRefusals` covers a newer and a revision-less skill in HEAD (no branch
    made) and an unserved reviewer on an existing branch, all before any
    attempt. By hand with a binary from `549e477`, in a project initialized by
-   `a84d01d^`'s binary (the pre-G-134 generation), `init --check` gave six
+   `a84d01d^`'s binary (the pre-G-260924-5b6pz generation), `init --check` gave six
    legacy and a missing reviewer (exit 1). `run --until plan` was refused
    before any branch. After `init` and a commit, the check exited 0. A
    binary from `6b14141` refuses `guide work --entrypoint 2` (exit 2), which
@@ -160,7 +160,7 @@ G-172 link was replaced by text: no branch holds that record.
    fresh Claude or Codex session was started: the assignment stated no
    resource bounds for live trials. Unverified, therefore: that a fresh
    session discovers the revision-2 skills and follows `--entrypoint` loading
-   (the invocation text differs from G-040's trial). Also unverified: that a
+   (the invocation text differs from G-260921-5gz9a's trial). Also unverified: that a
    harness keeps a skill's HTML-comment marker visible, which the legacy stop
    depends on (review round 3 saw an agent definition's comment reach the
    reviewer). A current `/grove-work` session loads through this repository's
@@ -176,22 +176,22 @@ reported `OK: 179 records`. `go test -count=1 -timeout 120s ./...` passed
 every package. `python3 internal/tui/testdata/terminal.py` passed 12 of 12.
 Inherited limit: `go test -count=1 ./internal/attempt` alone takes 5.5 to
 5.6 s against 5.3 to 5.4 s at base `6b14141` under the same load; it was
-already over five seconds (G-150).
+already over five seconds (G-260925-3pj9a).
 
-**Review.** [G-187](G-187-review-of-g-169-entrypoint-revis.md), three
+**Review.** [G-260925-jd94s](G-260925-jd94s-review-of-entrypoint-rev.md), three
 independent `grove-reviewer` rounds. Round 1's legacy finding changed the
 design (plan adjustment). Every consequential finding was fixed, and the
 last round found nothing consequential.
 
-**Decisions taken inside the outcome** (G-184 records why): an integer
+**Decisions taken inside the outcome** (G-260925-zx4x0 records why): an integer
 revision rather than a digest table; legacy unserved rather than guessed;
 `guide` without the flag always prints, for people; the runner checks
 against the launching `grove` only, as stated in the docs. New term
-[G-186](G-186-entrypoint-revision.md), proposed.
+[G-260925-m9jcr](G-260925-m9jcr-entrypoint-revision.md), proposed.
 
 ## Next
 
-In review 2026-09-25 on `worktree-G-169` (base `6b14141`). The candidate is
+In review 2026-09-25 on `worktree-G-260925-p2k54` (base `6b14141`). The candidate is
 the evidence commit named in `candidate`; the branch tip adds only this
 status change. For the owner:
 
@@ -199,10 +199,10 @@ status change. For the owner:
   (this repository's pilot adopter included) is `legacy` and must run
   `grove init` and commit before `run` will launch there, and its sessions
   are told to stop. The alternative, serving the `6b14141` generation by
-  content, was rejected as a digest table (G-184).
-- Consider settling term G-186.
+  content, was rejected as a digest table (G-260925-zx4x0).
+- Consider settling term G-260925-m9jcr.
 - Live Claude/Codex discovery of the revision-2 skills needs a resource
-  mandate if wanted before release work (G-110).
+  mandate if wanted before release work (G-260923-gsthp).
 - Demo, from this worktree:
 
   ```sh
@@ -214,8 +214,8 @@ status change. For the owner:
 Integration, as given:
 
 ```sh
-go run ./cmd/grove approve G-169 "VERDICT"   # in this worktree
-go run ./cmd/grove integrate G-169           # in the main checkout
+go run ./cmd/grove approve G-260925-p2k54 "VERDICT"   # in this worktree
+go run ./cmd/grove integrate G-260925-p2k54           # in the main checkout
 ```
 
 Verdict on candidate f2ba8d0, 2026-09-26: approved with the requirement to run grove init in existing projects

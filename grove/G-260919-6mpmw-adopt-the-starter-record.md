@@ -1,9 +1,9 @@
 ---
-id: "G-001"
+id: "G-260919-6mpmw"
 type: decision
 title: Adopt the starter record file defaults
 status: accepted
-relates_to: ["G-003", "G-004"]
+relates_to: ["G-260919-rt9h9", "G-260919-4h6pn"]
 created: "2026-09-19T14:08:40Z"
 updated: "2026-09-19T14:32:32Z"
 formerly: "D-001"
@@ -23,7 +23,7 @@ this decision does not assert that the CLI or those proposals are implemented.
 ## Reconsideration
 
 The initial random-ID and timestamp-prefixed filename trial proved cumbersome.
-[G-004](G-004-sequential-ids.md) replaces those choices with sequential IDs and
+[G-260919-4h6pn](G-260919-4h6pn-use-shared-sequential-id.md) replaces those choices with sequential IDs and
 short filenames. The other defaults remain accepted; the record model reflects
 the current contract.
 

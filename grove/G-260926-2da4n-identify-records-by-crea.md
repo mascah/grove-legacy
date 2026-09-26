@@ -1,11 +1,11 @@
 ---
-id: "G-194"
+id: "G-260926-2da4n"
 type: decision
 title: "Identify records by creation date and a random tail, without a counter"
 status: accepted
 created: "2026-09-26T02:56:11Z"
 updated: "2026-09-26T16:11:44Z"
-relates_to: ["G-004", "G-006", "G-064", "G-001", "G-051", "G-195", "G-260926-yvjy6"]
+relates_to: ["G-260919-4h6pn", "G-260919-5f89v", "G-260921-gtydy", "G-260919-6mpmw", "G-260921-e8bva", "G-260926-pgj43", "G-260926-yvjy6"]
 ---
 
 ## Decision and authority
@@ -24,7 +24,7 @@ Selected:
 - An ID Grove issues is `G-`, the UTC date of creation as six digits, a
   hyphen, and a random tail of lowercase Crockford base32 characters,
   generated without any shared state: `G-250925-7k2qm`. The tail's length is
-  a routine choice of [G-195](G-195-coordination-free-record-ids.md); five is
+  a routine choice of [G-260926-pgj43](G-260926-pgj43-coordination-free-record.md); five is
   proposed there.
 - The ID is the identity and never changes, and it is not derived from the
   title. The slug stays in the filename only, as today, with the derived slug
@@ -32,15 +32,15 @@ Selected:
   character of today's 41.
 - Existing numeric IDs remain valid identities, are never renumbered, and
   are never issued again. No record is renamed: this is not a second
-  reconciliation like [G-052](G-052-migrate-knowledge.md).
+  reconciliation like [G-260921-r491p](G-260921-r491p-reconcile-all-grove-cont.md).
 - Legacy and date-form IDs coexist in the validator; `new` and `convert`
   issue only the date form.
 
-This revises [G-004](G-004-sequential-ids.md), sequential IDs coordinated
+This revises [G-260919-4h6pn](G-260919-4h6pn-use-shared-sequential-id.md), sequential IDs coordinated
 through Git's common directory, and retires
-[G-006](G-006-allocator-mechanism.md)'s allocator for future creation: the
+[G-260919-5f89v](G-260919-5f89v-allocate-ids-with-flock.md)'s allocator for future creation: the
 counter, the allocator lock and the floor scan go with it.
-[G-064](G-064-stable-knowledge.md)'s "one neutral sequential ID namespace"
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md)'s "one neutral sequential ID namespace"
 becomes one neutral namespace without a sequence; its stable identity,
 stable placement and short-slug rules stand. The brief's foundation
 sentence on stable sequential IDs and clone collision checks needs the
@@ -51,9 +51,9 @@ matching change; the brief owns direction, so that edit is the owner's.
 Observed 2026-09-25 at main `e812672` with a build of this checkout:
 
 - Two local clones each initialized their own counter at 192 and both
-  issued G-192 for different records. After one fetched the other, its next
-  ID was G-193, because the floor scan reads remote-tracking refs. Git merged
-  the two G-192 files without a conflict, since the filenames differ; only
+  issued G-260926-kfcpp for different records. After one fetched the other, its next
+  ID was G-260926-wmyet, because the floor scan reads remote-tracking refs. Git merged
+  the two G-260926-kfcpp files without a conflict, since the filenames differ; only
   `grove check` reported the duplicate.
 - The counter lives at `grove/neutral-ids` under the Git common directory
   (`internal/create/create.go`), so clones share nothing. Grove runs no fetch
@@ -69,9 +69,9 @@ Observed 2026-09-25 at main `e812672` with a build of this checkout:
   repository: a stale claim is rejected, provided each claim's blob is
   unique, because identical content hashes identically and the loser's push
   becomes a silent no-op.
-- [G-001](G-001-starter-defaults.md)'s first trial used a 20-character
+- [G-260919-6mpmw](G-260919-6mpmw-adopt-the-starter-record.md)'s first trial used a 20-character
   random ID with a timestamp-prefixed filename, which the owner found too
-  long to read (G-004). The date form is 14 characters with a five-character
+  long to read (G-260919-4h6pn). The date form is 14 characters with a five-character
   tail.
 - Collision odds for a five-character tail: two clones each creating ten
   unseen records on one day collide with probability about 3 in a million
@@ -91,17 +91,17 @@ Observed 2026-09-25 at main `e812672` with a build of this checkout:
   network; an offline mode reopens the risk; and a missed coordination has
   no repair.
 - **ULIDs as mex issues them.** Coordination-free and time-sortable, at 26
-  characters. Rejected for the length G-004 already rejected; the date form
+  characters. Rejected for the length G-260919-4h6pn already rejected; the date form
   keeps the ordering property readably.
 - **A short random tail without the date.** Shortest, but a directory
   listing loses chronological order and the name says nothing. Rejected.
 - **The slug inside the ID.** Most readable, but derived from the title,
   long in references, commits and branch names, and open to same-day
-  same-slug collisions. Rejected; G-004 and
-  [G-051](G-051-typed-knowledge-records.md) avoided a slug identity for the same
+  same-slug collisions. Rejected; G-260919-4h6pn and
+  [G-260921-e8bva](G-260921-e8bva-represent-terms-plans-an.md) avoided a slug identity for the same
   reasons.
 - **Per-clone prefixes or reserved blocks.** Typed and per-clone prefixes
-  were removed by G-064; blocks still need an arbiter. Rejected.
+  were removed by G-260921-gtydy; blocks still need an arbiter. Rejected.
 - **Renumbering existing records to the new form.** 185 records and about
   4,500 references here, plus nullsec's, and the never-rename rule protects
   identity. Rejected; coexistence costs one alternation in the validator.

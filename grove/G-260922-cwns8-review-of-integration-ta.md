@@ -1,24 +1,24 @@
 ---
-id: "G-095"
+id: "G-260922-cwns8"
 type: review
-title: "Review of G-042 integration target"
+title: "Review of G-260921-ms6ev integration target"
 status: current
 created: "2026-09-22T22:48:37Z"
 updated: "2026-09-22T22:48:49Z"
-work: ["G-042"]
+work: ["G-260921-ms6ev"]
 examined: "3851182"
 ---
 
 ## Examined
 
-The same independent reader as [G-094](G-094-current-view-review.md) (a
+The same independent reader as [G-260922-ayftm](G-260922-ayftm-review-of-current-view.md) (a
 Claude reviewer subagent of the implementing session, with no edit rights over
 the branch) reviewed the integration target that the owner added to
-[G-042](G-042-current-view.md) after candidate `046150e`. It worked in two
+[G-260921-ms6ev](G-260921-ms6ev-derive-a-project-wide-cu.md) after candidate `046150e`. It worked in two
 rounds, reading the code and running scratch tests in a copy of the worktree:
 
 - Round 1 examined `git diff 046150e..00ddefe`, against the plan's
-  [revised decision](G-093-current-view-plan.md#revised-decision-integration-target-2026-09-22).
+  [revised decision](G-260922-9tcff-project-wide-current-vie.md#revised-decision-integration-target-2026-09-22).
 - Round 2 examined `3851182`, the fix. No defects remained.
 
 ## Findings
@@ -57,5 +57,5 @@ Round 2: none.
 - **Typos:** a value with surrounding spaces or a `refs/` prefix is refused
   (`TestTarget`).
 - **Test gaps:** filled in `3851182`, in the versions and TUI target tests.
-- **Rebuild:** named in G-042's integration steps.
+- **Rebuild:** named in G-260921-ms6ev's integration steps.
 - **Test time:** the versions package's short tests take 4.1 to 4.4 s alone.

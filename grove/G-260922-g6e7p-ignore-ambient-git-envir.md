@@ -1,5 +1,5 @@
 ---
-id: "G-089"
+id: "G-260922-g6e7p"
 type: work
 title: "Ignore ambient Git environment when Grove and its tests run Git"
 status: done
@@ -22,9 +22,9 @@ called it a significant risk to the code.
 
 **Observed on 2026-09-22:**
 
-- A `git push` from the linked worktree `.claude/worktrees/G-081` ran
+- A `git push` from the linked worktree `.claude/worktrees/G-260922-jtsed` ran
   lefthook's pre-push hook, `go test ./...`. Git exports
-  `GIT_DIR=<repo>/.git/worktrees/G-081` to the hook (shown with a scratch
+  `GIT_DIR=<repo>/.git/worktrees/G-260922-jtsed` to the hook (shown with a scratch
   `core.hooksPath` hook on `push --dry-run`), and every test fixture's
   `git init`, `commit`, `checkout`, and `worktree add` in a temp directory
   inherited it. The fixtures therefore acted on the real repository: the
@@ -33,7 +33,7 @@ called it a significant risk to the code.
   `feature`, and `records` appeared, two temp worktrees were registered, and
   `core.bare = true` landed in the shared config, which made the main checkout
   refuse work-tree commands. The commits were intact and the owner repaired
-  it by hand ([G-081](G-081-github-ci.md) has the commands).
+  it by hand ([G-260922-jtsed](G-260922-jtsed-run-secure-ci-and-depend.md) has the commands).
 - Product code spawned Git in three places, all `git -C dir …`, which
   `GIT_DIR` overrides just the same: `repo.GitContext`, the `cat-file --batch`
   reader in `internal/versions`, and `git grep` in `internal/create`. Nine
@@ -62,12 +62,12 @@ point Grove at a repository other than its project path was never supported.
 
 ## Evidence
 
-Implemented 2026-09-22 on `worktree-G-089` from `main` adce678, the same
+Implemented 2026-09-22 on `worktree-G-260922-g6e7p` from `main` adce678, the same
 day as the incident, at the owner's request, with no plan: the fix is one
 function and its callers. Commits: 7924765 (the guard, every caller, the
 regression test, the hook, the terminal script, `AGENTS.md`), 263a59a
 (status), ca6a599 (review fixes), then the commit carrying this evidence and
-[G-090](G-090-review-of-g-089-ambient-git-envi.md), which is the `candidate`.
+[G-260922-fze8c](G-260922-fze8c-review-of-ambient-git-en.md), which is the `candidate`.
 
 **Against the acceptance:**
 
@@ -95,7 +95,7 @@ tests and existing evidence rely on them. `GIT_CONFIG_PARAMETERS`,
 `GIT_PREFIX`, and `GIT_CEILING_DIRECTORIES` were tested and do not move
 `git -C dir`. Pre-commit jobs are not scrubbed, with a comment saying why.
 The history test's merge gained the committer identity it lacked, which
-Linux CI in G-081 had exposed; that line conflicts textually with G-081's
+Linux CI in G-260922-jtsed had exposed; that line conflicts textually with G-260922-jtsed's
 own fix and is resolved by taking either.
 
 **Verification** at ca6a599 on macOS, Go 1.26.5: `gofmt -l .` empty,
@@ -111,9 +111,9 @@ at once, so a record removed and recreated with the same bytes passed as the
 same file, while APFS and the container's overlay filesystem hand out new
 numbers. 07a63d3 also compares the modification time, which the product never
 changes between the two reads. Outside this record's original outcome but
-the same class as G-081's Linux fixes, and one line.
+the same class as G-260922-jtsed's Linux fixes, and one line.
 
-**Review:** G-090, two rounds, no blocking findings; the should-fix items
+**Review:** G-260922-fze8c, two rounds, no blocking findings; the should-fix items
 (hook variable list, `AGENTS.md` scope) and nits are fixed in ca6a599.
 
 ## Next
@@ -123,10 +123,10 @@ In Review. After PR #2 merged, `origin/main` was merged into this branch at
 verification rerun there; that merge commit is the candidate, and PR #3 runs
 CI on it. Integrator, from the main checkout:
 
-1. Merge PR #3 (or `git merge worktree-G-089`), then
+1. Merge PR #3 (or `git merge worktree-G-260922-g6e7p`), then
    `go test -count=1 -timeout 120s ./...` on `main`; the hook is safe again
    from this merge on, so plain `git push` works.
-2. Write the verdict here and `go run ./cmd/grove update G-089 --expect
+2. Write the verdict here and `go run ./cmd/grove update G-260922-g6e7p --expect
    REVISION --set status=done`, committed on `main`.
 
 verdict: LGTM

@@ -1,5 +1,5 @@
 ---
-id: "G-045"
+id: "G-260921-h46pb"
 type: work
 title: "Run one bounded implementation independently of the viewing terminal"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-23T03:30:02Z"
 kind: feature
 size: large
 priority: 4
-depends_on: ["G-038", "G-040"]
-relates_to: ["G-035", "G-044", "G-046", "G-101"]
+depends_on: ["G-260921-9wkjt", "G-260921-5gz9a"]
+relates_to: ["G-260921-tkdwh", "G-260921-jwk4e", "G-260921-7trd7", "G-260923-tnn5e"]
 formerly: "W-027"
 candidate: "d8ed3159447bdc7f4930499aaf6a57e182e68c04"
 approved: "d8ed3159447bdc7f4930499aaf6a57e182e68c04"
@@ -51,20 +51,20 @@ and retries explicitly. Process exit and streamed claims are not acceptance.
 
 ## Evidence
 
-Branch `worktree-G-045` from `main` at `5ae87d5`, in
-`.claude/worktrees/worktree-G-045`. Plan [G-100](G-100-g-045-durable-attempt-plan.md)
+Branch `worktree-G-260921-h46pb` from `main` at `5ae87d5`, in
+`.claude/worktrees/worktree-G-260921-h46pb`. Plan [G-260923-0t43m](G-260923-0t43m-durable-attempt-plan.md)
 (`a041d22`), started from this record at revision `c976f07d…`. Commits:
 `3af1c93` active, `83092cb` the implementation, `cab470c` documentation and
-decision [G-101](G-101-attempt-mechanism.md), `69b9d9e` the review refusal
+decision [G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md), `69b9d9e` the review refusal
 the trial exposed, `9ae71ac` review round one, `b4a93a7` the test budget, `30b9c20` review
 round two;
 the candidate is the evidence commit named in `candidate`. Review record:
-[G-102](G-102-g-045-durable-attempt-review.md), with the independent
+[G-260923-ccda0](G-260923-ccda0-durable-attempt-review.md), with the independent
 findings, their dispositions, and the trial evidence.
 
 Changed behaviour, against each acceptance item:
 
-1. **Mechanism.** The comparison in G-100 and the decision in G-101: native
+1. **Mechanism.** The comparison in G-260923-0t43m and the decision in G-260923-tnn5e: native
    background sessions (`--bg`, `agents`, `attach`, `logs`, `stop`, `rm`)
    are interactive sessions under Claude's supervisor daemon, reject `-p`,
    print terminal text rather than events, have no budget flag and move
@@ -104,8 +104,8 @@ Changed behaviour, against each acceptance item:
    worktree's HEAD and the record's revision.
 5. **Order of evidence.** Nine fake-process tests came first
    (`internal/attempt`, behind `-short`), then two bounded real trials in a
-   disposable repository with a clone-built binary (G-102): G-001 ran to a
-   handoff in review with a candidate for $0.50 in 9 turns, and G-002 was
+   disposable repository with a clone-built binary (G-260923-ccda0): G-260919-6mpmw ran to a
+   handoff in review with a candidate for $0.50 in 9 turns, and G-260919-8jb5s was
    stopped mid-run after a reconnect for $0.23. Observed: launcher exit
    survival, reconnect, Stop, owner loss (fake only), result
    reconciliation. Untested: machine reboot (not selected), budget
@@ -119,7 +119,7 @@ worktrees use, added to `info/exclude` when not ignored; the owner is the
 Grove binary itself re-executed with `GROVE_ATTEMPT_OWNER`, so the test
 binary can be its own owner; a branch that had no worktree keeps the one
 `run` made when its records then refuse the run. `GROVE_CLAUDE` names a
-fake provider. Left for [G-046](G-046-managed-runs.md): a long-lived
+fake provider. Left for [G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md): a long-lived
 launcher such as the TUI must reap or ignore the owner it spawns (the CLI
 releases it), and background grandchildren of a provider that exited
 normally are not killed by Grove.
@@ -130,31 +130,31 @@ clean, `go vet ./...` ok, `go run ./cmd/grove check` → `OK: 98 records`,
 `go test -count=1 -timeout 120s ./...` ok in every package
 (`internal/attempt` 4.6 to 4.9 s alone, near the budget; 9 s inside the
 parallel suite; 0.7 s with `-short`). Every link written
-here, in G-100, G-101 and G-102 resolves in this checkout.
+here, in G-260923-0t43m, G-260923-tnn5e and G-260923-ccda0 resolves in this checkout.
 
 ## Next
 
 In Review. The candidate is the evidence commit named in `candidate`; the
 branch tip adds only this status change. To judge it, from a checkout of
-`worktree-G-045`:
+`worktree-G-260921-h46pb`:
 
 ```sh
-go run ./cmd/grove context G-045 --include grove/G-100-g-045-durable-attempt-plan.md
-go run ./cmd/grove show G-102
+go run ./cmd/grove context G-260921-h46pb --include grove/G-260923-0t43m-durable-attempt-plan.md
+go run ./cmd/grove show G-260923-ccda0
 git diff --stat 5ae87d5..HEAD
 go test -count=1 -timeout 120s ./...
 # demo with a fake provider, in a disposable repository, with a binary built from this branch:
 go build -o /tmp/grove-bin/grove ./cmd/grove
 printf '#!/bin/sh\n[ "$1" = --version ] && { echo fake; exit 0; }\necho "{\"type\":\"system\",\"subtype\":\"init\",\"model\":\"fake\"}"\nsleep 30\necho "{\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"x\"}"\n' > /tmp/fake-claude && chmod +x /tmp/fake-claude
 mkdir -p /tmp/grove-demo && cd /tmp/grove-demo && git init -q -b main && PATH=/tmp/grove-bin:$PATH grove init >/dev/null && PATH=/tmp/grove-bin:$PATH grove new work "Demo" && git add -A && git commit -qm demo
-GROVE_CLAUDE=/tmp/fake-claude PATH=/tmp/grove-bin:$PATH grove run G-001 --budget 1 --permission-mode auto   # then exit this shell
-PATH=/tmp/grove-bin:$PATH grove attempts && PATH=/tmp/grove-bin:$PATH grove attempt G-001.TIMESTAMP && PATH=/tmp/grove-bin:$PATH grove stop G-001.TIMESTAMP
+GROVE_CLAUDE=/tmp/fake-claude PATH=/tmp/grove-bin:$PATH grove run G-260919-6mpmw --budget 1 --permission-mode auto   # then exit this shell
+PATH=/tmp/grove-bin:$PATH grove attempts && PATH=/tmp/grove-bin:$PATH grove attempt G-260919-6mpmw.TIMESTAMP && PATH=/tmp/grove-bin:$PATH grove stop G-260919-6mpmw.TIMESTAMP
 # a real bounded run: the same with GROVE_CLAUDE unset, --budget 2, in a repository whose AGENTS.md says grove is on PATH
 ```
 
-Approve: `go run ./cmd/grove approve G-045 "VERDICT"` in this checkout,
-then `go run ./cmd/grove integrate G-045` in `main`'s checkout. Feedback:
-`go run ./cmd/grove feedback G-045 "TEXT"` here. Then
-[G-046](G-046-managed-runs.md) can be prepared on this package.
+Approve: `go run ./cmd/grove approve G-260921-h46pb "VERDICT"` in this checkout,
+then `go run ./cmd/grove integrate G-260921-h46pb` in `main`'s checkout. Feedback:
+`go run ./cmd/grove feedback G-260921-h46pb "TEXT"` here. Then
+[G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md) can be prepared on this package.
 
 Verdict on candidate d8ed315, 2026-09-23: working as expected

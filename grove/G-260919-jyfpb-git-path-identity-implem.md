@@ -1,15 +1,15 @@
 ---
-id: "G-020"
+id: "G-260919-jyfpb"
 type: plan
-title: "G-016 Git path identity implementation plan"
+title: "G-260919-7qv4x Git path identity implementation plan"
 status: current
 formerly: "docs/plans/W-008-git-paths.md"
-work: ["G-016"]
+work: ["G-260919-7qv4x"]
 created: "2026-09-19T20:32:24Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-016 Git path identity implementation plan
+# G-260919-7qv4x Git path identity implementation plan
 
 > For Fable: implement one task at a time in an isolated worktree using the
 > repository instructions and an inline execution workflow (for Codex,
@@ -28,7 +28,7 @@ inventory in `internal/repo`. Keep `repo.Locate(root)`'s signature and all publi
 CLI/selector formats. Versions and creation consume the shared inventory;
 source validation remains with their existing owners.
 
-**Spec:** [G-016](G-016-git-paths.md).
+**Spec:** [G-260919-7qv4x](G-260919-7qv4x-preserve-git-paths-throu.md).
 
 ## Global constraints and review focus
 
@@ -94,7 +94,7 @@ error/absence policies. No path quoting/unquoting heuristics.
   Use fixture-only record bytes, not hand-numbered project work records.
 - [ ] Switch versions and allocation to `repo.Worktrees`; remove the allocator's
   display-oriented `--porcelain` split. Keep the committed-ref ID prefilter and
-  counter protocol unchanged. Reuse G-014's new administrative validity checks
+  counter protocol unchanged. Reuse G-260919-8bbvy's new administrative validity checks
   if that work is in the execution base.
 - [ ] Run concurrent allocation and lock tests from oddly named worktrees, the
   entire create/versions suites, and side-effect snapshots. Commit
@@ -117,7 +117,7 @@ error/absence policies. No path quoting/unquoting heuristics.
 ## Implementation notes, 2026-09-19
 
 Implemented on branch `worktree-W-006-W-008`; the
-[work record](G-016-git-paths.md) owns the evidence.
+[work record](G-260919-7qv4x-preserve-git-paths-throu.md) owns the evidence.
 Bounded adjustments to this plan, and why:
 
 - The separate Git directory fixture is named `git\tdir\nmid ` (embedded
@@ -126,7 +126,7 @@ Bounded adjustments to this plan, and why:
   $'trail\n'` succeeds, but the `.git` file it writes loses that terminator
   and every later command fails with `not a git repository: .../trail`. Grove
   cannot be given such a repository, so there is nothing to round-trip.
-- G-014's `identity` helper had introduced a third newline-splitting
+- G-260919-8bbvy's `identity` helper had introduced a third newline-splitting
   `rev-parse`; it now uses `repo.GitPath` per path. Comparing the Git directory
   is enough for ownership of a location, because a Git directory belongs to
   one worktree of one repository, so the common directory is asked for only

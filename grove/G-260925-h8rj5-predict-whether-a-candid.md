@@ -1,12 +1,12 @@
 ---
-id: "G-177"
+id: "G-260925-h8rj5"
 type: work
 title: "Predict whether a candidate in review merges cleanly into the target"
 status: done
 created: "2026-09-25T21:39:27Z"
 updated: "2026-09-25T23:30:44Z"
 kind: feature
-relates_to: ["G-161", "G-162", "G-163", "G-044", "G-060", "G-057", "G-030", "G-178", "G-180"]
+relates_to: ["G-260925-g39ga", "G-260925-7c8g9", "G-260925-80w3a", "G-260921-jwk4e", "G-260921-3qgsf", "G-260921-jatts", "G-260920-svpbc", "G-260925-dz10z", "G-260925-5wrn8"]
 candidate: "a658921371a89424c0482a22d387fef9c17bc2e1"
 approved: "a658921371a89424c0482a22d387fef9c17bc2e1"
 ---
@@ -23,8 +23,8 @@ Owner intent, conversation 2026-09-25: four or five items implemented in
 parallel end in review together, and their conflicts surface only when
 `integrate` refuses one, which starts a manual feedback and relaunch loop
 the owner wants to avoid. Prediction is the read-only first layer of that
-wish; [G-178](G-178-candidate-target-update.md) acts on it by hand and
-[G-180](G-180-policy-driven-integration.md) by policy.
+wish; [G-260925-dz10z](G-260925-dz10z-update-a-conflicting-can.md) acts on it by hand and
+[G-260925-5wrn8](G-260925-5wrn8-resolve-approve-and-inte.md) by policy.
 
 ## Constraints
 
@@ -36,7 +36,7 @@ refuses with the target unchanged and the record left in review. Reproduced
 on a disposable repository with the built binary:
 
 ```text
-merge of worktree-G-004 into main refused: CONFLICT (content): Merge conflict in shared.txt; Automatic merge failed; fix conflicts and then commit the result.; main is unchanged at 762e74b and G-004 stays in review
+merge of worktree-G-260919-4h6pn into main refused: CONFLICT (content): Merge conflict in shared.txt; Automatic merge failed; fix conflicts and then commit the result.; main is unchanged at 762e74b and G-260919-4h6pn stays in review
 ```
 
 The refusal names the file and no next action, and `integrate` runs no
@@ -46,13 +46,13 @@ fail together are not detected by it.
 `git merge-tree --write-tree` (Git 2.38 and later; this machine has 2.55.0)
 performs the merge read-only, writes only objects, names the conflicting
 files with `--name-only`, and exits 1 on conflict. On the same repository
-after G-003 was integrated it printed `shared.txt` and `CONFLICT (content):
+after G-260919-rt9h9 was integrated it printed `shared.txt` and `CONFLICT (content):
 Merge conflict in shared.txt` with no checkout touched. Nothing in Grove
 uses it.
 
 The board's Review block ([board](../docs/board.md)) shows whether the
 target holds the candidate and lists its changed files against the target.
-The G-161 candidate on `worktree-G-161` (in review at `83e7f38`) adds `grove
+The G-260925-g39ga candidate on `worktree-G-260925-g39ga` (in review at `83e7f38`) adds `grove
 deps` and the board's dependency view, whose delivery text reads `awaiting
 review; candidate X not in HEAD, not on main`, computed in
 `internal/deps/deps.go` (`Deliver`) through one `merge-base --is-ancestor`
@@ -67,11 +67,11 @@ person: "If the merge conflicts, resolve or rebase, rerun … then retry."
   target moved since the branch's merge base, or conflicts in named files.
   Compute it with `git merge-tree --write-tree` through `repo.Command`, on
   demand for the candidates a view names, never during the board load
-  (G-030, G-031). The fact names the target commit it was computed against
+  (G-260920-svpbc, G-260920-z8vfp). The fact names the target commit it was computed against
   and is stale, visibly, when the target moves.
 - Show it where candidates are already explained: the board's Review block,
-  `integrate`'s refusal (which then names the next action: G-178's operation
-  or the manual merge), and, once G-161 is integrated, the `deps` delivery
+  `integrate`'s refusal (which then names the next action: G-260925-dz10z's operation
+  or the manual merge), and, once G-260925-g39ga is integrated, the `deps` delivery
   text and the selection preview. Choose the noninteractive contract in
   preparation; extending `versions --json` or `deps --json` is preferred to
   a new command.
@@ -82,9 +82,9 @@ person: "If the merge conflicts, resolve or rebase, rerun … then retry."
   Grove neither chooses the order nor calls a clean order safe: it is not
   evidence that the changes are semantically compatible.
 - Out of scope: running verification on a predicted merge, which needs a
-  checkout and belongs to G-180; starting anything; changing any record or
+  checkout and belongs to G-260925-5wrn8; starting anything; changing any record or
   ref; a same-branch shared candidate for several IDs, which
-  [G-163](G-163-selected-work-review-boundary.md) governs.
+  [G-260925-80w3a](G-260925-80w3a-where-should-review-and.md) governs.
 
 ## Acceptance
 
@@ -106,10 +106,10 @@ person: "If the merge conflicts, resolve or rebase, rerun … then retry."
 
 ## Evidence
 
-Implemented headless on `worktree-G-177` from main `6b14141`, where G-161
+Implemented headless on `worktree-G-260925-h8rj5` from main `6b14141`, where G-260925-g39ga
 is integrated, so `deps` and the board's preview are in scope. Started from
 this record at `sha256:fc7cf59f…` and plan
-[G-183](G-183-plan-for-g-177-merge-prediction.md) at `sha256:828cc538…`
+[G-260925-gzdsd](G-260925-gzdsd-plan-for-merge-predictio.md) at `sha256:828cc538…`
 (commit `370df4a`). Code through `829f08c`; the candidate adds this
 evidence only.
 
@@ -156,7 +156,7 @@ evidence only.
   conflict"; the `git merge` fallback in "what prediction cannot see".
 - **Docs.** `docs/board.md`, `docs/commands.md` (`deps` text and JSON),
   `docs/record-model.md`, `docs/work-execution.md`; the term
-  [G-060](G-060-integration.md) names the pre-merge refusal.
+  [G-260921-3qgsf](G-260921-3qgsf-integration.md) names the pre-merge refusal.
 - **Verification at `829f08c`:** `gofmt -l .` empty, `go vet ./...` clean,
   `go run ./cmd/grove check` OK: 177 records,
   `go test -count=1 -timeout 120s ./...` all ok,
@@ -164,7 +164,7 @@ evidence only.
   before a change to integrate's error text and docs only).
   `internal/versions` under `-short` alone: 4.3 to 4.6s against about 4.2s
   at the base, under the five-second limit but close.
-- **Review:** [G-189](G-189-review-of-g-177-candidate-merge.md), three
+- **Review:** [G-260925-a05hb](G-260925-a05hb-review-of-candidate-merg.md), three
   rounds by fresh `grove-reviewer` agents; round 3 found nothing
   consequential.
 
@@ -179,15 +179,15 @@ printed feedback command.
 
 ## Next
 
-In review. The owner judges the candidate on `worktree-G-177`:
+In review. The owner judges the candidate on `worktree-G-260925-h8rj5`:
 
 ```sh
-grove approve G-177 "VERDICT"   # in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-177
-grove integrate G-177           # then in the main checkout
+grove approve G-260925-h8rj5 "VERDICT"   # in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-260925-h8rj5
+grove integrate G-260925-h8rj5           # then in the main checkout
 ```
 
-or `grove feedback G-177 "TEXT"` in the worktree. A demo: `grove deps
-G-177 G-178` or the board's `g`, `p` on candidates in review, and a card's
-Review block. G-178 and G-180 act on this fact.
+or `grove feedback G-260925-h8rj5 "TEXT"` in the worktree. A demo: `grove deps
+G-260925-h8rj5 G-260925-dz10z` or the board's `g`, `p` on candidates in review, and a card's
+Review block. G-260925-dz10z and G-260925-5wrn8 act on this fact.
 
 Verdict on candidate a658921, 2026-09-25: approved

@@ -1,23 +1,23 @@
 ---
-id: "G-097"
+id: "G-260922-3fn26"
 type: review
-title: "Review of G-043 board, detail and search"
+title: "Review of G-260921-k0mwk board, detail and search"
 status: current
 created: "2026-09-22T23:57:39Z"
 updated: "2026-09-22T23:57:46Z"
-work: ["G-043"]
+work: ["G-260921-k0mwk"]
 examined: "ed11f51"
 ---
 
 ## Examined
 
-Branch `worktree-G-043`, base `main` dc3b9b6. An independent reviewer
-(a subagent given the work record, plan [G-096](G-096-g-043-board-and-detail-design-vi.md),
-[G-017](G-017-terminal-picker.md)'s contract and the diff, with no write
+Branch `worktree-G-260921-k0mwk`, base `main` dc3b9b6. An independent reviewer
+(a subagent given the work record, plan [G-260922-1w0hn](G-260922-1w0hn-board-and-detail-design.md),
+[G-260919-k7b8j](G-260919-k7b8j-browse-a-terminal-kanban.md)'s contract and the diff, with no write
 access) examined `git diff dc3b9b6..b020601` in round 1 and ed11f51, the
 fix commit, in round 2, which is the `examined` field. Its probes were Go
 test files kept outside the worktree and added through `go test -overlay`.
-The candidate differs from ed11f51 by this record, [G-043](G-043-board-detail.md)'s
+The candidate differs from ed11f51 by this record, [G-260921-k0mwk](G-260921-k0mwk-make-the-board-and-item.md)'s
 evidence and a README wording change (disposition of finding 6).
 
 ## Findings
@@ -35,7 +35,7 @@ evidence and a README wording change (disposition of finding 6).
 4. **Low: below 100 columns Tab could not reach the sidebar** of a record
    with no linked records and no commits, so Sources and a history error
    were unreachable.
-5. **Low: the G-043 record was stale** (Next said implementation had not
+5. **Low: the G-260921-k0mwk record was stale** (Next said implementation had not
    started; lipgloss v2.0.6 named where go.mod has v2.0.4).
 6. **Low, cosmetic (round 2):** README said a reference "shows as typed",
    which holds in prose and code spans, while a fenced or indented code

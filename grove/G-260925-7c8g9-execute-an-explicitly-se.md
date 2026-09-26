@@ -1,12 +1,12 @@
 ---
-id: "G-162"
+id: "G-260925-7c8g9"
 type: work
 title: "Execute an explicitly selected set of work with bounded progress and review"
 status: done
 created: "2026-09-25T20:35:28Z"
 updated: "2026-09-26T00:35:57Z"
 kind: feature
-relates_to: ["G-045", "G-046", "G-044", "G-101", "G-054", "G-056", "G-057", "G-059", "G-060", "G-161", "G-188"]
+relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260921-jwk4e", "G-260923-tnn5e", "G-260921-vr8a8", "G-260921-sth8q", "G-260921-jatts", "G-260921-btyck", "G-260921-3qgsf", "G-260925-g39ga", "G-260925-wc2pz"]
 candidate: "81fa4f874aa9ce137b16debd3d9016405340df2e"
 approved: "81fa4f874aa9ce137b16debd3d9016405340df2e"
 ---
@@ -41,8 +41,8 @@ ownership](../internal/attempt/attempt.go) is organized around one work ID.
 [integration](../internal/integrate/integrate.go) judge one candidate and reject
 subsequent changes outside that work record. Merely allowing more IDs in
 `run` would not establish shared review, partial completion, or coherent
-integration. [G-101](G-101-attempt-mechanism.md) remains the accepted process
-ownership decision. The [roadmap](G-047-adoption-roadmap-plan.md) previously
+integration. [G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md) remains the accepted process
+ownership decision. The [roadmap](G-260921-466b5-adoption-roadmap.md) previously
 identified explicit selection, budgets, bounded fan-out, stop conditions,
 and partial completion as preparation needed for batches.
 
@@ -84,7 +84,7 @@ documentation.
   unchanged waits do not consume repeated attempts. Handle dependencies
   outside the selection without acquiring them or silently changing base.
 
-**Open human choice:** [G-163](G-163-selected-work-review-boundary.md) blocks
+**Open human choice:** [G-260925-80w3a](G-260925-80w3a-where-should-review-and.md) blocks
 this proposal's execution contract. Whether B may use A's changes before
 the owner reviews and integrates A determines checkout topology, candidate
 ownership, feedback invalidation, and approval/integration behavior. Do not
@@ -93,13 +93,13 @@ resolve that choice indirectly in a plan or acceptance interpretation.
 After the owner answers, reconcile the contract in the
 [work guide](../docs/work-execution.md), [record model](../docs/record-model.md)
 where its semantics change, and the owning command/board documentation.
-Preserve the settled meanings of [work](G-054-work.md),
-[attempt](G-056-attempt.md), [candidate](G-057-candidate.md),
-[approval](G-059-approval.md), and [integration](G-060-integration.md).
+Preserve the settled meanings of [work](G-260921-vr8a8-work.md),
+[attempt](G-260921-sth8q-attempt.md), [candidate](G-260921-jatts-candidate.md),
+[approval](G-260921-btyck-approval.md), and [integration](G-260921-3qgsf-integration.md).
 Introduce durable batch representation only where the selected mechanics
 need it; this proposal does not choose a new record type or revive old fields.
 
-[G-161](G-161-dependency-view.md) provides a complementary discovery and
+[G-260925-g39ga](G-260925-g39ga-see-work-dependencies-an.md) provides a complementary discovery and
 selection surface. Its suggested earlier implementation is investment order,
 not a dependency: CLI selection can exercise this outcome independently.
 
@@ -112,7 +112,7 @@ not a dependency: CLI selection can exercise this outcome independently.
 2. A chain, a branching selection, and a dependency path through unselected
    work exercise the selected policy. No unselected implementation or
    integration occurs. Later work starts only when its prerequisites meet
-   the boundary resolved in G-163.
+   the boundary resolved in G-260925-80w3a.
 3. Every selected item retains its acceptance, evidence, exact candidate when
    offered for review, and concrete Next. Shared changes, feedback to an
    earlier item, dependent evidence becoming stale, and partial completion
@@ -133,14 +133,14 @@ not a dependency: CLI selection can exercise this outcome independently.
 
 ## Evidence
 
-Implemented 2026-09-25 by a headless `/grove-work G-162` session on
-`worktree-G-162`, from main `fe97300` (plan checkpoint `06015a9`), merged
+Implemented 2026-09-25 by a headless `/grove-work G-260925-7c8g9` session on
+`worktree-G-260925-7c8g9`, from main `fe97300` (plan checkpoint `06015a9`), merged
 with main `38f82aa` in `a11dd94`. Started from this record at
-`sha256:70baf910…` and plan [G-185](G-185-g-162-selected-work-plan.md) at
+`sha256:70baf910…` and plan [G-260925-t70h8](G-260925-t70h8-selected-work-one-attemp.md) at
 `sha256:6584eb48…` (`dbb2f0d`), whose launch approved it. The plan's
 "Adjustments during implementation" records each bounded change since.
-G-163's answer is decision
-[G-188](G-188-selected-work-shared-candidate.md) (`e25925e`).
+G-260925-80w3a's answer is decision
+[G-260925-wc2pz](G-260925-wc2pz-review-an-explicitly-sel.md) (`e25925e`).
 
 Commits: `4d1507f` selection in `internal/attempt` and `run`; `5f44b78`
 group approve, feedback and integrate; `8073de4` board; `99a143c` docs;
@@ -162,7 +162,7 @@ Against each acceptance item:
    `TestSelectionWaitsBothPlaces`, `TestSelectionReopenedGroupRunsTogether`,
    `TestRunDryRun`, `TestAttemptCommandsUsage`.
 2. A chain, a branch and a path through unselected work: order, waits
-   ("needs G-003, which is proposed and not selected"), outside items never
+   ("needs G-260919-rt9h9, which is proposed and not selected"), outside items never
    made members (`TestSelectionThroughUnselectedWork`). Later members start
    only when nothing they need waits; the agent's side is the work guide's
    new selection paragraph.
@@ -195,13 +195,13 @@ Against each acceptance item:
    a Stop or owner loss mid-selection through a live process.
 
 Verification at `15774e4` (the tree the candidate holds, apart from this
-record and G-190): `go vet ./...` clean, `gofmt -l .` empty, `go run
+record and G-260925-2v889): `go vet ./...` clean, `gofmt -l .` empty, `go run
 ./cmd/grove check` OK (181 records), `go test -count=1 -timeout 120s
 ./...` all pass, `python3 internal/tui/testdata/terminal.py` all pass on a
 binary built there. The attempt package runs about 6 s uncached against
 5.2 s on main before, 1.2 s under `-short`.
 
-Review: [G-190](G-190-g-162-review-1.md), three fresh `grove-reviewer`
+Review: [G-260925-2v889](G-260925-2v889-final-review-of-in-three.md), three fresh `grove-reviewer`
 rounds at `99a143c`, `be48722` and `15774e4`; two blocking findings fixed
 with regressions and re-reviewed. Open after the last round allowed: two
 should-fix refusal messages (`run`'s suggestion for a partial reopened group
@@ -211,16 +211,16 @@ Also open for the owner: whether selection and group need term records.
 
 ## Next
 
-Checkpoint, 2026-09-25 (headless): in review on `worktree-G-162`, the
+Checkpoint, 2026-09-25 (headless): in review on `worktree-G-260925-7c8g9`, the
 candidate the status commit names. To judge it, read the Evidence above and
-G-190, then from this checkout
-(`.claude/worktrees/worktree-G-162`):
+G-260925-2v889, then from this checkout
+(`.claude/worktrees/worktree-G-260925-7c8g9`):
 
-    grove approve G-162 "VERDICT"      # or: grove feedback G-162 "TEXT"
+    grove approve G-260925-7c8g9 "VERDICT"      # or: grove feedback G-260925-7c8g9 "TEXT"
 
 and in main's checkout:
 
-    grove integrate G-162 --cleanup
+    grove integrate G-260925-7c8g9 --cleanup
 
 Acceptance 6's real-provider trial is the owner's step with its own budget,
 in a disposable project, with a `grove` built from the integrated main:
@@ -238,4 +238,4 @@ in a disposable project, with a `grove` built from the integrated main:
 
 Verdict on candidate 2fb756b, 2026-09-26: approved
 
-Verdict on candidate 81fa4f8, 2026-09-26: approved: merge of main (G-169) at 81fa4f8 over approved 2fb756b; conflicts in attempt.go, cli.go and commands.md resolved by keeping both G-169's entrypoint-revision refusal (moved into prepare) and G-162's selection; vet, gofmt, check and the full test suite pass
+Verdict on candidate 81fa4f8, 2026-09-26: approved: merge of main (G-260925-p2k54) at 81fa4f8 over approved 2fb756b; conflicts in attempt.go, cli.go and commands.md resolved by keeping both G-260925-p2k54's entrypoint-revision refusal (moved into prepare) and G-260925-7c8g9's selection; vet, gofmt, check and the full test suite pass

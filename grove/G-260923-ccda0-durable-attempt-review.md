@@ -1,18 +1,18 @@
 ---
-id: "G-102"
+id: "G-260923-ccda0"
 type: review
-title: "G-045 durable attempt review"
+title: "G-260921-h46pb durable attempt review"
 status: current
 created: "2026-09-23T02:37:36Z"
 updated: "2026-09-23T02:53:46Z"
-work: ["G-045"]
+work: ["G-260921-h46pb"]
 examined: "30b9c20"
 ---
 
-# G-045 durable attempt review
+# G-260921-h46pb durable attempt review
 
-Evidence for [G-045](G-045-durable-attempt.md) against plan
-[G-100](G-100-g-045-durable-attempt-plan.md). Two rounds of independent
+Evidence for [G-260921-h46pb](G-260921-h46pb-run-one-bounded-implemen.md) against plan
+[G-260923-0t43m](G-260923-0t43m-durable-attempt-plan.md). Two rounds of independent
 review by a read-only reviewer subagent in this harness (Claude Code
 2.1.280), then two bounded real-provider trials by the implementing session.
 A review is evidence, not approval.
@@ -55,7 +55,7 @@ Fifteen findings; dispositions in `9ae71ac` and `b4a93a7`:
 14. Notes: test loops without deadlines (fixed), the package at the 5 s
     budget (three tests merged into siblings), `--version` without `-short`
     (kept, trivial), Git through `repo.Command` throughout (confirmed).
-15. Notes for G-046: zombie owners under a long-lived launcher, no timeout
+15. Notes for G-260921-7trd7: zombie owners under a long-lived launcher, no timeout
     on `claude --version` (added, 30 s), grandchildren after a normal exit,
     usage text refusals (added).
 
@@ -106,7 +106,7 @@ In a disposable repository under the session scratchpad, initialized with
 `grove init`, whose `AGENTS.md` says `grove` is on PATH and the checkout
 is the work branch, with a one-line script and README:
 
-- **G-001 "Greet the user by name"**, `grove run G-001 --budget 4
+- **G-260919-6mpmw "Greet the user by name"**, `grove run G-260919-6mpmw --budget 4
   --permission-mode auto` from `sh -c` that exited immediately. The owner
   ran under launchd in its own session and process group; `attempts` from
   a new process showed `running`; `attempt` showed the init event (model
@@ -118,8 +118,8 @@ is the work branch, with a one-line script and README:
   `a083a9f`, the tip differing from it by the record alone; `./hello.sh
   Ada` prints `hello Ada`; the headless session had run an independent
   review subagent of its own and written the handoff. A second `run` of
-  G-001 was then refused, since the branch's record is in review.
-- **G-002 "Add a farewell script"**, `--budget 1`, reconnected with
+  G-260919-6mpmw was then refused, since the branch's record is in review.
+- **G-260919-8jb5s "Add a farewell script"**, `--budget 1`, reconnected with
   `attempt` 20 s after the init event, then `stop`: the owner logged
   SIGTERM, sent SIGINT, the provider exited with code 0 within a second
   and an `error_during_execution` result (`is_error: true`, 6 turns,

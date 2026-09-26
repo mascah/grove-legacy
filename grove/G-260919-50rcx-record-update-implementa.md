@@ -1,18 +1,18 @@
 ---
-id: "G-012"
+id: "G-260919-50rcx"
 type: plan
-title: "G-009 record update implementation plan"
+title: "G-260919-shnj5 record update implementation plan"
 status: current
 formerly: "docs/plans/W-003-update.md"
-work: ["G-009"]
+work: ["G-260919-shnj5"]
 created: "2026-09-19T18:42:44Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-009 record update implementation plan
+# G-260919-shnj5 record update implementation plan
 
 Goal: deliver `show ID --json` and `update ID` per
-[G-009](G-009-update-records.md), the canonical specification.
+[G-260919-shnj5](G-260919-shnj5-update-record-status-and.md), the canonical specification.
 Schema: [record model](../docs/record-model.md#on-disk-contract).
 
 Execution: single agent, sequential: shared Git/lock helpers → revision and
@@ -94,7 +94,7 @@ bounded span scanner over yaml.v3 node positions.
 
 ## Progress and evidence
 
-Prepared against `8b23636`; G-009 set active on 2026-09-19. Implemented on
+Prepared against `8b23636`; G-260919-shnj5 set active on 2026-09-19. Implemented on
 `worktree-W-003`: `56df181` (shared lock helpers, `new` takes the write lock),
 `a0cf898` (`show --json`, exported parsing), `c4a906c` (`update`), `135cd4d`
 (documentation), `14ed115` (review fixes).
@@ -147,7 +147,7 @@ Prepared against `8b23636`; G-009 set active on 2026-09-19. Implemented on
   `check` and `list` with the body skeleton and `created` intact; `show
   --json` hash/source pairs agree for BOM, CRLF, Unicode, and a missing final
   newline, with no Git state created.
-- Real use in this worktree: `show G-009 --json`, a no-op `update` returned
+- Real use in this worktree: `show G-260919-shnj5 --json`, a no-op `update` returned
   `changed: false` with the same revision, a status/priority change and its
   reversal left only `updated` different, a stale `--expect` was refused, and
   `check` reported 9 records. Dogfooding found the untouched-field guard

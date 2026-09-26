@@ -1,9 +1,9 @@
 ---
-id: "G-006"
+id: "G-260919-5f89v"
 type: decision
 title: Allocate IDs with flock, a counter file, and a ref scan floor
 status: superseded
-relates_to: ["G-004", "G-007", "G-194"]
+relates_to: ["G-260919-4h6pn", "G-260919-92n2y", "G-260926-2da4n"]
 created: "2026-09-19T15:25:51Z"
 updated: "2026-09-26T05:21:42Z"
 formerly: "D-003"
@@ -12,12 +12,12 @@ formerly: "D-003"
 ## Acceptance
 
 On 2026-09-19 the owner accepted this mechanism with "I accept D-003".
-[G-007](G-007-create-records.md) implements and tests it.
+[G-260919-92n2y](G-260919-92n2y-create-records-with-shar.md) implements and tests it.
 
 ## Mechanism
 
 Implement the [allocation requirements](../docs/record-model.md#identity-and-dates)
-for [G-007](G-007-create-records.md) with three standard-library pieces
+for [G-260919-92n2y](G-260919-92n2y-create-records-with-shar.md) with three standard-library pieces
 under `<git-common-dir>/grove/`:
 
 1. **Lock:** `flock(LOCK_EX)` on `lock`. The kernel releases it when the
@@ -59,11 +59,11 @@ message. Ordinary output from the read-only commands never creates this state.
 Probed 2026-09-19 in this repository: a process that took the lock and exited
 without unlocking released it to a second process immediately, and
 `git grep` across all local refs returned exactly the four record IDs.
-G-007 implemented the mechanism in `internal/create` the same day; its tests
+G-260919-92n2y implemented the mechanism in `internal/create` the same day; its tests
 cover the floor from refs and live worktree files, counter initialization and
 below-floor correction, twenty concurrent allocations across two worktrees, a
 consumed reservation after a failed creation, and lock release when the holder
-is killed. The first real allocation issued G-009 in this repository.
+is killed. The first real allocation issued G-260919-shnj5 in this repository.
 
 ## Reconsideration
 
@@ -74,7 +74,7 @@ shared allocation authority.
 
 ## Superseded
 
-[G-194](G-194-identify-records-by-creation-dat.md), accepted 2026-09-25,
+[G-260926-2da4n](G-260926-2da4n-identify-records-by-crea.md), accepted 2026-09-25,
 retired this mechanism for future creation, and
-[G-195](G-195-coordination-free-record-ids.md) deleted the counter, the
+[G-260926-pgj43](G-260926-pgj43-coordination-free-record.md) deleted the counter, the
 allocator lock and the floor scan. The IDs it issued stay valid.

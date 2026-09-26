@@ -1,11 +1,11 @@
 ---
-id: "G-134"
+id: "G-260924-5b6pz"
 type: work
 title: "Bound an attempt at its plan and choose each phase's model and reviewer"
 status: done
 created: "2026-09-24T21:48:22Z"
 updated: "2026-09-24T22:33:14Z"
-relates_to: ["G-045", "G-046", "G-055", "G-101", "G-108", "G-109", "G-114", "G-135"]
+relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260921-dqdde", "G-260923-tnn5e", "G-260923-p5pt6", "G-260923-895zb", "G-260923-h9c30", "G-260924-59f5k"]
 candidate: "da8a936cd0478ddfe5b27a7a9a06b37d399fcd75"
 approved: "da8a936cd0478ddfe5b27a7a9a06b37d399fcd75"
 ---
@@ -26,7 +26,7 @@ pre-defined agent definitions carrying tailored instructions, as bench's
 roles did. The owner asked to understand what that takes before committing
 to it, read the attempt analysis below, and agreed to this scope: the
 per-launch bound and the per-phase model and reviewer, with role profiles and
-a second harness left until [G-135](G-135-run-the-g-108-eval-pair-on-codex.md)
+a second harness left until [G-260924-59f5k](G-260924-59f5k-run-the-eval-pair-on-cod.md)
 reports. The routine choices below (flag spelling, the reviewer definition's
 delivery, the experiment's proposed models and effort) were made in that
 session with the owner present. The owner also expects, 2026-09-24, that preparation and review
@@ -45,24 +45,24 @@ Observed at main `282d282`, from the sixteen Grove-owned attempts under
   implementing attempt ran context, code reading, a plan in one to three
   minutes, `status=active`, implementation, one fresh reviewer subagent, one
   to three fix rounds by messaging that reviewer, then the review record,
-  evidence and `status=review`. Four attempts wrote a plan record (G-103,
-  G-115, G-116, G-131) and implemented against it within minutes. The plan
+  evidence and `status=review`. Four attempts wrote a plan record (G-260923-stkc6,
+  G-260923-v9wby, G-260923-rz01m, G-260924-cr3e4) and implemented against it within minutes. The plan
   is read by a person only when a question stops the attempt.
 - **The mid-run gate exists and works.** Three attempts stopped on a
-  question written during preparation: `G-109.20260923T194926Z` (G-117, a
+  question written during preparation: `G-260923-895zb.20260923T194926Z` (G-260923-hvnqh, a
   plan and a question in 4.4 minutes for $1.62, record left `proposed`),
-  `G-108.20260923T194708Z` (G-118) and `G-108.20260924T004935Z` (G-121).
+  `G-260923-p5pt6.20260923T194708Z` (G-260923-659zw) and `G-260923-p5pt6.20260924T004935Z` (G-260924-y99bx).
   The owner answered in 17 minutes, 5 hours and 7 minutes; each resumed
   attempt reused the worktree and implemented. Re-entry cost 2 to 4
   minutes and $1 to $2.50 per resumed attempt.
 - **The phase after the reviewer is the longest and runs at the highest
   context.** Fix rounds, the review record, evidence and the handoff took
-  24 minutes on G-046 (278k to 352k tokens of context), 18 on G-108's first
-  attempt, 14 on G-109's second (210k to 254k) and 10 on G-125 (208k to
+  24 minutes on G-260921-7trd7 (278k to 352k tokens of context), 18 on G-260923-p5pt6's first
+  attempt, 14 on G-260923-895zb's second (210k to 254k) and 10 on G-260924-wp2pe (208k to
   249k). No attempt checkpointed between `active` and the handoff.
 - **Outcomes.** All ten items reached done; nine were accepted on the first
-  candidate; the two feedback rounds were about intent (G-107 "missed the
-  intent", G-129 "poke"), which no code reviewer catches and which a plan
+  candidate; the two feedback rounds were about intent (G-260923-fwakw "missed the
+  intent", G-260924-3bapc "poke"), which no code reviewer catches and which a plan
   read before implementation is the earliest point that could have caught,
   once in ten. Total spend about $84.
 - **Every review ran on an unrecorded, user-level definition.** Each attempt
@@ -73,7 +73,7 @@ Observed at main `282d282`, from the sixteen Grove-owned attempts under
   appear in any of 28 reviewer messages checked; the brief each attempt
   wrote dominated, and those sixteen briefs differ in what the reviewer may
   run and whether it gets a commit, a range or a branch. A preview user has
-  no such agent. `G-108.20260924T010336Z`, the one attempt whose main model
+  no such agent. `G-260923-p5pt6.20260924T010336Z`, the one attempt whose main model
   differed, shows the split: $7.78 on Fable for the session, $1.61 on Opus
   for the reviewer, from the result event's per-model usage.
 - **Runner and harness.** [attempt.go](../internal/attempt/attempt.go)
@@ -87,19 +87,19 @@ Observed at main `282d282`, from the sixteen Grove-owned attempts under
   `--interaction MODE` as an error. The board's attempt outcomes are
   "candidate ready", "waiting on question" and "question answered: R
   again", grouped Needs you, Running, Settled
-  ([attempts.go](../internal/tui/attempts.go), G-109, G-125).
+  ([attempts.go](../internal/tui/attempts.go), G-260923-895zb, G-260924-wp2pe).
 - **Guide and terms.** The [work guide](../docs/work-execution.md) step 4
   ends at a committed plan and step 5 sets `active` when implementation
   starts; its Lifecycle paragraph says preparation is a fact inside
-  `active`, while G-109's first attempt left the record `proposed` with a
-  plan, which is the behaviour this record keeps. [G-055](G-055-preparation.md)
+  `active`, while G-260923-895zb's first attempt left the record `proposed` with a
+  plan, which is the behaviour this record keeps. [G-260921-dqdde](G-260921-dqdde-preparation.md)
   says a technical plan does not wait for a human sign-off unless it needs
   a product choice; a caller bounding an attempt at the plan is the
-  mandate's end, not a gate the plan needs, and G-055 may need that
+  mandate's end, not a gate the plan needs, and G-260921-dqdde may need that
   sentence. The brief selects "no universal plan gate" (kept: the bound is
   per launch) and "route model strength by uncertainty and consequence and
   retain actual configuration per attempt" (this record implements the
-  retention and the per-phase choice). [G-101](G-101-attempt-mechanism.md)
+  retention and the per-phase choice). [G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md)
   pins attempts to a Claude process; unchanged here.
 - **What transfers from elsewhere.** Superpowers (plugin cache 6.4.1)
   front-loads human gates at spec, plan and execution method, then executes
@@ -118,8 +118,8 @@ Observed at main `282d282`, from the sixteen Grove-owned attempts under
 
 In scope, proposed design:
 
-1. **A per-launch bound at the plan.** `/grove-work G-030 --until plan`,
-   `$grove-work G-030 --until plan` and `grove run G-030 --until plan`,
+1. **A per-launch bound at the plan.** `/grove-work G-260920-svpbc --until plan`,
+   `$grove-work G-260920-svpbc --until plan` and `grove run G-260920-svpbc --until plan`,
    with the board's `R` asking. The spelling is chosen: it names the
    artifact the bound ends at and leaves room for a later bound at another
    step. The work guide's step 4
@@ -148,7 +148,7 @@ In scope, proposed design:
    definition only if the checkout holds it. Its body is the standard brief: read-only; what it
    receives (checkout, exact range or commit, the record's acceptance and
    constraints, what it may run); what it checks, including the knowledge
-   check G-114 added; what it returns (findings with evidence, dispositions
+   check G-260923-h9c30 added; what it returns (findings with evidence, dispositions
    after fixes, limits). `model: inherit` by default, with its reasoning effort set in
    the definition's frontmatter, where Claude Code reads an agent's model
    and effort, `high` as the owner chose, so the review's effort is
@@ -161,13 +161,13 @@ In scope, proposed design:
 5. **One routing experiment on real work** (acceptance 5).
 6. Reconcile [docs/commands.md](../docs/commands.md) (run flags, attempt
    facts, init output) and [docs/board.md](../docs/board.md), and add one
-   sentence to [G-055](G-055-preparation.md): a caller may bound an attempt
+   sentence to [G-260921-dqdde](G-260921-dqdde-preparation.md): a caller may bound an attempt
    at its plan, and that is the mandate's end, not a gate the plan needs.
    The owner chose to change the settled term on 2026-09-24.
 
 Out of scope: role profiles or model defaults in `grove.yaml` (budget and
-permission mode stay required per launch, as G-045 chose); a second harness
-in the runner (G-101; G-135's report decides whether to shape it); per-task
+permission mode stay required per launch, as G-260921-h46pb chose); a second harness
+in the runner (G-260923-tnn5e; G-260924-59f5k's report decides whether to shape it); per-task
 implementer subagents by default (a plan may call for them); splitting the
 guide into phase files (the fixed reading is about 35k tokens against peaks
 of 65k to 352k, and every phase needs the authority and staging rules); a
@@ -216,10 +216,10 @@ universal plan gate; and bounds at other steps.
 
 ## Evidence
 
-Headless attempt `G-134.20260924T220310Z`, branch `worktree-G-134` in
-`.claude/worktrees/worktree-G-134`, base `98ce628` (main), started from this
+Headless attempt `G-260924-5b6pz.20260924T220310Z`, branch `worktree-G-260924-5b6pz` in
+`.claude/worktrees/worktree-G-260924-5b6pz`, base `98ce628` (main), started from this
 record at `sha256:f56ade5e…` and wrote plan
-[G-136](G-136-g-134-plan-plan-bound-per-phase.md) (`c197477`) before
+[G-260924-204rt](G-260924-204rt-plan-plan-bound-per-phas.md) (`c197477`) before
 implementing. Implementation `a84d01d`, `f712cfb`, `ccbb73c`; the candidate
 is the commit that records this evidence, named in `candidate`.
 
@@ -265,24 +265,24 @@ Per acceptance item:
    (`TestAttemptOutcomes`, `TestAttemptStandings`), and the prompts in the
    pseudo-terminal script. With the real provider (Claude Code 2.1.282), in
    a disposable clone of `a84d01d` at `/tmp/g134-clone` (removed afterwards),
-   on a fixture work record the clone numbered G-137 (the clone's own
-   counter, not this repository's G-137):
-   - A bounded attempt on `opus` at `medium` (`G-137.20260924T221429Z`) cost
-     $0.46 over 1 minute. It committed plan G-138 with `work: ["G-137"]`,
+   on a fixture work record the clone numbered G-260924-n0747 (the clone's own
+   counter, not this repository's G-260924-n0747):
+   - A bounded attempt on `opus` at `medium` (`G-260924-n0747.20260924T221429Z`) cost
+     $0.46 over 1 minute. It committed plan G-260924-w07wn with `work: ["G-260924-n0747"]`,
      then a checkpoint in the record's Next naming the plan's path and
-     revision and the continuation `/grove-work G-137 --interaction
+     revision and the continuation `/grove-work G-260924-n0747 --interaction
      headless`. The record stayed `proposed`, and `git diff --stat
-     main worktree-G-137` showed only `grove/`. Its init event listed
+     main worktree-G-260924-n0747` showed only `grove/`. Its init event listed
      `grove-reviewer` among the agents, so the provider loads the
      definition.
    - The real board, driven through a pseudo-terminal, listed it under Needs
      you as `plan ready: read it, then R`. The screen showed the requested
      bound, model and effort, the reviewer digest and the $0.46.
-   - A second bounded run with nothing changed (`G-137.20260924T221651Z`,
+   - A second bounded run with nothing changed (`G-260924-n0747.20260924T221651Z`,
      $0.26) returned the same checkpoint, wrote nothing, and left HEAD at
      `87be73f`.
    - `R` on the board then launched the implementation on the reused
-     worktree from `87be73f`, with no `--until` (`G-137.20260924T221717Z`).
+     worktree from `87be73f`, with no `--until` (`G-260924-n0747.20260924T221717Z`).
      It was stopped at once and cost $0.24.
    - Total real spend: $0.96. The screen draws of that last launch are
      recorded, but the driver's final wait missed a frame, so its facts come
@@ -292,7 +292,7 @@ Per acceptance item:
    The kept and updated verdicts use the same loop as the skills. Attempt
    facts show the digest or `no reviewer definition`.
 5. Not in this candidate by its own terms: the experiment runs on the first
-   real assignment after this lands, G-135, whose record reports it. The
+   real assignment after this lands, G-260924-59f5k, whose record reports it. The
    owner confirms that budget at assignment.
 6. At `ccbb73c`, all passed: `go vet ./...`, `gofmt -l .` (empty),
    `go run ./cmd/grove check` (`OK: 132 records`),
@@ -302,7 +302,7 @@ Per acceptance item:
    `./internal/attempt` alone ran in 4.7 s, close to the five-second rule;
    it was about 4.4 s before.
 
-Review: [G-137](G-137-g-134-review-plan-bound-per-phas.md), two rounds by
+Review: [G-260924-n0747](G-260924-n0747-review-plan-bound-per-ph.md), two rounds by
 an independent subagent given the `grove-reviewer` brief (the definition
 could not be dispatched in a session that predates it). Round 1 had two
 findings and two wording points, all fixed or kept as limits; round 2 had
@@ -326,19 +326,19 @@ In review with the candidate this record names. The integrator's actions:
 1. Optionally, try it: `go run ./cmd/grove run G-NNN --until plan --budget 2
    --permission-mode auto --effort xhigh` on real work, then `A` on the
    board. Or read the clone evidence above.
-2. `go run ./cmd/grove approve G-134 "VERDICT"` in this checkout
-   (`.claude/worktrees/worktree-G-134`), then `go run ./cmd/grove integrate
-   G-134` in the `main` checkout. Or `go run ./cmd/grove feedback G-134
+2. `go run ./cmd/grove approve G-260924-5b6pz "VERDICT"` in this checkout
+   (`.claude/worktrees/worktree-G-260924-5b6pz`), then `go run ./cmd/grove integrate
+   G-260924-5b6pz` in the `main` checkout. Or `go run ./cmd/grove feedback G-260924-5b6pz
    "TEXT"` here.
 3. After integration, rebuild the installed binary and assign
-   [G-135](G-135-run-the-g-108-eval-pair-on-codex.md) for acceptance 5's
+   [G-260924-59f5k](G-260924-59f5k-run-the-eval-pair-on-cod.md) for acceptance 5's
    experiment: a bounded attempt on Opus 5.5 at `xhigh`, then the
    implementation at `medium`. It is reviewed through `grove-reviewer`, and
    the owner confirms the budget, proposed cap $30.
 
 Follow-on, from before the assignment, still open: the bounded run as the
-first work-row case of the G-108 evaluation suite; role profiles and a
-second harness wait on G-135's report. [G-110](G-110-external-preview.md)
+first work-row case of the G-260923-p5pt6 evaluation suite; role profiles and a
+second harness wait on G-260924-59f5k's report. [G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md)
 remains a poor first target for the experiment.
 
 Verdict on candidate da8a936, 2026-09-24: approved

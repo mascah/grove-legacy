@@ -1,9 +1,9 @@
 ---
-id: "G-004"
+id: "G-260919-4h6pn"
 type: decision
 title: Use shared sequential IDs and short filenames
 status: superseded
-relates_to: ["G-001", "G-003", "G-194", "G-260926-yvjy6"]
+relates_to: ["G-260919-6mpmw", "G-260919-rt9h9", "G-260926-2da4n", "G-260926-yvjy6"]
 created: "2026-09-19T14:32:32Z"
 updated: "2026-09-26T16:11:44Z"
 formerly: "D-002"
@@ -16,7 +16,7 @@ too long to read without horizontal scrolling. They proposed using Git's shared
 metadata to prevent branches allocating duplicate numbers, then accepted moving
 forward with that approach.
 
-This revises the identity and filename choices in [G-001](G-001-starter-defaults.md).
+This revises the identity and filename choices in [G-260919-6mpmw](G-260919-6mpmw-adopt-the-starter-record.md).
 The [record model](../docs/record-model.md#identity-and-dates) owns the current
 contract. Sequential IDs are actual identities; there is no hidden random ID.
 Timestamps remain useful metadata and no longer appear in generated filenames.
@@ -52,7 +52,7 @@ explicit handling as specified in the model. Revisit the allocation strategy
 if independently edited clones become a common workflow. Reader implementation
 can proceed without solving allocation recovery first.
 
-[G-194](G-194-identify-records-by-creation-dat.md) revised the sequential IDs
+[G-260926-2da4n](G-260926-2da4n-identify-records-by-crea.md) revised the sequential IDs
 on 2026-09-25 for coordination-free date-form IDs; the short filenames stand.
 
 [G-260926-yvjy6](G-260926-yvjy6-retire-legacy-ids-by-ren.md) superseded this decision on 2026-09-26: no sequential ID remains an

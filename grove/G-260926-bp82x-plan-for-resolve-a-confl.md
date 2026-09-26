@@ -1,27 +1,27 @@
 ---
-id: "G-191"
+id: "G-260926-bp82x"
 type: plan
-title: "Plan for G-178: resolve a conflicting candidate through one bounded attempt"
+title: "Plan for G-260925-dz10z: resolve a conflicting candidate through one bounded attempt"
 status: current
 created: "2026-09-26T01:18:08Z"
 updated: "2026-09-26T01:19:13Z"
-work: ["G-178"]
+work: ["G-260925-dz10z"]
 ---
 
 ## Design
 
-Plan for [G-178](G-178-candidate-target-update.md), written headless from
-main `e812672` (G-177 integrated), on `worktree-G-178`.
+Plan for [G-260925-dz10z](G-260925-dz10z-update-a-conflicting-can.md), written headless from
+main `e812672` (G-260925-h8rj5 integrated), on `worktree-G-260925-dz10z`.
 
 **Name.** `grove resolve ID` and the board's `m` on a record in review. It
-matches G-180's `policy.resolve` and G-182's "resolution attempt". It avoids
+matches G-260925-5wrn8's `policy.resolve` and G-260925-wh9ax's "resolution attempt". It avoids
 `reconcile` and `refresh`, which the record rules out, and `update`, which is
 taken. The board's existing internal "resolve" of an answered question keeps
 its name. The new prompt's kind is `conflict`.
 
 **One function for both triggers.** `attempt.Resolve(req, shown, now,
 report)` in `internal/attempt/resolve.go` holds the refusals and the
-mandate, so G-180's policy calls the same function. It does the following,
+mandate, so G-260925-5wrn8's policy calls the same function. It does the following,
 in order, and every refusal comes before anything is written:
 
 1. One work ID, no `--until`, `--branch` or `--worktree`: the operation
@@ -34,7 +34,7 @@ in order, and every refusal comes before anything is written:
    When the caller passes the fact it showed, `shown`, a different
    candidate, or a target commit other than the one read now, is refused
    ("changed since the fact was computed; look again").
-4. The group sharing the candidate (G-188) is the selection, the given ID
+4. The group sharing the candidate (G-260925-wc2pz) is the selection, the given ID
    first. No member may have a running or orphaned attempt. The launch
    defaults (`Defaulted` with the branch's `run:`) must supply a budget and
    a mode. After review round 1, what `Start` would refuse is asked here,
@@ -79,7 +79,7 @@ target, previous, files}`:
   --cc` missed a conflict settled by taking one side, which drops the other
   side's change. It also listed files that Git had merged by itself. Round 2 fixed three more cases. `merge-tree` names files relative to the
   current directory, so `predict` now joins the prefix that
-  `resolveCommits` reads in its `rev-parse`; this also fixes G-177's
+  `resolveCommits` reads in its `rev-parse`; this also fixes G-260925-h8rj5's
   prediction for a project under a prefix. The side check ignores
   `diff.renames`. A branch whose history began apart from the target
   names no resolution and does not fail.
@@ -107,6 +107,6 @@ resolution row), `docs/work-execution.md`, and `grove --help`.
 - [x] The guide, `commands.md` and `board.md`; then verification,
       independent review and the handoff.
 
-Out of scope, as the record says: automatic triggering (G-180), and any
+Out of scope, as the record says: automatic triggering (G-260925-5wrn8), and any
 change to what candidate, approval or integration mean. A real-provider
 trial is bounded separately and is not run here.

@@ -1,11 +1,11 @@
 ---
-id: "G-107"
+id: "G-260923-fwakw"
 type: work
 title: "Reconcile current documentation and give each fact one owner"
 status: done
 created: "2026-09-23T15:51:37Z"
 updated: "2026-09-23T18:58:43Z"
-relates_to: ["G-036", "G-108", "G-109", "G-110"]
+relates_to: ["G-260921-407n6", "G-260923-p5pt6", "G-260923-895zb", "G-260923-gsthp"]
 candidate: "1614e89e802cf15e4b99e68d816ac67043d7d35d"
 approved: "1614e89e802cf15e4b99e68d816ac67043d7d35d"
 ---
@@ -26,21 +26,21 @@ projects, not a selected release channel or compatibility promise; the owner
 asked for that clarification in the same conversation. On 2026-09-23 the owner
 narrowed this work, in a review of the first draft, to reconciliation and
 ownership: newcomer onboarding and any preview-readiness judgment belong to
-[G-110](G-110-external-preview.md), and agent behavioral trials to
-[G-108](G-108-workflow-evals.md).
+[G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md), and agent behavioral trials to
+[G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md).
 
 ## Scope and constraints
 
 Observed at main `4b2a01c6d301557b82ad989aabb80d826ef38a55`:
 
 - [AGENTS.md](../AGENTS.md) opens with restart/read-only framing, says "The
-  runner contract remains open" although [G-101](G-101-attempt-mechanism.md)
+  runner contract remains open" although [G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md)
   is accepted and `run` is merged, and carries accumulated implementation
   history beside its policy.
 - [The brief](brief.md) describes shipped features as future work, the installed
   CLI as the predecessor, and branch-local Done as still permitted. Its
   "Observed state" is dated at `c9904ea`, and its "Suggested sequence" points at
-  the adoption roadmap that [G-036](G-036-interactive-adoption.md) closed; G-036
+  the adoption roadmap that [G-260921-407n6](G-260921-407n6-complete-the-interactive.md) closed; G-260921-407n6
   records the owner's closure, including the explicit substitution of Grove
   dogfooding for a real nullsec change. Do not erase that evidence distinction.
 - [README.md](../README.md) calls adoption the next milestone and ends with a
@@ -86,9 +86,9 @@ changing the workflow contract. No release compatibility promise is selected.
    pending, the predecessor as installed, or the runner contract as open.
    Claims match the inspected revision and commands.
 2. The brief states product purpose and the owner's selected preview audience,
-   and its sequence section names [G-108](G-108-workflow-evals.md),
-   [G-109](G-109-attempts-usability.md) and
-   [G-110](G-110-external-preview.md) as the proposals of that phase, their
+   and its sequence section names [G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md),
+   [G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md) and
+   [G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md) as the proposals of that phase, their
    order labelled proposed until the owner selects one. Next actions remain in
    work records; no second editable roadmap or status account is introduced.
    Historical verdicts remain attributable.
@@ -107,7 +107,7 @@ changing the workflow contract. No release compatibility promise is selected.
    a document that owns them, or are cut where another owner already holds
    them. There is no word cap: the test is that a reader new to the
    repository finds the place that owns each subject without reading the
-   rest. Whether that serves an external newcomer is G-110's judgment, not
+   rest. Whether that serves an external newcomer is G-260923-gsthp's judgment, not
    this work's.
 5. Local links and command examples resolve or are explicitly labelled
    historical. `go run ./cmd/grove check` passes. Shared guide ownership and thin
@@ -117,20 +117,20 @@ changing the workflow contract. No release compatibility promise is selected.
 
 ## Evidence
 
-Executed headless via `/grove-work G-107 --interaction headless` in Claude
-Code (Opus 5.5), 2026-09-23. Branch `worktree-G-107` in
-`.claude/worktrees/worktree-G-107`, based on main `768efab`, which held this
+Executed headless via `/grove-work G-260923-fwakw --interaction headless` in Claude
+Code (Opus 5.5), 2026-09-23. Branch `worktree-G-260923-fwakw` in
+`.claude/worktrees/worktree-G-260923-fwakw`, based on main `768efab`, which held this
 record at `sha256:c411c9a8…`. The candidate is the commit that adds this
-Evidence (the `candidate` field). Plan: [G-111](G-111-g-107-docs-plan.md).
+Evidence (the `candidate` field). Plan: [G-260923-2zgsr](G-260923-2zgsr-documentation-inventory.md).
 Commits: plan `0c42435`, active `ef911b1`, reconciliation `d6cc1df`, review
 fixes `1398458` and `6a9f146`.
 
 Against the acceptance:
 
-1. G-111 inventories every documentation file, agent entrypoint and spent
+1. G-260923-2zgsr inventories every documentation file, agent entrypoint and spent
    prompt at `768efab`, each with a disposition. The spent prompts in
    `docs/prompts/` are deleted and remain in Git at `768efab`. As a result,
-   G-023's two links to them no longer resolve, which leaves them as
+   G-260919-nddsf's two links to them no longer resolve, which leaves them as
    history. Current entrypoints no longer say that adoption is pending, that
    the predecessor is installed, that the runner contract is open, that
    "Grove launches no agent", or that agent execution is future work. The
@@ -138,26 +138,26 @@ Against the acceptance:
    entrypoints no longer describe it.
 2. The brief now states:
    - the purpose;
-   - G-036's closure, with the nullsec substitution attributed to the owner;
+   - G-260921-407n6's closure, with the nullsec substitution attributed to the owner;
    - Keyborg, still selected and without a record;
    - the preview audience, marked as not a release channel or promise.
 
-   Its "Suggested sequence" names G-108, G-109 and G-110, says the owner has
-   selected no order, and sends G-047 and G-048 to history. It keeps no
+   Its "Suggested sequence" names G-260923-p5pt6, G-260923-895zb and G-260923-gsthp, says the owner has
+   selected no order, and sends G-260921-466b5 and G-260921-72chf to history. It keeps no
    progress account. The headings that records link to are kept.
 3. Reading check: a fresh `general-purpose` subagent in this session read
    only AGENTS.md at `d6cc1df` and answered how to shape, execute and
    retrieve context in stages. It went through no roadmap and never mentioned
-   G-036 or G-047. It asked what "the headless form" meant, and `1398458`
+   G-260921-407n6 or G-260921-466b5. It asked what "the headless form" meant, and `1398458`
    answered that.
    Limit: its injected system context still held the session-start copy of
    AGENTS.md (`768efab`). It reports answering from the file on disk. This
    was a subagent, not a separate interactive session.
 4. The README now opens with what Grove is, a list of what this build does,
    and where to go next, with no work IDs. Whether that serves a newcomer is
-   G-110's judgment.
+   G-260923-gsthp's judgment.
 5. Local links and anchors were checked with a script over AGENTS.md, the
-   README, `docs/*.md`, the brief and G-111: no problems. Every anchor that a
+   README, `docs/*.md`, the brief and G-260923-2zgsr: no problems. Every anchor that a
    record links into the record model or the brief resolves.
 
    The non-writing README examples all exit 0 with a built binary at
@@ -192,7 +192,7 @@ Context size (`wc -w`), from `768efab` to candidate:
 
 This is evidence of reduction, not of correctness.
 
-Review: [G-112](G-112-g-107-review.md), two rounds, with an independent
+Review: [G-260923-f9yah](G-260923-f9yah-documentation-reconcilia.md), two rounds, with an independent
 agent reviewer. Its seven findings were fixed and confirmed. One round-2
 wording fix was self-checked. No findings are open.
 
@@ -202,9 +202,9 @@ and starts and stops attempts behind prompts.
 
 ### Second attempt, after the owner's feedback on `71a650e`
 
-Executed headless via `/grove-work G-107 --interaction headless` in Claude
+Executed headless via `/grove-work G-260923-fwakw --interaction headless` in Claude
 Code (Opus 5.5), 2026-09-23, on the same branch and worktree. It started from
-`4159e79`, where this record was at `sha256:e5dbfe49…` and plan G-111 at
+`4159e79`, where this record was at `sha256:e5dbfe49…` and plan G-260923-2zgsr at
 `sha256:1e74dd06…`.
 
 Commits:
@@ -213,7 +213,7 @@ Commits:
 - `49c8f5b`: the restructure.
 - `e07f98e`: round-1 fixes.
 - `833ac1b`: round-2 fixes.
-- `457dacc`: review record G-113.
+- `457dacc`: review record G-260923-d8xkp.
 
 The candidate is the commit that adds this section.
 
@@ -221,8 +221,8 @@ Against the revised acceptance:
 
 3. AGENTS.md states each rule as one bullet of one to three lines. It names
    the record or document that owns the rule's reasons wherever one does:
-   G-007, G-009, G-011, G-017, G-030, G-031, G-038, G-042, G-043, G-044,
-   G-052, G-064, G-065, G-071, G-081, G-089, and the brief. The Constraints
+   G-260919-92n2y, G-260919-shnj5, G-260919-n9t4p, G-260919-k7b8j, G-260920-svpbc, G-260920-z8vfp, G-260921-9wkjt, G-260921-ms6ev, G-260921-k0mwk, G-260921-jwk4e,
+   G-260921-r491p, G-260921-gtydy, G-260921-ebsby, G-260922-9cbh6, G-260922-jtsed, G-260922-g6e7p, and the brief. The Constraints
    header says that a rule naming none is AGENTS.md's own policy: the commit
    and verification rules, and the sibling write scope. No record owns
    those.
@@ -244,7 +244,7 @@ Against the revised acceptance:
      AGENTS.md itself owns;
    - `--include PATH` belongs to `context`, which the text does not say;
    - "refuses a candidate HEAD lacks" is hard to parse;
-   - G-081 owns two unrelated rules.
+   - G-260922-jtsed owns two unrelated rules.
 
    Limit: this was a subagent in this session, not a separate interactive
    session.
@@ -258,8 +258,8 @@ Against the revised acceptance:
    - a table of where each subject is owned, including the adapters and
      their evidence.
 
-   It needs no work IDs except G-032 and G-050 as the evidence for the
-   adapters, and G-069 for old IDs. It does not retell `grove --help`.
+   It needs no work IDs except G-260920-j2eyp and G-260921-ahbrj as the evidence for the
+   adapters, and G-260921-czt8x for old IDs. It does not retell `grove --help`.
 
    The board manual moved to `docs/board.md`, with a key table checked
    against `internal/tui`. Command behaviour that no current document owned
@@ -275,9 +275,9 @@ Against the revised acceptance:
    that `71a650e` did not already have.
 
    The README and reference examples were run with a binary built at
-   `49c8f5b`: `--help`, `list`, `show G-003`, `check`, `brief`, `version`,
-   `guide work`, `guide shape`, `attempts`, `versions G-003`,
-   `context G-107`, and `workspace` piped into `--project … show`. All exit
+   `49c8f5b`: `--help`, `list`, `show G-260919-rt9h9`, `check`, `brief`, `version`,
+   `guide work`, `guide shape`, `attempts`, `versions G-260919-rt9h9`,
+   `context G-260923-fwakw`, and `workspace` piped into `--project … show`. All exit
    0. The board without a terminal exits 1, as documented.
 
    The guides and adapters are unchanged. The record model changed only in
@@ -309,22 +309,22 @@ The total barely moves, since the text moved rather than being cut. The
 change is that each subject now has one place, and the README and AGENTS.md
 are what a session reads first.
 
-Review: [G-113](G-113-g-107-router-review.md), three rounds (the cap) by an
+Review: [G-260923-d8xkp](G-260923-d8xkp-router-restructure-revie.md), three rounds (the cap) by an
 independent `reviewer` subagent. Twelve round-1 findings (four medium) and
 seven round-2 points were fixed and confirmed. Round 3 found nothing, and no
 findings are open.
 
 ## Next
 
-In review with the second candidate: branch `worktree-G-107` in
-`.claude/worktrees/worktree-G-107`, based on main `768efab`. The candidate
+In review with the second candidate: branch `worktree-G-260923-fwakw` in
+`.claude/worktrees/worktree-G-260923-fwakw`, based on main `768efab`. The candidate
 is set in the `candidate` field. The integrator runs:
 
 ```sh
-# in .claude/worktrees/worktree-G-107, after judging the Evidence above
-grove approve G-107 "VERDICT"      # or: grove feedback G-107 "TEXT"
+# in .claude/worktrees/worktree-G-260923-fwakw, after judging the Evidence above
+grove approve G-260923-fwakw "VERDICT"      # or: grove feedback G-260923-fwakw "TEXT"
 # then, in the main checkout
-grove integrate G-107 --cleanup
+grove integrate G-260923-fwakw --cleanup
 ```
 
 Proposed follow-up work outside this documentation scope, not created as
@@ -337,7 +337,7 @@ records:
   `docs/board.md`.
 
 Whether the README serves an external newcomer is
-[G-110](G-110-external-preview.md)'s judgment.
+[G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md)'s judgment.
 
 Feedback on candidate 71a650e, 2026-09-23: Missed the intent. The record asked for reconciliation and got it, but never said that the README and AGENTS.md are routers, not books, so they still are: the README is 34.6k characters, a prose retelling of grove --help plus a full board manual. There is no word cap; the test is that the right content is in the right place and someone else can understand it. The README keeps a command overview but does not retell --help, which needs its own work and does not replace the README. The board's key-by-key manual leaves the README. AGENTS.md matters less. Acceptance revised in the next commit.
 

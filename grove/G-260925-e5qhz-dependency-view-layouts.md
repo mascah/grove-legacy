@@ -1,20 +1,20 @@
 ---
-id: "G-165"
+id: "G-260925-e5qhz"
 type: plan
-title: "G-161 dependency view: layouts, shared preview model and CLI contract"
+title: "G-260925-g39ga dependency view: layouts, shared preview model and CLI contract"
 status: current
 created: "2026-09-25T20:45:47Z"
 updated: "2026-09-25T20:47:55Z"
-work: ["G-161"]
+work: ["G-260925-g39ga"]
 ---
 
 ## Inputs
 
-Prepared on 2026-09-25 for [G-161](G-161-dependency-view.md) at revision
-`sha256:705f8dda…`, headless, on branch `worktree-G-161` from `main`
-`05892a2`. Read in full: G-161, [G-163](G-163-selected-work-review-boundary.md)
+Prepared on 2026-09-25 for [G-260925-g39ga](G-260925-g39ga-see-work-dependencies-an.md) at revision
+`sha256:705f8dda…`, headless, on branch `worktree-G-260925-g39ga` from `main`
+`05892a2`. Read in full: G-260925-g39ga, [G-260925-80w3a](G-260925-80w3a-where-should-review-and.md)
 (which does not block this read-only work), the settled terms Work, Candidate,
-Integration, Source and Revision, the G-116/G-117 layout-question precedent,
+Integration, Source and Revision, the G-260923-rz01m/G-260923-hvnqh layout-question precedent,
 `internal/project/graph.go`, `internal/handoff/context.go`,
 `internal/versions/current.go`, `internal/versions/changes.go`,
 `internal/tui/detail.go` (`linked`), `internal/tui/model.go`
@@ -22,7 +22,7 @@ Integration, Source and Revision, the G-116/G-117 layout-question precedent,
 `docs/commands.md`, the dependency rules of `docs/record-model.md` and step 5
 of `docs/work-shaping.md`.
 
-[G-166](G-166-g-161-dependency-layout.md) asked the owner to choose the board
+[G-260925-t2nb3](G-260925-t2nb3-which-dependency-view-la.md) asked the owner to choose the board
 layout. The shared model, the noninteractive command and the shaping-guide
 change did not depend on it and were implemented first. The owner answered
 with layout B and no printed handoff; step 4 builds that.
@@ -30,10 +30,10 @@ with layout B and no printed handoff; step 4 builds that.
 ## Observed at `05892a2`
 
 - 50 work records, 24 `depends_on` edges. The largest connected group has 13
-  items, all done: G-025, G-037, G-038, G-039, G-040, G-041, G-042, G-043,
-  G-044, G-045, G-046, G-052, G-065. Its longest chain is seven layers
-  (G-037 → G-065 → G-038 → G-039 → G-040 → G-045 → G-046). The others are
-  G-014/15/16 → G-017, G-010 → G-011, and G-150/G-151 → G-110 (G-110 is the
+  items, all done: G-260919-04z88, G-260921-w9x25, G-260921-9wkjt, G-260921-9t178, G-260921-5gz9a, G-260921-905y3, G-260921-ms6ev, G-260921-k0mwk,
+  G-260921-jwk4e, G-260921-h46pb, G-260921-7trd7, G-260921-r491p, G-260921-ebsby. Its longest chain is seven layers
+  (G-260921-w9x25 → G-260921-ebsby → G-260921-9wkjt → G-260921-9t178 → G-260921-5gz9a → G-260921-h46pb → G-260921-7trd7). The others are
+  G-260919-8bbvy/15/16 → G-260919-k7b8j, G-260919-zb0s8 → G-260919-n9t4p, and G-260925-3pj9a/G-260925-ej1xh → G-260923-gsthp (G-260923-gsthp is the
   only unfinished work with prerequisites; both are done).
 - `context` orders a selection through transitive prerequisites, including
   paths through unselected work (`selection` in `internal/handoff`), and
@@ -79,7 +79,7 @@ and the board both render.
     or behaviour;
   - abandoned: will not be delivered; the dependency needs a decision;
   - a candidate Git cannot read here: unavailable, said as such.
-- **Current-view notes** from `versions` (G-042), binding everything above
+- **Current-view notes** from `versions` (G-260921-ms6ev), binding everything above
   to the one checkout's records: an involved record whose version here is
   older than the current one elsewhere (with that source and status),
   current states that diverge, current states elsewhere whose `depends_on`
@@ -93,15 +93,15 @@ and the board both render.
   source, so it runs no `Compare`. Instead, the focused row's trees list
   each diverging state with its own `depends_on`, never merged. This
   replaced the per-item `Compare` first planned here, after the second
-  review gate ([G-175](G-175-g-161-deps-second-review-gate-on.md)) found
+  review gate ([G-260925-h2c5a](G-260925-h2c5a-deps-second-review-gate.md)) found
   that the overview could drop divergent work. A preview binds to one
   checkout (the one `b` chose, else this one) before it orders anything,
   and runs `Compare` for it. Edges from different sources are therefore
-  never combined (G-161's Constraints). The first review gate asked for
+  never combined (G-260925-g39ga's Constraints). The first review gate asked for
   this.
-- **Freshness.** Every involved record carries its revision (G-062). The
+- **Freshness.** Every involved record carries its revision (G-260921-vz0v3). The
   board's preview is recomputed on every re-read and says when a listed
-  record changed. There is no handoff (G-166), so nothing can act on a
+  record changed. There is no handoff (G-260925-t2nb3), so nothing can act on a
   stale preview.
 
 ## Command contract (chosen here, layout-independent)
@@ -122,7 +122,7 @@ and the board both render.
   says so on stderr and exits 1, as `versions` does; an unknown or non-work
   ID fails as `context` fails.
 
-## Board layouts (owner's choice, G-166)
+## Board layouts (owner's choice, G-260925-t2nb3)
 
 Both drawings use the synthetic unfinished backlog below; the real 13-item
 group appears only when history is expanded, since all of it is done. Titles

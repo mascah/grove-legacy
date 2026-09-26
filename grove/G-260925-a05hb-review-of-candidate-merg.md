@@ -1,18 +1,18 @@
 ---
-id: "G-189"
+id: "G-260925-a05hb"
 type: review
-title: "Review of G-177 candidate: merge prediction"
+title: "Review of G-260925-h8rj5 candidate: merge prediction"
 status: current
 created: "2026-09-25T23:24:09Z"
 updated: "2026-09-25T23:24:25Z"
-work: ["G-177"]
+work: ["G-260925-h8rj5"]
 examined: "829f08c63aaa8506dae3c838b5484b1abe2f108d"
 ---
 
 ## Examined
 
-The G-177 implementation on `worktree-G-177`, base `370df4a` (plan
-[G-183](G-183-plan-for-g-177-merge-prediction.md) and status active, on
+The G-260925-h8rj5 implementation on `worktree-G-260925-h8rj5`, base `370df4a` (plan
+[G-260925-gzdsd](G-260925-gzdsd-plan-for-merge-predictio.md) and status active, on
 main `6b14141`), by three fresh `grove-reviewer` agents, one per round:
 `0fbf4c3`, then fixes to `502b27f`, then to `829f08c`. The record's
 acceptance and constraints, the plan and `CLAUDE.md` were the criteria.
@@ -34,7 +34,7 @@ Round 1 (`0fbf4c3`):
 5. Low, interpretive. A prediction is `rev-parse`, `merge-base` and
    `merge-tree` (plus `commit-tree` per clean step of an order), not one
    process per candidate as acceptance 4 words it.
-6. Low, knowledge. The settled term G-060's mechanics paragraph still said
+6. Low, knowledge. The settled term G-260921-3qgsf's mechanics paragraph still said
    integrate aborts on conflict.
 
 Round 2 (`502b27f`): all six verified resolved or dispositioned; new:
@@ -65,5 +65,5 @@ consequential. Acceptance 1 to 5 met.
    target.
 5. Left to the owner: reads stay bounded, per candidate, on demand, never
    during the board load.
-6. Fixed in `502b27f`: G-060 names the pre-merge refusal.
+6. Fixed in `502b27f`: G-260921-3qgsf names the pre-merge refusal.
 7. to 9. Fixed in `829f08c`.

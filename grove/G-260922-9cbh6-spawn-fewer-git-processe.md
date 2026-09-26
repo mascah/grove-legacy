@@ -1,5 +1,5 @@
 ---
-id: "G-071"
+id: "G-260922-9cbh6"
 type: work
 title: "Spawn fewer Git processes per inspection"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-22T03:19:16Z"
 updated: "2026-09-22T03:59:15Z"
 kind: refactor
 size: medium
-relates_to: ["G-030", "G-031", "G-052"]
+relates_to: ["G-260920-svpbc", "G-260920-z8vfp", "G-260921-r491p"]
 ---
 
 ## Outcome
@@ -16,7 +16,7 @@ relates_to: ["G-030", "G-031", "G-052"]
 processes per inspection, so an inspection of a repository with a few
 worktrees is cheaper and `internal/versions` runs inside the owner's
 five-second package budget. Behaviour observable through the CLI, including
-every diagnostic the G-030 and G-031 tests pin, stays the same. This is the
+every diagnostic the G-260920-svpbc and G-260920-z8vfp tests pin, stays the same. This is the
 owner's intent from the 2026-09-21 test-suite triage: the suite must stay
 near ten seconds as features are added, and the remaining cost is the
 product's, not the tests'.
@@ -68,7 +68,7 @@ of worktrees; it does not lower CPU).
 
 ## Evidence
 
-Implemented on `worktree-G-071` from main `5c637b4`, code in `418e3d2`.
+Implemented on `worktree-G-260922-9cbh6` from main `5c637b4`, code in `418e3d2`.
 Design as proposed, with one addition found while measuring: skipping the
 second inventory's re-entry was needed to reach half, since one process
 per checkout at each read still left about 1,200 `rev-parse`.
@@ -97,7 +97,7 @@ on this machine, 2026-09-21:
 | `for-each-ref` | 150 | 150 |
 | all Git processes | 3,607 | 2,209 |
 
-One `versions G-071` on this repository (three worktrees, project at the
+One `versions G-260922-9cbh6` on this repository (three worktrees, project at the
 root): 15 processes to 8. After: one `rev-parse` for the root, one per
 checkout, two `worktree list`, one `for-each-ref`, one `cat-file`.
 
@@ -120,7 +120,7 @@ each between the reads) and `TestInspectWorktreeReplacedBySymlink`.
 Acceptance 4: the notes on `identity` in `live.go` and `Resolve` in
 `workspace.go` state the new counts.
 
-Independent review: [G-072](G-072-g-071-process-count-review.md). Round 1
+Independent review: [G-260922-3cgay](G-260922-3cgay-process-count-review.md). Round 1
 found that the one-process path had dropped the check that the registered
 path is itself a directory, so a symlink at it was admitted; fixed in
 `418e3d2` with the two symlink tests above. Round 2 on `418e3d2` found
@@ -132,5 +132,5 @@ counts all processes about 5% higher and agrees on `rev-parse`.
 
 Done. The owner accepted the acceptance-3 reading on 2026-09-21 (the
 cancellation scenario had to change once an unchanged checkout is not
-re-entered) and asked for the merge; `worktree-G-071` was fast-forwarded
+re-entered) and asked for the merge; `worktree-G-260922-9cbh6` was fast-forwarded
 onto main.

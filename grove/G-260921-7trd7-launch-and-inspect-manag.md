@@ -1,5 +1,5 @@
 ---
-id: "G-046"
+id: "G-260921-7trd7"
 type: work
 title: "Launch and inspect managed attempts from the TUI"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-23T04:35:16Z"
 kind: feature
 size: medium
 priority: 4
-depends_on: ["G-044", "G-045"]
-relates_to: ["G-035", "G-043"]
+depends_on: ["G-260921-jwk4e", "G-260921-h46pb"]
+relates_to: ["G-260921-tkdwh", "G-260921-k0mwk"]
 formerly: "W-028"
 candidate: "61edd53390c4459462e79ededf5a25eb0644a1f7"
 approved: "61edd53390c4459462e79ededf5a25eb0644a1f7"
@@ -24,7 +24,7 @@ return after closing the TUI, and review the resulting candidate in Grove.
 
 Implement is an explicit assignment action, not a side effect of changing
 status. Show a runs list and attempt detail or an integrated detail section,
-using G-045's ownership/events rather than making the TUI own the process.
+using G-260921-h46pb's ownership/events rather than making the TUI own the process.
 Present progress, waiting/failure, budget and Stop with linked logs as needed.
 Retain the final report and reviews when ephemeral activity scrolls away.
 
@@ -44,17 +44,17 @@ Retain the final report and reviews when ephemeral activity scrolls away.
 
 ## Evidence
 
-Branch `worktree-G-046` in `.claude/worktrees/worktree-G-046`, from `main`
+Branch `worktree-G-260921-7trd7` in `.claude/worktrees/worktree-G-260921-7trd7`, from `main`
 at `bd2418f`, started from this record at revision `sha256:4dc799d6…`.
-Plan [G-103](G-103-g-046-managed-runs-plan.md) (`e1d3693`, which also set
+Plan [G-260923-stkc6](G-260923-stkc6-managed-runs-plan.md) (`e1d3693`, which also set
 this record active). Commits: `85a36c5` the attempt package, `dbab7c6` the
 board, `6518342` the pseudo-terminal scenario and docs, `3bde002`,
 `8385f51`, `bca6397` and `79095a6` the review rounds' fixes; the candidate
 is the evidence commit named in `candidate`. Review record
-[G-104](G-104-g-046-managed-runs-review.md): three rounds of independent
+[G-260923-a8kzm](G-260923-a8kzm-managed-runs-review.md): three rounds of independent
 review, the findings and their dispositions.
 
-Decisions (the roadmap's run-experience questions, G-047): attempts get
+Decisions (the roadmap's run-experience questions, G-260921-466b5): attempts get
 two screens, a list (`A`) and one attempt (Enter), plus a row in work's
 detail naming the latest attempt and its outcome and a `● running` tag on
 the card; activity is summarized one short line per event from the last
@@ -62,13 +62,13 @@ the card; activity is summarized one short line per event from the last
 rendered like a record body behind the same escaping; relaunch after
 feedback is `R` on the record, which runs on the candidate's branch.
 Budget and permission mode are typed at every launch with no prefill,
-since G-045 made a default of either a product choice.
+since G-260921-h46pb made a default of either a product choice.
 
 Changed behaviour, against each acceptance item:
 
 1. **One bounded assignment, useful refusals.** `R` on proposed or active
    work asks for a budget (checked) and a permission mode, then runs
-   G-045's `attempt.Start` once: exactly one attempt, as `run` makes it.
+   G-260921-h46pb's `attempt.Start` once: exactly one attempt, as `run` makes it.
    Refused up front with what to do: work in review ("judge its
    candidate"), done or abandoned, not work, blocked by an open question,
    or with an attempt running or orphaned ("A shows it, x stops it");
@@ -84,7 +84,7 @@ Changed behaviour, against each acceptance item:
 2. **Reconnect and Stop.** The board only reads attempt files, so
    quitting leaves the attempt running and the next session shows the
    same one; `attempt.Start` now waits on the owner in a goroutine, so the
-   long-lived board reaps it (G-102's note). `x` asks `y/n` and stops
+   long-lived board reaps it (G-260923-ccda0's note). `x` asks `y/n` and stops
    through `attempt.Stop`; partial work stays. The pseudo-terminal
    scenario quits while an attempt runs, finds it running in a new session
    with one provider start, stops it there, and finds `partial.txt` kept.
@@ -102,7 +102,7 @@ Changed behaviour, against each acceptance item:
 4. **Feedback continuation.** After `f`, the result names `R` on the
    record; `R` then runs on the candidate's branch in its checkout
    (`TestFeedbackContinuesOnTheCandidateBranch`, `TestLaunchPlace`, and
-   the scenario's third attempt, which continues on `worktree-G-001` to a
+   the scenario's third attempt, which continues on `worktree-G-260919-6mpmw` to a
    committed candidate after its question is answered). Earlier evidence,
    reviews and attempts stay; the attempt changes nothing but what the
    headless guide writes, and earlier attempts keep their outcomes after
@@ -125,9 +125,9 @@ included); `go test -count=1 -timeout 120s ./...` ok in every package;
 `-race` alone on `internal/tui` and `internal/attempt` ok; `-short`:
 tui 0.6 s, attempt 0.8 s, cli 2.5 s. The whole terminal suite (ten
 scenarios) passed 16 of 16 runs, four at a time. Links in this record,
-G-103, G-104, the README and both docs resolve.
+G-260923-stkc6, G-260923-a8kzm, the README and both docs resolve.
 
-Limits: no real-provider run from the board (G-045's two real trials ran
+Limits: no real-provider run from the board (G-260921-h46pb's two real trials ran
 the same `Start`, owner and `Stop`; here the provider is a fake); Linux
 not run; the activity summary knows Claude Code 2.1.280's event shapes
 and shows nothing for others; Stop of an orphan holds the keys for up to
@@ -141,20 +141,20 @@ In Review. The candidate is the evidence commit named in `candidate`; the
 branch tip adds only this status change. To judge it, from this worktree:
 
 ```sh
-go run ./cmd/grove context G-046 --include grove/G-103-g-046-managed-runs-plan.md
-go run ./cmd/grove show G-104
+go run ./cmd/grove context G-260921-7trd7 --include grove/G-260923-stkc6-managed-runs-plan.md
+go run ./cmd/grove show G-260923-a8kzm
 git diff --stat bd2418f..HEAD
 go test -count=1 -timeout 120s ./...
 # the board with a fake provider, in a disposable repository, with a binary of this branch:
-go build -o /tmp/grove-G-046 ./cmd/grove
+go build -o /tmp/grove-G-260921-7trd7 ./cmd/grove
 printf '#!/bin/sh\n[ "$1" = --version ] && { echo fake; exit 0; }\necho "{\\"type\\":\\"system\\",\\"subtype\\":\\"init\\",\\"model\\":\\"fake\\"}"\nfor i in $(seq 1 60); do echo "{\\"type\\":\\"assistant\\",\\"message\\":{\\"content\\":[{\\"type\\":\\"text\\",\\"text\\":\\"step $i\\"}]}}"; sleep 1; done\necho "{\\"type\\":\\"result\\",\\"subtype\\":\\"success\\",\\"result\\":\\"Done.\\"}"\n' > /tmp/fake-claude && chmod +x /tmp/fake-claude
-mkdir -p /tmp/grove-demo && cd /tmp/grove-demo && git init -q -b main && /tmp/grove-G-046 init >/dev/null && /tmp/grove-G-046 new work "Demo" && git add -A && git commit -qm demo
-GROVE_CLAUDE=/tmp/fake-claude /tmp/grove-G-046   # Enter on the card, R, 1, auto; A, Enter; q; reopen; x, y
+mkdir -p /tmp/grove-demo && cd /tmp/grove-demo && git init -q -b main && /tmp/grove-G-260921-7trd7 init >/dev/null && /tmp/grove-G-260921-7trd7 new work "Demo" && git add -A && git commit -qm demo
+GROVE_CLAUDE=/tmp/fake-claude /tmp/grove-G-260921-7trd7   # Enter on the card, R, 1, auto; A, Enter; q; reopen; x, y
 # a real bounded run: the same without GROVE_CLAUDE, in a repository whose AGENTS.md says grove is on PATH
 ```
 
-Approve: `go run ./cmd/grove approve G-046 "VERDICT"` in this worktree,
-then `go run ./cmd/grove integrate G-046` in `main`'s checkout. Feedback:
-`go run ./cmd/grove feedback G-046 "TEXT"` here.
+Approve: `go run ./cmd/grove approve G-260921-7trd7 "VERDICT"` in this worktree,
+then `go run ./cmd/grove integrate G-260921-7trd7` in `main`'s checkout. Feedback:
+`go run ./cmd/grove feedback G-260921-7trd7 "TEXT"` here.
 
 Verdict on candidate 61edd53, 2026-09-23: Only able to test the attempts views right now. Lets merge and I will test launching new background runs fro th TUI with fesh work.

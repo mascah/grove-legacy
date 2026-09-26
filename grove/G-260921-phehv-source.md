@@ -1,11 +1,11 @@
 ---
-id: "G-061"
+id: "G-260921-phehv"
 type: term
 title: "Source"
 status: settled
 created: "2026-09-21T05:01:57Z"
 updated: "2026-09-21T14:23:34Z"
-relates_to: ["G-062"]
+relates_to: ["G-260921-vz0v3"]
 formerly: "T-008"
 ---
 
@@ -24,4 +24,4 @@ record file's exact text.
 
 A record has one version per source that holds it. `workspace` resolves a
 selected version to the existing checkout of its source. Each version has a
-[revision](G-062-revision.md).
+[revision](G-260921-vz0v3-revision.md).

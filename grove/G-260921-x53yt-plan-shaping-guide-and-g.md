@@ -1,21 +1,21 @@
 ---
-id: "G-049"
+id: "G-260921-x53yt"
 type: plan
-title: "G-025 plan: shaping guide and `grove-shape` adapters"
+title: "G-260919-04z88 plan: shaping guide and `grove-shape` adapters"
 status: current
 formerly: "docs/plans/W-011-shaping-entrypoint.md"
-work: ["G-025"]
+work: ["G-260919-04z88"]
 created: "2026-09-21T02:53:09Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-025 plan: shaping guide and `grove-shape` adapters
+# G-260919-04z88 plan: shaping guide and `grove-shape` adapters
 
 Prepared 2026-09-20 on `worktree-W-011` from `main` `70f19c5`, record revision
-`sha256:c38704a1…`. [G-025](G-025-shaping-entrypoint.md) owns
+`sha256:c38704a1…`. [G-260919-04z88](G-260919-04z88-shape-project-work-throu.md) owns
 outcome, scope and acceptance; this is implementation steps only. It replaces
-the G-025 portion of the superseded
-[shared handoff plan](G-027-agent-handoffs-plan.md). No Go code changes: the
+the G-260919-04z88 portion of the superseded
+[shared handoff plan](G-260919-p1dgm-agent-handoffs-implement.md). No Go code changes: the
 guide uses today's `list`, `show`, `check`, `new`, `update`, `versions`,
 `workspace` and `context`.
 
@@ -43,7 +43,7 @@ guide uses today's `list`, `show`, `check`, `new`, `update`, `versions`,
      investigated. Decisions only for choices a named person actually made in
      the session or a linked source; otherwise `proposed` or a question.
      Supporting knowledge links existing ordinary documents; no new record
-     types, fields, statuses or files under the record root (G-037/G-038).
+     types, fields, statuses or files under the record root (G-260921-w9x25/G-260921-9wkjt).
    - Where writes go. Interactive: the session's checkout, stated before the
      first write, unless it is another assignment's execution checkout or holds
      someone's uncommitted record edits; then ask. Commit only shaping's own
@@ -62,10 +62,10 @@ guide uses today's `list`, `show`, `check`, `new`, `update`, `versions`,
    pattern, explicit invocation only, pointing at `AGENTS.md` and the guide.
 3. Policy and contract owners: a short AGENTS.md shaping paragraph reusing the
    Assigned-work invocation bullets; a README paragraph beside the `grove-work`
-   one; G-025's Next and plan link. (The brief was first reconciled too; on the
+   one; G-260919-04z88's Next and plan link. (The brief was first reconciled too; on the
    owner's instruction of 2026-09-20 it no longer tracks progress or a Next.)
 
-## Evidence (kept apart by kind, in `grove/G-050-shaping-review.md`)
+## Evidence (kept apart by kind, in `grove/G-260921-ahbrj-shaping-entrypoint-evide.md`)
 
 - **Source checks:** adapters differ only in harness frontmatter/argument
   wording; `check` passes; every relative link in changed files resolves.
@@ -83,7 +83,7 @@ guide uses today's `list`, `show`, `check`, `new`, `update`, `versions`,
   (`update --expect OLD` refused after a body edit), labelled as such.
 - **Not producible by this session:** acceptance 2 needs the owner's real
   requirements conversation through `/grove-shape` in a fresh session, and
-  interactive Codex TUI discovery. G-025 stays active until that is recorded;
+  interactive Codex TUI discovery. G-260919-04z88 stays active until that is recorded;
   unexercised rows are stated in the review file.
 
 ## Review

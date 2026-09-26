@@ -1,17 +1,17 @@
 ---
-id: "G-005"
+id: "G-260919-10zeb"
 type: plan
-title: "G-003 inspection implementation plan"
+title: "G-260919-rt9h9 inspection implementation plan"
 status: current
 formerly: "docs/plans/W-001-inspection.md"
-work: ["G-003"]
+work: ["G-260919-rt9h9"]
 created: "2026-09-19T15:19:41Z"
 updated: "2026-09-21T21:11:15Z"
 ---
 
-# G-003 inspection implementation plan
+# G-260919-rt9h9 inspection implementation plan
 
-Goal: deliver the read-only Go CLI described by [G-003](G-003-inspect-records.md).
+Goal: deliver the read-only Go CLI described by [G-260919-rt9h9](G-260919-rt9h9-inspect-grove-project-re.md).
 Spec: [record model](../docs/record-model.md), including its first-reader proposals.
 
 Execution: single agent, sequential reader → graph validation → command integration.
@@ -67,7 +67,7 @@ Go 1.26.2 is installed; no application code or tests exist at preparation time.
 - `internal/project/graph.go`: project identity index, references, separate cycles.
 - `internal/project/*_test.go`, `internal/cli/cli_test.go`: fixtures in temporary
   directories; no test writes to the real record tree.
-- README, AGENTS, model, brief, G-003: invocation instructions and verified state.
+- README, AGENTS, model, brief, G-260919-rt9h9: invocation instructions and verified state.
 
 ## Steps and verification
 
@@ -84,7 +84,7 @@ Go 1.26.2 is installed; no application code or tests exist at preparation time.
 - [x] Review and verify: run `go test ./...`, `go test -race ./...`, `go vet ./...`,
   `gofmt` checks, and build a temporary binary. Run list/show/check against Grove's
   records and an actual linked-worktree fixture. Compare project file hashes
-  before/after commands. Check doc links and reconcile G-003 and the brief.
+  before/after commands. Check doc links and reconcile G-260919-rt9h9 and the brief.
 
 Use writable temporary Go caches if the sandbox excludes the standard locations;
 this is a verification-environment override, not a product requirement.
@@ -105,11 +105,11 @@ Shared allocation, safe mutations, UI, and cross-branch resolution remain deferr
 ## Progress and evidence
 
 Prepared against the baseline above. No application tests existed to run before
-implementation. Completed 2026-09-19; G-003 is reconciled and closed.
+implementation. Completed 2026-09-19; G-260919-rt9h9 is reconciled and closed.
 
 - `go build ./...`, `go vet ./...`, `gofmt -l .` (clean), `go test ./...`, and
   `go test -race ./...` pass for `internal/cli` and `internal/project`.
-- `list`, `show G-003`, and `check` run against Grove's four records; `check`
+- `list`, `show G-260919-rt9h9`, and `check` run against Grove's four records; `check`
   reports `OK: 4 records`. SHA-1 hashes of `grove.yaml` and every record file
   are identical before and after the three commands.
 - Linked-worktree fixture (temporary repo, main plus a `feature` worktree):

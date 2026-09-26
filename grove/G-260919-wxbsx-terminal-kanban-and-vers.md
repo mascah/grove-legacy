@@ -1,15 +1,15 @@
 ---
-id: "G-021"
+id: "G-260919-wxbsx"
 type: plan
-title: "G-017 terminal Kanban and version selection plan"
+title: "G-260919-k7b8j terminal Kanban and version selection plan"
 status: current
 formerly: "docs/plans/W-009-terminal-picker.md"
-work: ["G-017"]
+work: ["G-260919-k7b8j"]
 created: "2026-09-19T20:32:24Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-017 terminal Kanban and version selection plan
+# G-260919-k7b8j terminal Kanban and version selection plan
 
 > For Fable: execute serially in an isolated worktree using repository
 > instructions and an inline execution workflow. Do not merge automatically.
@@ -18,7 +18,7 @@ updated: "2026-09-21T21:11:16Z"
 a checkout-scoped Kanban board with grouped version inspection and explicit
 existing-workspace selection. Do not add a `grove board` subcommand.
 
-**Spec:** [G-017](G-017-terminal-picker.md), including the
+**Spec:** [G-260919-k7b8j](G-260919-k7b8j-browse-a-terminal-kanban.md), including the
 selected experience, proposed screen, keyboard contract, output and cancellation
 semantics, dependency rationale, and acceptance.
 
@@ -27,14 +27,14 @@ issues cancellable read operations. Existing explicit CLI and version contracts 
 their noninteractive behavior. UI rendering uses stderr, with a workspace result
 on stdout only after successful selection and terminal restoration.
 
-**Execution base:** verify G-014/G-015/G-016 are integrated with their reviews.
+**Execution base:** verify G-260919-8bbvy/G-260919-z9w13/G-260919-7qv4x are integrated with their reviews.
 Do not use their status fields as integration proof. This plan targets their
 repaired ownership, final-check, and exact-path helpers. The current review base
 is `9b7f730`; no TUI code or dependency was installed during shaping.
 
 ## Global constraints and review focus
 
-Keep G-002, schema 1, Go 1.26, current local Git scope, and read-only inspection.
+Keep G-260919-8jb5s, schema 1, Go 1.26, current local Git scope, and read-only inspection.
 No worktree creation, record edits, editor/shell/agent launches, watchers,
 clipboard, file logs, or network service. Pin Bubble Tea v2.0.9 and only needed
 terminal/width helpers as specified in the work record; use the v2 API.
@@ -45,7 +45,7 @@ Each task below includes the corresponding acceptance checks.
 
 ## Task 1: Make source reads cancellable without changing old CLI behavior
 
-Files: `internal/repo/repo.go`, G-016's shared inventory helper,
+Files: `internal/repo/repo.go`, G-260919-7qv4x's shared inventory helper,
 `internal/versions/versions.go`, `workspace.go`, `tree.go`, new context tests.
 
 Add these entrypoints, retaining existing functions as Background wrappers:
@@ -57,7 +57,7 @@ func ResolveContext(ctx context.Context, root, selector string) (*Workspace, err
 ```
 
 Keep internal path/inventory helpers context-aware too. `ResolveContext` must
-use the context for inspection and G-014's final source check; an uncancelled
+use the context for inspection and G-260919-8bbvy's final source check; an uncancelled
 helper or direct cat-file invocation would defeat cancellation.
 
 - [ ] Use a test Git helper that reports it started and waits for cancellation;
@@ -201,7 +201,7 @@ result formatting into a private CLI helper shared by workspace and the TUI.
   Commit `feat(cli): launch the TUI by default` with documentation. Show
   `go run ./cmd/grove` as this checkout's demo command; document explicit help
   and noninteractive subcommands without claiming the installed CLI was replaced.
-- [ ] Obtain independent review against G-017 acceptance and provide a runnable
+- [ ] Obtain independent review against G-260919-k7b8j acceptance and provide a runnable
   owner demo. Record human feedback separately from automated evidence. Reconcile
   the work record and brief via current CLI/body edits; no branch merge or
   worktree provisioning is part of this unit.
@@ -209,9 +209,9 @@ result formatting into a private CLI helper shared by workspace and the TUI.
 ## Adjustments made while implementing, 2026-09-19
 
 Implemented on branch `worktree-W-009` from `acfc905`, after confirming by Git
-ancestry that the G-014 to G-016 repair and review-fix commits are in main.
-The [evidence](G-029-board-review.md) holds commits and results.
-Each adjustment below stays inside G-017's outcome; the reason is what was
+ancestry that the G-260919-8bbvy to G-260919-7qv4x repair and review-fix commits are in main.
+The [evidence](G-260919-zq52f-terminal-board-evidence.md) holds commits and results.
+Each adjustment below stays inside G-260919-k7b8j's outcome; the reason is what was
 found when the proposal met the code and the pinned framework.
 
 - **Debug switches are process-wide.** Bubble Tea v2.0.9 reads `TEA_DEBUG`

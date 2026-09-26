@@ -1,20 +1,20 @@
 ---
-id: "G-073"
+id: "G-260922-4fr84"
 type: plan
-title: "G-038 review lifecycle plan"
+title: "G-260921-9wkjt review lifecycle plan"
 status: current
 created: "2026-09-22T04:12:22Z"
 updated: "2026-09-22T04:13:00Z"
-work: ["G-038"]
+work: ["G-260921-9wkjt"]
 ---
 
 ## Design
 
-Prepared 2026-09-22 on `worktree-G-038` from main `a28a24b`, against
-[G-038](G-038-review-lifecycle.md) as selected in
-[G-035](G-035-interactive-adoption.md) and the settled terms
-[candidate](G-057-candidate.md), [review](G-058-review.md),
-[approval](G-059-approval.md) and [integration](G-060-integration.md).
+Prepared 2026-09-22 on `worktree-G-260921-9wkjt` from main `a28a24b`, against
+[G-260921-9wkjt](G-260921-9wkjt-hand-implementation-cand.md) as selected in
+[G-260921-tkdwh](G-260921-tkdwh-adopt-the-interactive-ad.md) and the settled terms
+[candidate](G-260921-jatts-candidate.md), [review](G-260921-rz7bn-review.md),
+[approval](G-260921-btyck-approval.md) and [integration](G-260921-3qgsf-integration.md).
 These are routine choices inside the selected contract, not product decisions.
 
 Observed at `a28a24b`: work statuses are one row of `project.Types`
@@ -51,12 +51,12 @@ records `examined`, the commit it looked at. Seventeen work records are
    different commit names that
    commit as the candidate in the same call. No `target:` configuration, no
    approval field and no `report` type: the interactive loop needs none, the
-   work record's Evidence is the report, and G-044 adds structured approval
+   work record's Evidence is the report, and G-260921-jwk4e adds structured approval
    when software acts on it.
 4. **Historical Done.** A `done` work record without `candidate` keeps its
    original branch-local meaning. Nothing is rewritten and `check` accepts it;
    `update` never writes a new one. That absence is the explicit migration
-   marker. G-038's evidence lists this repository's historical Done records
+   marker. G-260921-9wkjt's evidence lists this repository's historical Done records
    and their observed presence on main.
 5. **Research and design completion.** The same rule: the deliverable is
    files, so Done means the candidate holding them was accepted and reached
@@ -88,12 +88,12 @@ records `examined`, the commit it looked at. Seventeen work records are
    "do not write review" note), README (status paragraph, board columns),
    `docs/work-execution.md` (drop the Contract transition section; steps 5,
    7 and 8 write the handoff of design 7 and set `review`; the integrator's
-   path), `AGENTS.md` summary line, and the term bodies of G-054, G-058,
-   G-059 and G-060.
+   path), `AGENTS.md` summary line, and the term bodies of G-260921-vr8a8, G-260921-rz7bn,
+   G-260921-btyck and G-260921-3qgsf.
 6. Exercise in a disposable clone: successful, waiting, failed, feedback and
-   changed-candidate paths through the CLI; keep the transcript in G-038's
+   changed-candidate paths through the CLI; keep the transcript in G-260921-9wkjt's
    evidence.
 7. Independent review at the final revision, recorded as a review record with
    `examined`; fix rounds capped at three.
-8. Hand G-038 itself off with the new mechanism: candidate set, status
+8. Hand G-260921-9wkjt itself off with the new mechanism: candidate set, status
    `review`, Next naming the integrator's commands.

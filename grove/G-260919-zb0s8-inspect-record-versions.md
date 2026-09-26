@@ -1,5 +1,5 @@
 ---
-id: "G-010"
+id: "G-260919-zb0s8"
 type: work
 title: "Inspect record versions across local branches"
 status: done
@@ -7,7 +7,7 @@ kind: feature
 priority: 2
 size: medium
 depends_on: []
-relates_to: ["G-002", "G-009"]
+relates_to: ["G-260919-8jb5s", "G-260919-shnj5"]
 created: "2026-09-19T17:49:58Z"
 updated: "2026-09-19T20:05:45Z"
 formerly: "W-004"
@@ -18,7 +18,7 @@ formerly: "W-004"
 From one checkout, inspect the records on local branch tips and in registered
 worktrees, with enough source information to choose which version to act on.
 Main can show Fable's branch progress without switching branches or merging
-records. G-002's grouping and explicit-selection policy is accepted; the
+records. G-260919-8jb5s's grouping and explicit-selection policy is accepted; the
 technical contract below was implemented and finalized in the linked
 coordination plan; the later integrated review records remaining defects.
 
@@ -26,7 +26,7 @@ coordination plan; the later integrated review records remaining defects.
 
 The owner selected cross-branch coordination as the next experience. Priority 2
 reflects that direction; medium reflects committed-tree loading, source-local
-validation, and live/committed comparison. Safe mutation in G-009 is useful
+validation, and live/committed comparison. Safe mutation in G-260919-shnj5 is useful
 alongside this feature but is not a read-only inspection prerequisite.
 
 ## Constraints
@@ -35,7 +35,7 @@ alongside this feature but is not a read-only inspection prerequisite.
   change no records, configuration, refs, index, worktrees, or allocator state.
 - Use this repository's accepted record model, including configured record roots
   and source-local relationship validation. No schema migration or new records.
-- G-002 owns version policy. No automatic status reconciliation, integration
+- G-260919-8jb5s owns version policy. No automatic status reconciliation, integration
   inference, timestamp precedence, or inferred execution ownership.
 - Group by record ID and show each branch's status. Preserve explicit source
   choices for opening a workspace; no group-level default grants an editing
@@ -67,7 +67,7 @@ when attached, observed commit, worktree identity/path for live data, relative
 project and record paths, configuration revision, content revision, and validated
 metadata. JSON also
 provides exact source text and source diagnostics. The record content revision
-must use the same byte-hash convention as G-009; a version selector additionally
+must use the same byte-hash convention as G-260919-shnj5; a version selector additionally
 binds source identity and cannot be just the record hash or a transient row
 number. Finalize and document this selector format before implementation.
 
@@ -109,7 +109,7 @@ in `internal/project`, a new Git-source package, and `internal/cli`. Extract
 shared validation without giving the reader write responsibilities. Do not reuse
 the allocator's ID-prefilter scan as a full parser.
 
-Recommend a single Fable agent in an isolated worktree. G-009 may touch the same
+Recommend a single Fable agent in an isolated worktree. G-260919-shnj5 may touch the same
 loader and CLI, so separate work IDs do not prove safe parallel implementation.
 Agree on revision representation and inspect the integration base before
 dispatch. Required verification: relevant fixtures, full Go suite, race suite,
@@ -118,7 +118,7 @@ vet, and independent review of source identity and incomplete-result handling.
 ## Evidence
 
 Done 2026-09-19 on branch `worktree-W-004-W-005` at `ca420f5`, base
-`b20d2b0`. The [coordination plan](G-013-coordination-plan.md)
+`b20d2b0`. The [coordination plan](G-260919-qprdw-and-coordination-plan.md)
 records the finalized JSON, ordering, incomplete-result, and selector
 contract, the commits, the fixture list per acceptance item, the suite, race,
 vet, gofmt, and `check` results, real use against this repository's two
@@ -149,11 +149,11 @@ at resolution time.
 
 ## Next
 
-G-011 consumed the selector in the same branch; both were integrated into
+G-260919-n9t4p consumed the selector in the same branch; both were integrated into
 main at `5041ae1` on 2026-09-19.
 
-[G-014](G-014-workspace-provenance.md) and [G-016](G-016-git-paths.md) own
-proposed repairs from the [integrated review](G-022-integrated-cli-review.md),
+[G-260919-8bbvy](G-260919-8bbvy-bind-workspace-routing-t.md) and [G-260919-7qv4x](G-260919-7qv4x-preserve-git-paths-throu.md) own
+proposed repairs from the [integrated review](G-260919-zrk8t-integrated-cli-review-20.md),
 including live project ownership, observed worktree disappearance, and exact Git
 path handling. The done status records the original implemented outcome; these
 follow-ups qualify its reliability without implying an unmerged branch.

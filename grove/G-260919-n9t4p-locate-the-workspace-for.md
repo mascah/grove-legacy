@@ -1,13 +1,13 @@
 ---
-id: "G-011"
+id: "G-260919-n9t4p"
 type: work
 title: "Locate the workspace for a selected record version"
 status: done
 kind: feature
 priority: 2
 size: medium
-depends_on: ["G-010"]
-relates_to: ["G-002", "G-009"]
+depends_on: ["G-260919-zb0s8"]
+relates_to: ["G-260919-8jb5s", "G-260919-shnj5"]
 created: "2026-09-19T17:50:01Z"
 updated: "2026-09-19T20:05:45Z"
 formerly: "W-005"
@@ -24,25 +24,25 @@ automatic checkout creation and interactive opening remain follow-on design.
 
 Version visibility becomes actionable when the user can reach the selected
 checkout. Priority 2 follows the selected coordination experience. Medium
-reflects stale selection and ambiguous/missing-worktree handling. G-010 is the
+reflects stale selection and ambiguous/missing-worktree handling. G-260919-zb0s8 is the
 prerequisite because this operation consumes its source identity contract.
 
 ## Constraints
 
 - Keep current branch, working directory, refs, records, and staged/dirty files
   unchanged. Do not acquire an agent claim or infer that a checkout is idle.
-- G-002 requires explicit version selection before opening a workspace. Use
+- G-260919-8jb5s requires explicit version selection before opening a workspace. Use
   that version's source identity. Never guess from record ID, newest timestamp,
   a branch-name-derived directory, or content equality alone.
 - No worktree creation/deletion, forced checkout, editor configuration, child
   shell, agent launch, or cross-branch mutation in this unit.
-- G-002 owns the selection policy. G-009 remains responsible for safe updates
+- G-260919-8jb5s owns the selection policy. G-260919-shnj5 remains responsible for safe updates
   after a caller enters a checkout; a returned path is not future write authority.
 
 ## Implemented technical contract
 
 CLI surface: `grove workspace --source SELECTOR [--json]`, consuming
-G-010's version selector. Success prints the absolute project directory within
+G-260919-zb0s8's version selector. Success prints the absolute project directory within
 the target checkout; JSON includes checkout path, project path, record path,
 branch/HEAD, and the validated current content revision. Human diagnostics go
 to stderr. Documentation shows how a caller uses the result with `--project`.
@@ -60,7 +60,7 @@ checkout, removed/moved worktree, branch/HEAD change, changed configuration,
 changed/missing record, invalid project, or ambiguous mapping returns an
 attributable error and no success path. Do not pick the first match when forced
 multiple checkouts of a branch exist. A user can disambiguate by selecting one
-live source in G-010. Preserve arbitrary paths through JSON without shell eval.
+live source in G-260919-zb0s8. Preserve arbitrary paths through JSON without shell eval.
 
 Revalidate immediately before returning. Another process can still change the
 workspace afterward; document this boundary. A future integrated mutation must
@@ -84,21 +84,21 @@ administration and must not be described as exclusive editing ownership.
 
 ## Preparation and execution boundary
 
-Prepare against G-010's completed source/selector interface. Expected ownership
+Prepare against G-260919-zb0s8's completed source/selector interface. Expected ownership
 is its Git-source package and `internal/cli`; reuse discovery and validation.
-Recommend a single Fable agent after G-010, with full suite, race suite, vet,
+Recommend a single Fable agent after G-260919-zb0s8, with full suite, race suite, vet,
 and independent review of stale selections and unintended Git writes.
 
 ## Evidence
 
-Done 2026-09-19 on branch `worktree-W-004-W-005` at `d232aa2`, after G-010
+Done 2026-09-19 on branch `worktree-W-004-W-005` at `d232aa2`, after G-260919-zb0s8
 closed at `a465d88` in the same branch. The
-[coordination plan](G-013-coordination-plan.md) records
+[coordination plan](G-260919-qprdw-and-coordination-plan.md) records
 the consumed selector, this command's resolution and refusal contract, the
 commits, the fixture list per acceptance item, suite, race, vet, gofmt, and
 `check` results, real use in this repository, the joint verification, and
 the combined review. `workspace --source SELECTOR [--json]` re-runs the
-G-010 inspection for the selected record and prints the absolute project
+G-260919-zb0s8 inspection for the selected record and prints the absolute project
 directory of the existing checkout that still holds exactly that version;
 JSON adds checkout, record, branch or detached HEAD, and current revision.
 
@@ -127,9 +127,9 @@ revision check because the workspace can change after resolution.
 ## Next
 
 Integrated into main at `5041ae1` on 2026-09-19. Repair the routing/freshness
-and Git-path defects in [G-014](G-014-workspace-provenance.md) and
-[G-016](G-016-git-paths.md) before building actions on this command. The
-[integrated review](G-022-integrated-cli-review.md) supplies
+and Git-path defects in [G-260919-8bbvy](G-260919-8bbvy-bind-workspace-routing-t.md) and
+[G-260919-7qv4x](G-260919-7qv4x-preserve-git-paths-throu.md) before building actions on this command. The
+[integrated review](G-260919-zrk8t-integrated-cli-review-20.md) supplies
 reproducers and distinguishes tested behavior from remaining limits. Then shape
 the interactive existing-workspace experience; checkout creation needs its own
 write/failure design. Path resolution is not that entire experience.

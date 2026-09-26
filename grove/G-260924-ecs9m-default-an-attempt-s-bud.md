@@ -1,11 +1,11 @@
 ---
-id: "G-140"
+id: "G-260924-ecs9m"
 type: work
 title: "Default an attempt's budget, mode, model and effort from grove.yaml and launch from one line"
 status: done
 created: "2026-09-24T23:52:07Z"
 updated: "2026-09-25T04:31:58Z"
-relates_to: ["G-045", "G-046", "G-134", "G-135", "G-141"]
+relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260924-5b6pz", "G-260924-59f5k", "G-260925-04ccr"]
 candidate: "b18804e8a9194d596355893698e2d688a3c19130"
 approved: "b18804e8a9194d596355893698e2d688a3c19130"
 ---
@@ -18,7 +18,7 @@ launch defaults; a flag or a typed override still changes any value for one
 launch; and every attempt records the values it ran with, as it does now.
 
 Owner intent, shaping conversation 2026-09-24: after
-[G-134](G-134-bound-an-attempt-at-its-plan-and.md) there are too many
+[G-260924-5b6pz](G-260924-5b6pz-bound-an-attempt-at-its.md) there are too many
 questions when launching an attempt, and the defaults need a home such as
 `grove.yaml`. The owner read the investigation below and chose this design
 over the same defaults with five prefilled prompts, over provider-side
@@ -36,21 +36,21 @@ Observed at main `132709e`, 2026-09-24:
   three asks for nothing. `run` requires `--budget` and `--permission-mode`
   and refuses without them (`Start` in
   [attempt.go](../internal/attempt/attempt.go)); `--until`, `--model` and
-  `--effort` are optional. G-134 added the three optional prompts; before it
+  `--effort` are optional. G-260924-5b6pz added the three optional prompts; before it
   there were two.
 - **What was typed.** The nineteen attempts under `.git/grove/attempts/`,
-  from every `attempt.json`: budget `50` on seventeen, `30` once (G-135's
+  from every `attempt.json`: budget `50` on seventeen, `30` once (G-260924-59f5k's
   bounded run under its experiment cap) and `50` once; permission mode
   `auto` on all nineteen; model empty on seventeen and `opus` on the two
-  G-135 attempts; effort set once (`high`); bound set once (`plan`). Two
+  G-260924-59f5k attempts; effort set once (`high`); bound set once (`plan`). Two
   prompts retype constants and three are Enter.
-- **Why they are required today.** [G-045](G-045-durable-attempt.md) made
+- **Why they are required today.** [G-260921-h46pb](G-260921-h46pb-run-one-bounded-implemen.md) made
   both flags required "since a default for either would make the choice in
-  practice" ([G-100](G-100-g-045-durable-attempt-plan.md), Budgets and
-  bounds); [G-046](G-046-managed-runs.md) kept them typed with no prefill
-  for that reason; G-134 put "role profiles or model defaults in
-  `grove.yaml`" out of scope, "as G-045 chose". This record reverses that
-  one sentence of G-045, on the owner's request: the choice has been made
+  practice" ([G-260923-0t43m](G-260923-0t43m-durable-attempt-plan.md), Budgets and
+  bounds); [G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md) kept them typed with no prefill
+  for that reason; G-260924-5b6pz put "role profiles or model defaults in
+  `grove.yaml`" out of scope, "as G-260921-h46pb chose". This record reverses that
+  one sentence of G-260921-h46pb, on the owner's request: the choice has been made
   in practice by repetition, and a default in a committed file is the choice
   made once, attributably, in Git history, where a retyped value is not.
 - **`grove.yaml` today.** `parseConfig` in
@@ -98,8 +98,8 @@ In scope, proposed design:
 
    `check` refuses a budget `ValidBudget` refuses, a value with whitespace,
    and any other key under `run`. No default for the bound: a bound is one
-   launch's mandate (G-134), and the brief selects no universal plan gate.
-   `init` does not write `run:`, so a fresh project keeps G-045's rule until
+   launch's mandate (G-260924-5b6pz), and the brief selects no universal plan gate.
+   `init` does not write `run:`, so a fresh project keeps G-260921-h46pb's rule until
    its owner adds a default. The alternative spelling, flat top-level keys,
    needs no nested-mapping helper at the cost of a `model:` beside
    `records:`; the implementer chooses and the record model says which.
@@ -125,8 +125,8 @@ In scope, proposed design:
    [board.md](../docs/board.md) (R), each saying its part once.
 
 Out of scope: per-phase or role profiles, such as one effort for `--until
-plan` and another for the implementation, which G-134 defers until
-[G-135](G-135-run-the-g-108-eval-pair-on-codex.md) reports; a default
+plan` and another for the implementation, which G-260924-5b6pz defers until
+[G-260924-59f5k](G-260924-59f5k-run-the-eval-pair-on-cod.md) reports; a default
 bound; remembering the last launch; user-level Grove configuration; writing
 defaults in `init`; and any change to what an attempt records.
 
@@ -153,13 +153,13 @@ defaults in `init`; and any change to what an attempt records.
    expect today are gone.
 4. The usage text, the record model, `commands.md` and `board.md` describe
    the defaults and the launch line once each, every link resolves, and no
-   document still states G-045's sentence as current.
+   document still states G-260921-h46pb's sentence as current.
 5. `gofmt`, `go vet`, `check`, the full uncached suite and `terminal.py`
    pass, with no package over five seconds.
 
 ## Evidence
 
-Implemented on `worktree-G-140` from base `main` `670ca9c`, starting from
+Implemented on `worktree-G-260924-ecs9m` from base `main` `670ca9c`, starting from
 this record at `sha256:40169cdb…` with no separate plan: the design above
 stood in for one, and the nested `run:` spelling needed only a small
 `runField` beside a factored `addFields` in `parseMapping`. The code is
@@ -185,14 +185,14 @@ Per acceptance:
    `--max-budget-usd 50 --permission-mode auto`, and `--budget 2` gives 2
    and `auto`, in the command and in `attempt.json`), `TestRefusals` and
    `TestAttemptCommandsUsage`. With the real provider (Claude Code
-   2.1.282), `grove --project /tmp/g140-clone run G-147` with no flags in a
+   2.1.282), `grove --project /tmp/g140-clone run G-260925-9ptz2` with no flags in a
    disposable clone started
-   `claude -p /grove-work G-147 --interaction headless … --max-budget-usd 50
+   `claude -p /grove-work G-260925-9ptz2 --interaction headless … --max-budget-usd 50
    --permission-mode auto --permission-prompts none`. Its `attempt.json`
    held `budget_usd 50` and `permission_mode auto`, and `grove stop` ended
    it after $0.12. The clone was then deleted.
-3. `R` opens one line, for example `Launch G-140 ▏ · $50, mode auto, to the
-   handoff, model default, effort default, on branch worktree-G-140 · Enter
+3. `R` opens one line, for example `Launch G-260924-ecs9m ▏ · $50, mode auto, to the
+   handoff, model default, effort default, on branch worktree-G-260924-ecs9m · Enter
    launches; …`. The typed flags come first, since truncation drops the
    end. `resolved` parses what is typed with `attempt.Flag`, the table
    `run` uses, now in the attempt package, over this checkout's defaults
@@ -210,7 +210,7 @@ Per acceptance:
    (configuration), [commands.md](../docs/commands.md) (Attempts, Init),
    [board.md](../docs/board.md) (Attempts) and the work guide's invocation
    row each describe their part. A search for "no default", "neither has a
-   default" and "typed each time" finds no statement of G-045's sentence as
+   default" and "typed each time" finds no statement of G-260921-h46pb's sentence as
    current. Every new link resolves.
 5. At `ad52710`: `gofmt -l .` empty, `go vet ./...` ok, `go run ./cmd/grove
    check` OK (141 records), `go test -count=1 -timeout 120s ./...` all ok,
@@ -235,7 +235,7 @@ Decisions taken:
 - **The CLI's missing-flags refusal stays a usage error (exit 2)**, checked
   after the project loads. `run` in an invalid project now reports the
   project's diagnostics first (exit 1).
-- **The author's reading of [G-141](G-141-never-run-gpt-6-astra-unless-the.md)**,
+- **The author's reading of [G-260925-04ccr](G-260925-04ccr-never-run-gpt-6-astra-un.md)**,
   which was accepted after this record was shaped: a `run:` default
   committed by the owner in the project's `grove.yaml` is the owner's
   explicit answer for what an attempt spends, made once and attributable in
@@ -244,7 +244,7 @@ Decisions taken:
   keypress or command, and the board shows the values before Enter. The
   owner has not confirmed this reading.
 
-Review: [G-147](G-147-g-140-launch-defaults-review-202.md), an independent
+Review: [G-260925-9ptz2](G-260925-9ptz2-launch-defaults-review-2.md), an independent
 `grove-reviewer` of `ad52710`, found acceptance met and no correctness
 defect. Its six findings and their dispositions are there. After it, only
 the guide's row (`b917fc2`) and these records changed.
@@ -256,10 +256,10 @@ started. A binary older than this change refuses a `grove.yaml` with `run:`.
 
 ## Next
 
-In review: candidate on `worktree-G-140`, base `670ca9c`. For the owner to
+In review: candidate on `worktree-G-260924-ecs9m`, base `670ca9c`. For the owner to
 judge, most important first:
 
-1. Whether the G-141 reading above holds. If it does not, the defaults
+1. Whether the G-260925-04ccr reading above holds. If it does not, the defaults
    should not spend without a typed confirmation.
 2. Whether one keypress after `R` is what you wanted: `go build -o
    /tmp/grove-g140 ./cmd/grove` in this worktree, then `/tmp/grove-g140`
@@ -268,8 +268,8 @@ judge, most important first:
    defaults.
 
 Then, in this worktree:
-`grove approve G-140 "VERDICT"`, and in `main`'s checkout:
-`grove integrate G-140 --cleanup`. After the merge, rebuild the installed
+`grove approve G-260924-ecs9m "VERDICT"`, and in `main`'s checkout:
+`grove integrate G-260924-ecs9m --cleanup`. After the merge, rebuild the installed
 `~/.local/bin/grove`: the one at `670ca9c` refuses the merged `grove.yaml`.
 
 Verdict on candidate b18804e, 2026-09-25: approve

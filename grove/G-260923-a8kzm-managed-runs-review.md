@@ -1,18 +1,18 @@
 ---
-id: "G-104"
+id: "G-260923-a8kzm"
 type: review
-title: "G-046 managed runs review"
+title: "G-260921-7trd7 managed runs review"
 status: current
 created: "2026-09-23T04:04:15Z"
 updated: "2026-09-23T04:14:44Z"
-work: ["G-046"]
+work: ["G-260921-7trd7"]
 examined: "8385f51"
 ---
 
-# G-046 managed runs review
+# G-260921-7trd7 managed runs review
 
-Evidence for [G-046](G-046-managed-runs.md) against plan
-[G-103](G-103-g-046-managed-runs-plan.md). Independent review by a
+Evidence for [G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md) against plan
+[G-260923-stkc6](G-260923-stkc6-managed-runs-plan.md). Independent review by a
 read-only reviewer subagent in this harness (Claude Code, the `reviewer`
 agent), which ran builds, tests and scratch tests in a throwaway copy
 and edited nothing. A review is evidence, not approval.
@@ -57,7 +57,7 @@ Ten findings; dispositions in `3bde002`:
    and process group on the way out.
 8. Note: `o` from an attempt did not return to it. Fixed.
 9. Note: the plan's tag glyph and polling description differed from the
-   code. Fixed in G-103.
+   code. Fixed in G-260923-stkc6.
 10. Note: the hints offered `R` on done work. Fixed.
 
 Checked and found sound in round one: the separate attempts read (one in

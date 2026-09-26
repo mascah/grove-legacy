@@ -1,11 +1,11 @@
 ---
-id: "G-109"
+id: "G-260923-895zb"
 type: work
 title: "Make Attempts easy to scan and act on"
 status: done
 created: "2026-09-23T16:05:07Z"
 updated: "2026-09-23T22:32:58Z"
-relates_to: ["G-045", "G-046", "G-107", "G-110"]
+relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260923-fwakw", "G-260923-gsthp"]
 candidate: "2235092fdbea4af7e30ec43b811996d92f01e5d0"
 approved: "2235092fdbea4af7e30ec43b811996d92f01e5d0"
 ---
@@ -27,7 +27,7 @@ list rows from attempt ID, outcome, optional final cost and branch. Detail
 renders the outcome, every line of [CLI diagnostic facts](../internal/attempt/facts.go),
 then the final report and recent activity. This puts session IDs, commands,
 paths and event statistics ahead of the report.
-[G-046](G-046-managed-runs.md) owns the implemented launch/reconnect/stop
+[G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md) owns the implemented launch/reconnect/stop
 workflow and its evidence. It records terminal tests with a fake provider;
 its owner verdict accepted the views while leaving real TUI launch testing
 for fresh work. Do not turn those observations into a claim of a real trial.
@@ -74,20 +74,20 @@ inside presentation work.
 
 ## Evidence
 
-Headless attempt of 2026-09-23 (`G-109.20260923T200725Z`), branch
-`worktree-G-109` from `main` at `1a56af3`. It started from this record at
-`sha256:254e7f7f…`, plan [G-116](G-116-g-109-attempts-layouts-observed.md)
-at `sha256:97cac3d8…` and [G-117](G-117-which-attempts-list-and-detail-l.md)
+Headless attempt of 2026-09-23 (`G-260923-895zb.20260923T200725Z`), branch
+`worktree-G-260923-895zb` from `main` at `1a56af3`. It started from this record at
+`sha256:254e7f7f…`, plan [G-260923-rz01m](G-260923-rz01m-attempts-layouts-observe.md)
+at `sha256:97cac3d8…` and [G-260923-hvnqh](G-260923-hvnqh-which-attempts-list-and.md)
 as the owner answered it in this checkout. The owner's answer is committed
-unchanged in `559f898`. The plan's section "Revised after G-117's answer"
+unchanged in `559f898`. The plan's section "Revised after G-260923-hvnqh's answer"
 (`4f721e1`) records the design that was built, with one choice the owner
 left open: the left column holds State, Next and the final report.
 
 Commits: `0315df9` (implementation), `611f7ec` and `feb6b42` (review
 fixes). What changed:
 
-- **The list** is G-117's option A. It has three groups, `Needs you`,
-  `Running` and `Settled`, newest first within each, with G-117 part 2's
+- **The list** is G-260923-hvnqh's option A. It has three groups, `Needs you`,
+  `Running` and `Settled`, newest first within each, with G-260923-hvnqh part 2's
   rule. Each row gives the work ID, the title (dropped below 60 columns), a
   short state (cut last) and a time (`14m so far`, `2h ago`). Every settled
   row says why it is settled, such as `done: candidate 1614e89` or
@@ -136,36 +136,36 @@ Against the acceptance:
    ```text
    Attempts in this repository (7) · 1 need you · 1 running · 5 settled
     Needs you
-   > G-108  Establish behavioral evalu…  answer question G-118              20m ago
+   > G-260923-p5pt6  Establish behavioral evalu…  answer question G-260923-659zw              20m ago
     Running
-     G-109  Make Attempts easy to scan…  running                         25m so far
+     G-260923-895zb  Make Attempts easy to scan…  running                         25m so far
     Settled
-     G-109  Make Attempts easy to scan…  ended, no handoff, superseded      38m ago
-     G-107  Reconcile current document…  done: candidate 1614e89             1h ago
-     G-107  Reconcile current document…  candidate 71a650e, superseded       3h ago
+     G-260923-895zb  Make Attempts easy to scan…  ended, no handoff, superseded      38m ago
+     G-260923-fwakw  Reconcile current document…  done: candidate 1614e89             1h ago
+     G-260923-fwakw  Reconcile current document…  candidate 71a650e, superseded       3h ago
    ```
 
    One attempt at 80×24: the report starts on the first page, where it used
    to start on page two after 18 lines of provenance.
 
    ```text
-   G-107  Reconcile current documentation and give each fact one owner
+   G-260923-fwakw  Reconcile current documentation and give each fact one owner
    ✓ done: candidate 1614e89  1h ago
 
-     Attempt  G-107.20260923T182316Z
+     Attempt  G-260923-fwakw.20260923T182316Z
      Model    claude-opus-5-5 · 2.1.280 (Claude Code)
      Budget   $6.03 of $50 · permission mode auto
-     Branch   worktree-G-107 from 4159e79ef76d (reused)
+     Branch   worktree-G-260923-fwakw from 4159e79ef76d (reused)
      Started  12:23:16 Wed 23 Sep · ended 12:36:35 after 13m
      Turns ≥64   Tokens 10.6M in · 93k out   Context 165k of 1M ▰▰▱▱▱▱▱▱▱▱ 17%
      Subagents ≥3   Compactions ≥0   Tools ≥90   Errors ≥2
 
-   State  Candidate ready: G-107 in review on worktree-G-107 with candidate
-          1614e89. Candidate 1614e89 was integrated: G-107 is done.
+   State  Candidate ready: G-260923-fwakw in review on worktree-G-260923-fwakw with candidate
+          1614e89. Candidate 1614e89 was integrated: G-260923-fwakw is done.
    Details: bounds, provenance, events and raw files · d shows them
 
    Final report
-    G-107 is back in **review** with a new candidate, 1614e89, …
+    G-260923-fwakw is back in **review** with a new candidate, 1614e89, …
    ```
 
    The real attempts cover running, question, done, superseded and ended
@@ -203,7 +203,7 @@ change does not touch it, and the package passed on rerun. Under `-short`
 in a parallel suite, `internal/versions` (8.3 s) and `internal/cli` (6.1 s)
 run over the 5 s limit. This change touches neither.
 
-Review: [G-120](G-120-g-109-attempts-redesign-review.md), by an independent
+Review: [G-260923-sjpfm](G-260923-sjpfm-attempts-redesign-review.md), by an independent
 reviewer subagent in two rounds. The eight round-1 findings (4 should-fix,
 4 nits) were fixed in `611f7ec`, and round 2 found none. Its two optional
 nits were fixed in `feb6b42`, which was not reviewed again.
@@ -221,20 +221,20 @@ Limits:
 
 ## Next
 
-In review: candidate on branch `worktree-G-109` (the `candidate` field),
+In review: candidate on branch `worktree-G-260923-895zb` (the `candidate` field),
 base `main` at `1a56af3`. The owner judges the screens in a terminal
 (acceptance 5), for example with `go run ./cmd/grove` in this worktree, then
 `A`, Enter, `d`. They judge especially the attempt screen's left column,
-colours and glyphs, which G-117 left open. Then, in this worktree:
+colours and glyphs, which G-260923-hvnqh left open. Then, in this worktree:
 
 ```sh
-go run ./cmd/grove approve G-109 "VERDICT"   # or: go run ./cmd/grove feedback G-109 "TEXT"
+go run ./cmd/grove approve G-260923-895zb "VERDICT"   # or: go run ./cmd/grove feedback G-260923-895zb "TEXT"
 ```
 
 and in the `main` checkout:
 
 ```sh
-go run ./cmd/grove integrate G-109
+go run ./cmd/grove integrate G-260923-895zb
 ```
 
 Verdict on candidate 2235092, 2026-09-23: good pass, much more usable now.

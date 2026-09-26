@@ -36,8 +36,8 @@ prints one conversion.
 6. Write: add `created` where it was missing through `update`'s editor,
    rename, then rewrite every file under the record root, old basenames
    first, then old IDs as whole tokens (not after a letter or digit, not
-   before one; a `-` either side is a token boundary, so `worktree-G-030`
-   and `G-030-G-031` are rewritten). Only IDs in the map are touched, so
+   before one; a `-` either side is a token boundary, so `worktree-G-260920-svpbc`
+   and `G-260920-svpbc-G-260920-z8vfp` are rewritten). Only IDs in the map are touched, so
    `G-000`, `G-1000` and date-form IDs are left alone.
 7. Reload and require it to validate; then rename every attempt directory
    whose name starts with a mapped ID and rewrite each regular file of
@@ -57,7 +57,7 @@ as in the nullsec cutover plan and review, are not this repository's IDs
 and are restored after the run.
 
 **Adjusted at the rehearsal (bounded, technical).** 102 titles cite IDs
-("G-030 card lineage plan"), so a slug from the title as rewritten was
+("G-260920-svpbc card lineage plan"), so a slug from the title as rewritten was
 mostly ID (`G-260919-q3mg5-g-260919-byjdx-g-260919.md`) and a cut at the
 cap left fragments like `g-260` that read as legacy IDs. The slug leaves
 out every ID a title cites, with a following `'s`: `card-lineage-plan`.
@@ -70,12 +70,12 @@ judgment (acceptance 8).
 
 1. Package, CLI wiring, test (acceptance 4). Docs: commands reference and
    record model (acceptance 7).
-2. Remove the merged `worktree-G-195` worktree and branch (found already
+2. Remove the merged `worktree-G-260926-pgj43` worktree and branch (found already
    removed when this step came). The merged
-   remote branches `worktree-G-081` and `worktree-G-089` need a push to
+   remote branches `worktree-G-260922-jtsed` and `worktree-G-260922-g6e7p` need a push to
    delete, which this headless attempt does not make; the command reads
    local branches only, so they do not block it. Left to the owner.
 3. Run the command here; restore nullsec mentions; repair references
-   outside the record root; G-069's second table.
+   outside the record root; G-260921-czt8x's second table.
 4. Evidence: acceptance 1-3, 5; nullsec in a disposable clone (6).
 5. Independent review, then hand off.

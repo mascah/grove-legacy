@@ -1,10 +1,10 @@
 ---
-id: "G-048"
+id: "G-260921-72chf"
 type: review
 title: "First-days evaluation and research"
 status: current
 formerly: "docs/reviews/2026-09-20-direction-evaluation.md"
-relates_to: ["G-035"]
+relates_to: ["G-260921-tkdwh"]
 created: "2026-09-21T01:08:42Z"
 updated: "2026-09-21T21:11:16Z"
 ---
@@ -14,9 +14,9 @@ updated: "2026-09-21T21:11:16Z"
 Captured 2026-09-20. This report preserves observations and recommendation
 rationale from the direction review; it is not another product specification.
 The owner subsequently approved the recommendations in
-[G-035](G-035-interactive-adoption.md). The
+[G-260921-tkdwh](G-260921-tkdwh-adopt-the-interactive-ad.md). The
 [brief](brief.md) owns current direction and the
-[roadmap](G-047-adoption-roadmap-plan.md) owns the selected investment order.
+[roadmap](G-260921-466b5-adoption-roadmap.md) owns the selected investment order.
 
 ## Scope and evidence limits
 
@@ -32,9 +32,9 @@ succeeded in skills. In nullsec it failed because it tried to create
 `.git/grove-owner` outside the writable scope; no escalation or sibling repair
 was attempted. `find` and `context` returned useful evidence, but deliberately
 small context budgets reported required omissions. These calls did not establish
-complete nullsec context or migration readiness. Inventory again at G-041.
+complete nullsec context or migration readiness. Inventory again at G-260921-905y3.
 
-The new CLI's `list` reported twelve Done work items and G-025 Proposed;
+The new CLI's `list` reported twelve Done work items and G-260919-04z88 Proposed;
 `check` passed with seventeen records before this reconciliation. These are
 record observations and structural validation, not fresh execution of the full
 Go suite or reacceptance of delivered features. No product code, agent run,
@@ -59,12 +59,12 @@ review handoff incomplete; launching agents first would automate those gaps.
 
 - `grove/brief.md` had 496 lines, combining direction, predecessor
   investigations, implementation history and stale next actions. At the observed
-  main commit G-023 and G-030 were done and merged, while the brief still asked
-  for G-030 integration and described G-023 as active.
-- `grove/G-027-agent-handoffs-plan.md` had 518 lines. G-023 had shipped and
-  its checklists were explicitly historical; G-025 was not started. Assigning
+  main commit G-260919-nddsf and G-260920-svpbc were done and merged, while the brief still asked
+  for G-260920-svpbc integration and described G-260919-nddsf as active.
+- `grove/G-260919-p1dgm-agent-handoffs-implement.md` had 518 lines. G-260919-nddsf had shipped and
+  its checklists were explicitly historical; G-260919-04z88 was not started. Assigning
   them together again would risk repeating work or importing obsolete scope.
-- G-002 retained the earlier explicit-version presentation policy. The owner
+- G-260919-8jb5s retained the earlier explicit-version presentation policy. The owner
   now wants a project-wide current view. This is a changed product choice,
   not evidence that the old implementation violated its accepted specification.
 - `internal/tui/view.go` rendered history before metadata and raw record text.
@@ -110,7 +110,7 @@ until the supported migration is delivered.
 The current work guide already prepares missing plans, permits small-work
 exceptions, persists unanswered human questions, and caps review fix rounds.
 It distinguishes implementation, review, owner acceptance and integration in
-prose. G-038 makes the human-review handoff explicit while retaining this useful
+prose. G-260921-9wkjt makes the human-review handoff explicit while retaining this useful
 authority model. A proposal alone is not an implementation assignment.
 
 Bench's nullsec planner/reviewer definitions included mandate, expected output,
@@ -134,9 +134,9 @@ interactive Claude/Codex; managed execution initially investigates Claude.
 
 ## Current state and presentation
 
-At the observed main revision, `versions G-030` showed five rows: Done on main
-and G-030 committed tips, Proposed on G-023's committed tip, and unchanged Done
-live copies in main and G-030. The owner's earlier six-row example included
+At the observed main revision, `versions G-260920-svpbc` showed five rows: Done on main
+and G-260920-svpbc committed tips, Proposed on G-260919-nddsf's committed tip, and unchanged Done
+live copies in main and G-260920-svpbc. The owner's earlier six-row example included
 another live checkout no longer in that inventory. The older branch state is
 real evidence but should not dominate the ordinary current-work experience.
 
@@ -144,7 +144,7 @@ real evidence but should not dominate the ordinary current-work experience.
 A current projection can consume those observations without replacing their
 inspection contract. Git ancestry can establish reachability, but unrelated
 branch-tip commits, dirty files, reverts and competing edits require explicit
-record-level policy. Time alone supplies no authority. G-042 must investigate
+record-level policy. Time alone supplies no authority. G-260921-ms6ev must investigate
 these cases rather than promising an always-unambiguous latest version.
 [Git ancestry reference](https://git-scm.com/docs/git-merge-base).
 
@@ -176,10 +176,10 @@ duplicate-start protection, durable events/result, interruption, reconnect and
 Stop. A tmux session supplies neither acceptance nor result reconciliation by
 itself. Retain raw logs separately from stable report/review artifacts.
 
-The earlier [runner research](G-026-shaping-and-runner-evidence-review.md) lists
+The earlier [runner research](G-260919-rr3ae-shaping-and-headless-run.md) lists
 failure probes and predecessor mechanisms; the
-[work review](G-024-predecessor-work-review.md) records visible adapter weaknesses.
-Read those at G-045 preparation, then recheck current capabilities. No mechanism
+[work review](G-260919-ph0w1-predecessor-work-review.md) records visible adapter weaknesses.
+Read those at G-260921-h46pb preparation, then recheck current capabilities. No mechanism
 or unattended reliability was demonstrated by this evaluation.
 
 ## Documentation reconciliation verification
@@ -190,14 +190,14 @@ status, priorities and relationships were set with revision-checked `update`.
 No Go source or runtime behavior changed.
 
 - `go run ./cmd/grove check` passed with 29 records. Read-only `context` calls
-  for G-025, G-036, the adoption sequence and later TUI/runtime selections
+  for G-260919-04z88, G-260921-407n6, the adoption sequence and later TUI/runtime selections
   succeeded; ordering follows actual prerequisites, not roadmap priority.
 - A local Markdown check verified 94 outgoing links and 21 incoming links to
   changed documents, including fragments. `git diff --check` was clean.
 - An independent read-only agent reviewed the diff and new documents for
   lost intent, contract contradictions, dependency traps and misleading scope.
-  It found one ownership gap: G-040 expected brief-location support that G-037
-  did not explicitly require. G-037 now owns brief discovery/location and
+  It found one ownership gap: G-260921-5gz9a expected brief-location support that G-260921-w9x25
+  did not explicitly require. G-260921-w9x25 now owns brief discovery/location and
   preservation of one authority and existing links. The reviewer found no other
   consequential issues; external sources and real harness behavior were outside
   that review. The correction received a focused follow-up review.

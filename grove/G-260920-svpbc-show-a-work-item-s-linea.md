@@ -1,5 +1,5 @@
 ---
-id: "G-030"
+id: "G-260920-svpbc"
 type: work
 title: "Show a work item's lineage from Git history in its card"
 status: done
@@ -8,7 +8,7 @@ updated: "2026-09-20T16:39:26Z"
 kind: feature
 priority: 2
 size: small
-relates_to: ["G-017", "G-031", "G-002"]
+relates_to: ["G-260919-k7b8j", "G-260920-z8vfp", "G-260919-8jb5s"]
 formerly: "W-012"
 ---
 
@@ -16,12 +16,12 @@ formerly: "W-012"
 
 Opening a card shows how that work item changed over time: when it was first
 proposed, each commit that touched its record, and the status the record held
-at that commit. The owner asked for this on 2026-09-19 after the first G-017
+at that commit. The owner asked for this on 2026-09-19 after the first G-260919-k7b8j
 demo: the list of versions across branches did not say what had happened to an
 item, and lineage was what they expected to find useful. Lineage is selected
 direction; everything below is proposed design.
 
-Git already holds the lineage, so nothing new is stored. For G-014 on
+Git already holds the lineage, so nothing new is stored. For G-260919-8bbvy on
 2026-09-19, `git log --follow` on its file plus the `status:` line at each
 commit gave:
 
@@ -34,7 +34,7 @@ fd20223 09-19 14:48  proposed  docs: add reusable execution handoffs...
 Proposed: a History section in the card's detail pane for the focused version,
 newest first, read from that version's branch or checkout HEAD. Read it when a
 card is opened, not for every record during the board load, so the board's load
-time (G-031) does not grow with history. Uncommitted live edits appear as a
+time (G-260920-z8vfp) does not grow with history. Uncommitted live edits appear as a
 first "uncommitted" row using the change classification the board already has.
 
 ## Constraints
@@ -61,12 +61,12 @@ record fields and no stored history.
 ## Evidence, 2026-09-20
 
 Implemented on branch `worktree-W-012` from `a0fd23a` through
-`/grove-work G-030`, following the [plan](G-033-card-lineage-plan.md).
+`/grove-work G-260920-svpbc`, following the [plan](G-260920-d1qjs-card-lineage-plan.md).
 On 2026-09-20 the owner selected "beside, history first": the card screen and
 its version list stay, and History leads the details pane, following the
 focused row (the board's checkout while the ID header has focus). That
 placement is selected direction; the rest of the design remains the owner's to
-judge in use. The [evidence](G-034-card-lineage-review.md)
+judge in use. The [evidence](G-260920-0sakc-card-lineage-evidence-20.md)
 maps each acceptance item to its tests and holds the suite results, the
 independent review with dispositions, and the limits. What differs from the
 proposal above:

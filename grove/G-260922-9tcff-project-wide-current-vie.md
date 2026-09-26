@@ -1,26 +1,26 @@
 ---
-id: "G-093"
+id: "G-260922-9tcff"
 type: plan
 title: "Project-wide current view: per-record merge-base projection"
 status: current
 created: "2026-09-22T21:39:28Z"
 updated: "2026-09-22T21:39:56Z"
-work: ["G-042"]
+work: ["G-260921-ms6ev"]
 ---
 
-# G-042 current view plan
+# G-260921-ms6ev current view plan
 
 **Goal:** the board opens on one project-wide view of work, the same from any
 linked checkout. Each card shows a record's current state, derived from Git
 ancestry over every local branch tip and checkout. Older copies move into the
 card's evidence, and genuine divergence stays visible.
 
-**Spec:** [G-042](G-042-current-view.md). **Base:** `939d090` (main), branch
-`worktree-G-042`.
+**Spec:** [G-260921-ms6ev](G-260921-ms6ev-derive-a-project-wide-cu.md). **Base:** `939d090` (main), branch
+`worktree-G-260921-ms6ev`.
 
 ## Owner decisions, 2026-09-22
 
-Asked with examples in the `/grove-work G-042` session:
+Asked with examples in the `/grove-work G-260921-ms6ev` session:
 
 - **Uncommitted edits count, labelled.** A checkout's uncommitted record is a
   change on top of its HEAD, so it can be the current state, marked
@@ -41,8 +41,8 @@ Asked with examples in the `/grove-work G-042` session:
 Reviewing candidate `046150e`, the owner reopened the target: "I think I want
 to revisit the idea of an integration target. In my case that's main. During
 initial scoping I was asked if this should be a grove.yaml setting and I think
-it probably should be." They chose to add it within G-042. Having `update`
-refuse `done` off the target (G-038's "configured target") is separate work.
+it probably should be." They chose to add it within G-260921-ms6ev. Having `update`
+refuse `done` off the target (G-260921-9wkjt's "configured target") is separate work.
 
 - `grove.yaml` gains an optional `target: BRANCH`, `main` here. It is only
   ever compared with local branch names, never passed to Git; surrounding
@@ -94,7 +94,7 @@ nothing. The inputs are the same set of sources from any linked checkout, so
 the projection is too.
 
 The record's "supported old/new schema sources and legacy/new IDs" predates
-G-052. `schema_version: 3` is now the only schema, so a branch from before the
+G-260921-r491p. `schema_version: 3` is now the only schema, so a branch from before the
 conversion is an invalid source: the last row of the table, fixture-tested as
 one.
 
@@ -127,12 +127,12 @@ There are no new Git processes, per branch or otherwise.
 
 1. Projection in `internal/versions/current.go`, with merge-base reading in
    `tree.go`'s objects. Fixture tests for every row of the table, including
-   the G-030/G-023 shape (acceptance 4), committed deletion, detached and
+   the G-260920-svpbc/G-260919-nddsf shape (acceptance 4), committed deletion, detached and
    dirty checkouts, and invocation from two checkouts giving equal
    projections.
 2. `versions` column and JSON; CLI tests.
 3. Board current view; model tests; terminal lifecycle check.
 4. Measure load on this repository and a synthetic many-branch repository
-   (G-031's shapes) before and after.
-5. Docs: README board and `versions`, G-002's note, AGENTS.md's
+   (G-260920-z8vfp's shapes) before and after.
+5. Docs: README board and `versions`, G-260919-8jb5s's note, AGENTS.md's
    checkout-scoped sentence, record model if touched. Then review and hand off.

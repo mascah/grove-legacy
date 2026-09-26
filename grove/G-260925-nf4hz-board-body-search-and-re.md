@@ -1,25 +1,25 @@
 ---
-id: "G-164"
+id: "G-260925-nf4hz"
 type: plan
-title: "G-153 board body search and review listing"
+title: "G-260925-dzxm6 board body search and review listing"
 status: current
 created: "2026-09-25T20:40:14Z"
 updated: "2026-09-25T20:40:35Z"
-work: ["G-153"]
+work: ["G-260925-dzxm6"]
 ---
 
 ## Scope
 
-[G-153](G-153-search-and-code-links.md) as narrowed at preparation: its
+[G-260925-dzxm6](G-260925-dzxm6-search-record-bodies-and.md) as narrowed at preparation: its
 Next made the owner's rule that if agents already find and apply the
 listed constraint without search, preparation narrows it to the board
-search and the review listing. [G-154](G-154-listed-constraint-eval.md)'s
-`without` row, reviewed in G-160 on `worktree-G-154` at `5ff6eb3`, found
+search and the review listing. [G-260925-pbx81](G-260925-pbx81-evaluate-whether-agents.md)'s
+`without` row, reviewed in G-260925-khwkq on `worktree-G-260925-pbx81` at `5ff6eb3`, found
 both constraints applied in 10 of 10 runs without search, and named no
-lever. So this plan covers G-153 acceptance 1 (board `/` over bodies), 3
+lever. So this plan covers G-260925-dzxm6 acceptance 1 (board `/` over bodies), 3
 (the review listing), 5 (the nullsec observation through the board
 search's matcher instead of `grove search`), and 6. `grove search` and
-the guide and reviewer sentences are out, recorded in G-153.
+the guide and reviewer sentences are out, recorded in G-260925-dzxm6.
 
 ## Design
 
@@ -53,8 +53,8 @@ the guide and reviewer sentences are out, recorded in G-153.
   row, then `tier · source: snippet`; with an empty query one row, as
   today. Enter opens the record's detail, as today.
 - **Review listing.** In the detail's Changes section, under each changed
-  file, one plain (not selectable) row: `  described by G-140 link,
-  G-121 code span` or `  no record names it`. The file's path is made
+  file, one plain (not selectable) row: `  described by G-260924-ecs9m link,
+  G-260924-y99bx code span` or `  no record names it`. The file's path is made
   project-relative by stripping the result's prefix; renames match both
   sides. Only `link` and `code span` count, over every record's current
   states except the open record, each ID once. It uses the loaded records
@@ -70,6 +70,6 @@ the guide and reviewer sentences are out, recorded in G-153.
 3. Review listing with a test (link, span, none, prefix, self excluded,
    no extra backend call). Update board.md's review section.
 4. Evidence for acceptance 5: the review listing's matcher over the five
-   merges in G-153 Constraints, by a throwaway harness outside the commit.
+   merges in G-260925-dzxm6 Constraints, by a throwaway harness outside the commit.
 5. AGENTS.md checks, terminal lifecycle script, independent review, hand
    off into Review for the owner's layout judgment.

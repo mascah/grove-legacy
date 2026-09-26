@@ -1,5 +1,5 @@
 ---
-id: "G-038"
+id: "G-260921-9wkjt"
 type: work
 title: "Hand implementation candidates into revision-bound human review"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-22T05:04:26Z"
 kind: feature
 size: medium
 priority: 1
-depends_on: ["G-037", "G-065"]
-relates_to: ["G-035", "G-036", "G-023", "G-064"]
+depends_on: ["G-260921-w9x25", "G-260921-ebsby"]
+relates_to: ["G-260921-tkdwh", "G-260921-407n6", "G-260919-nddsf", "G-260921-gtydy"]
 formerly: "W-020"
 candidate: "fae1e4cce716836a3ffa6b0302f56ee2c4a173c3"
 ---
@@ -33,8 +33,8 @@ status edit alone does not. Prepare missing plans within that mandate, preserve
 the small-work exception, and ask about consequential choices rather than routine
 technical steps. Keep interactive/headless instructions shared.
 
-Build on G-065's identity/storage contract, as selected in
-[G-064](G-064-stable-knowledge.md). Review, approval and integration
+Build on G-260921-ebsby's identity/storage contract, as selected in
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md). Review, approval and integration
 remain explicit operational facts; generic knowledge does not imply authority.
 Lifecycle transitions preserve IDs and paths, including Done. No completion
 folder or record-filing operation is part of integration cleanup.
@@ -53,23 +53,23 @@ folder or record-filing operation is part of integration cleanup.
    and document an explicit migration; do not infer integration from status.
 5. Manual local approval/integration can complete the loop with an honest
    recorded disposition. Automated merge/cleanup and the review TUI belong to
-   G-044; managed process ownership belongs to G-045.
+   G-260921-jwk4e; managed process ownership belongs to G-260921-h46pb.
 6. Exercise successful, waiting, failed, feedback and changed-candidate paths;
    reconcile the model, guide and CLI documentation. Owner usability judgment
-   belongs to the real loop in G-039.
+   belongs to the real loop in G-260921-9t178.
 
 ## Evidence
 
-Branch `worktree-G-038` from main `a28a24b`, in `.claude/worktrees/G-038`;
+Branch `worktree-G-260921-9wkjt` from main `a28a24b`, in `.claude/worktrees/G-260921-9wkjt`;
 inputs were this record at `sha256:a39d1331…` and the plan
-[G-073](G-073-review-lifecycle-plan.md), prepared in `190669c` with one
+[G-260922-4fr84](G-260922-4fr84-review-lifecycle-plan.md), prepared in `190669c` with one
 adjustment recorded in it. Commits: `6c15442` code, `f9f6c0d` docs,
 `12b7752` and `4109c95` fixes from the independent review
-[G-074](G-074-review-lifecycle-review.md) (three rounds, every consequential
+[G-260922-fvqpv](G-260922-fvqpv-review-lifecycle-review.md) (three rounds, every consequential
 finding fixed), `87e66ab` the test that round 3 found missing, fixed after
 the review cap and therefore self-checked by mutation rather than
 independently reviewed; then the evidence commit, which is the candidate
-and changes only records. G-074's dispositions list what was left to the
+and changes only records. G-260922-fvqpv's dispositions list what was left to the
 owner.
 
 Verified at `87e66ab`, the last code change, uncached: `gofmt -l .` and
@@ -84,12 +84,12 @@ Review (0) Done (17) Abandoned (0)` (five tabs at 80), and exited 0 on `q`.
    `candidate` field through the same tables; the board shows five columns
    from the same list with no other change (`internal/tui`). Visible cost:
    five columns at 100 cells leave 19 per card, so titles truncate sooner
-   than with four; G-043 owns the visual redesign. The guide has a Lifecycle
+   than with four; G-260921-k0mwk owns the visual redesign. The guide has a Lifecycle
    section, the Review handoff in step 8, and the integrator's path.
 2. The handoff is the record's Evidence and Next as step 8 lists them; this
-   record is the first, and `context G-038` prints it in full. The change is
+   record is the first, and `context G-260921-9wkjt` prints it in full. The change is
    in `docs/record-model.md` (Work lifecycle), `docs/work-execution.md`,
-   README, AGENTS.md and the terms G-054, G-058, G-059 and G-060.
+   README, AGENTS.md and the terms G-260921-vr8a8, G-260921-rz7bn, G-260921-btyck and G-260921-3qgsf.
 3. `candidate` is a quoted commit, required in `review` and changeable
    through `update`; a review's `examined` is compared to it by the reader.
    Approval is of the candidate, and `done` is refused where HEAD lacks it,
@@ -101,14 +101,14 @@ Review (0) Done (17) Abandoned (0)` (five tabs at 80), and exited 0 on `q`.
    and `update` never writes a new one
    (`TestUpdateDoneMeansAnIntegratedCandidate`). That rule and the record
    model section are the migration. This repository's seventeen historical
-   Done records (G-003, G-007, G-009, G-010, G-011, G-014, G-015, G-016,
-   G-017, G-023, G-025, G-030, G-031, G-037, G-052, G-065, G-071) are all
+   Done records (G-260919-rt9h9, G-260919-92n2y, G-260919-shnj5, G-260919-zb0s8, G-260919-n9t4p, G-260919-8bbvy, G-260919-z9w13, G-260919-7qv4x,
+   G-260919-k7b8j, G-260919-nddsf, G-260919-04z88, G-260920-svpbc, G-260920-z8vfp, G-260921-w9x25, G-260921-r491p, G-260921-ebsby, G-260922-9cbh6) are all
    on main at `a28a24b` and were left untouched, with no backfilled candidate.
 5. Manual approval and integration: merge, then `update --set status=done`
    in the target's checkout, where the check holds it to the merged code. The
    CLI cannot tell the target from the work branch, where the candidate is an
    ancestor too, so "done on the target, never on the branch" is the guide's
-   and AGENTS.md's rule (G-074 finding 1). No automation, no `target`
+   and AGENTS.md's rule (G-260922-fvqpv finding 1). No automation, no `target`
    configuration, no approval field, no `report` type.
 6. Exercised with binaries built from `f9f6c0d` and again from `4109c95`
    in a disposable clone, with the same outcomes, transcripts kept outside
@@ -123,33 +123,33 @@ Review (0) Done (17) Abandoned (0)` (five tabs at 80), and exited 0 on `q`.
    unknown commit refused at done); failed attempt (stays `active`);
    waiting (an open question `blocks` it and `context` lists it);
    historical done (valid, renamed, refused an unreachable candidate).
-   Owner usability is G-039's.
+   Owner usability is G-260921-9t178's.
 
 ## Next
 
-Done on 2026-09-22: the owner fast-forwarded `worktree-G-038` onto `main`
+Done on 2026-09-22: the owner fast-forwarded `worktree-G-260921-9wkjt` onto `main`
 (`b8fb232`) and said "Ok I merged it. Mark it as done." The candidate
 `fae1e4c` is an ancestor of main, and this status was written there. The
 handoff below is kept as the first use of the mechanism it describes.
 
 In Review it read: the candidate is the evidence commit named in
 `candidate`, and the branch tip adds only this status change. To judge it,
-from a checkout of `worktree-G-038`:
+from a checkout of `worktree-G-260921-9wkjt`:
 
 ```sh
-go run ./cmd/grove context G-038          # this record and G-073, G-074 listed
+go run ./cmd/grove context G-260921-9wkjt          # this record and G-260922-4fr84, G-260922-fvqpv listed
 git diff --stat "$(git log -1 --format=%H)"~1  # the handoff commit touches one file
 git diff a28a24b..HEAD --stat             # 25 files
 go test -count=1 -timeout 120s ./...
 ```
 
-Approve: `git merge --ff-only worktree-G-038` on `main`, then there
-`go run ./cmd/grove update G-038 --expect REVISION --set status=done`,
+Approve: `git merge --ff-only worktree-G-260921-9wkjt` on `main`, then there
+`go run ./cmd/grove update G-260921-9wkjt --expect REVISION --set status=done`,
 quoting the verdict here, and commit. Feedback: `--set status=active` on the
 branch with the feedback here. Open for the owner: the brief's "Done will
-mean" and "G-038 must migrate" sentences are now dated (G-074 finding 12);
+mean" and "G-260921-9wkjt must migrate" sentences are now dated (G-260922-fvqpv finding 12);
 AGENTS.md reserves the brief for direction changes, so they were left.
 Timing: `internal/versions` took 7.1 s in the full run, above the 5 s
-budget, from the Git process ceiling G-071 recorded, not from this change.
-G-039 exercises this loop on real work; G-044 adds the approval and
+budget, from the Git process ceiling G-260922-9cbh6 recorded, not from this change.
+G-260921-9t178 exercises this loop on real work; G-260921-jwk4e adds the approval and
 integration actions.

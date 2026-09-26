@@ -1,19 +1,19 @@
 ---
-id: "G-133"
+id: "G-260924-szryt"
 type: review
-title: "G-125 review: answering a question from the board"
+title: "G-260924-wp2pe review: answering a question from the board"
 status: current
 created: "2026-09-24T15:24:30Z"
 updated: "2026-09-24T15:26:28Z"
-work: ["G-125"]
+work: ["G-260924-wp2pe"]
 examined: "606330c4a1b6fddaa05d460cd9204aac8b49e00f"
 ---
 
 ## Examined
 
 An independent reviewer subagent (Claude, `reviewer` type, no edits) of this
-headless session examined [G-125](G-125-answer-a-blocking-question-from.md)
-against its acceptance and [plan G-131](G-131-plan-for-g-125-answer-a-blocking.md):
+headless session examined [G-260924-wp2pe](G-260924-wp2pe-answer-a-blocking-questi.md)
+against its acceptance and [plan G-260924-cr3e4](G-260924-cr3e4-plan-for-answer-a-blocki.md):
 round 1 at `e1d3339`, round 2 at `052cc74` (`git diff e1d3339 052cc74`),
 round 3 at `606330c` (`git diff 052cc74 606330c`). It ran `go test -short ./internal/tui`, `go vet`, the pty
 scenario `attempt_lifecycle`, and seven mutations of the logic in a
@@ -42,7 +42,7 @@ Round 1, all fixed in `052cc74`: (1) answering accepts the owner's
 uncommitted copy, still checked against the bytes the board read, and `e`
 on it offers the resolve even with nothing more saved; (2) four window cases
 in `TestAnswerFromTheAttempt`; (3) documented in docs/board.md, kept: an
-attempt's result names no question and G-030 forbids reading history during
+attempt's result names no question and G-260920-svpbc forbids reading history during
 the load; (4) reported, no prompt, tested with a read-only file; (5) `Run`
 takes back an unused heading after collecting reads; (6) the old words are
 kept; (7) reworded; (8) `e answer` shows on the attempt screen and on a
@@ -62,7 +62,7 @@ consequential findings. One nit stays, without action: a change by another
 process in the instant between the editor's exit and the take-back makes `y`
 refuse with "changed since the expected revision", which is safe and shown.
 
-Knowledge: no contradiction with the settled terms (G-054 to G-062) or the
+Knowledge: no contradiction with the settled terms (G-260921-vr8a8 to G-260921-vz0v3) or the
 accepted decisions; `question answered` needs no term. This review is
 evidence, not approval.
 

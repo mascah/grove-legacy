@@ -1,20 +1,20 @@
 ---
-id: "G-187"
+id: "G-260925-jd94s"
 type: review
-title: "Review of G-169 entrypoint revisions"
+title: "Review of G-260925-p2k54 entrypoint revisions"
 status: current
 created: "2026-09-25T23:20:24Z"
 updated: "2026-09-25T23:29:11Z"
-work: ["G-169"]
+work: ["G-260925-p2k54"]
 examined: "5a163a1977a8e6ec82f81e11ce9276c2b0ba94f7"
 ---
 
 ## Examined
 
 Three rounds by fresh, independent `grove-reviewer` agents, 2026-09-25,
-dispatched by the headless `/grove-work G-169` session on `worktree-G-169`
+dispatched by the headless `/grove-work G-260925-p2k54` session on `worktree-G-260925-p2k54`
 (base `main` `6b14141`), each told the record, the plan
-[G-184](G-184-g-169-plan-entrypoint-revisions.md), the commands it could run
+[G-260925-zx4x0](G-260925-zx4x0-plan-entrypoint-revision.md), the commands it could run
 and, from round 2, the earlier findings and their dispositions. Each built
 binaries from this and older commits into temporary directories and ran them
 in disposable repositories; none wrote to the checkout.
@@ -28,7 +28,7 @@ in disposable repositories; none wrote to the checkout.
 
 Round 1:
 
-1. Revision-less managed files span generations: before G-134 the work skill
+1. Revision-less managed files span generations: before G-260924-5b6pz the work skill
    rejected `--until plan` and there was no reviewer, and the pilot adopter
    holds that generation. Serving them as revision 1 let `run --until plan`
    launch into a contradiction after spend. Verified with a binary from
@@ -36,7 +36,7 @@ Round 1:
 2. No rule said when revision 1 stops being served, though its files carry a
    grammar and review brief the next guide change would contradict.
 3. "Entrypoint revision" was a shared concept with no term, and the usage
-   placeholder `REVISION` overloaded settled term [G-062](G-062-revision.md).
+   placeholder `REVISION` overloaded settled term [G-260921-vz0v3](G-260921-vz0v3-revision.md).
 4. `run` checks against the launching `grove`, not the one the session runs;
    the docs claimed more.
 5. Minor: the adapters' repair hint named `init --check`, which an old
@@ -47,7 +47,7 @@ Round 2: all round-1 findings resolved except the stale Next (deferred to
 handoff). New: (1) a legacy skill's interactive session was still never
 stopped, since plain `guide` always prints; (2) the plan's Design
 contradicted its adjustment; (3) the `init --check` legacy note claimed a
-review brief for every path; (4) [G-186](G-186-entrypoint-revision.md) said
+review brief for every path; (4) [G-260925-m9jcr](G-260925-m9jcr-entrypoint-revision.md) said
 all three commands "refuse a marked file".
 
 Round 3: all round-2 findings resolved; the new guide sentence satisfies the
@@ -62,7 +62,7 @@ sentences in the plan. Nothing else consequential.
   in an existing worktree. From revision 2 an entrypoint holds nothing the
   guides evolve. Tests: the legacy and newer cases in `TestRefusals` and
   `TestInitCheckDiagnosesAnOldInstallAndInitRefreshesIt`.
-- R1.3: term G-186 (proposed); usage writes `--entrypoint N`.
+- R1.3: term G-260925-m9jcr (proposed); usage writes `--entrypoint N`.
 - R1.4: stated as a limit in the command reference's Entrypoint revisions.
 - R1.5: adapter wording fixed in `d6c53df`; the plan records the shaping
   guide; the Next was reconciled at handoff.

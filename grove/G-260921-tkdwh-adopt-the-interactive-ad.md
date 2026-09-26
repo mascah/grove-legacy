@@ -1,11 +1,11 @@
 ---
-id: "G-035"
+id: "G-260921-tkdwh"
 type: decision
 title: "Adopt the interactive adoption loop and work-centered Grove experience"
 status: accepted
 created: "2026-09-21T00:54:13Z"
 updated: "2026-09-21T01:03:36Z"
-relates_to: ["G-002", "G-036", "G-038", "G-042"]
+relates_to: ["G-260919-8jb5s", "G-260921-407n6", "G-260921-9wkjt", "G-260921-ms6ev"]
 formerly: "D-004"
 ---
 
@@ -22,16 +22,16 @@ to disk so later work can be assigned individually.
 
 The [brief](brief.md) is the current direction owner. This
 record is its decision receipt, not a second specification. The
-[evaluation](G-048-direction-evaluation-review.md) records
-evidence; the [roadmap](G-047-adoption-roadmap-plan.md) records order.
+[evaluation](G-260921-72chf-first-days-evaluation-an.md) records
+evidence; the [roadmap](G-260921-466b5-adoption-roadmap.md) records order.
 
 ## Revisions to earlier choices
 
-- Replace G-002's versions-first default presentation with a project-wide
+- Replace G-260919-8jb5s's versions-first default presentation with a project-wide
   current view, preserving explicit source inspection, divergence and exact
-  action targeting. G-042 owns the unresolved projection details.
+  action targeting. G-260921-ms6ev owns the unresolved projection details.
 - Target Proposed → Active → Review → Done. For implementation Done means
-  accepted and integrated; G-038 owns explicit migration from current meaning.
+  accepted and integrated; G-260921-9wkjt owns explicit migration from current meaning.
   Do not relabel old branch-local completion as integration evidence.
 - Restore domain terms and linked plans/reports/reviews, keep preparation
   proportional, and avoid universal human approval of technical plans.

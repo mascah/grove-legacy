@@ -1,15 +1,15 @@
 ---
-id: "G-183"
+id: "G-260925-gzdsd"
 type: plan
-title: "Plan for G-177: merge prediction for candidates in review"
+title: "Plan for G-260925-h8rj5: merge prediction for candidates in review"
 status: current
 created: "2026-09-25T23:03:54Z"
 updated: "2026-09-25T23:04:15Z"
-work: ["G-177"]
+work: ["G-260925-h8rj5"]
 ---
 
-Plan for [G-177](G-177-merge-prediction.md), prepared headless in
-`worktree-G-177` from main `6b14141`, where G-161 is integrated, so `deps`
+Plan for [G-260925-h8rj5](G-260925-h8rj5-predict-whether-a-candid.md), prepared headless in
+`worktree-G-260925-h8rj5` from main `6b14141`, where G-260925-g39ga is integrated, so `deps`
 and the board's selection preview are in scope. Single implementer; one
 independent review on the final revision.
 
@@ -76,6 +76,6 @@ independent review on the final revision.
 ## Status
 
 Steps 1 to 6 done through `829f08c`; the review is
-[G-189](G-189-review-of-g-177-candidate-merge.md). Step 4's integrate now
+[G-260925-a05hb](G-260925-a05hb-review-of-candidate-merg.md). Step 4's integrate now
 falls through to the `git merge` refusal when a prediction fails, and
 `Changes.Unpredicted` carries the reason, both after review round 1.

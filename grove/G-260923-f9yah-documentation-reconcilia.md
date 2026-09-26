@@ -1,18 +1,18 @@
 ---
-id: "G-112"
+id: "G-260923-f9yah"
 type: review
-title: "G-107 documentation reconciliation review"
+title: "G-260923-fwakw documentation reconciliation review"
 status: current
 created: "2026-09-23T16:57:58Z"
 updated: "2026-09-23T16:59:21Z"
-work: ["G-107"]
+work: ["G-260923-fwakw"]
 examined: "6a9f146"
 ---
 
 ## Examined
 
-Round 1: `git diff 768efab d6cc1df`, against [G-107](G-107-current-documentation.md)'s
-acceptance and the inventory in plan [G-111](G-111-g-107-docs-plan.md).
+Round 1: `git diff 768efab d6cc1df`, against [G-260923-fwakw](G-260923-fwakw-reconcile-current-docume.md)'s
+acceptance and the inventory in plan [G-260923-2zgsr](G-260923-2zgsr-documentation-inventory.md).
 Round 2: `git diff d6cc1df 1398458`, the fixes. Reviewer: a fresh `reviewer`
 subagent in the implementing Claude Code session (Opus 5.5), read-only, with
 no part in writing the diff. It is an agent, not the owner.
@@ -30,7 +30,7 @@ constraint other than 1 and 3. Its link and anchor check found no problems.
    but it has no create, convert or context path.
 3. Low: sibling repositories lost "not *automatically*" in the write scope and
    "Follow their instructions", which conflicted with the brief.
-4. Low: the brief said nullsec cut over *after* G-036 closed. G-041 was a
+4. Low: the brief said nullsec cut over *after* G-260921-407n6 closed. G-260921-905y3 was a
    member, so the cutover came first.
 5. Low: the allocation text named the floor scan as `.md` files on "every
    local ref". The code greps every text file on branches, remote-tracking

@@ -1,17 +1,17 @@
 ---
-id: "G-196"
+id: "G-260926-vpvhf"
 type: plan
-title: "Plan for G-180 policy-driven integration"
+title: "Plan for G-260925-5wrn8 policy-driven integration"
 status: current
 created: "2026-09-26T03:20:52Z"
 updated: "2026-09-26T03:21:19Z"
-work: ["G-180"]
+work: ["G-260925-5wrn8"]
 ---
 
 ## Design
 
-Plan for [G-180](G-180-policy-driven-integration.md) under decision
-[G-182](G-182-standing-policy-delegation.md). The choices the record leaves
+Plan for [G-260925-5wrn8](G-260925-5wrn8-resolve-approve-and-inte.md) under decision
+[G-260925-wh9ax](G-260925-wh9ax-delegate-conflict-resolu.md). The choices the record leaves
 to preparation:
 
 - **Parsing.** `policy:` in `grove.yaml` beside `run:`, read into
@@ -44,7 +44,7 @@ to preparation:
   the done update `Integrated under policy grove.yaml sha256:REV as MERGE on
   TARGET (was B); to reverse it: git revert …`. A delegated resolution's
   feedback begins `delegated under policy grove.yaml sha256:REV, budget $N:`
-  before G-178's mandate. The board's Review block says `approved under
+  before G-260925-dz10z's mandate. The board's Review block says `approved under
   policy` instead of `approved` when the candidate's verdict is delegated.
 - **Verified merge.** In a temporary worktree outside every checkout
   (`git worktree add --detach` at the target commit T the prediction used),
@@ -88,6 +88,6 @@ to preparation:
 7. Docs: `docs/work-review.md` (closing line), `docs/work-execution.md`
    (copy it into the review record; the sweep among the dispositions),
    `docs/commands.md`, `docs/record-model.md` (`policy:`),
-   `docs/board.md`, README if it lists commands; G-059 term only if its
-   meaning changes (G-182 says it does not).
+   `docs/board.md`, README if it lists commands; G-260921-btyck term only if its
+   meaning changes (G-260925-wh9ax says it does not).
 8. Verification per `CLAUDE.md`, independent review, handoff.

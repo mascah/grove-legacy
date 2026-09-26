@@ -1,15 +1,15 @@
 ---
-id: "G-174"
+id: "G-260925-sv063"
 type: plan
-title: "Plan for G-170: shared build identity and release stamping"
+title: "Plan for G-260925-358a2: shared build identity and release stamping"
 status: current
 created: "2026-09-25T21:19:48Z"
 updated: "2026-09-25T21:20:14Z"
-work: ["G-170"]
+work: ["G-260925-358a2"]
 ---
 
-Plan for [G-170](G-170-release-identity.md), prepared headless in
-`worktree-G-170` from main `47852e3`. Single implementer, sequential; one
+Plan for [G-260925-358a2](G-260925-358a2-give-every-distributed-b.md), prepared headless in
+`worktree-G-260925-358a2` from main `47852e3`. Single implementer, sequential; one
 independent review on the final revision.
 
 ## Design
@@ -46,12 +46,12 @@ independent review on the final revision.
   a line states that the grove the agent runs is not recorded: PATH or the
   project's instructions choose it.
 - Adjusted after review of `1961905`: the stamp and the line say *commit*,
-  since G-062 settles *revision* as a file's sha256; a stamp that differs
+  since G-260921-vz0v3 settles *revision* as a file's sha256; a stamp that differs
   from Go's `vcs.revision` adds `vcs OTHER`; release builds write `bin/`,
   since `-o grove` lands in this repository's record directory.
 - Not in scope: `version --json`, per-file template digests, running PATH's
-  grove at launch, release workflows or packaging (G-110), entrypoint
-  compatibility revisions (G-169), or a selected version number or release
+  grove at launch, release workflows or packaging (G-260923-gsthp), entrypoint
+  compatibility revisions (G-260925-p2k54), or a selected version number or release
   policy.
 
 ## Steps
@@ -72,6 +72,6 @@ independent review on the final revision.
    repository; also build the same copy unstamped and check
    `commit unknown`.
 5. Docs: `docs/commands.md` Version and run sections (build contract and
-   exact stamping and verification commands for G-110, what each digest
+   exact stamping and verification commands for G-260923-gsthp, what each digest
    covers, attempt fields); README install line if it changes.
 6. Verification per AGENTS.md, independent review, handoff.

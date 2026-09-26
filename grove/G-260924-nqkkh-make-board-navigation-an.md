@@ -1,5 +1,5 @@
 ---
-id: "G-123"
+id: "G-260924-nqkkh"
 type: work
 title: "Make board navigation and cards quicker to read and move through"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-24T01:23:27Z"
 updated: "2026-09-24T04:53:23Z"
 kind: feature
 size: small
-relates_to: ["G-043", "G-109", "G-124", "G-125"]
+relates_to: ["G-260921-k0mwk", "G-260923-895zb", "G-260924-zxvqf", "G-260924-wp2pe"]
 candidate: "ff15e25d4cf5c0b85d2c6ab618984dbf5cf726bd"
 approved: "ff15e25d4cf5c0b85d2c6ab618984dbf5cf726bd"
 ---
@@ -53,7 +53,7 @@ Observed at main `28f5ddc`:
 In scope, as proposed design:
 
 1. Opening an ID already on the stack cuts the stack back to it. A breadcrumb
-   row in the detail header, such as `board › G-108 › G-115`, clipped from
+   row in the detail header, such as `board › G-260923-p5pt6 › G-260923-v9wby`, clipped from
    the left when long. The `o` return path still works.
 2. ←/→ and h/l skip empty columns, which are still drawn.
 3. A card with a live attempt gets a distinct border colour or marker, and
@@ -86,7 +86,7 @@ board reads.
 
 ## Evidence
 
-Implemented on `worktree-G-123`, base main `f81f7e9`, from G-123 revision
+Implemented on `worktree-G-260924-nqkkh`, base main `f81f7e9`, from G-260924-nqkkh revision
 `sha256:2056133c…` (no plan: small work, and the proposed design in
 Constraints was specific enough to build without one). Code is in `46f1322`,
 with review fixes in `6e78245`. The candidate is the commit holding this
@@ -144,7 +144,7 @@ Against each acceptance item:
    - `python3 internal/tui/testdata/terminal.py BINARY`: all ten checks ok,
      at both `46f1322` and `6e78245`.
 
-Review: [G-127](G-127-review-of-g-123-board-navigation.md), an independent
+Review: [G-260924-tbx21](G-260924-tbx21-review-of-board-navigati.md), an independent
 reviewer subagent, two rounds. Round 1 found one should-fix (the stale depth
 of the `o` layer after a refresh) and four nits. Four were fixed in
 `6e78245`, and the orphan border was kept for the owner. Round 2 found
@@ -156,9 +156,9 @@ not fixed here, since it is outside this work's scope.
 
 ## Next
 
-**Handoff, 2026-09-24 (headless).** G-123 alone, on `worktree-G-123` in
-`.claude/worktrees/worktree-G-123`, base main `f81f7e9`. Main is now
-`25525cf`, which adds only a G-114 record edit; that touches none of these
+**Handoff, 2026-09-24 (headless).** G-260924-nqkkh alone, on `worktree-G-260924-nqkkh` in
+`.claude/worktrees/worktree-G-260924-nqkkh`, base main `f81f7e9`. Main is now
+`25525cf`, which adds only a G-260923-h9c30 record edit; that touches none of these
 files. No command is still running.
 
 For the owner's judgment, run `go run ./cmd/grove` in this checkout, from a
@@ -172,10 +172,10 @@ detail path:
   and whether an orphan should share that border.
 - `w` in a detail, then select the content with the mouse.
 
-Integration: `go run ./cmd/grove approve G-123 "VERDICT"` in this checkout,
-then `go run ./cmd/grove integrate G-123` in the `main` checkout. Run
-[G-124](G-124-keep-the-board-fresh-without-pre.md) and
-[G-125](G-125-answer-a-blocking-question-from.md) one after another, since
+Integration: `go run ./cmd/grove approve G-260924-nqkkh "VERDICT"` in this checkout,
+then `go run ./cmd/grove integrate G-260924-nqkkh` in the `main` checkout. Run
+[G-260924-zxvqf](G-260924-zxvqf-keep-the-board-fresh-wit.md) and
+[G-260924-wp2pe](G-260924-wp2pe-answer-a-blocking-questi.md) one after another, since
 they change the same package.
 
 Verdict on candidate ff15e25, 2026-09-24: lgtn

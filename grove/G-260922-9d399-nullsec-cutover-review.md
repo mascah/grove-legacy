@@ -1,11 +1,11 @@
 ---
-id: "G-092"
+id: "G-260922-9d399"
 type: review
-title: "G-041 nullsec cutover review"
+title: "G-260921-905y3 nullsec cutover review"
 status: current
 created: "2026-09-22T20:30:09Z"
 updated: "2026-09-22T20:34:20Z"
-work: ["G-041"]
+work: ["G-260921-905y3"]
 examined: "4b05447"
 ---
 
@@ -27,12 +27,12 @@ against its `formerly` original.
 | `W-019-T3` is a branch name (merge `a6c37b9`) | Kept: IDs followed by `-T<digit>` are not rewritten |
 | `W-021/023/024` and `D-0034/0035` shorthands half-rewritten | Expanded to full IDs before rewriting |
 | `history/evidence/…` paths relative to the old root no longer resolved | Rewritten through aliases |
-| Predecessor commands such as `grove close W-001` in done records | Rewritten like other IDs, as G-052 did; history, as is the finished study brief `art/design/w039-crew-hull-test.md` |
+| Predecessor commands such as `grove close W-001` in done records | Rewritten like other IDs, as G-260921-r491p did; history, as is the finished study brief `art/design/w039-crew-hull-test.md` |
 | Code risk | None: non-comment rewrites are test titles, assert messages, a `console.log` label and trace headers no code compares; the retrospective generator and `docs/RETROSPECTIVE.md` stay consistent |
 
 ## Round 2: final, both branches and the machine
 
-Examined: Grove `worktree-G-041` at `db819bf`, nullsec `worktree-grove-cutover`
+Examined: Grove `worktree-G-260921-905y3` at `db819bf`, nullsec `worktree-grove-cutover`
 at `ecbb036`, and the machine state. All 126 converted records' frontmatter and
 bodies compared with their originals by script; all 162 tracked Markdown files'
 links resolve; all 146 predecessor paths appear on the map page.
@@ -43,7 +43,7 @@ links resolve; all 146 predecessor paths appear on the map page.
 | G-075 has two contradicting Next paragraphs | should fix | Lead-in says G-075's own paragraph supersedes the moved text (`3eb2785`) |
 | Three live docs still name predecessor commands | should fix | `section-study-recipe.md`, G-059's Next and `expedition-foundations.md` use new commands (`3eb2785`); done records keep theirs as history |
 | README still calls `../skills/` the working CLI and the resume prompt names their Grove CLI | should fix | Corrected on this branch |
-| The rollback is referenced but not written | should fix | Written in G-041's Evidence, with the removed Codex configuration verbatim |
+| The rollback is referenced but not written | should fix | Written in G-260921-905y3's Evidence, with the removed Codex configuration verbatim |
 | nullsec `main` has no working CLI until its branch merges | minor | Handoff merges nullsec first |
 | `sources` and plan-evidence mappings missing from the rules | minor | Plan and map page state them |
 

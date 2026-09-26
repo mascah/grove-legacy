@@ -1,9 +1,9 @@
 # Grove brief
 
-Direction reconciled 2026-09-23 ([G-107](G-107-current-documentation.md)).
+Direction reconciled 2026-09-23 ([G-260923-fwakw](G-260923-fwakw-reconcile-current-docume.md)).
 This is the single current source of product intent. The owner selected the
-interactive adoption milestone in [G-035](G-035-interactive-adoption.md),
-the storage and identity direction in [G-064](G-064-stable-knowledge.md),
+interactive adoption milestone in [G-260921-tkdwh](G-260921-tkdwh-adopt-the-interactive-ad.md),
+the storage and identity direction in [G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md),
 and the next phase's audience on 2026-09-23 (below). Work records own
 acceptance, progress and next actions; the
 [record model](../docs/record-model.md) describes the implemented schema.
@@ -18,10 +18,10 @@ continue with **the right context, at the right time**.
 The first audience is the owner working across local hobby repositories and
 worktrees. The first adoption milestone, a complete interactive
 shape → implement → review → integrate loop,
-[G-036](G-036-interactive-adoption.md), was closed by the owner on 2026-09-22.
+[G-260921-407n6](G-260921-407n6-complete-the-interactive.md), was closed by the owner on 2026-09-22.
 Its nullsec acceptance was not exercised in nullsec: the owner accepted this
 repository's own use of the loop in its place. Nullsec's cutover to this
-Grove ([G-041](G-041-nullsec-pilot.md)) was part of that milestone. Keyborg, selected in G-035
+Grove ([G-260921-905y3](G-260921-905y3-cut-nullsec-over-to-this.md)) was part of that milestone. Keyborg, selected in G-260921-tkdwh
 as the second adoption test, has no work record yet.
 
 The next audience, selected by the owner in a shaping conversation on
@@ -77,8 +77,8 @@ title and status changes preserve identity and path. Completed records stay
 put; views bound everyday clutter. Per-type folder/prefix settings, automatic
 filing and a general schema-extension engine are not selected. This repository
 had one deliberate reconciliation into that layout
-([G-052](G-052-migrate-knowledge.md), mapped by
-[G-069](G-069-migration-map.md)); stable placement applies from then on.
+([G-260921-r491p](G-260921-r491p-reconcile-all-grove-cont.md), mapped by
+[G-260921-czt8x](G-260921-czt8x-identity-and-path-migrat.md)); stable placement applies from then on.
 Until a first release Grove keeps no backward compatibility: only the current
 schema is read, and an old commit is inspected with the CLI it carries.
 
@@ -96,7 +96,7 @@ implementation and agent review are activities; waiting, failures and process
 state are additional facts. A terminal attempt does not automatically enter Review.
 
 For implementation, Done means accepted and integrated into the configured
-target ([G-038](G-038-review-lifecycle.md)); a `done` record without a
+target ([G-260921-9wkjt](G-260921-9wkjt-hand-implementation-cand.md)); a `done` record without a
 candidate predates that meaning and keeps its historical evidence.
 Research/design work needs a completion condition suitable to its deliverable.
 
@@ -114,7 +114,7 @@ implementation attempt returns work to Active and preserves prior reviews.
 A standing policy in `grove.yaml` may delegate one bounded conflict
 resolution, and the approval and integration of a candidate that meets its
 written conditions after independent review, each act attributed to the
-policy and its evidence ([G-182](G-182-standing-policy-delegation.md),
+policy and its evidence ([G-260925-wh9ax](G-260925-wh9ax-delegate-conflict-resolu.md),
 owner, 2026-09-25); everything it does not name awaits human judgment.
 
 Interactive and headless callers share the workflow, with explicit human
@@ -132,7 +132,7 @@ superseded states in history, and label unintegrated and uncommitted changes.
 Genuine divergence stays visible. Git ancestry supports this view; timestamps,
 status rankings, or the newest branch tip do not define authority.
 
-This supersedes G-002's explicit-versions-first presentation as the default.
+This supersedes G-260919-8jb5s's explicit-versions-first presentation as the default.
 Exact source inspection and fresh workspace binding remain available.
 Ancestry here means merge bases: a copy is superseded when, since it and
 another split, only the other changed the record. The integration target is
@@ -161,7 +161,7 @@ each fact.
 One bounded implementation runs independently of the TUI as a Grove-owned
 `claude -p` process that continues after the terminal closes, reconnects
 without duplication and stops explicitly
-([G-101](G-101-attempt-mechanism.md) records the choice and when to
+([G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md) records the choice and when to
 reconsider it). No machine-reboot guarantee is selected. Roles start with
 shaping/preparation, implementation and independent review; route model
 strength by uncertainty and consequence and retain actual configuration per
@@ -193,14 +193,14 @@ credential, deployment or backlog authority over this project.
 
 The preview phase has three proposals, each independently assignable and none
 a prerequisite of another: behavioral evaluations of context and workflows
-([G-108](G-108-workflow-evals.md)), usable Attempts screens
-([G-109](G-109-attempts-usability.md)), and distribution preparation
-([G-110](G-110-external-preview.md)). Their order is proposed: the owner has
+([G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md)), usable Attempts screens
+([G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md)), and distribution preparation
+([G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md)). Their order is proposed: the owner has
 not selected one. Completing them is not by itself evidence that a preview is
 ready; the owner judges that.
 
 The brief does not track progress or a current next action. Each work
 record's Next owns that; change this section only when the selected sequence
-itself changes. The adoption [roadmap](G-047-adoption-roadmap-plan.md) and
-[evaluation](G-048-direction-evaluation-review.md) are the closed milestone's
+itself changes. The adoption [roadmap](G-260921-466b5-adoption-roadmap.md) and
+[evaluation](G-260921-72chf-first-days-evaluation-an.md) are the closed milestone's
 history.

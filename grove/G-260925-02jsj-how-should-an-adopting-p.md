@@ -1,20 +1,20 @@
 ---
-id: "G-146"
+id: "G-260925-02jsj"
 type: question
 title: "How should an adopting project read the record model the guides cite?"
 status: resolved
 created: "2026-09-25T04:10:06Z"
 updated: "2026-09-25T04:26:49Z"
-blocks: ["G-144"]
+blocks: ["G-260925-ced1h"]
 ---
 
 ## Question
 
-[G-144](G-144-give-adopting-projects-the-recor.md) needs the owner to
+[G-260925-ced1h](G-260925-ced1h-give-adopting-projects-t.md) needs the owner to
 choose its design, which the record leaves open ("Choosing one is the
 owner's"). No plan is written until this is resolved.
 
-Observed at `worktree-G-144` `670ca9c`:
+Observed at `worktree-G-260925-ced1h` `670ca9c`:
 
 - The guides cite "the record model" three times:
   [work-shaping.md](../docs/work-shaping.md) lines 60 and 146,
@@ -24,9 +24,9 @@ Observed at `worktree-G-144` `670ca9c`:
   `grove guide` accepts `work` or `shape`; the `version` digest hashes the
   two guides. `grove init` writes no model and no pointer.
 - [docs/record-model.md](../docs/record-model.md) is 542 lines and links
-  35 of this repository's own `G-` records (G-064, G-065, G-052 and
+  35 of this repository's own `G-` records (G-260921-gtydy, G-260921-ebsby, G-260921-r491p and
   others) as the history of each rule. An adopting project has its own
-  `G-` IDs, so `grove show G-064` there reads an unrelated record.
+  `G-` IDs, so `grove show G-260921-gtydy` there reads an unrelated record.
 
 Options, recommendation first:
 
@@ -49,12 +49,12 @@ Options, recommendation first:
 3. **Say it is unavailable.** The guides say the model exists only in
    Grove's repository and a session relies on `grove check` and CLI
    refusals. Least code, but acceptance 1 ("can read the record model")
-   is then not met as written and G-144's outcome would change.
+   is then not met as written and G-260925-ced1h's outcome would change.
 
 Who can answer: the owner, by setting this record `resolved` with the
 option (and sub-choice and spelling, if option 1) in its Answer; any item
 left blank takes the recommendation. Then launch
-`/grove-work G-144 --until plan` on `worktree-G-144`.
+`/grove-work G-260925-ced1h --until plan` on `worktree-G-260925-ced1h`.
 
 ## Answer
 
@@ -64,8 +64,8 @@ model` prints it, the three citations name that command, and the model is
 first edited to hold no `G-` link at all, so the printed copy is the source
 verbatim with no preamble.
 
-Why not the preamble: `G-064` is a live ID in every adopting project, so a
-printed model that says "G-064 selected it" is a false statement in that
+Why not the preamble: `G-260921-gtydy` is a live ID in every adopting project, so a
+printed model that says "G-260921-gtydy selected it" is a false statement in that
 project's own vocabulary, read by a session that takes IDs literally. A
 namespace collision is not closed by a warning.
 
@@ -78,14 +78,14 @@ rule-to-record index, the records link into the model, and `docs(G-NNN)`
 commits give `git blame` per-line history.
 
 What the plan covers in the model: delete the provenance parentheticals
-("G-064 selected it, G-065 implemented it" and the like), reword the
+("G-260921-gtydy selected it, G-260921-ebsby implemented it" and the like), reword the
 sentences that say a record owns a contract as plain statements, keep the
-ID format examples (`G-001`, `G-1000`), and cite the command reference and
+ID format examples (`G-260919-6mpmw`, `G-1000`), and cite the command reference and
 the brief by name, as the guides do, instead of by path. Also one line in
 AGENTS.md: a document the binary ships links only to other shipped
 documents, never to a record.
 
 ## Next
 
-Resolved 2026-09-24. G-144 plans against this answer:
-`/grove-work G-144 --until plan` on `worktree-G-144`.
+Resolved 2026-09-24. G-260925-ced1h plans against this answer:
+`/grove-work G-260925-ced1h --until plan` on `worktree-G-260925-ced1h`.

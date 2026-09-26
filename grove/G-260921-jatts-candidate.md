@@ -1,17 +1,17 @@
 ---
-id: "G-057"
+id: "G-260921-jatts"
 type: term
 title: "Candidate"
 status: settled
 created: "2026-09-21T05:01:56Z"
 updated: "2026-09-21T14:23:32Z"
-relates_to: ["G-056", "G-058", "G-059", "G-060"]
+relates_to: ["G-260921-sth8q", "G-260921-rz7bn", "G-260921-btyck", "G-260921-3qgsf"]
 formerly: "T-004"
 ---
 
 ## Meaning
 
-The specific result of an [attempt](G-056-attempt.md) that is offered for
+The specific result of an [attempt](G-260921-sth8q-attempt.md) that is offered for
 judgment: a Git commit on a work branch, together with the evidence gathered
 at that commit. It is exact on purpose, so that what was examined, what was
 approved, and what gets integrated can be shown to be the same thing.
@@ -21,6 +21,6 @@ is a new candidate.
 
 ## Relationships
 
-A [review](G-058-review.md) examines a candidate. [Approval](G-059-approval.md)
-is of a candidate. [Integration](G-060-integration.md) puts an approved
+A [review](G-260921-rz7bn-review.md) examines a candidate. [Approval](G-260921-btyck-approval.md)
+is of a candidate. [Integration](G-260921-3qgsf-integration.md) puts an approved
 candidate into the target.

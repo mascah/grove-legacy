@@ -1,5 +1,5 @@
 ---
-id: "G-007"
+id: "G-260919-92n2y"
 type: work
 title: Create records with shared sequential ID allocation
 status: done
@@ -8,7 +8,7 @@ priority: 2
 size: medium
 members: []
 depends_on: []
-relates_to: ["G-003", "G-004", "G-006", "G-002"]
+relates_to: ["G-260919-rt9h9", "G-260919-4h6pn", "G-260919-5f89v", "G-260919-8jb5s"]
 created: "2026-09-19T15:25:51Z"
 updated: "2026-09-19T15:52:00Z"
 formerly: "W-002"
@@ -25,7 +25,7 @@ test, not by hand.
 
 ## Why now
 
-G-003 is done and every record so far was numbered by hand. The next planned
+G-260919-rt9h9 is done and every record so far was numbered by hand. The next planned
 work, combined views and execution, depends on records that agents can create
 without coordinating numbers in conversation. Priority 2 follows the brief's
 sequence; medium reflects locking, durable state, recovery, and file creation
@@ -46,7 +46,7 @@ with tests, without any update or move behavior.
   recover reservations for records that were never written or were deleted.
 - Generate filenames and slugs per the [folders and files](../docs/record-model.md#folders-and-files)
   contract. Write `created` and `updated` with one UTC timestamp.
-- Keep G-003's reader unchanged in behavior; reuse it to validate the project
+- Keep G-260919-rt9h9's reader unchanged in behavior; reuse it to validate the project
   after creation. Keep the installed sibling CLI untouched.
 - Defer status/field updates, renames, moves, deletes, imports, clone merging,
   Windows locking, and cross-branch views.
@@ -70,7 +70,7 @@ with tests, without any update or move behavior.
 
 ## Design
 
-[G-006](G-006-allocator-mechanism.md) proposes the mechanism:
+[G-260919-5f89v](G-260919-5f89v-allocate-ids-with-flock.md) proposes the mechanism:
 `flock` on `<common-dir>/grove/lock`, a plain-text `<common-dir>/grove/next-ids`
 file replaced atomically, and a scan of local refs and worktrees as a floor on
 every allocation. Read it before planning. Command shape:
@@ -88,8 +88,8 @@ deleting the file. Git commands used: `rev-parse --git-common-dir`,
 ## Evidence
 
 Closed 2026-09-19 on branch `worktree-W-002` at `8d359e3`. The
-[implementation plan](G-008-create-plan.md) records the tests,
-race/vet/format results, the real creation of G-009 through the command, and
+[implementation plan](G-260919-dmhpz-record-creation-implemen.md) records the tests,
+race/vet/format results, the real creation of G-260919-shnj5 through the command, and
 the independent review. Every acceptance line above has a fixture test; the
 review's blocking finding, an unreadable file in another worktree silently
 lowering the floor, was fixed and covered before closure. Structural
@@ -99,4 +99,4 @@ is the owner's judgment.
 ## Next
 
 Integrate this branch into main, then shape
-[G-009](G-009-update-records.md) for status and field updates.
+[G-260919-shnj5](G-260919-shnj5-update-record-status-and.md) for status and field updates.

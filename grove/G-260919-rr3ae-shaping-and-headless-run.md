@@ -1,17 +1,17 @@
 ---
-id: "G-026"
+id: "G-260919-rr3ae"
 type: review
 title: "Shaping and headless-run evidence"
 status: current
 formerly: "docs/reviews/2026-09-19-shaping-and-runner-evidence.md"
-work: ["G-023", "G-025"]
+work: ["G-260919-nddsf", "G-260919-04z88"]
 created: "2026-09-19T21:24:18Z"
 updated: "2026-09-21T21:23:30Z"
 ---
 
 # Shaping and headless-run evidence
 
-Source review for G-023 and G-025, 2026-09-19. The restart brief owns selected
+Source review for G-260919-nddsf and G-260919-04z88, 2026-09-19. The restart brief owns selected
 direction; the work records own proposed outcomes. This report is evidence and
 engineering recommendations, not an approved runner specification.
 

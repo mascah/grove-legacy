@@ -1,24 +1,24 @@
 ---
-id: "G-094"
+id: "G-260922-ayftm"
 type: review
-title: "Review of G-042 current view"
+title: "Review of G-260921-ms6ev current view"
 status: current
 created: "2026-09-22T22:27:11Z"
 updated: "2026-09-22T22:27:26Z"
-work: ["G-042"]
+work: ["G-260921-ms6ev"]
 examined: "96900e0"
 ---
 
 ## Examined
 
 One independent reader, a Claude reviewer subagent of the implementing
-session with no edit rights over the branch, reviewed branch `worktree-G-042`
+session with no edit rights over the branch, reviewed branch `worktree-G-260921-ms6ev`
 against base `939d090` in three rounds, reading the code and running scratch
 tests in a copy of the worktree.
 
 - Round 1 examined `383e59d`: the projection, merge bases, caches, policy,
-  TUI, and documentation, against [G-042](G-042-current-view.md) and
-  [its plan](G-093-current-view-plan.md).
+  TUI, and documentation, against [G-260921-ms6ev](G-260921-ms6ev-derive-a-project-wide-cu.md) and
+  [its plan](G-260922-9tcff-project-wide-current-vie.md).
 - Round 2 examined `e1606af`, the fixes for round 1.
 - Round 3 examined `96900e0`, the fix for round 2. No defects remained.
 
@@ -64,6 +64,6 @@ both from two invoking checkouts.
 - 3 and 4: `e1606af`, with `TestCurrentViewBoard` now using the path-less
   row the projection produces, and an uncommitted deletion (W-005).
 - 5: `e1606af`, `TestBaseOfUnborn`.
-- Wording: fixed in `e1606af`. Measurements are in G-042's Evidence.
+- Wording: fixed in `e1606af`. Measurements are in G-260921-ms6ev's Evidence.
 - Test budget: `1c328cf` runs the merge-base test in parallel; the package's
   short tests then took 4.0 to 4.3 s alone.

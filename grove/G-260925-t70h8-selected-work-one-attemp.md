@@ -1,26 +1,26 @@
 ---
-id: "G-185"
+id: "G-260925-t70h8"
 type: plan
-title: "G-162 selected work: one attempt, shared candidate, group judgment"
+title: "G-260925-7c8g9 selected work: one attempt, shared candidate, group judgment"
 status: current
 created: "2026-09-25T23:08:19Z"
 updated: "2026-09-25T23:08:22Z"
-work: ["G-162"]
+work: ["G-260925-7c8g9"]
 ---
 
 ## Inputs
 
 Prepared on 2026-09-25, headless, bounded at the plan, on branch
-`worktree-G-162` from `main` `fe97300`, for
-[G-162](G-162-bounded-work-selection.md) at `sha256:bf15491b…`. Read in
-full: G-162; [G-163](G-163-selected-work-review-boundary.md) (resolved,
+`worktree-G-260925-7c8g9` from `main` `fe97300`, for
+[G-260925-7c8g9](G-260925-7c8g9-execute-an-explicitly-se.md) at `sha256:bf15491b…`. Read in
+full: G-260925-7c8g9; [G-260925-80w3a](G-260925-80w3a-where-should-review-and.md) (resolved,
 answer "option 1": explicit shared implementation, reviewed together); the
-settled terms [Work](G-054-work.md), [Attempt](G-056-attempt.md),
-[Candidate](G-057-candidate.md), [Approval](G-059-approval.md) and
-[Integration](G-060-integration.md); decision
-[G-101](G-101-attempt-mechanism.md); `internal/attempt/attempt.go` (Start,
+settled terms [Work](G-260921-vr8a8-work.md), [Attempt](G-260921-sth8q-attempt.md),
+[Candidate](G-260921-jatts-candidate.md), [Approval](G-260921-btyck-approval.md) and
+[Integration](G-260921-3qgsf-integration.md); decision
+[G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md); `internal/attempt/attempt.go` (Start,
 Own, reconcile, List, Stop), `internal/update/review.go`,
-`internal/integrate/integrate.go`, `internal/deps/deps.go` (G-161's
+`internal/integrate/integrate.go`, `internal/deps/deps.go` (G-260925-g39ga's
 Order, Preview, Deliver), `versions.Others`, the Attempts section of
 `docs/commands.md`, and the work guide.
 
@@ -31,7 +31,7 @@ Order, Preview, Deliver), `versions.Others`, the Attempts section of
   `/grove-work` accepts several IDs. The gap is Grove's side: `run` takes one
   ID, an attempt records one `work`, one record state and one revision, and
   duplicate-start refusal matches attempt directories by one ID prefix.
-- `deps.Preview` (G-161) already gives a selection's order, the outside
+- `deps.Preview` (G-260925-g39ga) already gives a selection's order, the outside
   prerequisites (never added), blocking questions and delivery relative to a
   checkout's HEAD. It is the one interpretation the launch must reuse.
 - `approve` and `integrate` refuse any file other than the record's changed
@@ -46,7 +46,7 @@ Order, Preview, Deliver), `versions.Others`, the Attempts section of
 
 ## Design
 
-The owner chose option 1 (G-163). Everything below follows from it, and none
+The owner chose option 1 (G-260925-80w3a). Everything below follows from it, and none
 of it adds a record type, a field, or a status.
 
 ### The assignment: one attempt over an explicit selection
@@ -54,12 +54,12 @@ of it adds a record type, a field, or a status.
 - `grove run ID... [flags]` launches one Grove-owned process,
   `claude -p "/grove-work ID... [--until plan] --interaction headless"`,
   under the existing owner: one worktree, one budget, one Stop, one
-  owner-loss path (G-101 unchanged). Several IDs never mean several
+  owner-loss path (G-260923-tnn5e unchanged). Several IDs never mean several
   processes: implementation is sequential inside the one session, and the
   absence of an edge is not a concurrency mandate.
 - The IDs are passed as given; `deps.Order` orders them, and the attempt
   records both. The branch defaults to `worktree-` plus the IDs joined with
-  `-` as given (`worktree-G-030-G-031`), as the repository's naming already
+  `-` as given (`worktree-G-260920-svpbc-G-260920-z8vfp`), as the repository's naming already
   says; `--branch` and `--worktree` still override. The attempt id keeps
   the first ID as its prefix, and `attempts ID` lists every attempt whose
   selection contains ID.
@@ -155,13 +155,13 @@ of it adds a record type, a field, or a status.
   inputs-changed check for each member. `attempts` lists the selection. The
   board's attempt list and detail show the selection and the per-member
   lines; the board's `R` stays one work's launch (CLI selection exercises
-  this outcome; G-161 owns the board preview).
+  this outcome; G-260925-g39ga owns the board preview).
 - Nothing in inspection starts a process; reopening it launches nothing.
 
 ## Steps
 
-1. Record the G-163 answer as an accepted decision attributed to the owner
-   (`grove new decision`), linked from G-163 and named in G-162's
+1. Record the G-260925-80w3a answer as an accepted decision attributed to the owner
+   (`grove new decision`), linked from G-260925-80w3a and named in G-260925-7c8g9's
    `relates_to`, with the consequences above that the owner approves by
    launching this plan's continuation.
 2. `internal/attempt`: several IDs in `Request`, `Launch` and `Result`;
@@ -186,7 +186,7 @@ of it adds a record type, a field, or a status.
    shared by a group, approval per member, integration and feedback per
    group), `docs/commands.md` (run, attempts, approve, feedback, integrate),
    `docs/board.md` where the attempt view changes. Shipped-document link
-   rules apply (G-146, G-151).
+   rules apply (G-260925-02jsj, G-260925-ej1xh).
 7. Verification per CLAUDE.md; independent review of the combined candidate
    through `grove-reviewer`; handoff into review.
 8. **Owner step, not in the attempt:** acceptance 6's real-provider trial

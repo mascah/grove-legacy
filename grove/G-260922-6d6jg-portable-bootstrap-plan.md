@@ -1,18 +1,18 @@
 ---
-id: "G-080"
+id: "G-260922-6d6jg"
 type: plan
-title: "G-040 portable bootstrap plan"
+title: "G-260921-5gz9a portable bootstrap plan"
 status: current
 created: "2026-09-22T16:05:22Z"
 updated: "2026-09-22T16:06:06Z"
-work: ["G-040"]
+work: ["G-260921-5gz9a"]
 ---
 
 ## Design
 
-Prepared 2026-09-22 on `worktree-G-040` from main `ccdc92d`, against
-[G-040](G-040-portable-bootstrap.md) at `sha256:5d171634…` under
-[G-064](G-064-stable-knowledge.md)'s bounds. The record delegates packaging,
+Prepared 2026-09-22 on `worktree-G-260921-5gz9a` from main `ccdc92d`, against
+[G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) at `sha256:5d171634…` under
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md)'s bounds. The record delegates packaging,
 update behaviour and the distribution mechanism to preparation; the choices
 below are routine technical ones inside the outcome, with no product choice
 left open.
@@ -42,7 +42,7 @@ conflict with.
    copied into a target repository as an editable guide.
 2. **Portable guide text.** The guides drop their relative links into this
    repository's records and adapters, keeping the sentences as plain
-   references (Grove's own G-035, G-038, G-032, G-050), and the "any agent
+   references (Grove's own G-260921-tkdwh, G-260921-9wkjt, G-260920-j2eyp, G-260921-ahbrj), and the "any agent
    without skills" invocation rows read the guide through `grove guide`. This
    repository's own adapters keep reading the files, since `go run` builds
    from them; the generated adapters read the binary. Both load the one
@@ -97,7 +97,7 @@ conflict with.
 ## Steps
 
 All done on 2026-09-22; evidence and the handoff are in
-[G-040](G-040-portable-bootstrap.md) and [G-082](G-082-portable-bootstrap-review.md).
+[G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) and [G-260922-fqf3b](G-260922-fqf3b-portable-bootstrap-revie.md).
 
 1. [x] Plan committed with the record revisions above (`73b2044`).
 2. [x] Root package `grove` with the embedded guides; `guide` and `version`
@@ -116,7 +116,7 @@ All done on 2026-09-22; evidence and the handoff are in
    with a binary built from a clone of the candidate first on `PATH`: init,
    check, rerun, managed update, conflict; `claude -p` and `codex exec` fresh
    sessions invoking the generated `grove-shape` and `grove-work` skills
-   headless, reported as observed behaviour apart from file checks (G-082).
+   headless, reported as observed behaviour apart from file checks (G-260922-fqf3b).
 6. [x] `go test -short`, `go vet ./...`, `gofmt -l .`, `grove check`,
    `go test -count=1 -timeout 120s ./...`; independent review of the combined
-   diff, two rounds; review record G-082; handoff into Review.
+   diff, two rounds; review record G-260922-fqf3b; handoff into Review.

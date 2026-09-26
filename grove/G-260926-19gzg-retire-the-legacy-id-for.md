@@ -8,7 +8,7 @@ updated: "2026-09-26T16:11:31Z"
 kind: refactor
 size: small
 depends_on: ["G-260926-vkv48"]
-relates_to: ["G-260926-yvjy6", "G-194", "G-195", "G-069"]
+relates_to: ["G-260926-yvjy6", "G-260926-2da4n", "G-260926-pgj43", "G-260921-czt8x"]
 ---
 
 ## Outcome
@@ -40,8 +40,8 @@ In scope:
   order first), and the fixed widths in `TestDepsCLI`,
   `TestRenderedRowsHoldOnlyGlamourStyles`, `TestSearchReachesEveryRecord`
   and the alias literal in `TestAliasesAreIncludedAndChargedOnce`.
-- The shipped guides and the model use date-form example IDs (`G-030` and
-  `G-031` in the work guide, `G-037` in the shaping guide, `G-001`, `G-003`
+- The shipped guides and the model use date-form example IDs (`G-260920-svpbc` and
+  `G-260920-z8vfp` in the work guide, `G-260921-w9x25` in the shaping guide, `G-260919-6mpmw`, `G-260919-rt9h9`
   and `G-999` in the record model), and so do `CLAUDE.md`'s invocation
   examples and the evals' README. The shipped-document test keeps
   requiring that the guides name only their own example IDs.
@@ -54,7 +54,7 @@ In scope:
 - Delete the renaming command, its tests and its documentation.
 - A search for `legacy` and for `G-[0-9]{3}` across `internal/`, `cmd/`,
   `docs/`, the README, `CLAUDE.md`, the brief and `evals/` finds nothing
-  but [G-069](G-069-migration-map.md)'s tables and records' historical
+  but [G-260921-czt8x](G-260921-czt8x-identity-and-path-migrat.md)'s tables and records' historical
   prose.
 
 Out of scope:
@@ -72,7 +72,7 @@ attempt-name pattern already composes `IDForm`.
 
 ## Acceptance
 
-1. `check` passes here; a hand-authored `G-001` record fails `check` on its
+1. `check` passes here; a hand-authored `G-260919-6mpmw` record fails `check` on its
    ID; `new` and `convert` issue the date form as before.
 2. `go test -count=1 -timeout 120s ./...`, `go vet ./...`, `gofmt -l .` and
    `python3 internal/tui/testdata/terminal.py BINARY` pass, with no fixture
@@ -80,7 +80,7 @@ attempt-name pattern already composes `IDForm`.
 3. `grove guide work|shape|review|model` and `grove --help` print no legacy
    ID and no word "legacy"; the shipped-document test passes with the
    date-form examples.
-4. The searches under Constraints find only G-069 and historical prose in
+4. The searches under Constraints find only G-260921-czt8x and historical prose in
    records; `deps` and `versions` order date-form IDs by date.
 5. The renaming command is absent from `grove --help`, the commands
    reference and the record model.

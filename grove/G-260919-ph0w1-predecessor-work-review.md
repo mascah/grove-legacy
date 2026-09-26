@@ -1,15 +1,15 @@
 ---
-id: "G-024"
+id: "G-260919-ph0w1"
 type: review
-title: "Predecessor `/work` review for G-023"
+title: "Predecessor `/work` review for G-260919-nddsf"
 status: current
 formerly: "docs/reviews/2026-09-19-predecessor-work.md"
-work: ["G-023"]
+work: ["G-260919-nddsf"]
 created: "2026-09-19T20:59:57Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# Predecessor `/work` review for G-023
+# Predecessor `/work` review for G-260919-nddsf
 
 Inspected 2026-09-19 at sibling skills revision
 `ec87bb2eb19a350634c4976cc5d215a57deb58de`. This is observed source behavior
@@ -78,7 +78,7 @@ prints a single `/goal …` message. It launches no process. It refuses external
 blockers but permits preparation gaps because `/work` prepares missing plans.
 The message defines both finished and parked terminal conditions, controller
 discipline, and checkpoint recovery. This directly addresses the repeated
-prompt-writing problem behind G-023; do not confuse its name with a runner.
+prompt-writing problem behind G-260919-nddsf; do not confuse its name with a runner.
 
 **A frozen execution contract:** `/work` describes `export` for prepared work
 and `reconcile` for its result. This carries source/checkout identity, acceptance,
@@ -102,13 +102,13 @@ audited here. They warrant specific investigation before any launcher reuse.
 
 ## Proposed responsibility mapping for the restart
 
-| Responsibility | G-023 treatment |
+| Responsibility | G-260919-nddsf treatment |
 | --- | --- |
 | Current source context, dependency order, missing-input diagnostics | Deterministic CLI facts; explicit checkout and record revisions. |
 | Prepare/repair a plan within an authorized outcome | Retain in judgment instructions; a missing plan can be a preparation task, not an automatic refusal of every work invocation. |
 | Outcome, constraints, terminal conditions, technical autonomy | Retain in the shared guide; return a concrete completion or blocked/awaiting-judgment handoff. “Parked” need not become a record status. |
 | Isolation, duplicate-work avoidance, integration awareness | Adapt to actual Git/worktree evidence; no invented restart claim commands or proof from `done`. |
-| Implementer/reviewer coordination | Choose and document supported harness behavior during G-023 preparation. Do not silently imply controller parity from a prompt template. |
+| Implementer/reviewer coordination | Choose and document supported harness behavior during G-260919-nddsf preparation. Do not silently imply controller parity from a prompt template. |
 | Evidence tied to revisions, connected checks, human judgment | Retain; use current record bodies and linked artifacts. |
 | Bounded retries and interruption recovery | Specify for the selected manual execution path; checkpoint Next/Evidence. Durable multi-agent attempt machinery is separate scope unless explicitly selected. |
 | Knowledge reconciliation and integration handoff | Retain responsibility using restart records/docs/check; do not invoke predecessor close/archive/delivery commands. |
@@ -117,7 +117,7 @@ audited here. They warrant specific investigation before any launcher reuse.
 
 The current [execution guide](../docs/work-execution.md) covers only part of this
 behavior. It is a useful baseline, not a replacement proven equivalent to the
-old `/work`. [G-023](G-023-work-handoffs.md) must explain what
+old `/work`. [G-260919-nddsf](G-260919-nddsf-prepare-reusable-work-in.md) must explain what
 the first supported path retains and what it defers, then dogfood that path.
 An eventual Kanban Implement action should consume the same assignment rather
 than maintaining another prompt, after a separate launch/lifecycle contract.

@@ -1,26 +1,26 @@
 ---
-id: "G-063"
+id: "G-260921-q6e5n"
 type: review
-title: "Independent review of G-037 knowledge records"
+title: "Independent review of G-260921-w9x25 knowledge records"
 status: current
 created: "2026-09-21T05:59:58Z"
 updated: "2026-09-21T05:59:59Z"
-work: ["G-037"]
+work: ["G-260921-w9x25"]
 examined: "fc9bef1563a27fb6d9b22d7dafe1cd08f8e06a22"
-relates_to: ["G-051"]
+relates_to: ["G-260921-e8bva"]
 formerly: "R-001"
 ---
 
 ## Examined
 
-[G-037](G-037-knowledge-artifacts.md) against its acceptance,
-[G-051](G-051-typed-knowledge-records.md) and its
-[plan](G-053-knowledge-artifacts-plan.md). An independent reviewer
+[G-260921-w9x25](G-260921-w9x25-represent-domain-terms-a.md) against its acceptance,
+[G-260921-e8bva](G-260921-e8bva-represent-terms-plans-an.md) and its
+[plan](G-260921-q09km-plan-terms-plans-reviews.md). An independent reviewer
 agent in the implementing session's harness, read-only in the execution
 checkout, with its own binary and fixtures in fresh temporary repositories;
 it edited nothing under review. Three passes over `d9fc2a5..HEAD`: `e8654fc`,
 then fix round 1 at `46ed102`, then fix round 2 and the combined revision at
-`fc9bef1`, which `examined` names. This record and G-037's reconciliation were
+`fc9bef1`, which `examined` names. This record and G-260921-w9x25's reconciliation were
 written after that commit and were not reviewed.
 
 Reviewer's verification at `fc9bef1`, run serially: `gofmt -l .` and
@@ -73,7 +73,7 @@ changed), and a true two-process race on `new term` (exercised through
 
 All findings fixed in `46ed102` and `fc9bef1`, each with a regression test
 except finding 6. This is review evidence, not approval: the owner's judgment
-of G-037, including the nine terms, is separate and outstanding.
+of G-260921-w9x25, including the nine terms, is separate and outstanding.
 
 Observed during verification and not caused by this work (`internal/repo` has
 no change on the branch): under `-race`, or a fully parallel `go test ./...`,

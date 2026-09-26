@@ -1,31 +1,31 @@
 ---
-id: "G-013"
+id: "G-260919-qprdw"
 type: plan
-title: "G-010 and G-011 coordination plan"
+title: "G-260919-zb0s8 and G-260919-n9t4p coordination plan"
 status: current
 formerly: "docs/plans/W-004-W-005-coordination.md"
-work: ["G-010", "G-011"]
+work: ["G-260919-zb0s8", "G-260919-n9t4p"]
 created: "2026-09-19T19:28:26Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-010 and G-011 coordination plan
+# G-260919-zb0s8 and G-260919-n9t4p coordination plan
 
-Goal: deliver `versions` per [G-010](G-010-record-versions.md)
-and `workspace` per [G-011](G-011-record-workspace.md), each
+Goal: deliver `versions` per [G-260919-zb0s8](G-260919-zb0s8-inspect-record-versions.md)
+and `workspace` per [G-260919-n9t4p](G-260919-n9t4p-locate-the-workspace-for.md), each
 work record owning its specification, under the presentation policy in
-[G-002](G-002-branch-versions.md). Schema:
+[G-260919-8jb5s](G-260919-8jb5s-how-should-the-board-pre.md). Schema:
 [record model](../docs/record-model.md#on-disk-contract).
 
 Execution: one agent, one worktree `.claude/worktrees/W-004-W-005`, branch
 `worktree-W-004-W-005`, sequential: loader over `fs.FS` → Git sources and
-inventory → `versions` → G-010 review and closure → `workspace` → joint
-fixture → combined review → G-011 closure and documentation. Git 2.50.1,
+inventory → `versions` → G-260919-zb0s8 review and closure → `workspace` → joint
+fixture → combined review → G-260919-n9t4p closure and documentation. Git 2.50.1,
 Go 1.26.2. Reassess if committed-tree reading needs more than `ls-tree` plus
 one `cat-file --batch` per branch.
 
 Inspected base: main at `b20d2b0` (merge of `worktree-W-003`), clean tree,
-one registered worktree. G-009's interfaces as implemented: `project.Load`
+one registered worktree. G-260919-shnj5's interfaces as implemented: `project.Load`
 (discovery plus one-checkout validation), `project.ParseRecord`,
 `project.Validate`, `project.Revision` (`sha256:` + 64 hex of exact bytes,
 the convention `show --json` and `update --expect` use), `repo.CommonDir`
@@ -35,7 +35,7 @@ the convention `show --json` and `update --expect` use), `repo.CommonDir`
 
 ## Contract decisions
 
-### Sources (G-010)
+### Sources (G-260919-zb0s8)
 
 - Committed: every `refs/heads/*` tip, read at its observed commit through
   `git ls-tree -r -t -z` and `git cat-file --batch`; the tree is presented to
@@ -69,7 +69,7 @@ the convention `show --json` and `update --expect` use), `repo.CommonDir`
   listing errors) is an error with no view. An ID absent from every valid
   source is `record X not found in any valid source`, exit 1.
 
-### Selector (G-010, consumed by G-011)
+### Selector (G-260919-zb0s8, consumed by G-260919-n9t4p)
 
 ```
 committed:<ref>@<commit12>:<id>@<rev12>:<binding16>
@@ -88,7 +88,7 @@ and locators cannot contain `:`; hex cannot contain `@`, so the grammar splits
 on `:` and the last `@`. Content equality alone never produces the same
 selector in two sources.
 
-### JSON (G-010)
+### JSON (G-260919-zb0s8)
 
 `versions [ID] --json` prints one object:
 
@@ -105,9 +105,9 @@ version (`ID STATUS SOURCE CHANGE SELECTOR`) on stdout with the source table
 and diagnostics on stderr; control characters are escaped in human output and
 preserved in JSON.
 
-### Workspace (G-011)
+### Workspace (G-260919-n9t4p)
 
-`workspace --source SELECTOR [--json]` re-runs the G-010 inspection for the
+`workspace --source SELECTOR [--json]` re-runs the G-260919-zb0s8 inspection for the
 selector's record immediately before answering. A live selector succeeds only
 when the current live observation reproduces the selector exactly. A
 committed selector succeeds only when the branch still points at the observed
@@ -126,39 +126,39 @@ creates nothing and never calls `repo.CommonDir`.
 
 ## Ordered steps
 
-1. [x] G-010 active. Loader: `project.LoadFS(fs.FS)`; `Load` wraps
+1. [x] G-260919-zb0s8 active. Loader: `project.LoadFS(fs.FS)`; `Load` wraps
    `os.DirFS`; `Project.Config` retains configuration bytes;
    `repo.Locate` finds the common directory without creating anything.
 2. [x] `internal/versions`: tree FS from Git objects, inventory, live
    comparison, selectors, deterministic ordering, `Inspect(root, id)`.
 3. [x] CLI `versions [ID] [--json]`, usage, stderr context, exit codes.
-4. [x] G-010 fixtures (table below), suites, race, vet, gofmt, `check`,
-   Git-state hashes, independent review, fixes, evidence, G-010 done.
+4. [x] G-260919-zb0s8 fixtures (table below), suites, race, vet, gofmt, `check`,
+   Git-state hashes, independent review, fixes, evidence, G-260919-zb0s8 done.
 5. [x] `internal/versions/workspace.go` (kept in the versions package to
    share fixtures and the inspection): selector parsing, resolution,
    attribution.
 6. [x] CLI `workspace --source SELECTOR [--json]`.
-7. [x] G-011 fixtures, joint fixture, suites, combined review, fixes,
-   evidence, G-011 done; README, model, brief reconciled.
+7. [x] G-260919-n9t4p fixtures, joint fixture, suites, combined review, fixes,
+   evidence, G-260919-n9t4p done; README, model, brief reconciled.
 
 ## Acceptance to checks
 
 | Item | Check |
 | --- | --- |
-| G-010: main/feature statuses and bodies, committed and live labels | `TestInspectMainAndFeature` |
-| G-010: branch without checkout; detached, dirty, untracked, deleted, renamed, identical | `TestInspectBranchWithoutCheckoutAndDetached`, `TestInspectLiveChanges` |
-| G-010: source-specific configuration, project below root, dependency missing in one source | `TestInspectPrefixAndConfig`, `TestInspectSourceLocalValidation` |
-| G-010: invalid YAML, duplicate IDs, inaccessible worktree, changing identity | `TestInspectIncomplete`, `TestInspectUnstable`, `TestVersionsIncompleteAndNotFound` |
-| G-010: unborn HEAD, HEAD whose project is invalid | `TestInspectUnbornAndInvalidHEAD` |
-| G-010: bytes and revisions agree with BOM/CRLF; selectors differ for identical content | `TestInspectBytesAndSelectors` |
-| G-010: paths with spaces, tabs, newlines; repeated reads order consistently | `TestInspectPathsAndRepeatedReads`, `TestVersionsCLI` |
-| G-010: refs, index, records, allocator state unchanged; existing suites | `TestVersionsLeavesGitUnchanged`, whole suite |
-| G-011: live selection from main, project below root, no Git change | `TestWorkspaceLive` |
-| G-011: committed selection resolves; differing live content refuses | `TestWorkspaceCommitted` |
-| G-011: branch/HEAD, detached, moved/removed, configuration, record changes refuse | `TestWorkspaceStale` |
-| G-011: missing versus ambiguous checkouts; live selection disambiguates | `TestWorkspaceMissingAndAmbiguous` |
-| G-011: dirty files survive; paths round-trip through JSON | `TestWorkspaceLive`, `TestWorkspaceCLI` |
-| G-011: joint fixture list → select → resolve → `show --project` | `TestJointWorkflow` |
+| G-260919-zb0s8: main/feature statuses and bodies, committed and live labels | `TestInspectMainAndFeature` |
+| G-260919-zb0s8: branch without checkout; detached, dirty, untracked, deleted, renamed, identical | `TestInspectBranchWithoutCheckoutAndDetached`, `TestInspectLiveChanges` |
+| G-260919-zb0s8: source-specific configuration, project below root, dependency missing in one source | `TestInspectPrefixAndConfig`, `TestInspectSourceLocalValidation` |
+| G-260919-zb0s8: invalid YAML, duplicate IDs, inaccessible worktree, changing identity | `TestInspectIncomplete`, `TestInspectUnstable`, `TestVersionsIncompleteAndNotFound` |
+| G-260919-zb0s8: unborn HEAD, HEAD whose project is invalid | `TestInspectUnbornAndInvalidHEAD` |
+| G-260919-zb0s8: bytes and revisions agree with BOM/CRLF; selectors differ for identical content | `TestInspectBytesAndSelectors` |
+| G-260919-zb0s8: paths with spaces, tabs, newlines; repeated reads order consistently | `TestInspectPathsAndRepeatedReads`, `TestVersionsCLI` |
+| G-260919-zb0s8: refs, index, records, allocator state unchanged; existing suites | `TestVersionsLeavesGitUnchanged`, whole suite |
+| G-260919-n9t4p: live selection from main, project below root, no Git change | `TestWorkspaceLive` |
+| G-260919-n9t4p: committed selection resolves; differing live content refuses | `TestWorkspaceCommitted` |
+| G-260919-n9t4p: branch/HEAD, detached, moved/removed, configuration, record changes refuse | `TestWorkspaceStale` |
+| G-260919-n9t4p: missing versus ambiguous checkouts; live selection disambiguates | `TestWorkspaceMissingAndAmbiguous` |
+| G-260919-n9t4p: dirty files survive; paths round-trip through JSON | `TestWorkspaceLive`, `TestWorkspaceCLI` |
+| G-260919-n9t4p: joint fixture list → select → resolve → `show --project` | `TestJointWorkflow` |
 
 ## Integration checks
 
@@ -170,14 +170,14 @@ At each boundary: `gofmt -l .`, `go vet ./...`, `go test ./...`,
 
 Resume from the commit list under Progress. Before continuing, run
 `git status`, `git log --oneline main..`, and the integration checks; then
-compare the unchecked steps above with the diff. G-010 is closed by its own
-commit before any G-011 file exists.
+compare the unchecked steps above with the diff. G-260919-zb0s8 is closed by its own
+commit before any G-260919-n9t4p file exists.
 
 ## Progress and evidence
 
-### G-010
+### G-260919-zb0s8
 
-Commits on `worktree-W-004-W-005`: `5c08930` (plan, G-010 active),
+Commits on `worktree-W-004-W-005`: `5c08930` (plan, G-260919-zb0s8 active),
 `2b688f7` (loader over `fs.FS`, `repo.Locate`), `b5125fc` (`versions`),
 `ca420f5` (review fixes). Base `b20d2b0`.
 
@@ -210,7 +210,7 @@ Commits on `worktree-W-004-W-005`: `5c08930` (plan, G-010 active),
   checkout attributed once as a live source; `TestVersionsLeavesGitUnchanged`
   hashing both checkouts, including `.git`, across text and JSON reads with
   no `.git/grove` created.
-- Real use in this worktree: `versions G-010` showed main `proposed` and this
+- Real use in this worktree: `versions G-260919-zb0s8` showed main `proposed` and this
   branch `active`, four rows, no authority chosen; with an uncommitted edit
   the live row became `modified` with a new selector, and every file under
   the repository's `.git` hashed identically before and after.
@@ -229,10 +229,10 @@ Commits on `worktree-W-004-W-005`: `5c08930` (plan, G-010 active),
   repositories; a source can change after it was read, which selectors
   expose at resolution time rather than prevent.
 
-### G-011
+### G-260919-n9t4p
 
-Commits: `77cb1ce` (`workspace`, G-011 active), `d232aa2` (review
-fixes). Prepared against G-010's closed interface at `a465d88`.
+Commits: `77cb1ce` (`workspace`, G-260919-n9t4p active), `d232aa2` (review
+fixes). Prepared against G-260919-zb0s8's closed interface at `a465d88`.
 
 - `gofmt -l .` clean, `go vet ./...`, `go test ./...`, and
   `go test -race ./...` pass for every package; `check` reports 9 records.
@@ -266,9 +266,9 @@ fixes). Prepared against G-010's closed interface at `a465d88`.
   the live feature version is chosen explicitly, `workspace --json` returns
   its project and revision, and `show --project` there returns the exact
   selected bytes while main's copy and branch are untouched.
-- Real use in this worktree: `versions G-011` printed four rows; the live
+- Real use in this worktree: `versions G-260919-n9t4p` printed four rows; the live
   selector of this worktree resolved to it, `show --project` with that path
-  read G-011 here, and main's committed selection routed to the main
+  read G-260919-n9t4p here, and main's committed selection routed to the main
   checkout with its own revision and the main live selector in JSON.
 - Combined independent review (reviewer agent, `main..77cb1ce`, read-only
   with scratch repositories): no blocking findings. Should-fix, all
@@ -276,7 +276,7 @@ fixes). Prepared against G-010's closed interface at `a465d88`.
   produced "not a valid source:" with no reason; a prunable duplicate
   checkout counted as ambiguous and was named by an empty string; the
   committed route did not compare the checkout's configuration bytes
-  (G-011 acceptance said changed configuration refuses; the plan's
+  (G-260919-n9t4p acceptance said changed configuration refuses; the plan's
   committed condition now says so too). Nits taken: the hand-rolled hex
   encoder is gone; `Resolve` carries a `ponytail:` note on re-running the
   whole inspection. Nit recorded, not verified: no fixture resolves a
@@ -285,7 +285,7 @@ fixes). Prepared against G-010's closed interface at `a465d88`.
   confirmed the binding is recomputed at resolution time, attribution
   order, exact `<worktree>/<prefix>` routing, control-character paths,
   only read-only Git subcommands with byte-identical `.git` and checkouts
-  across `versions` and `workspace` runs, and every G-011 acceptance
+  across `versions` and `workspace` runs, and every G-260919-n9t4p acceptance
   bullet exercised by a failing-if-broken test.
 
 ### Joint verification
@@ -294,7 +294,7 @@ fixes). Prepared against G-010's closed interface at `a465d88`.
 versions of W-001, choose the live feature version explicitly, resolve its
 workspace, and read the exact selected bytes there with `show --project`,
 with main's copy and branch untouched. The same sequence was run by hand in
-this repository against G-011 (see G-011 real use). Final checks on the
+this repository against G-260919-n9t4p (see G-260919-n9t4p real use). Final checks on the
 closing commit: `gofmt -l .` clean, `go vet ./...`, `go test ./...`,
 `go test -race ./...`, `check` (9 records), and a documentation link check
-over README, model, brief, plan, G-002, G-010, and G-011.
+over README, model, brief, plan, G-260919-8jb5s, G-260919-zb0s8, and G-260919-n9t4p.

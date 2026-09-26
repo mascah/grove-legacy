@@ -1,5 +1,5 @@
 ---
-id: "G-003"
+id: "G-260919-rt9h9"
 type: work
 title: Inspect Grove project records from the CLI
 status: done
@@ -8,7 +8,7 @@ priority: 2
 size: medium
 members: []
 depends_on: []
-relates_to: ["G-001", "G-004", "G-002"]
+relates_to: ["G-260919-6mpmw", "G-260919-4h6pn", "G-260919-8jb5s"]
 created: "2026-09-19T14:08:40Z"
 updated: "2026-09-19T15:12:15Z"
 formerly: "W-001"
@@ -65,7 +65,7 @@ Delegation: none.
 Runtime: interactive session; no runner is required.
 Reassess: split work only if preparation reveals independently verifiable scope.
 
-The [implementation plan](G-005-inspection-plan.md) adopts the reader
+The [implementation plan](G-260919-10zeb-inspection-implementatio.md) adopts the reader
 proposals for this work, specifies the remaining parsing/output choices, and
 tracks implementation and verification. The owner authorized implementation
 with "lets go" after the sequential-ID revision.
@@ -79,7 +79,7 @@ creating an application test suite now.
 
 ## Evidence
 
-Closed 2026-09-19. The [implementation plan](G-005-inspection-plan.md)
+Closed 2026-09-19. The [implementation plan](G-260919-10zeb-inspection-implementatio.md)
 records the verification: passing unit, race, vet, and format checks; `list`,
 `show`, and `check` against these records with unchanged file hashes; and a
 linked-worktree fixture covering live edits, an explicit project override, a

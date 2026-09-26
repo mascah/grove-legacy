@@ -7,7 +7,7 @@ created: "2026-09-26T16:09:19Z"
 updated: "2026-09-26T16:26:03Z"
 kind: refactor
 size: large
-relates_to: ["G-260926-yvjy6", "G-194", "G-195", "G-052", "G-064", "G-069", "G-041"]
+relates_to: ["G-260926-yvjy6", "G-260926-2da4n", "G-260926-pgj43", "G-260921-r491p", "G-260921-gtydy", "G-260921-czt8x", "G-260921-905y3"]
 ---
 
 ## Outcome
@@ -28,7 +28,7 @@ In scope:
   lock loads the project, refuses when `check` fails, and for each record
   with a legacy ID: takes the date from `created`, else from the first
   commit of the path `formerly` names, else from the record's own first
-  commit, writing `created` when it was missing, as G-052 did in `ed14d92`;
+  commit, writing `created` when it was missing, as G-260921-r491p did in `ed14d92`;
   draws the ID through `create.Issue` with that time; derives the slug from
   the title with `create.Slug`; renames the file and rewrites the `id` line,
   leaving `updated` alone so the board's order holds. It then rewrites every
@@ -49,22 +49,22 @@ In scope:
   literals in tests are fixtures, not references, and keep their legacy IDs
   until [G-260926-19gzg](G-260926-19gzg-retire-the-legacy-id-for.md)
   converts them. The shipped guides' example IDs stay for the same reason.
-- [G-069](G-069-migration-map.md) gains a second table, legacy ID to
+- [G-260921-czt8x](G-260921-czt8x-identity-and-path-migrat.md) gains a second table, legacy ID to
   date-form ID and path, written after the rewrite so its old IDs survive
   it, with a sentence saying that commit subjects and branch names in Git
   history keep the legacy IDs and this table resolves them. The README's
-  sentence naming G-069 as the map stays true.
+  sentence naming G-260921-czt8x as the map stays true.
 - The commands reference and the record model's conversion section
   describe the command, marked one-time and slated for removal by
   G-260926-19gzg; `grove guide model` prints it. `CLAUDE.md`'s rule against
   hand renumbering stands unchanged: the command is the sanctioned path.
-- Before the command runs here: remove the merged `worktree-G-195` worktree
-  and branch and the merged remote branches `worktree-G-081` and
-  `worktree-G-089`.
+- Before the command runs here: remove the merged `worktree-G-260926-pgj43` worktree
+  and branch and the merged remote branches `worktree-G-260922-jtsed` and
+  `worktree-G-260922-g6e7p`.
 
 Out of scope:
 
-- Any write to nullsec (G-041: evidence only). The owner runs the command
+- Any write to nullsec (G-260921-905y3: evidence only). The owner runs the command
   there; Next says how.
 - The validator, ordering code, test fixtures, guide examples and the
   brief's foundation sentence: G-260926-19gzg.
@@ -84,7 +84,7 @@ day are `Issue`'s to avoid, as today.
 
 1. In this repository after the command and the reference repair: `check`
    passes; no file under `grove/` is named `G-NNN-…`; a search for legacy
-   IDs finds them only in G-069's map table and in test string literals;
+   IDs finds them only in G-260921-czt8x's map table and in test string literals;
    every Markdown link resolves; `versions` lists no legacy ID; the board
    opens.
 2. Each new ID's date is its record's `created` UTC date; listing the map in

@@ -1,18 +1,18 @@
 ---
-id: "G-053"
+id: "G-260921-q09km"
 type: plan
-title: "G-037 plan: terms, plans, reviews, and a discoverable brief"
+title: "G-260921-w9x25 plan: terms, plans, reviews, and a discoverable brief"
 status: current
 formerly: "docs/plans/W-019-knowledge-artifacts.md"
-work: ["G-037"]
+work: ["G-260921-w9x25"]
 created: "2026-09-21T04:55:41Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-037 plan: terms, plans, reviews, and a discoverable brief
+# G-260921-w9x25 plan: terms, plans, reviews, and a discoverable brief
 
-Owner: [G-037](G-037-knowledge-artifacts.md). Representation is
-selected in [G-051](G-051-typed-knowledge-records.md); this
+Owner: [G-260921-w9x25](G-260921-w9x25-represent-domain-terms-a.md). Representation is
+selected in [G-260921-e8bva](G-260921-e8bva-represent-terms-plans-an.md); this
 plan settles the items that record left to preparation. Base: main `d9fc2a5`,
 branch `worktree-W-019`.
 
@@ -29,7 +29,7 @@ branch `worktree-W-019`.
 - `context` reads selected work and lists related records by role
   (`internal/handoff/context.go:236-262`); selection refuses non-work.
 - Committed sources give the loader only `grove.yaml` and the record root
-  (`internal/versions/tree.go:248-285`), one `git cat-file` process (G-031).
+  (`internal/versions/tree.go:248-285`), one `git cat-file` process (G-260920-z8vfp).
 - The shared counter file is read strictly: an older binary calls a `T` line
   corrupt and refuses `new`.
 
@@ -50,7 +50,7 @@ branch `worktree-W-019`.
    targets (must resolve, must be work, no duplicates). It is optional because
    `new` takes no fields; `update --set 'work=[…]'` sets it. `examined` is an
    optional quoted Git commit (7 to 40 lowercase hex): what the review looked
-   at. Staleness is a comparison a reader makes, not stored state; G-038 owns
+   at. Staleness is a comparison a reader makes, not stored state; G-260921-9wkjt owns
    approval and candidate semantics and may extend the review type. Two terms
    with the same title (case-insensitive) are an error.
 2. **Schema 2.** The CLI accepts `schema_version` 1 and 2. Version 1 keeps
@@ -68,7 +68,7 @@ branch `worktree-W-019`.
    `grove brief` prints it like `show`: bytes to stdout, path to stderr;
    `--json` gives `{path, revision, source}`. `context` never includes it;
    `--include` still can. This repository sets `brief: grove/brief.md`;
-   G-052 owns moving it.
+   G-260921-r491p owns moving it.
 4. **Context.** `context W-NNN` lists each plan and review whose `work` names
    a selected ID, with role `plan for W-NNN` / `review of W-NNN`, not included.
    The scope notice says so. No structural change, so `format_version` stays 2.
@@ -89,7 +89,7 @@ branch `worktree-W-019`.
 3. `context` listing and notice, with tests for a shared plan.
 4. Reconcile `docs/record-model.md`, README, `AGENTS.md`, both guides: new
    plans and reviews are `grove new plan|review` records from here on;
-   existing `docs/plans` and `docs/reviews` stay until G-052.
+   existing `docs/plans` and `docs/reviews` stay until G-260921-r491p.
 5. Last, because it touches shared state: `grove.yaml` to schema 2 with
    `brief`, the terms, and this work's review as the first `R-` record.
 6. Full verification per `AGENTS.md`, then one independent review of the
@@ -104,5 +104,5 @@ branch `worktree-W-019`.
   unwritten reservations. Merging resolves both.
 - The brief's existence is checked only in a live checkout, never on
   committed sources in `versions` or the board.
-- This plan itself stays in `docs/plans/`: it predates the support. G-052
+- This plan itself stays in `docs/plans/`: it predates the support. G-260921-r491p
   migrates it with the rest.

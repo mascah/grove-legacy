@@ -1,12 +1,12 @@
 ---
-id: "G-178"
+id: "G-260925-dz10z"
 type: work
 title: "Update a conflicting candidate to the moved target through one bounded attempt"
 status: done
 created: "2026-09-25T21:39:27Z"
 updated: "2026-09-26T03:08:42Z"
 kind: feature
-relates_to: ["G-044", "G-045", "G-046", "G-057", "G-058", "G-059", "G-060", "G-101", "G-134", "G-140", "G-177", "G-179", "G-180", "G-182", "G-192"]
+relates_to: ["G-260921-jwk4e", "G-260921-h46pb", "G-260921-7trd7", "G-260921-jatts", "G-260921-rz7bn", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e", "G-260924-5b6pz", "G-260924-ecs9m", "G-260925-h8rj5", "G-260925-w33j7", "G-260925-5wrn8", "G-260925-wh9ax", "G-260926-kfcpp"]
 candidate: "4e9b1b26a7b699659ec8d697a67fc8e21121aed3"
 approved: "4e9b1b26a7b699659ec8d697a67fc8e21121aed3"
 ---
@@ -23,8 +23,8 @@ Owner intent, conversation 2026-09-25: the feedback and launch loop for a
 merge conflict is wasted time; the owner wants an agent to attempt the
 resolution and complete, or abort when it finds a blocker, and leans toward
 automating it. This record is the human-triggered form;
-[G-180](G-180-policy-driven-integration.md) owns triggering it by policy,
-which [G-179](G-179-standing-policy-question.md) must answer first.
+[G-260925-5wrn8](G-260925-5wrn8-resolve-approve-and-inte.md) owns triggering it by policy,
+which [G-260925-w33j7](G-260925-w33j7-what-may-a-standing-owne.md) must answer first.
 
 ## Constraints
 
@@ -33,7 +33,7 @@ which [G-179](G-179-standing-policy-question.md) must answer first.
 At main `47852e3` the loop exists in pieces. [`feedback`](../internal/update/review.go)
 returns the record to active, keeps `candidate` and unsets `approved`; `R`
 on the board and `grove run` relaunch on the candidate's branch
-([G-046](G-046-managed-runs.md)); the attempt reads the record's Next and
+([G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md)); the attempt reads the record's Next and
 the feedback paragraph as its checkpoint; and `run` refuses a record still
 in review ("judge that candidate (approve, feedback) before another
 attempt", `internal/attempt/attempt.go`).
@@ -42,23 +42,23 @@ The [work guide](../docs/work-execution.md)'s judging section says nothing
 about a target that moved since the branch was cut; its only nearby text
 treats a squash or rebase as a manual merge followed by `update … --set
 status=done --set candidate=COMMIT`. Approval is of one commit
-([G-057](G-057-candidate.md), [G-059](G-059-approval.md)): a commit after
+([G-260921-jatts](G-260921-jatts-candidate.md), [G-260921-btyck](G-260921-btyck-approval.md)): a commit after
 the candidate that changes any file but the record makes the tip a new
 candidate, and `approve` and `integrate` refuse it (verified on a
 disposable repository). A merge of the target into the branch is such a
 commit, so the approval is withdrawn by design and the resolution needs its
 own judgment. The Review block lists the candidate's changed files against
-the target with per-file diffs ([G-044](G-044-review-integration.md)) and
+the target with per-file diffs ([G-260921-jwk4e](G-260921-jwk4e-review-candidates-and-in.md)) and
 has no notion of a previous candidate or of which content is a resolution.
 
 ### Proposed design and scope
 
 - One operation, as a command and a board key, on a record in review whose
   candidate conflicts with the target (from
-  [G-177](G-177-merge-prediction.md)'s fact or an `integrate` refusal). It
+  [G-260925-h8rj5](G-260925-h8rj5-predict-whether-a-candid.md)'s fact or an `integrate` refusal). It
   records the feedback itself, with generated text naming the target commit
   and the conflicting files, and starts one attempt on the candidate's
-  branch with the launch defaults ([G-140](G-140-default-an-attempt-s-budget-mode.md)) and
+  branch with the launch defaults ([G-260924-ecs9m](G-260924-ecs9m-default-an-attempt-s-bud.md)) and
   the narrow mandate: merge that target commit, resolve those files, rerun
   the repository's verification, hand off a new candidate, change nothing
   else. Choose the name in preparation, avoiding `reconcile` (the
@@ -77,11 +77,11 @@ has no notion of a previous candidate or of which content is a resolution.
   the owner and the independent reviewer judge the resolution. Approval
   stays the owner's act; re-review is scoped, not skipped.
 - Bounds: one attempt per operation, no loop. If the target moves again,
-  G-177 shows it and the owner decides. Duplicate-start protection, Stop and
-  owner loss as [G-045](G-045-durable-attempt.md).
+  G-260925-h8rj5 shows it and the owner decides. Duplicate-start protection, Stop and
+  owner loss as [G-260921-h46pb](G-260921-h46pb-run-one-bounded-implemen.md).
 - Out of scope: automatic triggering, delegated approval and automatic
-  integration (G-180); any change to the meaning of candidate, approval or
-  integration ([G-060](G-060-integration.md)).
+  integration (G-260925-5wrn8); any change to the meaning of candidate, approval or
+  integration ([G-260921-3qgsf](G-260921-3qgsf-integration.md)).
 
 ## Acceptance
 
@@ -108,19 +108,19 @@ has no notion of a previous candidate or of which content is a resolution.
 
 ## Evidence
 
-Implemented headless on `worktree-G-178` from main `e812672` (G-177
+Implemented headless on `worktree-G-260925-dz10z` from main `e812672` (G-260925-h8rj5
 integrated). It started from this record at `sha256:83ec768e…` and plan
-[G-191](G-191-plan-for-g-178-candidate-resolution.md), committed at
+[G-260926-bp82x](G-260926-bp82x-plan-for-resolve-a-confl.md), committed at
 `38c765c`. Code runs through `7cb7cea`; the candidate adds only this
 evidence and the review record.
 
 **The operation.** `grove resolve ID` from any checkout, or the board's `m`,
 runs one function for both, `attempt.Resolve` (`internal/attempt/resolve.go`),
-so [G-180](G-180-policy-driven-integration.md) calls the same mandate and
+so [G-260925-5wrn8](G-260925-5wrn8-resolve-approve-and-inte.md) calls the same mandate and
 refusals.
 
 - It finds the one branch holding the record in review and that branch's
-  checkout. It predicts the merge with G-177's `PredictContext` and refuses
+  checkout. It predicts the merge with G-260925-h8rj5's `PredictContext` and refuses
   anything but a conflict.
 - It records feedback there through `update.Feedback`. The text comes from
   `Mandate`: the target commit in full, the conflicting files, and "merge
@@ -128,12 +128,12 @@ refusals.
   hand off the merge; change nothing else; stop at an unsettled choice".
 - It then calls `Start` once, on that branch in that checkout, with the
   launch defaults. The group sharing the candidate
-  ([G-188](G-188-selected-work-shared-candidate.md)) reopens and runs
+  ([G-260925-wc2pz](G-260925-wc2pz-review-an-explicitly-sel.md)) reopens and runs
   together, the given ID first.
 - The assignment stays `/grove-work IDS --interaction headless`. The mandate
   travels in the record, where the work guide reads feedback.
-- The name is `resolve`, following G-182's "resolution attempt". The term
-  [G-192](G-192-resolution.md) (proposed) defines it apart from a question
+- The name is `resolve`, following G-260925-wh9ax's "resolution attempt". The term
+  [G-260926-kfcpp](G-260926-kfcpp-resolution.md) (proposed) defines it apart from a question
   being resolved.
 
 **Acceptance 1.** One action starts exactly one attempt, with the mandate
@@ -215,8 +215,8 @@ the record bounds it separately.
 - `docs/record-model.md` (the lifecycle);
 - `grove --help` and `README.md`.
 
-**A fix to G-177 found on the way.** `git merge-tree --name-only` names files
-relative to the current directory, so for a project under a prefix G-177's
+**A fix to G-260925-h8rj5 found on the way.** `git merge-tree --name-only` names files
+relative to the current directory, so for a project under a prefix G-260925-h8rj5's
 conflicts were not from the repository's top, as `Merge` documents.
 `resolveCommits` now reads the prefix in its one `rev-parse`, and `predict`
 joins it, for every caller.
@@ -235,7 +235,7 @@ main and 15.1s here. When the machine was idle earlier, it took 4.3s against
 4.4s and `internal/attempt -short` about 2.3s. No new test builds, sleeps or
 waits on a shim without a `-short` skip.
 
-**Review:** [G-193](G-193-review-of-g-178-candidate-resolution.md), three
+**Review:** [G-260926-wmyet](G-260926-wmyet-review-of-candidate-reso.md), three
 rounds by fresh `grove-reviewer` agents. Two consequential findings, the
 side-taking gap and the prefix paths, were fixed and re-reviewed. Round 3
 found nothing consequential.
@@ -251,23 +251,23 @@ found nothing consequential.
   drops the resolution row without a reason.
 - Only the latest merge is read, so a later merge of another branch hides
   the resolution.
-- `Resolve` takes no policy attribution, which G-182 requires of G-180's
-  automatic acts; G-180 adds it.
+- `Resolve` takes no policy attribution, which G-260925-wh9ax requires of G-260925-5wrn8's
+  automatic acts; G-260925-5wrn8 adds it.
 - `grove resolve` on the CLI checks the fact it computes itself. Only the
   board passes a shown fact.
 
 ## Next
 
-In review. The owner judges the candidate on `worktree-G-178`:
+In review. The owner judges the candidate on `worktree-G-260925-dz10z`:
 
 ```sh
-grove approve G-178 "VERDICT"   # in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-178
-grove integrate G-178           # then in the main checkout
+grove approve G-260925-dz10z "VERDICT"   # in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-260925-dz10z
+grove integrate G-260925-dz10z           # then in the main checkout
 ```
 
-Or give feedback with `grove feedback G-178 "TEXT"` in the worktree. To
+Or give feedback with `grove feedback G-260925-dz10z "TEXT"` in the worktree. To
 demo: on a candidate in review that conflicts with main, open its card on
-the board, press `m`, then Enter; or run `grove resolve ID`. G-180 builds
+the board, press `m`, then Enter; or run `grove resolve ID`. G-260925-5wrn8 builds
 on `attempt.Resolve`.
 
 Verdict on candidate 4e9b1b2, 2026-09-26: approved

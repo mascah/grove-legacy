@@ -1,23 +1,23 @@
 ---
-id: "G-100"
+id: "G-260923-0t43m"
 type: plan
-title: "G-045 durable attempt plan"
+title: "G-260921-h46pb durable attempt plan"
 status: current
 created: "2026-09-23T02:23:05Z"
 updated: "2026-09-23T02:23:09Z"
-work: ["G-045"]
+work: ["G-260921-h46pb"]
 ---
 
 ## Design
 
-Prepared 2026-09-22 at `5ae87d5` for [G-045](G-045-durable-attempt.md)
+Prepared 2026-09-22 at `5ae87d5` for [G-260921-h46pb](G-260921-h46pb-run-one-bounded-implemen.md)
 (record revision `c976f07d…`), from the runner research in
-[G-026](G-026-shaping-and-runner-evidence-review.md), the evaluation's
-runtime boundary in [G-048](G-048-direction-evaluation-review.md), the
-predecessor adapter findings in [G-024](G-024-predecessor-work-review.md),
+[G-260919-rr3ae](G-260919-rr3ae-shaping-and-headless-run.md), the evaluation's
+runtime boundary in [G-260921-72chf](G-260921-72chf-first-days-evaluation-an.md), the
+predecessor adapter findings in [G-260919-ph0w1](G-260919-ph0w1-predecessor-work-review.md),
 and the installed Claude Code 2.1.280 (`claude --help`, `claude agents
 --json`, the official headless, sessions and agent-view documentation, read
-2026-09-22). The plan owns implementation steps; G-045 owns outcome,
+2026-09-22). The plan owns implementation steps; G-260921-h46pb owns outcome,
 bounds and acceptance.
 
 ### Mechanism comparison (acceptance 1)
@@ -49,7 +49,7 @@ SIGINT ends the turn.
 
 ### Attempt contract
 
-- **Identity.** `WORK.YYYYMMDDTHHMMSSZ`, for example `G-045.20260922T210000Z`,
+- **Identity.** `WORK.YYYYMMDDTHHMMSSZ`, for example `G-260921-h46pb.20260922T210000Z`,
   serialized per work by the launch lock so two starts in one second cannot
   share it. Its directory is `<git common dir>/grove/attempts/<attempt>/`,
   beside the ID counter: shared by every worktree of the repository, never
@@ -99,7 +99,7 @@ SIGINT ends the turn.
   `type` values are counted, only `system/init` and `result` fields are
   extracted, and a final line without a newline is a partial line. No
   provider text is printed by the CLI; `attempt` prints counts, fields and
-  paths, and the TUI (G-046) renders activity behind Grove's escaping.
+  paths, and the TUI (G-260921-7trd7) renders activity behind Grove's escaping.
 - **Result** (`result.json`, written once by the owner after the child
   exits, temp file then rename): exit code or signal, whether Stop was
   requested, the extracted `system/init` and `result` fields, the event
@@ -145,8 +145,8 @@ SIGINT ends the turn.
 
 ## Checkpoint
 
-All steps done at `b4a93a7` on `worktree-G-045`; evidence in
-[G-045](G-045-durable-attempt.md) and [G-102](G-102-g-045-durable-attempt-review.md).
+All steps done at `b4a93a7` on `worktree-G-260921-h46pb`; evidence in
+[G-260921-h46pb](G-260921-h46pb-run-one-bounded-implemen.md) and [G-260923-ccda0](G-260923-ccda0-durable-attempt-review.md).
 One adjustment to the design: a run is also refused while the branch's
 record is in `review`, `done` or `abandoned`, which the first real trial
 showed (a second run would have spent budget on a candidate awaiting
@@ -155,7 +155,7 @@ so a Stop can never precede its signal handler.
 
 ## Steps
 
-1. Set G-045 active; commit this plan.
+1. Set G-260921-h46pb active; commit this plan.
 2. `internal/attempt`: contract types, directory layout, `Launch` with the
    worktree rules and refusals, `Own`, bounded reader, `Show`, `List`,
    `Stop`. Fake-process tests first (acceptance 5), each behind `-short`
@@ -177,4 +177,4 @@ so a Stop can never precede its signal handler.
    after reconnect if the budget allows, otherwise Stop stays fake-only and
    is reported so.
 6. Independent review of the combined diff; fix and re-review within the cap.
-7. Evidence and handoff in G-045; `status=review` with the candidate.
+7. Evidence and handoff in G-260921-h46pb; `status=review` with the candidate.

@@ -1,21 +1,21 @@
 ---
-id: "G-084"
+id: "G-260922-q88hk"
 type: review
-title: "Review of G-081 CI, Dependabot, and Go 1.26.5"
+title: "Review of G-260922-jtsed CI, Dependabot, and Go 1.26.5"
 status: current
 created: "2026-09-22T16:38:25Z"
 updated: "2026-09-22T16:41:41Z"
-work: ["G-081"]
+work: ["G-260922-jtsed"]
 examined: "64ad5d3"
 ---
 
 ## Examined
 
-Branch `worktree-G-081`, base `main` 6c11ad8. Round 1 examined d4f5360
+Branch `worktree-G-260922-jtsed`, base `main` 6c11ad8. Round 1 examined d4f5360
 (`git diff main..d4f5360`: `go.mod` to Go 1.26.5, `.github/workflows/ci.yml`,
 `.github/dependabot.yml`, README). Round 2 examined 64ad5d3, the fix commit,
 which is the `examined` field; the candidate differs from it only by this
-record and [G-081](G-081-github-ci.md)'s evidence.
+record and [G-260922-jtsed](G-260922-jtsed-run-secure-ci-and-depend.md)'s evidence.
 
 ## Review
 
@@ -61,8 +61,8 @@ cancels the pending middle one; a per-SHA group on push would close it.
 ## Disposition
 
 - 1, 4, 6, 8: fixed in 64ad5d3.
-- 2, 5: recorded as limits in G-081's evidence; Dependabot alerts (acceptance
+- 2, 5: recorded as limits in G-260922-jtsed's evidence; Dependabot alerts (acceptance
   3) cover uncalled advisories, and the toolchain moves when go.mod is edited.
-- 3: the owner's steps, with runnable commands in G-081's Next.
+- 3: the owner's steps, with runnable commands in G-260922-jtsed's Next.
 - 7: kept; the record's design asks for `go build` by name.
-- Round 2 residual nit: accepted as is; noted in G-081 for a later change.
+- Round 2 residual nit: accepted as is; noted in G-260922-jtsed for a later change.

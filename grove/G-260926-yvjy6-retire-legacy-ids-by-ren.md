@@ -5,17 +5,17 @@ title: "Retire legacy IDs by renaming every record to the date form"
 status: accepted
 created: "2026-09-26T16:09:19Z"
 updated: "2026-09-26T16:10:26Z"
-relates_to: ["G-194", "G-004", "G-064", "G-052", "G-195", "G-041", "G-069", "G-110", "G-260926-vkv48", "G-260926-19gzg"]
+relates_to: ["G-260926-2da4n", "G-260919-4h6pn", "G-260921-gtydy", "G-260921-r491p", "G-260926-pgj43", "G-260921-905y3", "G-260921-czt8x", "G-260923-gsthp", "G-260926-vkv48", "G-260926-19gzg"]
 ---
 
 ## Decision and authority
 
 On 2026-09-26, in an interactive shaping session held after
-[G-195](G-195-coordination-free-record-ids.md) merged, the owner chose to
+[G-260926-pgj43](G-260926-pgj43-coordination-free-record.md) merged, the owner chose to
 rename every legacy `G-NNN` record in this repository and in nullsec to the
-date form that [G-194](G-194-identify-records-by-creation-dat.md) selected,
+date form that [G-260926-2da4n](G-260926-2da4n-identify-records-by-crea.md) selected,
 and to retire the legacy form from the validator, rather than keep the two
-forms coexisting as G-194 selected the day before. In their words: "I'd
+forms coexisting as G-260926-2da4n selected the day before. In their words: "I'd
 prefer not having mixed history that has confusing intentions for LLMs going
 forward. We don't have any external users of this project yet, I've only
 just 'converted' nullsec from the legacy format to the G-XXX format, but not
@@ -27,11 +27,11 @@ the rename raises:
 1. Filename slugs are re-derived from the title at the 24-character cap, so
    the longest filename stays 42 characters.
 2. Every mention is rewritten, historical literals included: a quoted branch
-   name such as `worktree-G-195` in a record's evidence reads under the new
+   name such as `worktree-G-260926-pgj43` in a record's evidence reads under the new
    ID even though Git history keeps the old one. The migration map is the key
    for reading old commits.
 3. `formerly` is left untouched: it keeps naming the typed ID or path a record
-   replaced in [G-052](G-052-migrate-knowledge.md), and the map carries the
+   replaced in [G-260921-r491p](G-260921-r491p-reconcile-all-grove-cont.md), and the map carries the
    legacy ID to its date-form ID.
 4. The legacy form leaves the validator, ordering code, tests, help text and
    documents in the same effort; test fixtures are converted in bulk. The
@@ -45,29 +45,29 @@ takes the record's `created` date; the sequence number a legacy ID carried is
 history that the map preserves, not identity. Nullsec's records are renamed
 the same way in nullsec, by the owner, with the command this repository
 ships; nullsec stays outside this repository's write scope
-([G-041](G-041-nullsec-pilot.md)).
+([G-260921-905y3](G-260921-905y3-cut-nullsec-over-to-this.md)).
 
 ## What this revises
 
-- [G-194](G-194-identify-records-by-creation-dat.md): its bullets that
+- [G-260926-2da4n](G-260926-2da4n-identify-records-by-crea.md): its bullets that
   existing numeric IDs stay valid, are never renumbered and coexist in the
   validator, and its rejected alternative "Renumbering existing records to
   the new form". The date form itself, the random tail and the slug cap
-  stand. G-194 named "if the first release wants to fix one ID form and
+  stand. G-260926-2da4n named "if the first release wants to fix one ID form and
   retire the legacy pattern" as a reason to reopen; this is that.
-- [G-004](G-004-sequential-ids.md) is superseded: no sequential ID remains an
-  identity. Its short-filename choice lives on in G-194's slug cap.
-- [G-064](G-064-stable-knowledge.md): stable identity and placement stand for
+- [G-260919-4h6pn](G-260919-4h6pn-use-shared-sequential-id.md) is superseded: no sequential ID remains an
+  identity. Its short-filename choice lives on in G-260926-2da4n's slug cap.
+- [G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md): stable identity and placement stand for
   ordinary edits. This is a second explicitly authorized one-time migration
-  of the same shape as the one G-064 authorized for G-052, not automatic
+  of the same shape as the one G-260921-gtydy authorized for G-260921-r491p, not automatic
   behaviour, and the last: after it, one ID form exists and there is
   nothing left to migrate.
 - The brief's foundation sentence on "stable sequential IDs" and clone
-  collision checks, which G-194 left to the owner, now has its answer: one
+  collision checks, which G-260926-2da4n left to the owner, now has its answer: one
   neutral namespace of date-form IDs issued without coordination. The owner
   directs that edit here; the retirement work carries it.
 - The owner's standing policy that Grove keeps no backward compatibility
-  before its first release (G-052, 2026-09-21) applies unchanged: an old
+  before its first release (G-260921-r491p, 2026-09-21) applies unchanged: an old
   commit stays inspectable with the CLI in that commit.
 
 ## Evidence
@@ -86,7 +86,7 @@ clone under the scratch directory:
   days. 87 of the 193 slugs exceed 24 characters.
 - In the clone, removing the legacy alternative from `IDForm`
   (`internal/project/metadata.go`) and one regex replace over the fixtures,
-  `G-001` to `G-260101-00001` and so on, left 7 failing tests in 5 packages:
+  `G-260919-6mpmw` to `G-260101-00001` and so on, left 7 failing tests in 5 packages:
   a case expecting `G-000` refused, two tests of legacy-first ordering, a
   fixed-width header in `TestDepsCLI`, a 20-column render, a clipped search
   column and a case-folded alias literal. Nothing else failed.
@@ -109,7 +109,7 @@ clone under the scratch directory:
 
 ## Alternatives
 
-- **Coexistence, as G-194 selected.** One alternation in the validator, no
+- **Coexistence, as G-260926-2da4n selected.** One alternation in the validator, no
   rename. Rejected by the owner: two forms in records, documents, code
   comments and history give a reader two intentions to reconcile, and no
   adopter depends on the legacy form.
@@ -123,6 +123,6 @@ clone under the scratch directory:
 ## Reconsideration
 
 Reopen if an adopter outside the owner's projects holds legacy records
-before the external preview ([G-110](G-110-external-preview.md)); none
+before the external preview ([G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md)); none
 does today. The renaming command is a one-time tool and leaves the binary
 before that preview.

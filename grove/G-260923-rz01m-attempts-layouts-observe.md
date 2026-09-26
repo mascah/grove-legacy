@@ -1,22 +1,22 @@
 ---
-id: "G-116"
+id: "G-260923-rz01m"
 type: plan
-title: "G-109 Attempts layouts: observed screens, options and plan"
+title: "G-260923-895zb Attempts layouts: observed screens, options and plan"
 status: current
 created: "2026-09-23T19:51:06Z"
 updated: "2026-09-23T19:53:31Z"
-work: ["G-109"]
+work: ["G-260923-895zb"]
 ---
 
 ## Inputs
 
-Prepared on 2026-09-23 for [G-109](G-109-attempts-usability.md) at revision
-`sha256:5a72acaa…`, headless, on branch `worktree-G-109` from `main`
-`6208e82`. Read in full: G-109, G-046 (its evidence, limits and the owner's
-verdict), the G-096 visual-proposal precedent, `internal/tui/attempts.go`,
+Prepared on 2026-09-23 for [G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md) at revision
+`sha256:5a72acaa…`, headless, on branch `worktree-G-260923-895zb` from `main`
+`6208e82`. Read in full: G-260923-895zb, G-260921-7trd7 (its evidence, limits and the owner's
+verdict), the G-260922-1w0hn visual-proposal precedent, `internal/tui/attempts.go`,
 `internal/attempt/facts.go`, `internal/attempt/activity.go`, the `View`,
 `Launch` and `Result` types, the attempt tests, `docs/board.md`'s Attempts
-section. No layout is approved; [G-117](G-117-which-attempts-list-and-detail-l.md)
+section. No layout is approved; [G-260923-hvnqh](G-260923-hvnqh-which-attempts-list-and.md)
 asks the owner to choose, and nothing below is implemented until it is
 answered.
 
@@ -31,33 +31,33 @@ The list at 80×24 (the whole attempt set):
 
 ```text
 Attempts in this repository  (6)
-> G-109.20260923T194926Z  running  worktree-G-109
-  G-108.20260923T194708Z  running  worktree-G-108
-  G-107.20260923T182316Z  candidate ready: G-107 in review on worktree-G-107 wi…
-  G-107.20260923T164723Z  candidate ready: G-107 in review on worktree-G-107 wi…
-  G-105.20260923T044923Z  candidate ready: G-105 in review on worktree-G-105 wi…
-  G-046.20260923T033237Z  candidate ready: G-046 in review on worktree-G-046 wi…
+> G-260923-895zb.20260923T194926Z  running  worktree-G-260923-895zb
+  G-260923-p5pt6.20260923T194708Z  running  worktree-G-260923-p5pt6
+  G-260923-fwakw.20260923T182316Z  candidate ready: G-260923-fwakw in review on worktree-G-260923-fwakw wi…
+  G-260923-fwakw.20260923T164723Z  candidate ready: G-260923-fwakw in review on worktree-G-260923-fwakw wi…
+  G-260923-q7tm6.20260923T044923Z  candidate ready: G-260923-q7tm6 in review on worktree-G-260923-q7tm6 wi…
+  G-260921-7trd7.20260923T033237Z  candidate ready: G-260921-7trd7 in review on worktree-G-260921-7trd7 wi…
 ↑↓  Enter show  x stop  o record  Esc back  q quit
 ```
 
-The top of one finished attempt at 80×24 (G-107's second):
+The top of one finished attempt at 80×24 (G-260923-fwakw's second):
 
 ```text
-Attempt G-107.20260923T182316Z of G-107
-Outcome: candidate ready: G-107 in review on worktree-G-107 with candidate
+Attempt G-260923-fwakw.20260923T182316Z of G-260923-fwakw
+Outcome: candidate ready: G-260923-fwakw in review on worktree-G-260923-fwakw with candidate
 1614e89
-Attempt: G-107.20260923T182316Z (finished)
-Work: G-107 at grove/G-107-current-documentation.md, record
+Attempt: G-260923-fwakw.20260923T182316Z (finished)
+Work: G-260923-fwakw at grove/G-260923-fwakw-reconcile-current-docume.md, record
 sha256:c411c9a83fb1ded4ab77c90338c70f75db52b056098e1ce5a8b5d868f7fe70bc
-Worktree: ~/grove/.claude/worktrees/worktree-G-107 on
-worktree-G-107 from 4159e79ef76d (reused)
+Worktree: ~/grove/.claude/worktrees/worktree-G-260923-fwakw on
+worktree-G-260923-fwakw from 4159e79ef76d (reused)
 Started: 2026-09-23T18:23:16Z by grove v0.0.0-20260923043516-29f0ceaaa9b3
 29f0ceaaa9b382a120af2aa61bcd9c533e8290e9 with claude (2.1.280 (Claude Code)),
 owner pid 25773
 Bounds: budget 50 USD, permission mode auto, prompts none; one process, no
 retries; subagents share the budget
 Session: 95b5aaee-8a73-4e51-bde5-5effcb3d05a0
-Command: ~/.local/bin/claude -p /grove-work G-107 --interaction
+Command: ~/.local/bin/claude -p /grove-work G-260923-fwakw --interaction
 headless --output-format stream-json --verbose --session-id 95b5aaee-8a73-4e51-
 bde5-5effcb3d05a0 --max-budget-usd 50 --permission-mode auto --permission-
 prompts none
@@ -66,29 +66,29 @@ rate_limit_event 8, result 4); unknown 0, malformed 0, oversized 0, partial
 ↑↓ scroll  x stop  o record  Esc back  q quit
 ```
 
-A running attempt (G-108's), second page at 80×24:
+A running attempt (G-260923-p5pt6's), second page at 80×24:
 
 ```text
 Activity, newest first (151)
   Now the fixture files.
   system: thinking_tokens
   system: thinking_tokens
-  tool: Bash go run ./cmd/grove update G-108 --expect sha256:ff01c9f092aa3f43cf…
+  tool: Bash go run ./cmd/grove update G-260923-p5pt6 --expect sha256:ff01c9f092aa3f43cf…
   tool: Bash python3 - <<'EOF'
-  tool: Bash cat grove/G-115-g-108-eval-skeleton-plan.md; go run ./cmd/grove up…
-  Plan record G-115 created; writing its design now.
-  tool: Bash go run ./cmd/grove new plan "G-108 eval skeleton plan" 2>&1;
+  tool: Bash cat grove/G-260923-v9wby-eval-skeleton-plan.md; go run ./cmd/grove up…
+  Plan record G-260923-v9wby created; writing its design now.
+  tool: Bash go run ./cmd/grove new plan "G-260923-p5pt6 eval skeleton plan" 2>&1;
   system: thinking_tokens
   system: thinking_tokens
   … (the next two pages are only system: thinking_tokens)
 ```
 
-Findings, each tied to an acceptance item of G-109:
+Findings, each tied to an acceptance item of G-260923-895zb:
 
 1. **No work title anywhere** (acceptance 1). Rows lead with a timestamped
    attempt ID; the work's title is only one `o` away.
-2. **Stale attention** (1). Four rows say `candidate ready`, yet G-107,
-   G-105 and G-046 are all `done` on `main` now, and G-107's first attempt's
+2. **Stale attention** (1). Four rows say `candidate ready`, yet G-260923-fwakw,
+   G-260923-q7tm6 and G-260921-7trd7 are all `done` on `main` now, and G-260923-fwakw's first attempt's
    candidate `71a650e` was superseded by the second attempt's. The outcome is
    what the owner process found at exit, correctly, but nothing says whether
    it still needs the owner.
@@ -96,7 +96,7 @@ Findings, each tied to an acceptance item of G-109:
    starts on the second page at 80×24, after 18 wrapped lines of provenance;
    a running attempt's activity starts at the bottom of the first page.
 4. **Activity noise** (2, 3). Claude Code 2.1.281 emits a `system:
-   thinking_tokens` event per thinking step; a little later G-108's log held
+   thinking_tokens` event per thinking step; a little later G-260923-p5pt6's log held
    181 system events other than `init` among 237, so useful activity
    scrolls away.
 5. **Truncated outcome** (3). At 80 columns the outcome cuts off before the
@@ -108,17 +108,17 @@ Findings, each tied to an acceptance item of G-109:
 Observed, outside this work: the board's ASCII Markdown style renders
 `**New `docs/board.md`**` as `**New **docs/board.md` (the strong markers
 misplace around a code span, backticks lost). It affects record bodies as
-much as reports, so it is board polish for its own proposal, not G-109.
+much as reports, so it is board polish for its own proposal, not G-260923-895zb.
 Report retention needs no repair: the report is the result event's text,
 the last event of a run: all four finished logs here end with it,
-including three over 1 MiB (G-046's 2.6 MB, G-107's 1.6 and 1.5 MB), so it
-sits inside the 1 MiB window; G-046's recorded limit stands.
+including three over 1 MiB (G-260921-7trd7's 2.6 MB, G-260923-fwakw's 1.6 and 1.5 MB), so it
+sits inside the 1 MiB window; G-260921-7trd7's recorded limit stands.
 
 ## Representative states
 
-Real attempts cover running (G-108, G-109) and candidate ready whose work
-is now done (G-107, G-105, G-046), including a superseded candidate
-(G-107's first). The other states come from `TestAttemptOutcomes`' cases,
+Real attempts cover running (G-260923-p5pt6, G-260923-895zb) and candidate ready whose work
+is now done (G-260923-fwakw, G-260923-q7tm6, G-260921-7trd7), including a superseded candidate
+(G-260923-fwakw's first). The other states come from `TestAttemptOutcomes`' cases,
 drawn with sanitized IDs `X-1`… and invented titles, so no mockup claims a
 real run that did not happen: waiting on a question, failed (budget
 exhausted; killed, no result event), stopped, orphaned, interrupted, ended
@@ -141,12 +141,12 @@ Attempts in this repository (11) · 5 need you · 2 running · 4 settled
   X-4    Rename the settings file       orphaned: x stops it         20m ago
   X-5    Split the parser               ended, no handoff             1d ago
  Running
-  G-109  Make Attempts easy to scan a…  running                      14m so far
-  G-108  Establish behavioral evaluat…  running                      16m so far
+  G-260923-895zb  Make Attempts easy to scan a…  running                      14m so far
+  G-260923-p5pt6  Establish behavioral evaluat…  running                      16m so far
  Settled
-  G-107  Reconcile current documentat…  done: candidate 1614e89        1h ago
-  G-107  Reconcile current documentat…  candidate 71a650e, superseded  3h ago
-  G-105  Restore green CI: Linux buil…  done: candidate e30f90c       15h ago
+  G-260923-fwakw  Reconcile current documentat…  done: candidate 1614e89        1h ago
+  G-260923-fwakw  Reconcile current documentat…  candidate 71a650e, superseded  3h ago
+  G-260923-q7tm6  Restore green CI: Linux buil…  done: candidate e30f90c       15h ago
   X-6    Retry flaky probe              stopped by x                  2d ago
 ↑↓ move  Enter show  o work  x stop  r refresh  Esc back  q quit
 ```
@@ -173,20 +173,20 @@ Details: bounds, provenance, events and raw files · d shows them
 ```
 
 Running, 80×24, with system notices counted instead of listed (the counts
-are G-108's log when this plan was written):
+are G-260923-p5pt6's log when this plan was written):
 
 ```text
-G-108  Establish behavioral evaluations for Grove context and workflows
-Attempt G-108.20260923T194708Z · running for 16m · budget $50 · auto
+G-260923-p5pt6  Establish behavioral evaluations for Grove context and workflows
+Attempt G-260923-p5pt6.20260923T194708Z · running for 16m · budget $50 · auto
 State  Running; nothing needs you until it ends. x stops it.
 
 Latest activity, newest first (237 events; 181 system notices not listed)
   Now the fixture files.
-  tool: Bash go run ./cmd/grove update G-108 --expect sha256:ff01c9f092aa3f43…
+  tool: Bash go run ./cmd/grove update G-260923-p5pt6 --expect sha256:ff01c9f092aa3f43…
   tool: Bash python3 - <<'EOF'
-  tool: Bash cat grove/G-115-g-108-eval-skeleton-plan.md; go run ./cmd/grove …
-  Plan record G-115 created; writing its design now.
-  tool: Bash go run ./cmd/grove new plan "G-108 eval skeleton plan" 2>&1;
+  tool: Bash cat grove/G-260923-v9wby-eval-skeleton-plan.md; go run ./cmd/grove …
+  Plan record G-260923-v9wby created; writing its design now.
+  tool: Bash go run ./cmd/grove new plan "G-260923-p5pt6 eval skeleton plan" 2>&1;
   …
 Details: bounds, provenance, events and raw files · d shows them
 ↑↓ scroll  d details  x stop  o work  Esc back  q quit
@@ -205,8 +205,8 @@ states' State and Next lines:
 | interrupted | The owner and the provider are gone without a result. | d shows the raw log; R on the work launches again |
 | ended without a handoff | Ended cleanly, but X-5 is active on worktree-X-5 with no candidate. | o opens X-5; the report says why |
 | stopped | Stopped by x (exit 130); partial work kept on worktree-X-6. | none |
-| done now | Candidate 1614e89 was integrated: G-107 is done. | none |
-| superseded | A later attempt of G-107 followed this one. | Enter on the later attempt |
+| done now | Candidate 1614e89 was integrated: G-260923-fwakw is done. | none |
+| superseded | A later attempt of G-260923-fwakw followed this one. | Enter on the later attempt |
 | uncommitted handoff | Its record says review with candidate c0ffee1, uncommitted, so no candidate is ready. | as ended without a handoff |
 
 Work's detail row becomes `Attempts 2 · latest: judge candidate c0ffee1,
@@ -220,10 +220,10 @@ The smaller change. The list keeps one newest-first order and the same row
 
 ```text
 Attempts in this repository (11) · 5 need you (!) · 2 running
-  G-109  Make Attempts easy to scan a…  running                      14m so far
-  G-108  Establish behavioral evaluat…  running                      16m so far
+  G-260923-895zb  Make Attempts easy to scan a…  running                      14m so far
+  G-260923-p5pt6  Establish behavioral evaluat…  running                      16m so far
 > X-4  ! Rename the settings file       orphaned: x stops it         20m ago
-  G-107  Reconcile current documentat…  done: candidate 1614e89        1h ago
+  G-260923-fwakw  Reconcile current documentat…  done: candidate 1614e89        1h ago
   X-1  ! Tidy the export command        judge candidate c0ffee1       2h ago
   …
 ```
@@ -234,7 +234,7 @@ the raw paths down, so reaching them means `End` or paging.
 
 ## Decisions for the owner
 
-G-117 asks them together: A or B; whether `Needs you` uses the rule above
+G-260923-hvnqh asks them together: A or B; whether `Needs you` uses the rule above
 (latest attempt of unfinished work only, so an old failure after a later
 success, or any attempt of done work, never asks for attention); and
 whether counting `system:` notices other than `init` instead of listing
@@ -267,12 +267,12 @@ For the chosen option; B drops steps 2's grouping and 3's toggle.
    `internal/tui/testdata/terminal.py` for the new text (fake provider,
    labelled so); the repository's verification; one independent review on
    the final revision; actual renders at 40×10, 80×24 and 160×48 recorded
-   in G-109's evidence. The owner's judgment in a terminal (acceptance 5) is
+   in G-260923-895zb's evidence. The owner's judgment in a terminal (acceptance 5) is
    theirs, and no real-provider trial is run without a bounded mandate.
 
-## Revised after G-117's answer
+## Revised after G-260923-hvnqh's answer
 
-The owner answered on 2026-09-23 in G-117. They accepted **Option A's list**
+The owner answered on 2026-09-23 in G-260923-hvnqh. They accepted **Option A's list**
 and with it the `Needs you` rule of part 2. They did not accept A's attempt
 screen, and asked for:
 

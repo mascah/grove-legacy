@@ -1,17 +1,17 @@
 ---
-id: "G-157"
+id: "G-260925-1n5x7"
 type: review
-title: "G-150 skill-guard review"
+title: "G-260925-3pj9a skill-guard review"
 status: current
 created: "2026-09-25T19:35:52Z"
 updated: "2026-09-25T19:36:07Z"
-work: ["G-150"]
+work: ["G-260925-3pj9a"]
 examined: "b322825"
 ---
 
 ## Examined
 
-[G-150](G-150-launch-attempts-only-where-the-w.md) on `worktree-G-150`,
+[G-260925-3pj9a](G-260925-3pj9a-launch-attempts-only-whe.md) on `worktree-G-260925-3pj9a`,
 base `28aaf95`, two independent rounds by fresh `grove-reviewer` subagents
 on 2026-09-25: round 1 at `cd3a1c5` (the guard, docs and tests), round 2
 at `b322825` (the fix commit `cd3a1c5..b322825` against round 1's
@@ -40,7 +40,7 @@ directories with a built binary; neither edited the checkout.
 Round 2 found nothing consequential and no regression. It confirmed that
 the `TestRefusals` regression for 1 fails when the check is moved back
 (mutation run in a `git archive b322825` copy), and repeated the knowledge
-check: no new concept, no conflict with G-101, G-134 or the Attempt term.
+check: no new concept, no conflict with G-260923-tnn5e, G-260924-5b6pz or the Attempt term.
 
 ## Disposition
 

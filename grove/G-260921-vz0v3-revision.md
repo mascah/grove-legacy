@@ -1,11 +1,11 @@
 ---
-id: "G-062"
+id: "G-260921-vz0v3"
 type: term
 title: "Revision"
 status: settled
 created: "2026-09-21T05:01:57Z"
 updated: "2026-09-21T14:23:35Z"
-relates_to: ["G-057", "G-061"]
+relates_to: ["G-260921-jatts", "G-260921-phehv"]
 formerly: "T-009"
 ---
 
@@ -19,9 +19,9 @@ authoring convention and are never used for this.
 
 Not a Git commit: a revision identifies a file's bytes wherever they are, a
 commit identifies a whole tree in history. A review's `examined` field is a
-commit, because a [candidate](G-057-candidate.md) is one.
+commit, because a [candidate](G-260921-jatts-candidate.md) is one.
 
 ## Relationships
 
-Each version of a record in a [source](G-061-source.md) has a revision; equal
+Each version of a record in a [source](G-260921-phehv-source.md) has a revision; equal
 revisions mean identical files.

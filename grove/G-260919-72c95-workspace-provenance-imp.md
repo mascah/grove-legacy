@@ -1,15 +1,15 @@
 ---
-id: "G-018"
+id: "G-260919-72c95"
 type: plan
-title: "G-014 workspace provenance implementation plan"
+title: "G-260919-8bbvy workspace provenance implementation plan"
 status: current
 formerly: "docs/plans/W-006-workspace-provenance.md"
-work: ["G-014"]
+work: ["G-260919-8bbvy"]
 created: "2026-09-19T20:32:24Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-014 workspace provenance implementation plan
+# G-260919-8bbvy workspace provenance implementation plan
 
 > For Fable: implement one task at a time in an isolated worktree using the
 > repository instructions and an inline execution workflow (for Codex,
@@ -29,7 +29,7 @@ validation into `internal/versions/live.go`, reused by inspection and final
 resolution. Keep Git discovery in `internal/repo` and schema validation in
 `internal/project`; do not give either reader write responsibilities.
 
-**Spec:** [G-014](G-014-workspace-provenance.md).
+**Spec:** [G-260919-8bbvy](G-260919-8bbvy-bind-workspace-routing-t.md).
 
 ## Global constraints and review focus
 
@@ -151,7 +151,7 @@ a committed route. A live explicit selection must still disambiguate duplicates.
 ## Implementation notes, 2026-09-19
 
 Implemented on branch `worktree-W-006-W-008` from base `2d6de36`; the
-[work record](G-014-workspace-provenance.md) owns the evidence.
+[work record](G-260919-8bbvy-bind-workspace-routing-t.md) owns the evidence.
 Bounded adjustments to this plan, and why:
 
 - The middle-prefix fixture needs a project two levels below the repository

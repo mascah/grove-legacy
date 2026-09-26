@@ -1,19 +1,19 @@
 ---
-id: "G-072"
+id: "G-260922-3cgay"
 type: review
-title: "G-071 process count review"
+title: "G-260922-9cbh6 process count review"
 status: current
 created: "2026-09-22T03:46:56Z"
 updated: "2026-09-22T03:53:38Z"
-work: ["G-071"]
+work: ["G-260922-9cbh6"]
 examined: "418e3d2942ff5741d10dc0d070c62f9cf350bfc2"
 ---
 
 ## Examined
 
 Two rounds by an independent reviewer agent that wrote none of the code and
-edited nothing, on `worktree-G-071` from main `5c637b4`, reading
-[G-071](G-071-spawn-fewer-git-processes-per-in.md) and the diff.
+edited nothing, on `worktree-G-260922-9cbh6` from main `5c637b4`, reading
+[G-260922-9cbh6](G-260922-9cbh6-spawn-fewer-git-processe.md) and the diff.
 
 - Round 1: the uncommitted working tree before `418e3d2`. The reviewer built
   binaries from the base and the tree and ran eleven repository states through
@@ -59,7 +59,7 @@ remains.
 The reviewer's own counts, from a logging `git` wrapper on `PATH` rather
 than `GIT_TRACE`: `rev-parse` 2,006 to 642 over the package, all processes
 3,811 to 2,291, and 15 to 8 for one `versions` on this repository. The
-`rev-parse` row of G-071's table agrees within 0.3%; the all-processes row
+`rev-parse` row of G-260922-9cbh6's table agrees within 0.3%; the all-processes row
 differs by about 5% because the two instruments count differently.
 
 ## Disposition

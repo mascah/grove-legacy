@@ -1,10 +1,10 @@
 ---
-id: "G-002"
+id: "G-260919-8jb5s"
 type: question
 title: How should the board present differing versions of one record?
 status: resolved
-blocks: ["G-010", "G-011"]
-relates_to: ["G-003", "G-009", "G-035", "G-042"]
+blocks: ["G-260919-zb0s8", "G-260919-n9t4p"]
+relates_to: ["G-260919-rt9h9", "G-260919-shnj5", "G-260921-tkdwh", "G-260921-ms6ev"]
 created: "2026-09-19T14:08:40Z"
 updated: "2026-09-21T01:03:42Z"
 formerly: "Q-001"
@@ -12,12 +12,12 @@ formerly: "Q-001"
 
 ## Current disposition, 2026-09-20
 
-The owner approved [G-035](G-035-interactive-adoption.md), replacing
+The owner approved [G-260921-tkdwh](G-260921-tkdwh-adopt-the-interactive-ad.md), replacing
 this question's explicit-versions-first presentation as the future default with
 a project-wide current view. Preserve the answer below as the authority behind
 the delivered CLI/board, not a constraint against that redesign. Exact source
 inspection and fresh workspace targeting remain required.
-[G-042](G-042-current-view.md) implements that view: the board opens on each
+[G-260921-ms6ev](G-260921-ms6ev-derive-a-project-wide-cu.md) implements that view: the board opens on each
 record's current state derived from Git ancestry, `versions` marks every
 observation current or older, and the explicit versions below remain the
 evidence behind a card and the only way to select a checkout.
@@ -34,9 +34,9 @@ The [restart brief](brief.md#current-view-and-tui)
 owns the current branch-context direction. The earlier routing experiment is
 preserved in Git at `c9904ea:grove/brief.md`. The answer below records the
 original presentation choice. Detailed source and routing contracts belong to
-G-010/G-011 and their coordination plan.
+G-260919-zb0s8/G-260919-n9t4p and their coordination plan.
 
-This question previously blocked G-010 and G-011. Its resolved status removes
+This question previously blocked G-260919-zb0s8 and G-260919-n9t4p. Its resolved status removes
 that policy blocker; it does not establish implementation readiness or completed
 verification. Claims and run lifetimes need their own design when execution
 enters scope.
@@ -68,13 +68,13 @@ source selection; timestamps alone must not establish authority.
 
 ## Remaining design ownership
 
-[G-010](G-010-record-versions.md) owns the source scope,
+[G-260919-zb0s8](G-260919-zb0s8-inspect-record-versions.md) owns the source scope,
 committed/live representation, validation, output, and selector contract.
-[G-011](G-011-record-workspace.md) owns workspace lookup,
+[G-260919-n9t4p](G-260919-n9t4p-locate-the-workspace-for.md) owns workspace lookup,
 freshness checks, and missing/ambiguous-checkout outcomes. The owner's answer
 does not approve every technical proposal in those work records. Those contracts
 were subsequently implemented and integrated; the
-[coordination plan](G-013-coordination-plan.md) retains their
+[coordination plan](G-260919-qprdw-and-coordination-plan.md) retains their
 finalized technical details without changing this settled presentation choice.
 
 ## Inspected evidence
@@ -97,9 +97,9 @@ in the historical brief establishes only basic routing feasibility.
 
 ## Next
 
-[G-042](G-042-current-view.md) specifies and implements the new default
+[G-260921-ms6ev](G-260921-ms6ev-derive-a-project-wide-cu.md) specifies and implements the new default
 projection.
-G-010/G-011's explicit inspection/routing remain available; G-017/G-030's board
+G-260919-zb0s8/G-260919-n9t4p's explicit inspection/routing remain available; G-260919-k7b8j/G-260920-svpbc's board
 and history are integrated. The earlier reliability repairs also shipped.
 Automatic checkout creation and managed agent launching remain future work.
 Historical reviews and completed records retain their original acceptance scope.

@@ -1,22 +1,22 @@
 ---
-id: "G-091"
+id: "G-260922-r1dhw"
 type: plan
-title: "G-041 nullsec cutover: mapping, conversion, uninstall"
+title: "G-260921-905y3 nullsec cutover: mapping, conversion, uninstall"
 status: current
 created: "2026-09-22T19:39:04Z"
 updated: "2026-09-22T19:40:45Z"
-work: ["G-041"]
+work: ["G-260921-905y3"]
 ---
 
 ## Design
 
-**Bases.** This repository: `worktree-G-041` in `.claude/worktrees/G-041`
+**Bases.** This repository: `worktree-G-260921-905y3` in `.claude/worktrees/G-260921-905y3`
 from `main` `77b4111`. Nullsec: branch `worktree-grove-cutover` in a linked
 worktree `.claude/worktrees/grove-cutover` from nullsec `main` `366b063`, the
-commit G-041 inspected, which is still nullsec's `main`. Nullsec has no record
+commit G-260921-905y3 inspected, which is still nullsec's `main`. Nullsec has no record
 for this work, so the branch is named for the change.
 
-**Inventory corrections at `366b063`.** G-041's inventory holds, with four
+**Inventory corrections at `366b063`.** G-260921-905y3's inventory holds, with four
 additions: no predecessor record has a `title` field; the three `research`
 files have no `id`; `history/README.md` and four evidence documents have no
 frontmatter; and `docs/plans/evidence/` holds two Markdown files
@@ -29,7 +29,7 @@ Bench), so Git dates say nothing about when a record was written.
 rule), work `W-001` to `W-040` then `W-901` to `W-903` (offset 43: `W-001` is
 `G-044`), questions, terms, capabilities, the seven evidence documents, the
 twelve legacy plans, the two Markdown plan evidence files (each group by old
-path, bytewise), and the map page last. Date order, which G-052 used, has no
+path, bytewise), and the map page last. Date order, which G-260921-r491p used, has no
 data here: dates are day-only or absent, and Git has only the import date.
 
 **Conversion.** `grove init` first (`grove.yaml`, `grove/`, the placeholder
@@ -158,7 +158,7 @@ plan had limited to the two instruction files.
 
 ## Steps
 
-1. [x] Commit this plan (`499f11e`); set G-041 active (`2c349bc`).
+1. [x] Commit this plan (`499f11e`); set G-260921-905y3 active (`2c349bc`).
 2. [x] `superseded` decision status: type table, record model, test (`1452c6f`).
 3. [x] Script (`5ef2978`); rehearsal in a disposable clone; recovery by reset,
    clean and deleting `neutral-ids` reproduced a byte-identical mapping and an
@@ -171,5 +171,5 @@ plan had limited to the two instruction files.
    version` from a login shell, Claude's Bash tool and Codex's shell.
 6. [x] Fresh Claude and Codex sessions in the nullsec worktree.
 7. [x] This repository's `AGENTS.md` and README (`1dc3922` and after review);
-   rollback in G-041.
-8. [x] Independent review (G-092); evidence and handoff into Review.
+   rollback in G-260921-905y3.
+8. [x] Independent review (G-260922-9d399); evidence and handoff into Review.

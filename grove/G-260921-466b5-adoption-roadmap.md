@@ -1,21 +1,21 @@
 ---
-id: "G-047"
+id: "G-260921-466b5"
 type: plan
-title: "G-036 adoption roadmap"
+title: "G-260921-407n6 adoption roadmap"
 status: current
 formerly: "docs/plans/W-018-adoption-roadmap.md"
-work: ["G-036"]
+work: ["G-260921-407n6"]
 created: "2026-09-21T01:08:42Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-036 adoption roadmap
+# G-260921-407n6 adoption roadmap
 
 Selected 2026-09-20; storage/identity sequence revised 2026-09-21. The
 [brief](brief.md) owns direction and
-[G-035](G-035-interactive-adoption.md) and
-[G-064](G-064-stable-knowledge.md) record authority.
-[G-036](G-036-interactive-adoption.md) owns the first milestone's
+[G-260921-tkdwh](G-260921-tkdwh-adopt-the-interactive-ad.md) and
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md) record authority.
+[G-260921-407n6](G-260921-407n6-complete-the-interactive.md) owns the first milestone's
 acceptance. This is its coordination plan, not a batch assignment or a detailed
 implementation plan. Records below own their scope, acceptance and next action.
 
@@ -26,7 +26,7 @@ implementation plan. Records below own their scope, acceptance and next action.
    (Codex). In this repository every command is `go run ./cmd/grove …`.
 2. Inspect its current context, branch/worktree, prerequisites and linked current
    plan. Prepare a concise linked plan record through the supported CLI when
-   needed. Legacy plans linked here remain until G-052 migrates them; do not
+   needed. Legacy plans linked here remain until G-260921-r491p migrates them; do not
    create new files under `docs/plans/`.
 3. Read only the relevant research section when its uncertainty matters. This
    roadmap and historical reviews are not mandatory context for every task.
@@ -46,21 +46,21 @@ prerequisites; order here also reflects product priorities.
 
 | Work | Deliverable | Completion evidence |
 | --- | --- | --- |
-| [G-025](G-025-shaping-entrypoint.md) | Native interactive shaping and shared authoring guidance | Real requirements session and fresh harness discovery; no fabricated knowledge records |
-| [G-037](G-037-knowledge-artifacts.md) | Domain terms and discoverable linked plans/reports/reviews | Compatible schema and staged retrieval, preserved identity/links |
-| [G-065](G-065-flexible-records.md) | Stable identity/placement with flexible knowledge and flat creation | General pages, neutral new IDs, recursive discovery and explicit old-schema/allocator compatibility |
-| [G-052](G-052-migrate-knowledge.md) | Complete Grove-content reconciliation into one flat layout and neutral IDs | All records and legacy artifacts mapped, provenance retained, references repaired and no parallel old layout |
-| [G-038](G-038-review-lifecycle.md) | Review lifecycle and durable candidate handoff | Revision-bound evidence, explicit completion migration, manual review/integration path |
-| [G-039](G-039-interactive-loop.md) | Complete loop on real Grove work | Fresh-session continuation, independent review, owner verdict and integration evidence |
-| [G-040](G-040-portable-bootstrap.md) | Minimal setup and versioned portable workflows | Disposable project adoption and observed Claude/Codex entrypoints |
-| [G-041](G-041-nullsec-pilot.md) | Nullsec cut over to this Grove, predecessor uninstalled | Rehearsal, live migration, fresh-session discovery and the owner's judgment of the converted tree; the first real change and the verdict stay with G-036 (owner, 2026-09-22) |
+| [G-260919-04z88](G-260919-04z88-shape-project-work-throu.md) | Native interactive shaping and shared authoring guidance | Real requirements session and fresh harness discovery; no fabricated knowledge records |
+| [G-260921-w9x25](G-260921-w9x25-represent-domain-terms-a.md) | Domain terms and discoverable linked plans/reports/reviews | Compatible schema and staged retrieval, preserved identity/links |
+| [G-260921-ebsby](G-260921-ebsby-decouple-record-identity.md) | Stable identity/placement with flexible knowledge and flat creation | General pages, neutral new IDs, recursive discovery and explicit old-schema/allocator compatibility |
+| [G-260921-r491p](G-260921-r491p-reconcile-all-grove-cont.md) | Complete Grove-content reconciliation into one flat layout and neutral IDs | All records and legacy artifacts mapped, provenance retained, references repaired and no parallel old layout |
+| [G-260921-9wkjt](G-260921-9wkjt-hand-implementation-cand.md) | Review lifecycle and durable candidate handoff | Revision-bound evidence, explicit completion migration, manual review/integration path |
+| [G-260921-9t178](G-260921-9t178-prove-the-complete-inter.md) | Complete loop on real Grove work | Fresh-session continuation, independent review, owner verdict and integration evidence |
+| [G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) | Minimal setup and versioned portable workflows | Disposable project adoption and observed Claude/Codex entrypoints |
+| [G-260921-905y3](G-260921-905y3-cut-nullsec-over-to-this.md) | Nullsec cut over to this Grove, predecessor uninstalled | Rehearsal, live migration, fresh-session discovery and the owner's judgment of the converted tree; the first real change and the verdict stay with G-260921-407n6 (owner, 2026-09-22) |
 
-G-065 extends G-037 without reopening its completion. G-052 needs that support;
-G-038 also needs G-065's contract but does not technically depend on moving this
+G-260921-ebsby extends G-260921-w9x25 without reopening its completion. G-260921-r491p needs that support;
+G-260921-9wkjt also needs G-260921-ebsby's contract but does not technically depend on moving this
 repo's content. The preferred sequence performs the full reconciliation first.
-G-039 checks the connected shaping/knowledge/review result before
-G-040 carries it into another repository. G-041 cuts nullsec over, and the
-first real nullsec change completes G-036; member status
+G-260921-9t178 checks the connected shaping/knowledge/review result before
+G-260921-5gz9a carries it into another repository. G-260921-905y3 cuts nullsec over, and the
+first real nullsec change completes G-260921-407n6; member status
 alone cannot establish the milestone's human acceptance.
 
 For the initial loop, plans stay proportional and human review can read CLI/files.
@@ -71,14 +71,14 @@ a prerequisite for the real hobby-project change.
 
 | Work | Deliverable | Boundary |
 | --- | --- | --- |
-| [G-042](G-042-current-view.md) | Project-wide current projection | Resolve concrete ambiguous histories; preserve explicit sources and batched reads |
-| [G-043](G-043-board-detail.md) | Polished board, detail, artifacts, timeline and list/search | Owner-reviewed visuals and connected terminal checks |
-| [G-044](G-044-review-integration.md) | Progressive review plus local approval/integration actions | Candidate-bound approval, conflict/refusal and safe cleanup |
-| [G-045](G-045-durable-attempt.md) | One bounded durable implementation attempt | Fake-process failure probes, then a bounded actual-provider trial |
-| [G-046](G-046-managed-runs.md) | TUI launch, runs overview, reconnect, stop and feedback continuation | UI observes the independent owner and reuses the same review contract |
+| [G-260921-ms6ev](G-260921-ms6ev-derive-a-project-wide-cu.md) | Project-wide current projection | Resolve concrete ambiguous histories; preserve explicit sources and batched reads |
+| [G-260921-k0mwk](G-260921-k0mwk-make-the-board-and-item.md) | Polished board, detail, artifacts, timeline and list/search | Owner-reviewed visuals and connected terminal checks |
+| [G-260921-jwk4e](G-260921-jwk4e-review-candidates-and-in.md) | Progressive review plus local approval/integration actions | Candidate-bound approval, conflict/refusal and safe cleanup |
+| [G-260921-h46pb](G-260921-h46pb-run-one-bounded-implemen.md) | One bounded durable implementation attempt | Fake-process failure probes, then a bounded actual-provider trial |
+| [G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md) | TUI launch, runs overview, reconnect, stop and feedback continuation | UI observes the independent owner and reuses the same review contract |
 
-G-042 depends on the knowledge/lifecycle contracts, not on the act of migrating
-nullsec. G-045 needs portable assignment and review contracts, not the TUI merge
+G-260921-ms6ev depends on the knowledge/lifecycle contracts, not on the act of migrating
+nullsec. G-260921-h46pb needs portable assignment and review contracts, not the TUI merge
 screen; its later place is investment order. These distinctions allow deliberate
 reordering without manufacturing dependencies or silently widening an assignment.
 
@@ -90,33 +90,33 @@ actual consequential human decision remains, linked to the work it blocks.
 
 | Boundary | Questions to resolve | Owner |
 | --- | --- | --- |
-| Knowledge foundation | Minimal general-page envelope and authoring; neutral allocator compatibility; explicit schema migration; keep operational validation | G-065 |
-| Repository reconciliation | Full record/document inventory, old-ID/path mapping, references/evidence, rehearsal/recovery and old-branch reintegration | G-052 |
-| Review lifecycle | Candidate/input identity; disposition and integration receipts; historical Done migration; research/design completion | G-038 |
-| Portability | Workflow packaging, managed adapter updates, executable coexistence and minimal initialization | G-040 |
-| Live adoption | Current nullsec scope, retained/archive mapping, collision handling, rollback and explicit cutover | G-041 |
-| Current projection | Target branch, record-level ancestry, dirty overlays, deletion/reverts, divergent-card placement | G-042 |
-| Visual experience | Concrete layouts, narrow terminals, bounded Done defaults, timeline navigation, compatible Charm modules | G-043 |
-| Local integration | Supported merge strategy, moved target, stale approval, status publication and cleanup failures | G-044 |
-| Runtime | Native Claude background versus owned process; role/model controls, budgets, event protocol and owner-loss recovery | G-045 |
-| Run experience | Separate run screen versus detail section, activity summarization, feedback relaunch | G-046 |
+| Knowledge foundation | Minimal general-page envelope and authoring; neutral allocator compatibility; explicit schema migration; keep operational validation | G-260921-ebsby |
+| Repository reconciliation | Full record/document inventory, old-ID/path mapping, references/evidence, rehearsal/recovery and old-branch reintegration | G-260921-r491p |
+| Review lifecycle | Candidate/input identity; disposition and integration receipts; historical Done migration; research/design completion | G-260921-9wkjt |
+| Portability | Workflow packaging, managed adapter updates, executable coexistence and minimal initialization | G-260921-5gz9a |
+| Live adoption | Current nullsec scope, retained/archive mapping, collision handling, rollback and explicit cutover | G-260921-905y3 |
+| Current projection | Target branch, record-level ancestry, dirty overlays, deletion/reverts, divergent-card placement | G-260921-ms6ev |
+| Visual experience | Concrete layouts, narrow terminals, bounded Done defaults, timeline navigation, compatible Charm modules | G-260921-k0mwk |
+| Local integration | Supported merge strategy, moved target, stale approval, status publication and cleanup failures | G-260921-jwk4e |
+| Runtime | Native Claude background versus owned process; role/model controls, budgets, event protocol and owner-loss recovery | G-260921-h46pb |
+| Run experience | Separate run screen versus detail section, activity summarization, feedback relaunch | G-260921-7trd7 |
 
 ## Research and source map
 
-The [direction evaluation](G-048-direction-evaluation-review.md) holds
+The [direction evaluation](G-260921-72chf-first-days-evaluation-an.md) holds
 the repository observations and external references behind this sequence.
 Read the relevant subsection at preparation, not every predecessor skill.
 
-[G-064](G-064-stable-knowledge.md) records the later layout
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md) records the later layout
 investigation, owner decision and research links. Its selected bounds replace
 mandatory folder/type/prefix coupling; the current record model stays in force
-until G-065 ships.
+until G-260921-ebsby ships.
 
 - Shaping, terms and context: evaluation's **Knowledge and context**;
-  prior [shaping/runner research](G-026-shaping-and-runner-evidence-review.md).
+  prior [shaping/runner research](G-260919-rr3ae-shaping-and-headless-run.md).
 - Preparation, review and roles: evaluation's **Workflow and roles**;
-  prior [predecessor work review](G-024-predecessor-work-review.md).
-- Projection and TUI: evaluation's **Current state and presentation**, G-002's
+  prior [predecessor work review](G-260919-ph0w1-predecessor-work-review.md).
+- Projection and TUI: evaluation's **Current state and presentation**, G-260919-8jb5s's
   historical answer, and the current versions/history implementation.
 - Process ownership: evaluation's **Future runtime boundary**, then current
   provider documentation and installed capabilities. Old adapter code is
@@ -151,8 +151,8 @@ until G-065 ships.
 
 ## Completion and reconsideration
 
-Use G-039 and G-041 evidence to adjust this order and the owning records.
+Use G-260921-9t178 and G-260921-905y3 evidence to adjust this order and the owning records.
 Changes to product direction belong in the brief with an attributable decision.
 Current progress belongs in work records, not another status table here. When
-the first milestone completes, record the owner's verdict in G-036 and select
+the first milestone completes, record the owner's verdict in G-260921-407n6 and select
 the next bounded investment from the observed friction.

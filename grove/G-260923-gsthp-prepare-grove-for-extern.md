@@ -1,12 +1,12 @@
 ---
-id: "G-110"
+id: "G-260923-gsthp"
 type: work
 title: "Prepare Grove for external distribution"
 status: proposed
 created: "2026-09-23T16:05:09Z"
 updated: "2026-09-25T19:08:16Z"
-relates_to: ["G-040", "G-081", "G-107", "G-108", "G-109"]
-depends_on: ["G-150", "G-151"]
+relates_to: ["G-260921-5gz9a", "G-260922-jtsed", "G-260923-fwakw", "G-260923-p5pt6", "G-260923-895zb"]
+depends_on: ["G-260925-3pj9a", "G-260925-ej1xh"]
 ---
 
 ## Outcome
@@ -25,13 +25,13 @@ licensing and compatibility promises remain later choices.
 
 ## Constraints
 
-Observed at main `f27444e`: [G-040](G-040-portable-bootstrap.md) delivered
+Observed at main `f27444e`: [G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) delivered
 `init`, versioned embedded guides and thin adapters; the documented distribution
 is a build or Go installation from a named commit.
 [CI](../.github/workflows/ci.yml) already checks Linux and macOS and
 [Dependabot](../.github/dependabot.yml) covers Go and actions. No release
 workflow, Pages source or LICENSE was found in the inspected tracked surfaces.
-[G-081](G-081-github-ci.md) records the owner's earlier choice to leave licensing
+[G-260922-jtsed](G-260922-jtsed-run-secure-ci-and-depend.md) records the owner's earlier choice to leave licensing
 open and keep CI advisory. Live GitHub settings were not rechecked here;
 historical settings in that record are not present-state evidence.
 
@@ -52,10 +52,10 @@ Proposed scope:
   based on a fresh inventory. Do not recreate existing CI or add team-oriented
   automation without a concrete preview need.
 
-[G-107](G-107-current-documentation.md) owns the existing-document reconciliation
+[G-260923-fwakw](G-260923-fwakw-reconcile-current-docume.md) owns the existing-document reconciliation
 and information ownership. This work owns distribution-specific documentation,
 site delivery and the assembled newcomer experience; coordinate that boundary.
-[G-108](G-108-workflow-evals.md) and [G-109](G-109-attempts-usability.md) provide
+[G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md) and [G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md) provide
 related quality evidence. Their completion is not automatically a prerequisite
 or sufficient evidence that a preview is ready; the owner selects release scope.
 
@@ -68,9 +68,9 @@ Owner intent, review conversation 2026-09-25: Grove is used in other
 projects as an installed CLI without this repository present. That review
 found the binary nearly self-contained, fixed the last path links on `main`
 (`001b271`), and shaped two prerequisites of this work's acceptance 2 and
-4: [G-150](G-150-launch-attempts-only-where-the-w.md) (`run` and `R` depend
+4: [G-260925-3pj9a](G-260925-3pj9a-launch-attempts-only-whe.md) (`run` and `R` depend
 silently on `init`'s files being committed) and
-[G-151](G-151-strip-grove-repository-pointers.md) (the shipped documents
+[G-260925-ej1xh](G-260925-ej1xh-strip-grove-repository-p.md) (the shipped documents
 still name Grove's own records and unshipped documents).
 
 ## Acceptance
@@ -103,5 +103,5 @@ and inspect current GitHub settings read-only. Propose the initial platform
 matrix, and surface owner choices when implementation or publication would
 commit to them. Release compatibility does not need deciding during this shaping
 session or before the documentation, eval and UI work. Commit the agreed proposal before
-assigning it through `$grove-work G-110`. Publication remains a later explicit
+assigning it through `$grove-work G-260923-gsthp`. Publication remains a later explicit
 action on the prepared candidate.

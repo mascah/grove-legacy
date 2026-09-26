@@ -1,23 +1,23 @@
 ---
-id: "G-132"
+id: "G-260924-95495"
 type: review
-title: "G-129 independent review of the headless long-command rule"
+title: "G-260924-3bapc independent review of the headless long-command rule"
 status: current
 created: "2026-09-24T15:09:34Z"
 updated: "2026-09-24T15:09:49Z"
-work: ["G-129"]
+work: ["G-260924-3bapc"]
 examined: "4e8cd92"
 ---
 
 ## Examined
 
-The diff of [G-129](G-129-headless-attempts-run-long-comma.md) against main
-`c38d914`, which is `docs/work-execution.md` and G-129's own status change.
-The headless `/grove-work G-129` session asked a separate reviewer subagent
+The diff of [G-260924-3bapc](G-260924-3bapc-headless-attempts-run-lo.md) against main
+`c38d914`, which is `docs/work-execution.md` and G-260924-3bapc's own status change.
+The headless `/grove-work G-260924-3bapc` session asked a separate reviewer subagent
 (Claude Opus 5.5, read-only, no edits). The reviewer did not write the
-change. It checked the text against G-129's Outcome and scope, against the
-rest of the work guide, and against the settled terms (G-056 in particular)
-and G-101. It also checked the anchors by applying GitHub's slug rules by
+change. It checked the text against G-260924-3bapc's Outcome and scope, against the
+rest of the work guide, and against the settled terms (G-260921-sth8q in particular)
+and G-260923-tnn5e. It also checked the anchors by applying GitHub's slug rules by
 hand.
 
 Rounds:
@@ -49,7 +49,7 @@ Round 1, at `88312db`:
    checkpoint is committed. Step 8's outcome list had no wait on a command.
    Step 8's sentence about a background agent differs in scope from the new
    rule, so it is not a duplicate (nit).
-6. Minor. G-129's Next was stale once the record was set active, and
+6. Minor. G-260924-3bapc's Next was stale once the record was set active, and
    acceptance 1 and 2 still needed their evidence.
 7. Nit. The Inputs link points to all of step 5, not to its last paragraph.
 
@@ -60,7 +60,7 @@ Round 2, at `9ad05c5`:
    applying to both links.
 
 Knowledge check, both rounds: the change introduces no new domain concept.
-It does not contradict G-056 or G-101, and it does not depend on the open
+It does not contradict G-260921-sth8q or G-260923-tnn5e, and it does not depend on the open
 choice of whether the attempt owner should report an abandoned job.
 
 ## Disposition
@@ -69,6 +69,6 @@ choice of whether the attempt owner should report an abandoned job.
 - Round 1, finding 5: fixed in `9ad05c5`. The checkpoint links step 7,
   "the work stays active" was added, and step 8 now says "question, blocker
   or command". The step 8 nit was left as it is, by choice.
-- Round 1, finding 6: resolved in G-129's Evidence and Next at handoff.
+- Round 1, finding 6: resolved in G-260924-3bapc's Evidence and Next at handoff.
 - Round 2, nits 1 and 2: fixed in `4e8cd92`. The checkpoint names "the path
   of any partial output", and the Inputs link reads "(end of step 5)".

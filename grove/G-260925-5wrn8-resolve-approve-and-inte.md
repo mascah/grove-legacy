@@ -1,13 +1,13 @@
 ---
-id: "G-180"
+id: "G-260925-5wrn8"
 type: work
 title: "Resolve, approve and integrate candidates under an explicit owner policy"
 status: done
 created: "2026-09-25T21:39:28Z"
 updated: "2026-09-26T04:58:41Z"
 kind: feature
-depends_on: ["G-177", "G-178"]
-relates_to: ["G-044", "G-058", "G-059", "G-060", "G-101", "G-134", "G-140", "G-142", "G-162", "G-163", "G-179", "G-182", "G-197"]
+depends_on: ["G-260925-h8rj5", "G-260925-dz10z"]
+relates_to: ["G-260921-jwk4e", "G-260921-rz7bn", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e", "G-260924-5b6pz", "G-260924-ecs9m", "G-260925-beby3", "G-260925-7c8g9", "G-260925-80w3a", "G-260925-w33j7", "G-260925-wh9ax", "G-260926-a8vyj"]
 candidate: "2251569c061a951ad7ba5d09da8c5d242a678e8d"
 approved: "2251569c061a951ad7ba5d09da8c5d242a678e8d"
 ---
@@ -22,8 +22,8 @@ evidence, so a set of independently implemented items can go from review to
 the target while the owner is away, and the owner judges only what the
 policy leaves to them.
 
-Decision [G-182](G-182-standing-policy-delegation.md), the owner on
-2026-09-25 answering [G-179](G-179-standing-policy-question.md): option 4,
+Decision [G-260925-wh9ax](G-260925-wh9ax-delegate-conflict-resolu.md), the owner on
+2026-09-25 answering [G-260925-w33j7](G-260925-w33j7-what-may-a-standing-owne.md): option 4,
 automatic resolution plus delegated approval and integration under a
 narrow written policy the owner extends. The initial policy below is
 proposed at the owner's request and binds nobody until the owner writes it
@@ -36,18 +36,18 @@ into `grove.yaml`.
 At main `47852e3`, `approved` is a commit that must equal `candidate`, and
 the verdict is a body paragraph (record model, work lifecycle); nothing in
 the schema distinguishes the owner's verdict from a delegated one, and
-`check` accepts any equal value, which [G-044](G-044-review-integration.md)
+`check` accepts any equal value, which [G-260921-jwk4e](G-260921-jwk4e-review-candidates-and-in.md)
 notes as the hand-set escape that skips the verdict and tip checks. The
 independent reviewer (`.claude/agents/grove-reviewer.md`,
-[G-134](G-134-bound-an-attempt-at-its-plan-and.md)) returns findings and
+[G-260924-5b6pz](G-260924-5b6pz-bound-an-attempt-at-its.md)) returns findings and
 limits and is "never approval"; the [work guide](../docs/work-execution.md)
 dispatches it per gate and caps fix rounds at three. `integrate` merges,
 then writes done, and runs no verification; approval needs the branch's
 clean checkout and integration the target's. Each attempt records its
 model, effort, reviewer definition hash and cost
-([G-134](G-134-bound-an-attempt-at-its-plan-and.md),
-[G-140](G-140-default-an-attempt-s-budget-mode.md)), and nothing resident runs between
-attempts ([G-101](G-101-attempt-mechanism.md)). G-179's evidence lists the
+([G-260924-5b6pz](G-260924-5b6pz-bound-an-attempt-at-its.md),
+[G-260924-ecs9m](G-260924-ecs9m-default-an-attempt-s-bud.md)), and nothing resident runs between
+attempts ([G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md)). G-260925-w33j7's evidence lists the
 authority and spend constraints.
 
 ### Proposed design and scope
@@ -56,7 +56,7 @@ authority and spend constraints.
   Proposed initial policy for this repository, narrow on purpose:
 
   ```yaml
-  policy:                 # standing delegation (G-182); absent means nothing automatic
+  policy:                 # standing delegation (G-260925-wh9ax); absent means nothing automatic
     budget: 30            # dollars, aggregate for every automatic act in one sweep
     resolve:
       budget: 10          # one attempt per candidate per target movement; run: defaults otherwise
@@ -107,15 +107,15 @@ authority and spend constraints.
   reason, exactly as a refused `integrate` does.
 - Trigger: the owner process of a finishing attempt, or an explicit sweep
   command the owner or an external scheduler runs. Grove starts no resident
-  service (G-101); an unchanged wait does not retry.
+  service (G-260923-tnn5e); an unchanged wait does not retry.
 - Everything the policy does not name waits for the owner as today.
-  Reconcile the brief's lifecycle paragraph and the [approval](G-059-approval.md)
+  Reconcile the brief's lifecycle paragraph and the [approval](G-260921-btyck-approval.md)
   term if the answer changes their meaning; the existing reviewer
   definition suffices initially, with its findings consumed by the policy.
 - Out of scope: choosing the policy's conditions for the owner; a second
   reviewer definition; executing several selected items
-  ([G-162](G-162-bounded-work-selection.md)); a shared candidate for a chain
-  ([G-163](G-163-selected-work-review-boundary.md)).
+  ([G-260925-7c8g9](G-260925-7c8g9-execute-an-explicitly-se.md)); a shared candidate for a chain
+  ([G-260925-80w3a](G-260925-80w3a-where-should-review-and.md)).
 
 ## Acceptance
 
@@ -136,9 +136,9 @@ authority and spend constraints.
 
 ## Evidence
 
-Implemented headless on `worktree-G-180` from main `fd7744e` (G-177 and
-G-178 integrated). It started from this record at `sha256:805b71a6…` and
-plan [G-196](G-196-plan-for-g-180-policy-integration.md) at
+Implemented headless on `worktree-G-260925-5wrn8` from main `fd7744e` (G-260925-h8rj5 and
+G-260925-dz10z integrated). It started from this record at `sha256:805b71a6…` and
+plan [G-260926-vpvhf](G-260926-vpvhf-plan-for-policy-driven-i.md) at
 `sha256:ccb8d406…` (commit `42e07ed`). Code runs through `8eb741f`; the
 candidate adds only this evidence and the review record.
 
@@ -156,7 +156,7 @@ candidate adds only this evidence and the review record.
   under (`policy grove.yaml sha256:…`). Refused without a policy. For each
   candidate in review it plans skip, wait (with the reason), resolve,
   approve or integrate; `--dry-run` prints that and writes nothing.
-- Resolution is G-178's `attempt.Resolve` with a new `Request.Policy`: the
+- Resolution is G-260925-dz10z's `attempt.Resolve` with a new `Request.Policy`: the
   feedback begins `delegated under policy grove.yaml sha256:…, budget N
   USD:`, and the attempt takes its budget, permission mode, model and
   effort from the target's `run:`, never the candidate branch's.
@@ -180,7 +180,7 @@ candidate adds only this evidence and the review record.
   none`. No schema field.
 - `update.Delegated` and the board's Review block: `approved under
   policy` for a delegated verdict.
-- Knowledge: term [G-197](G-197-policy.md) (proposed), "Policy", and a
+- Knowledge: term [G-260926-a8vyj](G-260926-a8vyj-policy.md) (proposed), "Policy", and a
   delegated act.
 
 **Acceptance 1.** With no policy, `sweep` is refused and nothing else
@@ -231,7 +231,7 @@ status), `docs/work-review.md` (the closing line), `docs/work-execution.md`
 12 ok. `internal/sweep -short` about 1.1s alone (the resolve test, which
 waits on a fake provider, skips under `-short`).
 
-**Review:** [G-198](G-198-review-of-g-180-policy-integration.md), three
+**Review:** [G-260926-mg6g8](G-260926-mg6g8-review-of-policy-driven.md), three
 rounds by fresh `grove-reviewer` agents. Four consequential findings (a
 stale target for a sweep's later candidates, an outvoted review, and the
 candidate's `run:` choosing a delegated attempt's mode, model and effort)
@@ -256,14 +256,14 @@ were fixed with regressions; round 3 found nothing consequential.
 
 ## Next
 
-In review. The owner judges the candidate on `worktree-G-180`:
+In review. The owner judges the candidate on `worktree-G-260925-5wrn8`:
 
 ```sh
-grove approve G-180 "VERDICT"   # in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-180
-grove integrate G-180           # then in the main checkout
+grove approve G-260925-5wrn8 "VERDICT"   # in /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-260925-5wrn8
+grove integrate G-260925-5wrn8           # then in the main checkout
 ```
 
-Or give feedback with `grove feedback G-180 "TEXT"` in the worktree. To
+Or give feedback with `grove feedback G-260925-5wrn8 "TEXT"` in the worktree. To
 demo: add the proposed `policy:` above to a disposable project's
 `grove.yaml`, commit it, and run `grove sweep --dry-run`, then `grove
 sweep`, in its target checkout. This repository's `grove.yaml` carries the

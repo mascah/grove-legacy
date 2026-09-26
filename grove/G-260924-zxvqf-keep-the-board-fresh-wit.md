@@ -1,5 +1,5 @@
 ---
-id: "G-124"
+id: "G-260924-zxvqf"
 type: work
 title: "Keep the board fresh without pressing r"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-24T01:23:28Z"
 updated: "2026-09-24T14:58:03Z"
 kind: feature
 size: small
-relates_to: ["G-046", "G-109", "G-123"]
+relates_to: ["G-260921-7trd7", "G-260923-895zb", "G-260924-nqkkh"]
 candidate: "3d4597b02229ae36c623846959e6f49ff048d469"
 approved: "3d4597b02229ae36c623846959e6f49ff048d469"
 ---
@@ -31,15 +31,15 @@ Observed at main `28f5ddc`:
   polls the attempt files every 2 s (`pollEvery` in
   [attempts.go](../internal/tui/attempts.go)) and re-reads the board only when
   one ends (`gotAttempts`). A status the attempt commits mid-run is not seen
-  until `r`: on 2026-09-24 the G-108 attempt set its record active on
-  `worktree-G-108` while running, and the card stayed in Proposed until then.
+  until `r`: on 2026-09-24 the G-260923-p5pt6 attempt set its record active on
+  `worktree-G-260923-p5pt6` while running, and the card stayed in Proposed until then.
 - Bubble Tea v2 delivers `tea.FocusMsg` and `tea.BlurMsg` when the view sets
   `ReportFocus` (bubbletea/v2 `focus.go`, `screen.go`). `Model.View` in
   [view.go](../internal/tui/view.go) does not set it. The owner's terminal,
   Ghostty, reports focus; a terminal that does not sends nothing, and the
   board is unchanged there.
-- A board load reads every branch through one `git cat-file` (G-031, G-042)
-  and history and changes only while a detail is open (G-030). A re-read on
+- A board load reads every branch through one `git cat-file` (G-260920-z8vfp, G-260921-ms6ev)
+  and history and changes only while a detail is open (G-260920-svpbc). A re-read on
   every tick would repeat the load every 2 s.
 - The last read's result holds the commit each committed source was read at
   (`versions` prints it as `Source: committed refs/heads/… HASH`).
@@ -74,7 +74,7 @@ attempt running, and re-reading a detail's timeline on focus.
 
 ## Evidence
 
-Implemented on `worktree-G-124`, base main `2491eda`, from G-124 revision
+Implemented on `worktree-G-260924-zxvqf`, base main `2491eda`, from G-260924-zxvqf revision
 `sha256:72e2d5d7…`. There is no plan: the work is small, and the proposed
 design in Constraints was specific enough to build from. The code is in
 `a6807a4`, the review fixes in `70509fb`, and a docs rewording in `eba3197`.
@@ -87,7 +87,7 @@ Against each acceptance item:
    - the session is ending,
    - `busy()` (an inspect, resolve or action is under way), or
    - `pinned()` (a detail left at a timeline commit or a diff, which a
-     re-read would close; finding 1 of [G-130](G-130-review-of-g-124-board-re-reads-o.md)).
+     re-read would close; finding 1 of [G-260924-380hs](G-260924-380hs-review-of-board-re-reads.md)).
 
    Blur does nothing. The header now reads `read 2 branches, 2 checkouts at
    14:05:06`, from `readAt`, set when a read lands.
@@ -129,7 +129,7 @@ Against each acceptance item:
 3. **Nothing when idle.** With no attempt live, no tick is scheduled, and
    `Tips` is never called. The same test asserts both (`ticking` false, 0
    listings). Under `-short`, `internal/tui` runs in 0.5 s. The pty test was
-   already skipped under `-short` (G-071).
+   already skipped under `-short` (G-260922-9cbh6).
 4. **Docs.** [docs/board.md](../docs/board.md) says when the board re-reads
    by itself: on focus with its exceptions, on an attempt's end or a moved
    tip, and nothing else without a key. It also says that the header shows
@@ -147,7 +147,7 @@ The load average during that run was about 7. Under that load,
 `internal/versions` took 4.4–5.7 s even under `-short`; it took 5.6 s on the
 base build too, and this change adds no test there.
 
-Review: [G-130](G-130-review-of-g-124-board-re-reads-o.md), by an
+Review: [G-260924-380hs](G-260924-380hs-review-of-board-re-reads.md), by an
 independent reviewer subagent over two rounds, examined `70509fb`. It found
 nothing blocking. Its dispositions:
 - The should-fix (a re-read closed an open diff) is fixed.
@@ -165,8 +165,8 @@ Limits:
 
 ## Next
 
-**Handoff, 2026-09-24 (headless).** G-124 alone, on `worktree-G-124` in
-`.claude/worktrees/worktree-G-124`, base main `2491eda`. No command is
+**Handoff, 2026-09-24 (headless).** G-260924-zxvqf alone, on `worktree-G-260924-zxvqf` in
+`.claude/worktrees/worktree-G-260924-zxvqf`, base main `2491eda`. No command is
 still running.
 
 For the owner's judgment, run `go run ./cmd/grove` in this checkout from
@@ -175,7 +175,7 @@ Ghostty:
   The header's read time should change with no key pressed.
 - With an attempt running, its record should move to Active while it runs.
 
-Integration: `go run ./cmd/grove approve G-124 "VERDICT"` in this checkout,
-then `go run ./cmd/grove integrate G-124` in the `main` checkout.
+Integration: `go run ./cmd/grove approve G-260924-zxvqf "VERDICT"` in this checkout,
+then `go run ./cmd/grove integrate G-260924-zxvqf` in the `main` checkout.
 
 Verdict on candidate 3d4597b, 2026-09-24: working as expected

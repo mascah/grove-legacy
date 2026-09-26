@@ -1,5 +1,5 @@
 ---
-id: "G-052"
+id: "G-260921-r491p"
 type: work
 title: "Reconcile all Grove content into neutral IDs and one flat layout"
 status: done
@@ -7,20 +7,20 @@ created: "2026-09-21T04:37:58Z"
 updated: "2026-09-22T00:43:59Z"
 kind: refactor
 size: large
-depends_on: ["G-065"]
-relates_to: ["G-051", "G-036", "G-041", "G-064"]
+depends_on: ["G-260921-ebsby"]
+relates_to: ["G-260921-e8bva", "G-260921-407n6", "G-260921-905y3", "G-260921-gtydy"]
 formerly: "W-029"
 ---
 
 ## Outcome
 
 Reconcile all existing Grove records, legacy plans/reviews and the brief into
-one flat layout under the configured Grove root using G-065's record contract.
+one flat layout under the configured Grove root using G-260921-ebsby's record contract.
 Every record uses the neutral ID/filename convention, with one editable owner
 per document. On 2026-09-21 the owner explicitly selected "Reconcile both IDs
 and file locations" because multiple conventions were already causing friction;
-[G-064](G-064-stable-knowledge.md) records that authority and revises
-[G-051](G-051-typed-knowledge-records.md). The brief remains a
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md) records that authority and revises
+[G-260921-e8bva](G-260921-e8bva-represent-terms-plans-an.md). The brief remains a
 separate configured document, not a record.
 
 ## Constraints
@@ -29,7 +29,7 @@ In:
 
 - Convert every existing record under `grove/`, including done work, decisions,
   questions, terms, plans and reviews, to a neutral ID and flat filename. Use
-  G-065's supported conversion/allocation path; never hand-number replacements.
+  G-260921-ebsby's supported conversion/allocation path; never hand-number replacements.
 - Migrate all legacy documents in `docs/plans/` and `docs/reviews/` to the same
   convention. Preserve plan/review roles, shared ownership and examined commits.
 - Move `docs/restart-brief.md` to `grove/brief.md` and update `grove.yaml`.
@@ -53,7 +53,7 @@ Old identifiers or paths may remain in clearly marked historical quotations,
 evidence and the migration mapping; current instructions must use the new ones.
 
 Out: rewriting Git history, changing completed work's meaning, automatic filing
-on completion, sibling writes (nullsec is G-041), and relocating repository
+on completion, sibling writes (nullsec is G-260921-905y3), and relocating repository
 entrypoints or product/workflow documentation merely because they are Markdown.
 The README, AGENTS.md, adapters, `docs/work-execution.md`, `docs/work-shaping.md`
 and `docs/record-model.md` keep their functional homes with references updated.
@@ -64,7 +64,7 @@ Observed on 2026-09-21 in the shaping checkout based on main `76da081`: 43 Grove
 records, 13 legacy plans, nine legacy reviews and one brief. A scoped search
 found 407 directory-reference occurrences in 62 Markdown/Go files, including
 14 Go files; this is a search inventory, not an exact migration-edit count.
-Refresh the inventory after G-065: its own plan/review and new records also
+Refresh the inventory after G-260921-ebsby: its own plan/review and new records also
 belong in the reconciliation. Unmerged branches retain old files and IDs.
 
 Preparation must produce the complete mapping before publication, verify a
@@ -103,33 +103,33 @@ old-layout records. Do not rewrite other sessions' worktrees.
 ## Evidence
 
 Branch `worktree-W-029` from main `70de539`. Plan
-[G-068](G-068-reconciliation-plan.md); mapping and historical literals
-[G-069](G-069-migration-map.md); independent review
-[G-070](G-070-reconciliation-review.md), two rounds, all consequential and
+[G-260921-awvk8](G-260921-awvk8-reconciliation-mapping-c.md); mapping and historical literals
+[G-260921-czt8x](G-260921-czt8x-identity-and-path-migrat.md); independent review
+[G-260921-xs7wz](G-260921-xs7wz-independent-review-of-th.md), two rounds, all consequential and
 minor findings fixed. Not merged or pushed.
 
-1. 46 records, 13 legacy plans and 9 legacy reviews became `G-001` to `G-068`
-   flat under `grove/`, in document-date order, through `grove convert`; G-069
-   and G-070 were created there with `new`. The type folders, `docs/plans/` and
+1. 46 records, 13 legacy plans and 9 legacy reviews became `G-260919-6mpmw` to `G-260921-awvk8`
+   flat under `grove/`, in document-date order, through `grove convert`; G-260921-czt8x
+   and G-260921-xs7wz were created there with `new`. The type folders, `docs/plans/` and
    `docs/reviews/` are gone; `grove.yaml` names `grove/brief.md`.
-   `docs/prompts/*.txt` stays as spent evidence, accounted for in G-069.
-2. G-069 has one row per source and each record's `formerly` matches its row.
+   `docs/prompts/*.txt` stays as spent evidence, accounted for in G-260921-czt8x.
+2. G-260921-czt8x has one row per source and each record's `formerly` matches its row.
    Round 1 diffed all 69 pairs: only mechanical ID, path and link edits, with
    `created`, `updated`, `status` and `examined` byte-identical. The 22
    converted legacy documents got `created` on 2026-09-22 at the owner's
-   request, each from the first commit of its original path, matching G-069.
+   request, each from the first commit of its original path, matching G-260921-czt8x.
 3. `grove check` OK at 70 records. Every relative link and anchor resolves
    (the reviewers' checkers and the migration script's audit). Remaining typed
-   IDs and old folder names are the literals G-069 accounts for: fixtures,
+   IDs and old folder names are the literals G-260921-czt8x accounts for: fixtures,
    trial clones, the predecessor's records, verbatim quotations, branch names,
    paths, `formerly`.
-4. `context G-030 G-031`, `context G-010` (shared plan G-013, review G-022),
-   `show`, `brief` and `versions G-052` exercised on migrated proposed and done
+4. `context G-260920-svpbc G-260920-z8vfp`, `context G-260919-zb0s8` (shared plan G-260919-qprdw, review G-260919-zrk8t),
+   `show`, `brief` and `versions G-260921-r491p` exercised on migrated proposed and done
    work. The board, driven in a pseudo-terminal on this checkout, shows
    Proposed 10, Active 1, Done 15 under neutral IDs and opens a card with its
-   history; `git log --follow` on `grove/G-030-card-lineage.md` reaches its
+   history; `git log --follow` on `grove/G-260920-svpbc-show-a-work-item-s-linea.md` reaches its
    pre-migration commits. Limits: `show W-029` finds nothing, so an old ID is
-   resolved through G-069 or `formerly`; a branch that predates the conversion
+   resolved through G-260921-czt8x or `formerly`; a branch that predates the conversion
    is a source the current CLI cannot inspect (`unsupported version 2;
    expected 3`, exit 1, valid sources still print), and the board says
    INCOMPLETE while such local branches exist. Read them with their own CLI.
@@ -175,5 +175,5 @@ into main (fast-forward from `70de539`). The merged local branches
 `worktree-W-004-W-005`, `worktree-W-006-W-008`, `worktree-W-010`,
 `worktree-W-030` and `worktree-direction-reconciliation` still hold schema 1 or
 2, so `versions` exits 1 and the board says INCOMPLETE until the owner deletes
-them; they are all ancestors of main. G-041 reuses the script's approach from
+them; they are all ancestors of main. G-260921-905y3 reuses the script's approach from
 `8bf691b` for nullsec but owns its own inventory.

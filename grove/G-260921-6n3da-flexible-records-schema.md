@@ -1,23 +1,23 @@
 ---
-id: "G-066"
+id: "G-260921-6n3da"
 type: plan
-title: "G-065 flexible records: schema 3, neutral IDs, pages, conversion"
+title: "G-260921-ebsby flexible records: schema 3, neutral IDs, pages, conversion"
 status: current
 created: "2026-09-21T16:02:50Z"
 updated: "2026-09-21T16:02:54Z"
-work: ["G-065"]
+work: ["G-260921-ebsby"]
 formerly: "P-001"
 ---
 
 ## Design
 
-Plan for [G-065](G-065-flexible-records.md) within
-[G-064](G-064-stable-knowledge.md). Base `bd6debe`, branch
+Plan for [G-260921-ebsby](G-260921-ebsby-decouple-record-identity.md) within
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md). Base `bd6debe`, branch
 `worktree-W-030`. Settled here as preparation decisions:
 
 **Schema 3, opt-in.** `schema_version: 3` is the deliberate one-line edit that
 schema 2 was; no command rewrites it. Schemas 1 and 2 keep their rules and
-diagnostics byte-for-byte. This repository stays at schema 2: G-052 migrates it.
+diagnostics byte-for-byte. This repository stays at schema 2: G-260921-r491p migrates it.
 
 **Discovery (schema 3).** Every `.md` beneath the record root, at any depth, is
 a record, except the configured brief. Folders mean nothing: no type-folder
@@ -36,7 +36,7 @@ Envelope: `id`, `type`, `title`; optional `relates_to`, `created`, `updated`,
 missing or unknown `type` is an error, so a damaged operational record cannot
 fall through to a page. Known types keep every current rule. `grove new page
 TITLE`; list, versions and context print `-` for a page's status. Pages are
-never work cards (the board selects `type == work`; G-067 found it read the
+never work cards (the board selects `type == work`; G-260921-kfd06 found it read the
 first source's type, now the board source's own), cannot be selected
 by `context`, and are listed when related and read only by `show` or
 `--include`.
@@ -54,7 +54,7 @@ counter; the two namespaces cannot produce the same ID. The recovery scan is
 unchanged: already recursive over the record root in every local ref and
 worktree. An older CLI refuses a schema-3 checkout with "unsupported version 3".
 
-**Conversion interface for G-052 (schema 3 only), `grove convert`:**
+**Conversion interface for G-260921-r491p (schema 3 only), `grove convert`:**
 
 - `convert ID [--slug SLUG]`: a record with a typed ID gets the next neutral
   ID. Only its `id` changes and `formerly: "OLD-ID"` is added; timestamps,
@@ -70,7 +70,7 @@ worktree. An older CLI refuses a schema-3 checkout with "unsupported version 3".
   already named by some record's `formerly`, or an ID that is already neutral,
   is refused before anything is reserved, so a rerun neither duplicates nor
   remaps. `formerly` must be unique across records.
-- Body prose and Markdown links are not rewritten: G-052 owns them and the
+- Body prose and Markdown links are not rewritten: G-260921-r491p owns them and the
   durable mapping. The whole candidate set is validated in memory before the
   first write. Adjusted during implementation: the new file is created first
   (`O_EXCL`, the likeliest refusal, which then leaves everything untouched),

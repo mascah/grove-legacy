@@ -1,23 +1,23 @@
 ---
-id: "G-103"
+id: "G-260923-stkc6"
 type: plan
-title: "G-046 managed runs plan"
+title: "G-260921-7trd7 managed runs plan"
 status: current
 created: "2026-09-23T03:35:15Z"
 updated: "2026-09-23T03:35:47Z"
-work: ["G-046"]
+work: ["G-260921-7trd7"]
 ---
 
 ## Design
 
-Prepared 2026-09-22 at `bd2418f` for [G-046](G-046-managed-runs.md)
-(record revision `sha256:4dc799d6…`), on G-045's `internal/attempt`
-package (plan [G-100](G-100-g-045-durable-attempt-plan.md), decision
-[G-101](G-101-attempt-mechanism.md), review
-[G-102](G-102-g-045-durable-attempt-review.md) and its notes for G-046) and
-G-044's review actions in `internal/tui/review.go`. The plan owns the steps;
-G-046 owns outcome, bounds and acceptance. The roadmap's open run-experience
-questions ([G-047](G-047-adoption-roadmap-plan.md)) are design tasks decided
+Prepared 2026-09-22 at `bd2418f` for [G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md)
+(record revision `sha256:4dc799d6…`), on G-260921-h46pb's `internal/attempt`
+package (plan [G-260923-0t43m](G-260923-0t43m-durable-attempt-plan.md), decision
+[G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md), review
+[G-260923-ccda0](G-260923-ccda0-durable-attempt-review.md) and its notes for G-260921-7trd7) and
+G-260921-jwk4e's review actions in `internal/tui/review.go`. The plan owns the steps;
+G-260921-7trd7 owns outcome, bounds and acceptance. The roadmap's open run-experience
+questions ([G-260921-466b5](G-260921-466b5-adoption-roadmap.md)) are design tasks decided
 here.
 
 ### Decisions
@@ -39,7 +39,7 @@ here.
   away from `a` (abandoned, approve) and `r` (refresh); every launch passes
   through a typed prompt, so no single key starts a process.
 - **Launch prompt.** Budget, then permission mode, typed each time with no
-  prefill: G-045 made both required because a default would make the
+  prefill: G-260921-h46pb made both required because a default would make the
   choice in practice, and a prefilled field is that default. `attempt.
   ValidBudget` checks the budget before the next field; the mode is passed
   through as the CLI does.
@@ -47,7 +47,7 @@ here.
   When the shown record stands on a branch other than the target, that
   branch is passed, with its live checkout as the worktree when it has one:
   the continuation after feedback runs on the candidate's branch, wherever
-  its worktree is (G-044's own lives at `.claude/worktrees/G-044`, not
+  its worktree is (G-260921-jwk4e's own lives at `.claude/worktrees/G-260921-jwk4e`, not
   Start's default path). Otherwise Start's defaults apply.
 - **Changed inputs.** `Request.Expect` carries the record revision the TUI
   showed for the launching checkout; Start refuses when the checkout's
@@ -82,11 +82,11 @@ here.
   after), then the last activity lines that fit: the report stays above
   the activity, whatever scrolls. High volume costs one bounded read per
   tick, never the file.
-- **Owner reaping** (G-102's note): `Start` waits on the owner in a
+- **Owner reaping** (G-260923-ccda0's note): `Start` waits on the owner in a
   goroutine instead of releasing it, so a long-lived launcher reaps it; a
   CLI launcher exits first and the owner is reparented as before.
 - **Stop** runs `attempt.Stop` as an action behind `y/n`; keys wait for it,
-  as for G-044's actions. Stop of an orphan can take its grace period.
+  as for G-260921-jwk4e's actions. Stop of an orphan can take its grace period.
 - **Feedback continuation.** Feedback's result names `R` on the record as
   the next step besides `/grove-work`; the record is then active on its
   branch, and `R` launches there. Evidence stays: the attempt appends
@@ -107,8 +107,8 @@ here.
 
 ## Checkpoint
 
-All steps done at `79095a6` on `worktree-G-046`; evidence in
-[G-046](G-046-managed-runs.md) and review [G-104](G-104-g-046-managed-runs-review.md).
+All steps done at `79095a6` on `worktree-G-260921-7trd7`; evidence in
+[G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md) and review [G-260923-a8kzm](G-260923-a8kzm-managed-runs-review.md).
 Adjustments to the design, each from evidence: the attempts list is read
 from the attempts directory under the common directory the board already
 found, since a Git process there could not be cancelled at quit (the
@@ -123,7 +123,7 @@ checkout) does not hold the current state, reusing a live checkout of
 
 ## Steps
 
-1. Commit this plan; set G-046 active.
+1. Commit this plan; set G-260921-7trd7 active.
 2. `internal/attempt` changes with tests (`-short` where a process spawns).
 3. TUI screens, reads, launch and stop, outcome, detail row, tags; model
    tests with a fake backend for eligibility, duplicate and changed-input
@@ -133,4 +133,4 @@ checkout) does not hold the current state, reusing a live checkout of
    in a disposable clone with a built binary.
 5. Docs; verification per AGENTS.md.
 6. Independent review of the combined diff; fixes within the cap.
-7. Evidence and handoff in G-046; `status=review` with the candidate.
+7. Evidence and handoff in G-260921-7trd7; `status=review` with the candidate.

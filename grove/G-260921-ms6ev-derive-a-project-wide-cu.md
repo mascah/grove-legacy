@@ -1,5 +1,5 @@
 ---
-id: "G-042"
+id: "G-260921-ms6ev"
 type: work
 title: "Derive a project-wide current view of work"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-22T22:55:58Z"
 kind: feature
 size: medium
 priority: 3
-depends_on: ["G-037", "G-038"]
-relates_to: ["G-035", "G-002", "G-010", "G-011", "G-030", "G-031", "G-064", "G-065"]
+depends_on: ["G-260921-w9x25", "G-260921-9wkjt"]
+relates_to: ["G-260921-tkdwh", "G-260919-8jb5s", "G-260919-zb0s8", "G-260919-n9t4p", "G-260920-svpbc", "G-260920-z8vfp", "G-260921-gtydy", "G-260921-ebsby"]
 formerly: "W-024"
 candidate: "b56646c"
 ---
@@ -29,7 +29,7 @@ timestamp or newest branch tip as authority. A revert is a real change, not
 automatically an older state. Exact source routing and stale-selection checks
 remain intact; view selection does not merge content or grant write authority.
 
-Use G-065's stable identities and recursive discovery. Neither type prefixes
+Use G-260921-ebsby's stable identities and recursive discovery. Neither type prefixes
 nor a completed/history folder establish which record is current or integrated.
 "History" here is a view of evidence, not a filesystem move. Include supported
 old/new schema sources and legacy/new IDs in the projection fixtures.
@@ -43,18 +43,18 @@ old/new schema sources and legacy/new IDs in the projection fixtures.
    and committed observations from live overlays; ambiguity is explicit.
 3. Equivalent observations from different invoking checkouts produce the same
    default view. Users can inspect the chosen evidence and other sources.
-4. For the observed G-030 history, an old Proposed copy on G-023 does not
+4. For the observed G-260920-svpbc history, an old Proposed copy on G-260919-nddsf does not
    obscure the Done/integrated result on main. Do not hard-code these branches.
 5. Preserve read-only behavior, incomplete-result diagnostics, safe action
-   targeting and G-031's batched Git reads. Avoid per-branch Git processes;
+   targeting and G-260920-z8vfp's batched Git reads. Avoid per-branch Git processes;
    any added history work must retain acceptable measured board load behavior.
-6. Update G-002's implementation note and current documentation. Full visual
-   redesign is G-043; projection should be independently testable and explainable.
+6. Update G-260919-8jb5s's implementation note and current documentation. Full visual
+   redesign is G-260921-k0mwk; projection should be independently testable and explainable.
 
 ## Evidence
 
-Implementation is on branch `worktree-G-042` from base `939d090` (main). It
-started from this record and [plan G-093](G-093-current-view-plan.md) as
+Implementation is on branch `worktree-G-260921-ms6ev` from base `939d090` (main). It
+started from this record and [plan G-260922-9tcff](G-260922-9tcff-project-wide-current-vie.md) as
 committed at `2b2831a`. The first candidate, `046150e`, went to the owner
 for review. The owner reopened the work to add an integration target (see
 Next); the plan's revised decision was committed at `070671d`. The current
@@ -81,7 +81,7 @@ Routine technical choices, made in the implementation:
   existing `cat-file` process.
 - A cycle, which reverts carried across merges can produce, is decided by its
   components, with a note.
-- Schema 3 is the only schema, so a pre-G-052 branch is an invalid source
+- Schema 3 is the only schema, so a pre-G-260921-r491p branch is an invalid source
   rather than a legacy observation.
 - The target is the branch that every valid `grove.yaml` naming one agrees
   on. This keeps it independent of the invoking checkout, and it works on a
@@ -91,7 +91,7 @@ Routine technical choices, made in the implementation:
 **Acceptance.**
 
 1. `internal/versions/current.go` holds the projection. `TestCurrentView` covers:
-   - a stale branch (the G-030/G-023 shape) and a merged branch whose record
+   - a stale branch (the G-260920-svpbc/G-260919-nddsf shape) and a merged branch whose record
      main moved on;
    - unmerged progress, and work that exists only on a branch;
    - committed and uncommitted deletions, and an uncommitted edit and addition;
@@ -126,13 +126,13 @@ Routine technical choices, made in the implementation:
    - a card lists current rows first, each older row with its reason;
    - `b` still opens one checkout's own board;
    - selection is unchanged.
-4. In the G-030/G-023 shape, the stale branch's Proposed copy is older and
+4. In the G-260920-svpbc/G-260919-nddsf shape, the stale branch's Proposed copy is older and
    main's Done is current. The code names no branch.
 5. The code writes nothing and still reports incomplete sources. A committed
    deletion row has no selector and refuses. `TestCommittedReadIsScopedAndShared`
    asserts one `cat-file` process and no `merge-base` or `rev-list` process.
 6. Updated:
-   - G-002's disposition and Next;
+   - G-260919-8jb5s's disposition and Next;
    - README (board, `versions`, target);
    - AGENTS.md;
    - the brief's current-view paragraph (direction only: ancestry means merge
@@ -141,7 +141,7 @@ Routine technical choices, made in the implementation:
    - the usage text;
    - this repository's `grove.yaml`, which now has `target: main`.
 
-   The visual redesign is left to G-043.
+   The visual redesign is left to G-260921-k0mwk.
 
 **Measured load**, `versions` wall time on this Mac, with 3 runs each for the
 synthetic repositories:
@@ -162,7 +162,7 @@ follow), these all passed:
 
 - `go vet ./...`
 - `gofmt -l .` (no output)
-- `go run ./cmd/grove check` (OK: 90 records; 91 with G-095 added after)
+- `go run ./cmd/grove check` (OK: 90 records; 91 with G-260922-cwns8 added after)
 - `go test -count=1 -timeout 120s ./...`, including the pseudo-terminal
   lifecycle test `TestTerminal`
 
@@ -171,11 +171,11 @@ whole-suite load it takes 8.1 s, against 7.3 s for main's.
 
 **Review.**
 
-- [G-094](G-094-current-view-review.md), on the first candidate: three
+- [G-260922-ayftm](G-260922-ayftm-review-of-current-view.md), on the first candidate: three
   rounds, with five round-1 defects and one round-2 remainder, all fixed with
   regression tests. Round 3 found none. It examined `96900e0`; `1c328cf` (a
   test made parallel) and `84115c4` (usage text) followed.
-- [G-095](G-095-integration-target-review.md), on the target: two rounds.
+- [G-260922-cwns8](G-260922-cwns8-review-of-integration-ta.md), on the target: two rounds.
   Round 1 found one defect, adoption with a target that has no project yet,
   which is fixed with its test. Round 2 found none. It examined `3851182`.
 
@@ -199,11 +199,11 @@ whole-suite load it takes 8.1 s, against 7.3 s for main's.
 **When a card shows `⑂ N states`.** Divergence means two places each changed
 the record since they last shared a commit, into different bytes:
 
-- **Two sessions on one record.** Worktree A sets G-050 to `active` with its
+- **Two sessions on one record.** Worktree A sets G-260921-ahbrj to `active` with its
   Next, and worktree B, started from the same main, does too with a different
   Next. Two active states: the card stays in Active with `⑂ 2 states`.
-- **Main edited while a branch worked.** A work branch moves G-050 to
-  `review`. Meanwhile someone fixes a typo in G-050 on main. Main's `active`
+- **Main edited while a branch worked.** A work branch moves G-260921-ahbrj to
+  `review`. Meanwhile someone fixes a typo in G-260921-ahbrj on main. Main's `active`
   and the branch's `review` both changed since the split, so the card sits in
   Active, the earlier status, marked `⑂ 2 states`, until the branch merges
   main or main merges the branch.
@@ -212,7 +212,7 @@ the record since they last shared a commit, into different bytes:
   did not, a stale branch that never touched it, or a checkout's uncommitted
   edit on top of its own HEAD.
 
-**What the target adds.** A work branch moves G-050 to `review`, and main
+**What the target adds.** A work branch moves G-260921-ahbrj to `review`, and main
 still says `active`. The card shows Review, tagged `not on main`, until the
 merge. In the two-sessions example above, neither active state is on main:
 `⑂ 2 states not on main`. In the typo example, main holds one side, so there
@@ -224,14 +224,14 @@ is no tag; the details say which state is on main.
 Decisions):** "I think I want to revisit the idea of an integration target.
 In my case that's main. During initial scoping I was asked if this should be a
 grove.yaml setting and I think it probably should be." Asked where it lands,
-the owner chose to reopen G-042 rather than merge first. They deferred to
+the owner chose to reopen G-260921-ms6ev rather than merge first. They deferred to
 separate work having `update` refuse `done` off the target. The target
 itself is now implemented, as recorded above.
 
 Judge the candidate (the owner). Demo from the branch:
 
 ```sh
-cd /Users/mascah/GitHub/mascah/grove/.claude/worktrees/G-042
+cd /Users/mascah/GitHub/mascah/grove/.claude/worktrees/G-260921-ms6ev
 go run ./cmd/grove            # "Board: current view, target main"; this record is tagged not on main
 go run ./cmd/grove versions   # the CURRENT and TARGET columns; stderr names the target
 ```
@@ -241,8 +241,8 @@ in this record:
 
 ```sh
 cd /Users/mascah/GitHub/mascah/grove
-git merge worktree-G-042
-go run ./cmd/grove update G-042 --set status=done --commit
+git merge worktree-G-260921-ms6ev
+go run ./cmd/grove update G-260921-ms6ev --set status=done --commit
 just install                  # older builds refuse the new target key
 ```
 

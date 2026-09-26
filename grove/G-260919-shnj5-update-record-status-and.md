@@ -1,5 +1,5 @@
 ---
-id: "G-009"
+id: "G-260919-shnj5"
 type: work
 title: "Update record status and fields from the CLI"
 status: done
@@ -8,7 +8,7 @@ priority: 3
 size: medium
 members: []
 depends_on: []
-relates_to: ["G-007", "G-006"]
+relates_to: ["G-260919-92n2y", "G-260919-5f89v"]
 created: "2026-09-19T15:36:19Z"
 updated: "2026-09-19T19:15:05Z"
 formerly: "W-003"
@@ -19,13 +19,13 @@ formerly: "W-003"
 Change one record's status and fields from the CLI, preserving human-authored
 Markdown and refusing stale updates. Grove's own records are the first data.
 The owner approved this specification on 2026-09-19 and authorized
-implementation; the [implementation plan](G-012-update-plan.md)
+implementation; the [implementation plan](G-260919-50rcx-record-update-implementa.md)
 maps acceptance to checks and records evidence. Achieved on branch
 `worktree-W-003` the same day; see Evidence.
 
 ## Why now
 
-Finish the local record workflow before cross-branch coordination. G-007's
+Finish the local record workflow before cross-branch coordination. G-260919-92n2y's
 creation command is implemented; updating supplies the mutation boundary a
 future UI can reuse. Priority 3 is unchanged. Medium reflects source-preserving
 frontmatter edits and concurrency checks within one bounded command.
@@ -48,9 +48,9 @@ frontmatter edits and concurrency checks within one bounded command.
 Commands, implemented in `internal/cli` and `internal/update`:
 
 ```sh
-grove show G-009 --json
-grove update G-009 --expect sha256:HEX --set status=active --set priority=2
-grove update G-009 --expect sha256:HEX --set 'depends_on=["G-007"]' --unset size
+grove show G-260919-shnj5 --json
+grove update G-260919-shnj5 --expect sha256:HEX --set status=active --set priority=2
+grove update G-260919-shnj5 --expect sha256:HEX --set 'depends_on=["G-260919-92n2y"]' --unset size
 ```
 
 `show ID --json` returns one JSON object with exactly `id`, `path`, `revision`,
@@ -58,7 +58,7 @@ and `source`. Path is project-relative; source decodes to the exact UTF-8 file
 bytes. Revision is `sha256:` followed by 64 lowercase hexadecimal digits of the
 SHA-256 hash of those bytes, including BOM and line endings. Compute source and
 revision from the same read buffer. Existing plain `show` stdout stays exact;
-project/file context stays on stderr. Reads create no coordination state. G-010
+project/file context stays on stderr. Reads create no coordination state. G-260919-zb0s8
 will use this content-revision convention without needing update behavior.
 
 `update ID` requires exactly one `--expect REVISION` and at least one `--set
@@ -131,7 +131,7 @@ existing dates are ahead of the clock.
 ### Cooperating writers and publication
 
 Introduce a shared advisory `flock` at `<git-common-dir>/grove/write.lock` for
-record mutations across local worktrees. Keep G-006's allocator `grove/lock`
+record mutations across local worktrees. Keep G-260919-5f89v's allocator `grove/lock`
 and `grove/next-ids` reservation contract unchanged. Never unlink a lock file;
 process exit releases the held lock. A missing write lock is created on first
 mutation; read commands never create it. Update does not initialize or advance
@@ -209,7 +209,7 @@ uncertain durability, not a successful durable write.
 8. Concurrent updates to different records serialize full-project validation:
    reciprocal dependency additions cannot both succeed and create a cycle.
    Concurrent new/update operations participate in the same publication lock.
-   Include linked-worktree lock serialization and killing a lock holder; G-007's
+   Include linked-worktree lock serialization and killing a lock holder; G-260919-92n2y's
    allocation, gaps, recovery, and no-overwrite tests continue to pass.
 9. Inject temporary-write, sync, close, rename, directory-sync, final-validation,
    and output failures. Verify original bytes before publication, applied-state
@@ -223,7 +223,7 @@ uncertain durability, not a successful durable write.
 ## Evidence
 
 Closed 2026-09-19 on branch `worktree-W-003` at `14ed115`, base `8b23636`.
-The [implementation plan](G-012-update-plan.md) records the
+The [implementation plan](G-260919-50rcx-record-update-implementa.md) records the
 commits, the fixture list per acceptance item, `go test ./...`,
 `go test -race ./...`, `go vet ./...`, and gofmt results, real use against
 this record, and the independent review. Every acceptance item has tests;
@@ -253,7 +253,7 @@ interfaces are `internal/cli`, shared parsing/graph validation in
 by `internal/create`. Keep source-editing logic separate from filesystem writes
 so preservation checks do not need concurrency fixtures.
 
-Execution recommendation: one Fable agent in an isolated worktree, G-009 only.
+Execution recommendation: one Fable agent in an isolated worktree, G-260919-shnj5 only.
 It owns these overlapping interfaces through verification and review. Runtime
 is a user-started Fable session; no Grove agent runner is assumed. Reassess scope
 if preserving accepted YAML forms requires a substantially larger parser.
@@ -265,13 +265,13 @@ checks are relevant fixtures, `go test ./...`, `go test -race ./...`,
 preservation, concurrent writers, and publication failure reporting. Reconcile
 README, model, brief, and this work record with actual evidence on closure.
 Implementation completion is in its branch context; integration remains a
-separate step. Do not start G-010/G-011 as part of this assignment.
+separate step. Do not start G-260919-zb0s8/G-260919-n9t4p as part of this assignment.
 
 ## Next
 
-Integrated into main at `b20d2b0` on 2026-09-19; G-010/G-011 subsequently
-integrated at `5041ae1`. The [integrated review](G-022-integrated-cli-review.md)
+Integrated into main at `b20d2b0` on 2026-09-19; G-260919-zb0s8/G-260919-n9t4p subsequently
+integrated at `5041ae1`. The [integrated review](G-260919-zrk8t-integrated-cli-review-20.md)
 found additional accepted-form preservation and configuration-check gaps.
-[G-015](G-015-preserve-updates.md) owns the proposed repairs; the historical
+[G-260919-z9w13](G-260919-z9w13-preserve-accepted-frontm.md) owns the proposed repairs; the historical
 review above remains evidence of what was checked at that time, not proof of
 those later cases. Do not repeat integration of the old implementation branch.

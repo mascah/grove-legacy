@@ -1,11 +1,11 @@
 ---
-id: "G-153"
+id: "G-260925-dzxm6"
 type: work
 title: "Search record bodies and list the records that describe the code a change touches"
 status: done
 created: "2026-09-25T19:15:12Z"
 updated: "2026-09-25T21:16:26Z"
-relates_to: ["G-042", "G-065", "G-108", "G-114", "G-146", "G-151", "G-152", "G-154"]
+relates_to: ["G-260921-ms6ev", "G-260921-ebsby", "G-260923-p5pt6", "G-260923-h9c30", "G-260925-02jsj", "G-260925-ej1xh", "G-260925-khfe7", "G-260925-pbx81"]
 kind: feature
 size: medium
 candidate: "a6c2fa4168eb559bde9c8263dcbe4761df011ce2"
@@ -27,7 +27,7 @@ assessment of [Mex](https://github.com/mex-memory/mex) at commit
 links and change-aware knowledge checks at review, evaluated against Grove's
 existing retrieval before any index or code graph, and corrected the
 framing from Grove's own development to the ability an adopting project
-gets. [G-154](G-154-listed-constraint-eval.md) measures the effect.
+gets. [G-260925-pbx81](G-260925-pbx81-evaluate-whether-agents.md) measures the effect.
 
 ## Constraints
 
@@ -66,26 +66,26 @@ Observed at main `001b271`, 2026-09-25, in this checkout:
   adopter's form; links are this repository's.
 - Retrospective over the last five merges into main, joining each merge's
   changed non-record files with the records as they stood before it (script
-  run in the shaping session; output in the conversation): G-144 (`c294ab5`)
-  4 files, 3 records by link, 7 by code span; G-135 (`c6c5a4d`) 1, 1, 5;
-  G-125 (`9f94493`) 9, 9, 20; G-114 (`38443ee`) 0 code files; G-123
+  run in the shaping session; output in the conversation): G-260925-ced1h (`c294ab5`)
+  4 files, 3 records by link, 7 by code span; G-260924-59f5k (`c6c5a4d`) 1, 1, 5;
+  G-260924-wp2pe (`9f94493`) 9, 9, 20; G-260923-h9c30 (`38443ee`) 0 code files; G-260924-nqkkh
   (`1d36a99`) 6, 5, 5. Older merges show no link pairs and up to 25 span
-  pairs. One sampled flag was intact at file level: G-144 changed
-  `versionLine` in `init.go`, and G-140 links that file for `defaultConfig`.
+  pairs. One sampled flag was intact at file level: G-260925-ced1h changed
+  `versionLine` in `init.go`, and G-260924-ecs9m links that file for `defaultConfig`.
   That is the file-granularity limit, and the measurement to keep taking.
-- The current view ([current.go](../internal/versions/current.go), G-042)
+- The current view ([current.go](../internal/versions/current.go), G-260921-ms6ev)
   decides which observation of a record is current from Git ancestry; a
   record with two current contents is genuine divergence. A search result
   must show both and never let match order stand in for that decision.
 - A shipped document may name a command but no Grove record or path
-  (AGENTS.md, [G-146](G-146-how-should-an-adopting-project-r.md);
-  [G-152](G-152-shipped-document.md), proposed). One-line list output escapes
+  (AGENTS.md, [G-260925-02jsj](G-260925-02jsj-how-should-an-adopting-p.md);
+  [G-260925-khfe7](G-260925-khfe7-shipped-document.md), proposed). One-line list output escapes
   control characters ([record model](../docs/record-model.md)); a printed
   snippet must too.
-- [G-151](G-151-strip-grove-repository-pointers.md), proposed on main at
+- [G-260925-ej1xh](G-260925-ej1xh-strip-grove-repository-p.md), proposed on main at
   `f4a21d3` during this shaping, edits the same shipped guides and reviewer
   definition; whichever integrates second reconciles.
-- G-114 kept "`context` supplying terms or decisions automatically" and any
+- G-260923-h9c30 kept "`context` supplying terms or decisions automatically" and any
   new field or index out of scope, to be reconsidered only if evidence shows
   links present and unread. This record adds a lookup, not a reading, and
   keeps that line.
@@ -128,7 +128,7 @@ Out of scope: SQLite or any on-disk index; a code graph, Tree-sitter or
 `go/parser`; symbol identity or content hashes; a frontmatter field for an
 observed commit, which stays a body convention; a stored drift or health
 status; semantic search or embeddings and wikilink syntax (both kept out by
-[G-065](G-065-flexible-records.md)); changing what `context` reads in full;
+[G-260921-ebsby](G-260921-ebsby-decouple-record-identity.md)); changing what `context` reads in full;
 and converting nullsec's code mentions into links, which is that project's
 own choice. Reconsider symbol-level identity when, over several real
 reviews, most flagged records had claims the change left intact; reconsider
@@ -137,18 +137,18 @@ lists need ranking to be readable.
 
 ## Scope at preparation
 
-Narrowed 2026-09-25 by the headless `/grove-work G-153` session under the
+Narrowed 2026-09-25 by the headless `/grove-work G-260925-dzxm6` session under the
 owner's rule in Next: "if agents already find and apply the listed
 constraint without search, preparation narrows this record to the board
-search and the review listing". G-154's `without` row (review G-160 on
-`worktree-G-154` at `5ff6eb3`, examined `eeec725`) found both constraints
+search and the review listing". G-260925-pbx81's `without` row (review G-260925-khwkq on
+`worktree-G-260925-pbx81` at `5ff6eb3`, examined `eeec725`) found both constraints
 applied in 10 of 10 runs without search, since at fixtures of five and two
 records every run reads every record, and named no lever. So `grove
 search`, its `--help` and commands.md entry, and the guide and reviewer
 sentences are out of this record: nothing yet shows an agent needs them.
 They are the owner's to reshape as their own work once a case large enough
 that reading every record costs more than choosing shows the listing
-missing a constraint (G-160 Disposition). Consequence for G-154: its
+missing a constraint (G-260925-khwkq Disposition). Consequence for G-260925-pbx81: its
 `with` row needs a guides or CLI change to compare; this record now makes
 none, so that row compares nothing new until such work lands.
 
@@ -179,11 +179,11 @@ none, so that row compares nothing new until such work lands.
 
 ## Evidence
 
-Headless `/grove-work G-153` of 2026-09-25, G-153 alone, on
-`worktree-G-153` (`.claude/worktrees/worktree-G-153`), base main
+Headless `/grove-work G-260925-dzxm6` of 2026-09-25, G-260925-dzxm6 alone, on
+`worktree-G-260925-dzxm6` (`.claude/worktrees/worktree-G-260925-dzxm6`), base main
 `3f2b923`. Started from this record at `sha256:18a4d3a4…`; narrowed and
 planned in `aab404d` (record `sha256:8f6ea855…`, plan
-[G-164](G-164-g-153-board-body-search-and-revi.md) `sha256:bb752dc4…`);
+[G-260925-nf4hz](G-260925-nf4hz-board-body-search-and-re.md) `sha256:bb752dc4…`);
 implementation `702b576`, review fixes `7f00b39`.
 
 What changed, per acceptance item:
@@ -194,7 +194,7 @@ What changed, per acceptance item:
    is the path or its last components), `text` (a body line, any case).
    Hits sort by tier, then inspection order; with a query each hit has a
    second row with its tier and the escaped line. In the current view each
-   current state (`currentStates`, G-042's `Older`) is its own hit naming
+   current state (`currentStates`, G-260921-ms6ev's `Older`) is its own hit naming
    where it is held; a checkout's board searches its own copy. The count is
    of records. [board.md](../docs/board.md#search) documents it. Tests:
    `TestSearchMatchesBodiesByTier` (body word, tier order, path and
@@ -218,19 +218,19 @@ What changed, per acceptance item:
    - This repository: for each merge, `git archive MERGE^1 grove.yaml grove`
      extracted under `/tmp`, loaded with `project.LoadFS`, against `git
      diff --name-only MERGE^1 MERGE` outside `grove/`. Code-file link pairs
-     reproduce Constraints exactly: G-144 `c294ab5` 4 code files, 3 link
-     pairs (guides.go G-107, cli.go and init.go G-140); G-135 `c6c5a4d` 1,
-     1; G-125 `9f94493` 9, 9; G-114 `38443ee` 0 code files; G-123 `1d36a99`
+     reproduce Constraints exactly: G-260925-ced1h `c294ab5` 4 code files, 3 link
+     pairs (guides.go G-260923-fwakw, cli.go and init.go G-260924-ecs9m); G-260924-59f5k `c6c5a4d` 1,
+     1; G-260924-wp2pe `9f94493` 9, 9; G-260923-h9c30 `38443ee` 0 code files; G-260924-nqkkh `1d36a99`
      6, 5. Span pairs are more than Constraints counted (12, 4, 32, 0, 10
      against 7, 5, 20, -, 5), since a span naming a file's last components
      (`model.go`) counts for every file it could mean. The reviewer
      reproduced the link pairs independently.
    - nullsec, loaded read-only with `project.LoadFS(os.DirFS(...))` at
      `3eb2785`, `git status` clean after: `match` for
-     `crates/sim/src/warp_profile.rs` lists decision G-016, page G-101 and
-     plan G-122 by code span; for `crates/server/src/ws.rs`, decision G-033
-     and works G-055, G-066, G-068 and plans G-113, G-117, G-124 by code
-     span, then pages G-102, G-103, G-104 by text. The installed `grove show`
+     `crates/sim/src/warp_profile.rs` lists decision G-260919-7qv4x, page G-260923-tnn5e and
+     plan G-260924-frzeg by code span; for `crates/server/src/ws.rs`, decision G-260920-d1qjs
+     and works G-260921-dqdde, G-260921-6n3da, G-260921-awvk8 and plans G-260923-d8xkp, G-260923-hvnqh, G-260924-zxvqf by code
+     span, then pages G-260923-ccda0, G-260923-stkc6, G-260923-a8kzm by text. The installed `grove show`
      from nullsec's checkout confirms both decisions name the files.
 6. At `7f00b39`: `go vet ./...` clean, `gofmt -l .` empty, `go run
    ./cmd/grove check` OK; `go test -count=1 -timeout 120s ./...` passed
@@ -248,18 +248,18 @@ walk in `internal/handoff` beside `resolve`, so links mean exactly what
 mean (the record's design); the review listing shows plain rows, not
 selectable entries, so Tab order is unchanged.
 
-Review: [G-167](G-167-g-153-board-search-and-review-li.md).
+Review: [G-260925-yjds8](G-260925-yjds8-board-search-and-review.md).
 
 Limits: the owner's layout judgment (acceptance 3); span matching is at file
-granularity and over-reports common file names; G-154's `with` row has no
+granularity and over-reports common file names; G-260925-pbx81's `with` row has no
 product change to measure (Scope at preparation); no Linux run.
 
 ## Next
 
 In review, awaiting the owner. Candidate: the commit that adds this
-handoff, on `worktree-G-153` from main `3f2b923`; code at `7f00b39`.
-Review G-167 examined `ab21640`, which differs from the candidate only in
-this record and G-167. Owner's judgments: the narrowing (Scope at
+handoff, on `worktree-G-260925-dzxm6` from main `3f2b923`; code at `7f00b39`.
+Review G-260925-yjds8 examined `ab21640`, which differs from the candidate only in
+this record and G-260925-yjds8. Owner's judgments: the narrowing (Scope at
 preparation), which the owner may reverse; and the layout of the search
 hits and the review listing in a real terminal (acceptance 3), for
 example:
@@ -272,16 +272,16 @@ and a work record in review with a candidate, whose detail lists under
 each changed file the records that describe it. Then, from this checkout:
 
 ```sh
-grove approve G-153 "VERDICT"
+grove approve G-260925-dzxm6 "VERDICT"
 ```
 
 and from main's checkout:
 
 ```sh
-grove integrate G-153 --cleanup
+grove integrate G-260925-dzxm6 --cleanup
 ```
 
-G-154's `with` row compares nothing new after this (Scope at preparation);
+G-260925-pbx81's `with` row compares nothing new after this (Scope at preparation);
 reshaping `grove search` and the guide sentences as their own work is the
 owner's choice.
 

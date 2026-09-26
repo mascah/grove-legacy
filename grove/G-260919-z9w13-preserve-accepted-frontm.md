@@ -1,5 +1,5 @@
 ---
-id: "G-015"
+id: "G-260919-z9w13"
 type: work
 title: "Preserve accepted frontmatter edits and reject changed configuration"
 status: done
@@ -8,7 +8,7 @@ updated: "2026-09-19T22:07:50Z"
 kind: fix
 priority: 2
 size: medium
-relates_to: ["G-009", "G-007"]
+relates_to: ["G-260919-shnj5", "G-260919-92n2y"]
 formerly: "W-007"
 ---
 
@@ -16,13 +16,13 @@ formerly: "W-007"
 
 Valid field-update requests preserve human-authored bytes outside changed
 values, and mutations refuse configuration changes observed during preparation.
-Repairs the existing G-009 contract (implemented; see Evidence). [Review R3–R5](G-022-integrated-cli-review.md)
+Repairs the existing G-260919-shnj5 contract (implemented; see Evidence). [Review R3–R5](G-260919-zrk8t-integrated-cli-review-20.md)
 reproduced comment loss, multi-unset/explicit-key refusals, and a missed
-configuration change. [Implementation plan](G-019-preserve-updates-plan.md).
+configuration change. [Implementation plan](G-260919-w7ccc-source-preserving-update.md).
 
 ## Constraints
 
-Keep G-009's request syntax, revisions, no-op semantics, timestamps, permission
+Keep G-260919-shnj5's request syntax, revisions, no-op semantics, timestamps, permission
 preservation, shared write lock, publication order, and applied-failure reporting.
 No whole-frontmatter serialization, schema narrowing, body edits, cross-branch
 writes, or force option. Do not change allocator reservation/lock ordering.
@@ -66,8 +66,8 @@ by a configuration-only change; retain that regression fixture.
 
 ## Dependencies and handoff
 
-G-009 is integrated. No new product choice or unfinished dependency. Implement
-serially after G-014 for ownership coordination; this ordering is not a semantic
+G-260919-shnj5 is integrated. No new product choice or unfinished dependency. Implement
+serially after G-260919-8bbvy for ownership coordination; this ordering is not a semantic
 `depends_on`. Use one Fable agent and an isolated checkout. Keep review findings
 and branch completion distinct from integration. The reader's accepted syntax
 is evidence; lack of an old fixture does not authorize narrowing it.
@@ -77,7 +77,7 @@ is evidence; lack of an old fixture does not authorize narrowing it.
 Implemented 2026-09-19 on branch `worktree-W-006-W-008` (base `2d6de36`), not
 yet integrated into main. Code: `2cc7814` (comments, explicit keys, flow
 separators), `dac27fe` (configuration bytes in update and creation), `dedac73`
-(review fix). The [plan](G-019-preserve-updates-plan.md#implementation-notes-2026-09-19)
+(review fix). The [plan](G-260919-w7ccc-source-preserving-update.md#implementation-notes-2026-09-19)
 records the bounded adjustments. Request syntax, revisions, no-op and clock
 behaviour, permissions, lock order, publication steps, and applied-failure
 reporting are untouched; editing stays byte-span based.
@@ -105,12 +105,12 @@ configuration) and `TestNewRefusesWhenConfigurationBytesChangedAfterLoad`
 refuse without publication, leave no temporary file, and keep the
 reservation consumed (the next record is W-003).
 `TestUpdatePreservesAcceptedForms` repeats the review's reproducers through
-`Apply`. (5) Existing G-009 tests pass unchanged.
+`Apply`. (5) Existing G-260919-shnj5 tests pass unchanged.
 
 Independent review (separate reviewer agent, commits `2cc7814` and `dac27fe`,
 own export): no P1/P2; base failures reproduced; 46 adversarial `Edit` probes
 produced correct bytes or a safe refusal, none a silent wrong result. Fixed:
-the always-true key guard inherited from G-009 (`dedac73`). Accepted as is: a
+the always-true key guard inherited from G-260919-shnj5 (`dedac73`). Accepted as is: a
 stray space before an appended comma in one multi-line layout (valid YAML),
 and removal of a same-line comment that follows a removed last entry's
 trailing comma.
@@ -119,7 +119,7 @@ Limits: a flow separator on a later line than its entry's value refuses
 rather than edits; the existing-`updated` and CRLF flow cases are asserted at
 `Edit` level, not again through `Apply`; arbitrary editors writing after the
 final comparison remain outside the guarantee. Suite results are in the
-[combined repair evidence](G-028-repairs-review.md).
+[combined repair evidence](G-260919-syk45-cli-repairs-to-evidence.md).
 
 ## Next
 

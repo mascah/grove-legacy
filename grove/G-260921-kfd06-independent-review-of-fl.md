@@ -1,11 +1,11 @@
 ---
-id: "G-067"
+id: "G-260921-kfd06"
 type: review
-title: "Independent review of G-065 flexible records"
+title: "Independent review of G-260921-ebsby flexible records"
 status: current
 created: "2026-09-21T16:32:01Z"
 updated: "2026-09-21T16:45:05Z"
-work: ["G-065"]
+work: ["G-260921-ebsby"]
 examined: "fffc37434e79b4ee0ff5bd6a0b1e73ce085ccb12"
 formerly: "R-002"
 ---
@@ -14,15 +14,15 @@ formerly: "R-002"
 
 Round 1: commit `9451597` on `worktree-W-030` against base `bd6debe`, by an
 independent reviewer agent that wrote none of the code and edited nothing. It
-read [G-065](G-065-flexible-records.md),
-[G-064](G-064-stable-knowledge.md),
-[G-066](G-066-flexible-records-plan.md) and the record model, and
+read [G-260921-ebsby](G-260921-ebsby-decouple-record-identity.md),
+[G-260921-gtydy](G-260921-gtydy-keep-identity-and-placem.md),
+[G-260921-6n3da](G-260921-6n3da-flexible-records-schema.md) and the record model, and
 probed throwaway repositories with a binary from each of `bd6debe` and
 `9451597`. Its own runs: `go vet`, `gofmt -l` and `grove check` clean;
 `go test -count=1 ./...` and the race run each failed once and passed on
 retry, on `TestContextLeavesEverythingUnchanged` (Git's background maintenance
-lock racing the fixture snapshot; the test predates G-065) and the connected
-terminal check under `-race` (timing; also seen at the base per G-063).
+lock racing the fixture snapshot; the test predates G-260921-ebsby) and the connected
+terminal check under `-race` (timing; also seen at the base per G-260921-q6e5n).
 
 ## Findings
 
@@ -39,7 +39,7 @@ Consequential:
 
 Minor: (3) `update --set formerly=` on schemas 1/2 changed wording from the
 unknown-field message, and `new bogus` offered `page` to a schema-1 project;
-(4) G-066 described a write order the code inverts; (5) `convert` refuses the
+(4) G-260921-6n3da described a write order the code inverts; (5) `convert` refuses the
 brief and the docs did not say so; (6) `--slug` had different rules on `new`
 and `convert`; (7) a partial conversion printed no mapping line.
 
@@ -58,13 +58,13 @@ Acceptance as judged at `9451597`: 1-5 met, 6 not met (finding 1), 7 partial
 All seven findings fixed with regressions in the commit after `9451597`:
 `isWork` follows the board source's own record and the board test now has
 sources that disagree; `formerly` is compared without case in `convert` and in
-validation; schema-1/2 wording restored for `formerly` and `new`; G-066 and
+validation; schema-1/2 wording restored for `formerly` and `new`; G-260921-6n3da and
 the record model corrected (write order, brief, case rule, gaps, dot folders,
 partial mapping, the deleted-neutral-work limit); one slug rule through
 `create.ValidSlug`; a partial conversion returns and prints its mapping with
 exit 1; a document's leading BOM is dropped. Left as is: `.MD` is not a record
 extension and `history.go`'s permissive parse, both documented or harmless.
-The pre-existing maintenance-lock flake is outside G-065 and is reported, not
+The pre-existing maintenance-lock flake is outside G-260921-ebsby and is reported, not
 fixed.
 
 Round 2, same reviewer, commit `fffc374`: all seven findings closed, each

@@ -1,5 +1,5 @@
 ---
-id: "G-125"
+id: "G-260924-wp2pe"
 type: work
 title: "Answer a blocking question from the board"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-24T01:23:28Z"
 updated: "2026-09-24T21:03:16Z"
 kind: feature
 size: medium
-relates_to: ["G-044", "G-046", "G-079", "G-114", "G-123"]
+relates_to: ["G-260921-jwk4e", "G-260921-7trd7", "G-260922-q3cr9", "G-260923-h9c30", "G-260924-nqkkh"]
 candidate: "6833eb5c0cb1c19ef6d80f04a3ceba6feedf210d"
 approved: "6833eb5c0cb1c19ef6d80f04a3ceba6feedf210d"
 ---
@@ -33,15 +33,15 @@ Observed at main `28f5ddc`:
   Needs you ([docs/board.md](../docs/board.md)). Answering it today means a
   hand edit in the branch's worktree, `grove update ID --set status=resolved
   --commit` there, and then `R`.
-- On `worktree-G-108`, G-118 and G-121 were written by attempts and resolved
+- On `worktree-G-260923-p5pt6`, G-260923-659zw and G-260924-y99bx were written by attempts and resolved
   by the owner in commits `1d3ad82` and `e57a4c6`, each touching only the
-  question file; G-121's answer landed under the agent's `## Evidence
+  question file; G-260924-y99bx's answer landed under the agent's `## Evidence
 
-Branch `worktree-G-125`, base `main` at `c38d914`, started from this record
-at `sha256:5db1849f…` and [plan G-131](G-131-plan-for-g-125-answer-a-blocking.md)
+Branch `worktree-G-260924-wp2pe`, base `main` at `c38d914`, started from this record
+at `sha256:5db1849f…` and [plan G-260924-cr3e4](G-260924-cr3e4-plan-for-answer-a-blocki.md)
 at `sha256:ce915f85…` (`dc3c981`). Implementation `e1d3339`, review fixes
 `052cc74` and `606330c`; the candidate is the commit holding this evidence.
-Headless attempt `G-125.20260924T150358Z`.
+Headless attempt `G-260924-wp2pe.20260924T150358Z`.
 
 What changed (`internal/tui`, `docs/board.md`):
 
@@ -89,7 +89,7 @@ Against acceptance:
    fake `VISUAL`. That scenario checks:
    - the editor got a terminal in canonical mode, on the branch's copy;
    - the board came back on the alternate screen;
-   - one commit `docs(G-002): set status=resolved` holds only the question,
+   - one commit `docs(G-260919-8jb5s): set status=resolved` holds only the question,
      with its answer;
    - the next `R` continues on that branch to a candidate.
    **Not done: the demonstration on a real attempt of Grove's own work.** A
@@ -118,7 +118,7 @@ Against acceptance:
    - `python3 internal/tui/testdata/terminal.py BIN`: 11 of 11 ok, run by
      `TestTerminal` in that suite and directly at `052cc74`.
 
-Review: [G-133](G-133-g-125-review-answering-a-questio.md), an independent
+Review: [G-260924-szryt](G-260924-szryt-review-answering-a-quest.md), an independent
 subagent reviewer over three rounds. It found no blockers. Every finding was
 fixed, or kept and documented with its reason.
 
@@ -134,9 +134,9 @@ In review with the candidate this record names. The integrator's actions:
    answer, quit the editor, `y`; the attempt shows `question answered: R
    again`, and `o` then `R` relaunches. Report it here, or approve with it
    noted as still owed.
-2. `go run ./cmd/grove approve G-125 "VERDICT"` in this checkout
-   (`.claude/worktrees/worktree-G-125`), then `go run ./cmd/grove integrate
-   G-125` in the `main` checkout; or `go run ./cmd/grove feedback G-125
+2. `go run ./cmd/grove approve G-260924-wp2pe "VERDICT"` in this checkout
+   (`.claude/worktrees/worktree-G-260924-wp2pe`), then `go run ./cmd/grove integrate
+   G-260924-wp2pe` in the `main` checkout; or `go run ./cmd/grove feedback G-260924-wp2pe
    "TEXT"` here.
 
 Verdict on candidate 6833eb5, 2026-09-24: lgtm

@@ -1,21 +1,21 @@
 ---
-id: "G-082"
+id: "G-260922-fqf3b"
 type: review
-title: "G-040 portable bootstrap review"
+title: "G-260921-5gz9a portable bootstrap review"
 status: current
 created: "2026-09-22T16:15:58Z"
 updated: "2026-09-22T16:28:25Z"
-work: ["G-040"]
+work: ["G-260921-5gz9a"]
 examined: "66fcccc"
 ---
 
 ## Examined
 
-Branch `worktree-G-040`, base main `ccdc92d`, on 2026-09-22. Two kinds of
+Branch `worktree-G-260921-5gz9a`, base main `ccdc92d`, on 2026-09-22. Two kinds of
 evidence, kept apart: the **independent review** by a reviewer subagent that
 edited nothing (round one at `731674e` plus two then-uncommitted edits that
 became `eb32209`; round two at `66fcccc`), and this session's **trial
-evidence** for [G-040](G-040-portable-bootstrap.md)'s acceptance, each
+evidence** for [G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md)'s acceptance, each
 observation labelled real (a fresh harness session), simulation (this
 session driving the CLI in a disposable repository) or unexercised. Harness:
 Claude Code 2.1.278 (`claude -p` on Claude Opus 5) and codex-cli 0.155.1,
@@ -52,7 +52,7 @@ byte-identical across all shapes. Findings and dispositions:
 5. Minor: no test covered the printed guides' portability. Fixed: the test
    scans both guides, the four adapters and a policy file for this
    repository's paths, `go run`, and worktree names.
-6. Minor: "(`AGENTS.md` here)" and two G-078 parentheticals were this
+6. Minor: "(`AGENTS.md` here)" and two G-260922-08wxx parentheticals were this
    repository's. Fixed.
 7. Minor: the nested-directory message was ungrammatical and the default
    (no `--project`) path untested. Fixed and tested.
@@ -78,21 +78,21 @@ a defect: this record was a skeleton when reviewed; it is filled here.
 1. **Initialize, validate, shape, hand off** (real and simulation). In a
    disposable repository under the session scratchpad with the clone-built
    binary first on PATH: `init` created nine paths, `check` printed `OK: 0
-   records`, `new work` allocated `G-001`. Shaping: `claude -p "/grove-shape
+   records`, `new work` allocated `G-260919-6mpmw`. Shaping: `claude -p "/grove-shape
    a --version flag for the program --interaction headless"` (73 s, 10
    turns) read the guide from the binary, listed and inspected the clone,
    made a proposal branch and worktree, wrote a proposed work record and a
    blocking question with options and a recommendation, committed `7c59eb6`,
-   and returned the wait, which is the question path G-078 had seen a
-   headless session skip. Hand-off: `claude -p "/grove-work G-001
-   --interaction headless"` (55 s, 14 turns), the headless work row G-078
-   left unexercised, ran `grove guide work`, `context G-001 --interaction
-   headless`, `versions`, made branch `work/G-001-greeting` in a worktree,
+   and returned the wait, which is the question path G-260922-08wxx had seen a
+   headless session skip. Hand-off: `claude -p "/grove-work G-260919-6mpmw
+   --interaction headless"` (55 s, 14 turns), the headless work row G-260922-08wxx
+   left unexercised, ran `grove guide work`, `context G-260919-6mpmw --interaction
+   headless`, `versions`, made branch `work/G-260919-6mpmw-greeting` in a worktree,
    found the stub record had no outcome or acceptance, and took the
-   missing-decision path: `new question`, `blocks`, a checkpoint in G-001's
+   missing-decision path: `new question`, `blocks`, a checkpoint in G-260919-6mpmw's
    Next with "no plan needed", commit `af6d9dc`, and the wait returned with
    nothing implemented. No predecessor command was used in either run. Its
-   first `grove guide work G-001 …` was a usage error it recovered from; the
+   first `grove guide work G-260919-6mpmw …` was a usage error it recovered from; the
    adapter now says the command takes no other argument.
 2. **Rerun preserves and reports** (simulation). A second `init` printed
    `kept` for the configuration, root and brief and `unchanged` for six
@@ -137,5 +137,5 @@ a defect: this record was a skeleton when reviewed; it is filled here.
 Every consequential finding was fixed and re-reviewed; every minor finding
 and nit was fixed, the last three self-checked after the second round. No
 finding is open. The trial evidence meets acceptance items 1 to 5 with the
-limits stated in G-040's Evidence; the owner's judgment of the adoption
+limits stated in G-260921-5gz9a's Evidence; the owner's judgment of the adoption
 experience is not supplied by this record.

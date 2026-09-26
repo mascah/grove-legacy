@@ -1,28 +1,28 @@
 ---
-id: "G-190"
+id: "G-260925-2v889"
 type: review
-title: "Final review of G-162 in three rounds: selection, shared candidate, group judgment"
+title: "Final review of G-260925-7c8g9 in three rounds: selection, shared candidate, group judgment"
 status: current
 created: "2026-09-25T23:44:31Z"
 updated: "2026-09-26T00:03:01Z"
-work: ["G-162"]
+work: ["G-260925-7c8g9"]
 examined: "15774e4"
 ---
 
 ## Examined
 
-The final combined review gate of [G-162](G-162-bounded-work-selection.md)
-(plan [G-185](G-185-g-162-selected-work-plan.md) step 7), on
-`worktree-G-162` from main `fe97300` (merged with main `38f82aa` in
+The final combined review gate of [G-260925-7c8g9](G-260925-7c8g9-execute-an-explicitly-se.md)
+(plan [G-260925-t70h8](G-260925-t70h8-selected-work-one-attemp.md) step 7), on
+`worktree-G-260925-7c8g9` from main `fe97300` (merged with main `38f82aa` in
 `a11dd94`), by three fresh `grove-reviewer` agents dispatched in turn from
-the headless `/grove-work G-162` session of 2026-09-25. Each was read-only
+the headless `/grove-work G-260925-7c8g9` session of 2026-09-25. Each was read-only
 on the checkout and probed in disposable copies under the temp directory:
 
 - Round 1 examined `06015a9..99a143c`, the whole implementation.
 - Round 2 examined the fixes `99a143c..be48722` and the branch's readiness.
 - Round 3 examined the fixes `be48722..15774e4`, the merge `a11dd94`, and
   `main...15774e4`. `examined` is `15774e4`; the commit after it adds only
-  this record and G-162's evidence.
+  this record and G-260925-7c8g9's evidence.
 
 Each ran `go build`, `go vet`, `gofmt -l`, `grove check` and the package
 tests; round 3 ran `go test -count=1 -timeout 120s ./...` (all pass) and
@@ -73,7 +73,7 @@ Round 2 (at `be48722`):
 2. **Should-fix, fixed.** The `--until plan` exemption was missing from the
    guide the agent follows; step 2 now says an external blocker stops
    implementation, not preparation.
-3. **Should-fix, fixed.** The branch conflicted with main after G-177;
+3. **Should-fix, fixed.** The branch conflicted with main after G-260925-h8rj5;
    merged in `a11dd94`, keeping main's merge prediction and the group's
    record paths.
 4. **Should-fix, fixed here.** This record was empty.
@@ -84,9 +84,9 @@ Round 2 (at `be48722`):
    output and docs give `--branch`.
 8. **Note.** Fixes 4 and 9 of round 1 remain untested.
 9. **Note, open for the owner.** No term record defines selection or group;
-   decision G-188 and the record model do, and "group" also names the
+   decision G-260925-wc2pz and the record model do, and "group" also names the
    board's attempt groups and version groups.
-10. **Note, fixed at the handoff.** G-162's Next was stale.
+10. **Note, fixed at the handoff.** G-260925-7c8g9's Next was stale.
 
 Round 3 (at `15774e4`), nothing blocking:
 

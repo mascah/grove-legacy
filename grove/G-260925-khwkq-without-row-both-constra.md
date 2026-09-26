@@ -1,23 +1,23 @@
 ---
-id: "G-160"
+id: "G-260925-khwkq"
 type: review
-title: "G-154 without row: both constraints found in every run"
+title: "G-260925-pbx81 without row: both constraints found in every run"
 status: current
 created: "2026-09-25T20:27:37Z"
 updated: "2026-09-25T20:28:38Z"
-work: ["G-154"]
+work: ["G-260925-pbx81"]
 examined: "eeec725"
 ---
 
 ## Examined
 
-The `without` row of [G-154](G-154-listed-constraint-eval.md) acceptance 2:
-the two cases of plan [G-155](G-155-g-154-listed-and-code-constraint.md),
+The `without` row of [G-260925-pbx81](G-260925-pbx81-evaluate-whether-agents.md) acceptance 2:
+the two cases of plan [G-260925-a4kn8](G-260925-a4kn8-listed-and-code-constrai.md),
 five headless shaping runs each on Claude, under the mandate
-[G-158](G-158-what-mandate-should-the-g-154-wi.md) set ("Use the G-122
-settings", which are [G-122](G-122-g-108-baseline-runs-the-missing.md)'s
-command). Run 2026-09-25 20:15 to 20:26 UTC from `worktree-G-154` at
-`eeec725`, the `examined` commit, clean, by a headless `/grove-work G-154`
+[G-260925-gymkr](G-260925-gymkr-what-mandate-should-the.md) set ("Use the G-260924-frzeg
+settings", which are [G-260924-frzeg](G-260924-frzeg-baseline-runs-the-missin.md)'s
+command). Run 2026-09-25 20:15 to 20:26 UTC from `worktree-G-260925-pbx81` at
+`eeec725`, the `examined` commit, clean, by a headless `/grove-work G-260925-pbx81`
 session, as two foreground pieces, one per case, so that each fits the
 harness's ten-minute command limit:
 
@@ -25,18 +25,18 @@ harness's ten-minute command limit:
 python3 evals/run.py run --case listed-constraint --runs 5 --budget 5 \
     --model claude-opus-5-5 --permission-mode auto \
     --config-dir ~/.cache/grove-evals/claude \
-    --out ~/.cache/grove-evals/runs/2026-09-25-G-154-without/listed-constraint
+    --out ~/.cache/grove-evals/runs/2026-09-25-G-260925-pbx81-without/listed-constraint
 python3 evals/run.py run --case code-constraint --runs 5 --budget 5 \
     --model claude-opus-5-5 --permission-mode auto \
     --config-dir ~/.cache/grove-evals/claude \
-    --out ~/.cache/grove-evals/runs/2026-09-25-G-154-without/code-constraint
+    --out ~/.cache/grove-evals/runs/2026-09-25-G-260925-pbx81-without/code-constraint
 ```
 
 Configuration, from the two reports: Claude Code 2.1.282, model reported
 `claude-opus-5-5`, permission mode `auto`, guides digest `41324c3655a1`
-(before G-153), fixture commits `85a718a` (listed-constraint) and `2fa3c4f`
+(before G-260925-dzxm6), fixture commits `85a718a` (listed-constraint) and `2fa3c4f`
 (code-constraint), cap $25 per piece printed first. The config directory
-held what G-122 finding 5 describes: the login, `settings.json` with
+held what G-260924-frzeg finding 5 describes: the login, `settings.json` with
 `autoMemoryEnabled: false`, `theme` and `tui`, seven synced Anthropic skills
 and three synced plugins. The output directories hold every transcript,
 clone, remote, `state.json`, `run.json` and each piece's `report.md`,
@@ -45,30 +45,30 @@ implementing session from `run.json`, the transcript's commands and the
 records on each proposal branch, so its scorer is `judge`; the owner column
 is open.
 
-In both fixtures the holding record is G-002: the `done` "Add tasks export"
-in listed-constraint, whose distractors are G-003 "Export tasks as CSV" and
-G-004 "Remind the owner of tasks due today"; the `accepted` decision "Keep
+In both fixtures the holding record is G-260919-8jb5s: the `done` "Add tasks export"
+in listed-constraint, whose distractors are G-260919-rt9h9 "Export tasks as CSV" and
+G-260919-4h6pn "Remind the owner of tasks due today"; the `accepted` decision "Keep
 the owner's notes in task files" in code-constraint, which has no
 distractor.
 
 ## Findings
 
 **1. listed-constraint: found and applied in 5 of 5 runs.** Every run
-refined G-005 "Give tasks a due date" in place, `proposed`, with no
+refined G-260919-10zeb "Give tasks a due date" in place, `proposed`, with no
 question, and every acceptance has an item that `tasks export` keeps
-exactly its seven keys and no `due`, citing G-002 or the widget in the
+exactly its seven keys and no `due`, citing G-260919-8jb5s or the widget in the
 item or in Scope. Every run also found in `tasks.py` that `export` passes
 every frontmatter key through, and, unplanted, that `done` and `drop`
 rewrite through `write` and would drop `due`; each added an acceptance item
 keeping it. Every check passed in every run.
 
 **2. code-constraint: found and applied in 5 of 5 runs; 2 of 5 also asked
-an unplanted question.** Every run read G-002, and every proposal requires
+an unplanted question.** Every run read G-260919-8jb5s, and every proposal requires
 that a tagged task keeps what is below its title, either through a separate
 prerequisite that fixes `write` (runs 2, 4, 5: a new "Keep a task's notes
 when a command rewrites it" the tag work depends on) or inside the tag
-record itself (runs 1, 3), citing G-002. No question asked what the
-decision answers. Runs 4 and 5 fail `no-question`: each opened G-005 on the
+record itself (runs 1, 3), citing G-260919-8jb5s. No question asked what the
+decision answers. Runs 4 and 5 fail `no-question`: each opened G-260919-10zeb on the
 command's syntax (`--add`/`--remove`, `+tag -tag`, or `tag`/`untag`),
 blocking the tag record, with option 1 recommended; runs 1 to 3 wrote the
 same syntax as a non-binding suggestion. The brief's conventions do not
@@ -79,16 +79,16 @@ retrieval result.
 **3. At this size every run reads nearly every record, so the listing is
 not what finds the constraint.** Reading the transcripts, not the facts
 alone: all ten runs read the holding record, all five listed-constraint
-runs read both distractors, and 8 of 10 read the unrelated G-001 (not
+runs read both distractors, and 8 of 10 read the unrelated G-260919-6mpmw (not
 listed-constraint runs 3 and 4). Runs 2 and 4 of listed-constraint and 1,
 4, 5 of code-constraint used `grove show` on the records they read; the
 others `cat` the
 record files by glob (`cat grove/G-00*.md`, a `for` over `grove/G-*.md`,
-or `cat grove/G-005*.md grove/G-004*.md …`). listed-constraint run 3 ran
-`grove context G-005` after it had already read G-002 to G-005. With five or two
+or `cat grove/G-260919-10zeb*.md grove/G-260919-4h6pn*.md …`). listed-constraint run 3 ran
+`grove context G-260919-10zeb` after it had already read G-260919-8jb5s to G-260919-10zeb. With five or two
 records, `ls grove` and one `cat` cost less than choosing, so neither
 `context`'s listing nor the distractors' titles decide anything, and the
-case cannot show G-153's search helping to find the constraint: the
+case cannot show G-260925-dzxm6's search helping to find the constraint: the
 `without` row has no misses to recover.
 
 **4. The runner's `holding read` and `distractors read` miss glob reads.**
@@ -108,17 +108,17 @@ with a selftest case. `retrieval()` at that commit, rerun on the ten
 retained transcripts and post-run clones (a throwaway script importing
 `evals/run.py`, not committed; rerun at `7026cbe`, the final runner, with
 the same result) gives: `holding read` true in 10 of 10;
-listed-constraint `distractors read` G-003 and G-004 in 5 of 5; unneeded
-reads G-003 and G-004 in listed-constraint runs 1, 3, 5, the shared
-fixture record G-001 "Sync tasks between two machines" in listed-constraint
+listed-constraint `distractors read` G-260919-rt9h9 and G-260919-4h6pn in 5 of 5; unneeded
+reads G-260919-rt9h9 and G-260919-4h6pn in listed-constraint runs 1, 3, 5, the shared
+fixture record G-260919-6mpmw "Sync tasks between two machines" in listed-constraint
 runs 1 and 5 and code-constraint runs 2 and 3, and `.gitignore` in
-code-constraint run 2. The unneeded reads count files only, so G-001 read
+code-constraint run 2. The unneeded reads count files only, so G-260919-6mpmw read
 through `grove show` appears in no fact: counting those (listed-constraint
-run 2, code-constraint runs 1, 4, 5), G-001 was read in 8 of 10 runs, and
+run 2, code-constraint runs 1, 4, 5), G-260919-6mpmw was read in 8 of 10 runs, and
 a comparison on unneeded reads must add them from the transcripts, or
 `show` looks cheaper than `cat`. The reports under `--out` keep the values
 from `eeec725`; these, with that addition, are the facts a later row
-compares against. G-154's final independent review reproduced them.
+compares against. G-260925-pbx81's final independent review reproduced them.
 
 **5. Cost and shape.** listed-constraint $0.29 to $0.33 a run, 6 to 9
 turns, 50 to 64 seconds, $1.55 for five; code-constraint $0.34 to $0.38,
@@ -126,7 +126,7 @@ turns, 50 to 64 seconds, $1.55 for five; code-constraint $0.34 to $0.38,
 $50 cap. Exit 0, no permission denials, no timeouts, no error results.
 Tools across the ten transcripts: 71 `Bash` calls and one `Write`, inside
 the clone; no skill, agent or MCP tool, and no tool input names a path
-outside the clone. This is the G-108 pair's cost: reading the records
+outside the clone. This is the G-260923-p5pt6 pair's cost: reading the records
 added nothing measurable.
 
 Rubric ([`evals/README.md`](../evals/README.md)), scorer `judge` (the
@@ -147,13 +147,13 @@ action or, in code-constraint runs 4 and 5, the question it waits on.
 
 **Lever.** No change is justified by this row. Both constraints were found
 and applied in every run on Claude Opus 5.5 at guides digest
-`41324c3655a1`, at the G-108 pair's cost, without search, because in
-fixtures of five and two records the agent reads nearly all of them. G-153 then
+`41324c3655a1`, at the G-260923-p5pt6 pair's cost, without search, because in
+fixtures of five and two records the agent reads nearly all of them. G-260925-dzxm6 then
 shipped no agent-facing search, so a `with` row at main would have
 measured only the guide edits landed since this digest, and even with a
 search it could not show search finding what the listing missed, since
-this fixture has nothing missed; the owner dropped it (G-173). Evidence
-that would justify G-153's search, or its code-to-record links, needs a
+this fixture has nothing missed; the owner dropped it (G-260925-9bjrx). Evidence
+that would justify G-260925-dzxm6's search, or its code-to-record links, needs a
 fixture large enough that reading every record costs more than choosing,
 tens of records with plausible titles, which neither case has. That is a
 new case and an owner choice, not a change to these two, whose `without`
@@ -179,11 +179,11 @@ the same case would test search first.
 **Limits.** Claude Opus 5.5 only, five runs per case, one fixture of five
 or two records, a constraint each held by one record, and a judge that is
 the implementing session. Five runs show a pattern, not a rate. The row
-was run as two pieces with separate reports rather than G-158's single
+was run as two pieces with separate reports rather than G-260925-gymkr's single
 command with one `--out`; the arguments are otherwise identical, and the
 cap per piece is half. The checks saw the clone; the trace showed no write
 outside it. The `with` row was dropped by the owner's answer to
-[G-173](G-173-what-should-g-154-s-with-row-bec.md), since G-153 shipped no
+[G-260925-9bjrx](G-260925-9bjrx-what-should-with-row-bec.md), since G-260925-dzxm6 shipped no
 agent-facing search, so this record makes no comparison across rows; a
 later search command or guide text carries its own `with` row on these
 cases.

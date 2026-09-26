@@ -1,23 +1,23 @@
 ---
-id: "G-033"
+id: "G-260920-d1qjs"
 type: plan
-title: "G-030 card lineage plan"
+title: "G-260920-svpbc card lineage plan"
 status: current
 formerly: "docs/plans/W-012-card-lineage.md"
-work: ["G-030"]
+work: ["G-260920-svpbc"]
 created: "2026-09-20T14:55:55Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-030 card lineage plan
+# G-260920-svpbc card lineage plan
 
 **Goal:** an open card's details pane leads with the focused version's history:
 each commit that touched the record's file, with its date, the record's status
 at that commit, and the subject, newest first.
 
-**Spec:** [G-030](G-030-card-lineage.md). On 2026-09-20 the
+**Spec:** [G-260920-svpbc](G-260920-svpbc-show-a-work-item-s-linea.md). On 2026-09-20 the
 owner selected "beside, history first": the card screen and its version list
-stay as they are (G-002 still needs an explicit version selection), and History
+stay as they are (G-260919-8jb5s still needs an explicit version selection), and History
 is the first section of the details pane. No new screen and no new key.
 
 **Base:** `a0fd23a` (main), branch `worktree-W-012`.

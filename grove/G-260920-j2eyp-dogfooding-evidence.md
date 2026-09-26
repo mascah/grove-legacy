@@ -1,23 +1,23 @@
 ---
-id: "G-032"
+id: "G-260920-j2eyp"
 type: review
-title: "G-023 dogfooding evidence"
+title: "G-260919-nddsf dogfooding evidence"
 status: current
 formerly: "docs/reviews/2026-09-19-W-010-dogfood.md"
-work: ["G-023"]
+work: ["G-260919-nddsf"]
 created: "2026-09-20T05:50:31Z"
 updated: "2026-09-21T21:11:16Z"
 ---
 
-# G-023 dogfooding evidence
+# G-260919-nddsf dogfooding evidence
 
 Branch `worktree-W-010`, base main `91edc0b`, worktree
 `.claude/worktrees/W-010`. Merged into `main` on 2026-09-20 on the owner's
-instruction, with G-023 still active; not pushed. This records what was
-observed for [G-023](G-023-work-handoffs.md). It keeps five
+instruction, with G-260919-nddsf still active; not pushed. This records what was
+observed for [G-260919-nddsf](G-260919-nddsf-prepare-reusable-work-in.md). It keeps five
 things apart, because they establish different things: source inspection,
 automated tests, simulated agent behaviour, real Claude/Codex harness
-execution, and the owner's acceptance. G-025 (`grove-shape`) was not started.
+execution, and the owner's acceptance. G-260919-04z88 (`grove-shape`) was not started.
 
 The first implementation (2026-09-19, through `079a7da`) was revised on
 2026-09-20 on the owner's decisions, before integration: staged context, the
@@ -49,7 +49,7 @@ Run on the final revision of this branch, uncached: `go test -count=1 ./...`,
 `go test -race -count=1 ./...`, `go vet ./...`, `gofmt -l .`,
 `go mod tidy -diff`, `go run ./cmd/grove check`, and a relative-link and anchor
 check of the changed documents; results are in the
-[G-023 record](G-023-work-handoffs.md#evidence). What the tests
+[G-260919-nddsf record](G-260919-nddsf-prepare-reusable-work-in.md#evidence). What the tests
 cover, against acceptance 3, as revised:
 
 - Selection: requested `[W-002 W-001 W-003]` orders to `[W-001 W-002 W-003]`;
@@ -105,12 +105,12 @@ counts; text bytes are the whole default output.
 
 | Selection | Before: source / text | After, at start | After, with the current plan |
 | --- | --- | --- | --- |
-| `G-030` | 99229 / 101971 | 2719 / 5385 | no plan exists yet: preparation |
-| `G-017` | 210956 / 218161 | 17383 / 22947 | 32579 / 38412 |
-| `G-023 G-025` | 193078 / 197995 | 20694 / 26348 | 47932 / 53778 |
+| `G-260920-svpbc` | 99229 / 101971 | 2719 / 5385 | no plan exists yet: preparation |
+| `G-260919-k7b8j` | 210956 / 218161 | 17383 / 22947 | 32579 / 38412 |
+| `G-260919-nddsf G-260919-04z88` | 193078 / 197995 | 20694 / 26348 | 47932 / 53778 |
 
-The `G-023 G-025` row is like for like: it was measured at `ded60de`, when the
-G-023 record and the shared plan had the same bytes as in the "before" run.
+The `G-260919-nddsf G-260919-04z88` row is like for like: it was measured at `ded60de`, when the
+G-260919-nddsf record and the shared plan had the same bytes as in the "before" run.
 This revision's own text then enlarged both, so at the final revision that
 selection is about 24.8 KB at the start and 55.8 KB with the plan. Rerun the
 commands for current values; the other two rows did not move.
@@ -119,20 +119,20 @@ Composition before: the four guide includes were 69981 bytes of every bundle
 (brief 29949, record model 21702, guide 15175, `AGENTS.md` 3155), and the first
 adapter also had the agent read those four files directly, so they were read
 twice (71114 bytes with the adapter). The rest was records and documents the
-policy pulled in: for `G-017`, three prerequisite records (21958), their plans
-and both shared reviews (46844), the G-017 plan and board evidence (26888), and
-five related or linked records (27902); for `G-023 G-025`, the shared plan
+policy pulled in: for `G-260919-k7b8j`, three prerequisite records (21958), their plans
+and both shared reviews (46844), the G-260919-k7b8j plan and board evidence (26888), and
+five related or linked records (27902); for `G-260919-nddsf G-260919-04z88`, the shared plan
 (27238), three spent prompts (11214), three reviews (24643), and four related
-records (39308); for `G-030`, three related records (26529).
+records (39308); for `G-260920-svpbc`, three related records (26529).
 
 Composition after: the start bundle is `grove.yaml` (33) and the selected
-records, plus listings (9 records and 10 links for `G-017`). The fixed reading
+records, plus listings (9 records and 10 links for `G-260919-k7b8j`). The fixed reading
 is the adapter (1243), `AGENTS.md` (5382, which both harnesses already load),
 and the guide (18270), 24895 bytes against 71114 before; the brief (30529) and
 the record model (21702) are read when a step needs them.
-With the plan the record names, `G-017` adds 15196 and `G-023 G-025` 27238.
-Before implementing, `G-017`'s three prerequisites are read with `show`
-(21958 bytes); `G-030` and `G-023 G-025` have no prerequisites or blocking
+With the plan the record names, `G-260919-k7b8j` adds 15196 and `G-260919-nddsf G-260919-04z88` 27238.
+Before implementing, `G-260919-k7b8j`'s three prerequisites are read with `show`
+(21958 bytes); `G-260920-svpbc` and `G-260919-nddsf G-260919-04z88` have no prerequisites or blocking
 questions. The verification run in the execution checkout repeats the selected
 records, which need not be reread when their revisions match.
 
@@ -142,8 +142,8 @@ reads has less context than before, which is why the guide makes the reads
 before implementation mandatory rather than optional.
 
 The two earlier hand-written handoffs remain reproducible from their owning
-records (acceptance 2): `G-016 G-014 G-015` keeps the caller's order and
-`G-017` lists G-014, G-015, G-016 as `done, not selected`, with nothing stating
+records (acceptance 2): `G-260919-7qv4x G-260919-8bbvy G-260919-z9w13` keeps the caller's order and
+`G-260919-k7b8j` lists G-260919-8bbvy, G-260919-z9w13, G-260919-7qv4x as `done, not selected`, with nothing stating
 they are integrated. Changing a record changes its revision in the next
 context (tested); the saved prompts in `docs/prompts/` are no longer needed.
 
@@ -238,7 +238,7 @@ were not exercised.
 
 ## Owner's interactive run on a real assignment, 2026-09-20
 
-After `worktree-W-010` was merged (`a0fd23a`), the owner ran `/grove-work G-030`
+After `worktree-W-010` was merged (`a0fd23a`), the owner ran `/grove-work G-260920-svpbc`
 in a fresh interactive Claude Code session in the main checkout. Two kinds of
 evidence, kept apart:
 
@@ -247,18 +247,18 @@ undecided card choice instead of choosing; it isolated before writing; they
 interrupted it and rerunning the invocation resumed fine.
 
 **What the repository shows**, inspected afterwards without touching the
-G-030 worktree: `main` is still `a0fd23a` with a clean tree (apart from the
+G-260920-svpbc worktree: `main` is still `a0fd23a` with a clean tree (apart from the
 owner's untracked `lefthook.yml`). `.claude/worktrees/W-012` holds branch
 `worktree-W-012`, based on `a0fd23a`. Its first commit, `5dd8c3e`, is the plan
-(`grove/G-033-card-lineage-plan.md`), linked from the record, together with
-the owner's answer recorded in G-030's Next ("beside, history first") and a
+(`grove/G-260920-d1qjs-card-lineage-plan.md`), linked from the record, together with
+the owner's answer recorded in G-260920-svpbc's Next ("beside, history first") and a
 checkpoint naming the invocation, branch, worktree, and base. So the question
 was asked before planning and the first write landed in the execution
 checkout. Then `e117759` (the board's History section, with tests in
-`internal/tui` and `internal/versions`) and `49d2b47` (README). G-030 was set
+`internal/tui` and `internal/versions`) and `49d2b47` (README). G-260920-svpbc was set
 active through the CLI.
 
-Not yet observable when this was written: G-030 has no Evidence section, no
+Not yet observable when this was written: G-260920-svpbc has no Evidence section, no
 review is recorded, and its Next checkpoint still says "Plan committed;
 implementation follows its tasks in order" although the implementation commits
 exist. Either the session had not reached review and reconciliation, or the
@@ -272,14 +272,14 @@ visible from the repository.
 finished on `worktree-W-012`: three fix commits from review (`24c1264`,
 `cfcb5d9`, `b8fc243`, then `9337a44`), `99fb3e8` recording evidence, three
 review rounds with dispositions, and a Next that leaves merging to the owner,
-and `43d7fc5` closing G-030 on the owner's acceptance. The handoff it returned
-is G-030's Evidence, Owner acceptance, and Next sections with
-`grove/G-034-card-lineage-review.md`; it says "reviewed and
+and `43d7fc5` closing G-260920-svpbc on the owner's acceptance. The handoff it returned
+is G-260920-svpbc's Evidence, Owner acceptance, and Next sections with
+`grove/G-260920-0sakc-card-lineage-evidence-20.md`; it says "reviewed and
 accepted, and **not merged or pushed**", so completion, acceptance, and
 integration stayed apart. `main` was still `a0fd23a`. The owner's verdict on
 acceptance 5: "The grove-work command appears to have worked as expected and
 that's enough to at least start dogfooding with." Their remaining concerns are
-about the TUI's information architecture, which is G-030's subject and later
+about the TUI's information architecture, which is G-260920-svpbc's subject and later
 work, not this workflow. One shortcoming was observed: the checkpoint question
 above resolves to the second reading; see Observed shortcomings.
 
@@ -295,7 +295,7 @@ extension test was case-sensitive; a `?query` was dropped without a reference;
 a linked record had no `records` row; unescaped ID/status/HEAD fields in text;
 a no-progress guard in ordering; two misleading error messages. Left as is:
 the default budget and the cost of reading twice. The first guide and adapters
-had no separate independent review. (This paragraph moved here from the G-023
+had no separate independent review. (This paragraph moved here from the G-260919-nddsf
 record when its Evidence was rewritten for the revision.)
 
 **Revision (2026-09-20).** A separate reviewer agent that wrote none of the
@@ -338,9 +338,9 @@ subagent of the implementing session, not a person and not another harness.
 
 ## Predecessor responsibilities: kept, adapted, deferred
 
-This table lived in the work guide until 2026-09-20. It is G-023's account of
+This table lived in the work guide until 2026-09-20. It is G-260919-nddsf's account of
 acceptance 6 against the
-[predecessor review](G-024-predecessor-work-review.md), and history rather than
+[predecessor review](G-260919-ph0w1-predecessor-work-review.md), and history rather than
 workflow, so it moved here; step numbers are the guide's current ones.
 
 | Responsibility | In the restart's workflow |
@@ -367,7 +367,7 @@ workflow, so it moved here; step numbers are the guide's current ones.
 - **Staging depends on the agent.** Nothing checks that an agent read a
   blocking question or prerequisite before implementing. The guide requires
   it, and both real trials did it, on one small fixture.
-- **Order lives in prose.** G-014–G-016 had a required serial order that was
+- **Order lives in prose.** G-260919-8bbvy–G-260919-7qv4x had a required serial order that was
   written in their prompt, not in `depends_on`, so `context` can only keep the
   caller's order for them.
 - **Links are never checked.** A link to a missing document is no longer an
@@ -376,7 +376,7 @@ workflow, so it moved here; step numbers are the guide's current ones.
 - **The plan is chosen by reading.** `context` does not say which linked
   document is the current plan. The record has to, and a record that links two
   plans without saying which is current needs fixing, not guessing.
-- **The checkpoint lagged the work (owner's G-030 run).** G-030's Next said
+- **The checkpoint lagged the work (owner's G-260920-svpbc run).** G-260920-svpbc's Next said
   "Plan committed; implementation follows" from `5dd8c3e` through `9337a44`,
   six commits and about an hour, and was only replaced at reconciliation
   (`99fb3e8`). An interruption in that window would have resumed from Git
@@ -398,7 +398,7 @@ workflow, so it moved here; step numbers are the guide's current ones.
   how the session found its place (checkpoint, Git state, or conversation) was
   not recorded. A headless resume under the revised guide has not been run.
 - A real assignment under the revised workflow headlessly or in Codex; the
-  only one is the owner's interactive G-030 run in Claude Code, which had no
+  only one is the owner's interactive G-260920-svpbc run in Claude Code, which had no
   prerequisites. The revised headless wait path
   (question, checkpoint, return) has not been rerun since the simulations.
 - An assignment whose records exist only on another branch, or a reused

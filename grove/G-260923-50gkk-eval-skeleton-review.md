@@ -1,25 +1,25 @@
 ---
-id: "G-119"
+id: "G-260923-50gkk"
 type: review
-title: "G-108 eval skeleton review"
+title: "G-260923-p5pt6 eval skeleton review"
 status: current
 created: "2026-09-23T20:11:31Z"
 updated: "2026-09-23T20:11:48Z"
-work: ["G-108"]
+work: ["G-260923-p5pt6"]
 examined: "1f03a12"
 ---
 
 ## Examined
 
-An independent review of the offline half of [G-108](G-108-workflow-evals.md):
+An independent review of the offline half of [G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md):
 the eval runner, fixture, checks and rubric under `evals/`, built on
-`worktree-G-108` to plan [G-115](G-115-g-108-eval-skeleton-plan.md). A
+`worktree-G-260923-p5pt6` to plan [G-260923-v9wby](G-260923-v9wby-eval-skeleton-plan.md). A
 separate reviewer agent (Claude Code 2.1.281 subagent, read-only, told not to
 edit, commit or run the real `claude`) examined `4b5b345`, then the fixes at
 `399cc5f` and `1f03a12`; `examined` is the last. Its evidence came from
 running `python3 evals/run.py selftest`, fake runs through `--claude`,
 mutations of the checks in throwaway clones, and signals sent to the runner.
-No paid run happened: that waits for [G-118](G-118-what-mandate-should-the-g-108-pa.md).
+No paid run happened: that waits for [G-260923-659zw](G-260923-659zw-what-mandate-should-the.md).
 
 ## Findings
 
@@ -29,7 +29,7 @@ Round 1, on `4b5b345`, eight findings:
 2. High: the retrieval facts matched words after `grove` anywhere in a
    command, so a `new` title containing "tasks list", or a `grove-evals-`
    path, set flags for subcommands that never ran.
-3. Medium: the frontmatter parser crashed the run on `blocks: [G-002]` and
+3. Medium: the frontmatter parser crashed the run on `blocks: [G-260919-8jb5s]` and
    block-style lists, which `grove check` accepts, losing the run's record.
 4. Medium: `report.md` could not tell a harness failure (no login, budget
    stop, timeout) from an agent that proposed nothing.
@@ -63,7 +63,7 @@ which depend only on the transcript.
   run with its cost and the next run starts.
 - 4: a harness column (exit, timeout, error result, denials) in the report.
 - 5: the hint removed; `tasks.py` still closes both statuses through one
-  function, code rather than intent, and G-118 asks the owner to approve the
+  function, code rather than intent, and G-260923-659zw asks the owner to approve the
   fixture.
 - 6: a `worse` fake mode that pushes, promotes, breaks `check`, names a stale
   commit and leaves two proposal branches.

@@ -1,5 +1,5 @@
 ---
-id: "G-079"
+id: "G-260922-q3cr9"
 type: work
 title: "Update a record by hand without a lookup and commit it in one step"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-22T16:01:52Z"
 updated: "2026-09-22T16:51:18Z"
 kind: tooling
 size: small
-relates_to: ["G-009", "G-044", "G-062"]
+relates_to: ["G-260919-shnj5", "G-260921-jwk4e", "G-260921-vz0v3"]
 candidate: "9eda6c6"
 ---
 
@@ -20,8 +20,8 @@ keep the revision guard they have today.
 
 The owner asked for this on 2026-09-22 after two integrations in one week
 needed a lookup, a paste and a hand commit
-([G-078](G-078-g-039-trial-evidence-for-the-int.md) finding 3, and the G-038
-and G-076 done commits `b8fb232` and `e8bcf03`). In the same session they
+([G-260922-08wxx](G-260922-08wxx-trial-evidence-for-the-i.md) finding 3, and the G-260921-9wkjt
+and G-260922-w53bz done commits `b8fb232` and `e8bcf03`). In the same session they
 chose the two designs below: make `--expect` optional, and add an opt-in
 `--commit` with a generated message.
 
@@ -30,15 +30,15 @@ chose the two designs below: make `--expect` optional, and add an opt-in
 Observed at main `ccdc92d`:
 
 - `update` refuses a missing `--expect` as a usage error
-  (`internal/cli/cli.go:444`). [G-009](G-009-update-records.md)'s design,
+  (`internal/cli/cli.go:444`). [G-260919-shnj5](G-260919-shnj5-update-record-status-and.md)'s design,
   which the owner approved on 2026-09-19, says "requires exactly one
   `--expect REVISION`", "No force/ignore-revision option", and "Do not change
   configuration, refs, or index". This work revises those three sentences on
-  the owner's 2026-09-22 choice; the rest of G-009's contract, including the
+  the owner's 2026-09-22 choice; the rest of G-260919-shnj5's contract, including the
   write lock, the pre-publication re-read that refuses an observed change,
   byte preservation and the failure reporting, stays as it is.
 - The guard exists for a caller whose read is stale
-  ([G-062](G-062-revision.md)). A person at a shell reads and writes within
+  ([G-260921-vz0v3](G-260921-vz0v3-revision.md)). A person at a shell reads and writes within
   seconds, and the write lock already serializes cooperating Grove commands,
   so the shell form `--expect "$(show --json …)"` bypasses the guard while
   keeping its cost. An agent session that read the record through `context`
@@ -55,7 +55,7 @@ Observed at main `ccdc92d`:
   is scoped to the updated record's file and is never the default.
 - `--expect` is written into `README.md`, `docs/record-model.md` ("First
   commands"), `docs/work-execution.md`, `docs/work-shaping.md` and the term
-  G-062, and the G-009 record; the record and the term describe history and
+  G-260921-vz0v3, and the G-260919-shnj5 record; the record and the term describe history and
   are not rewritten.
 
 Design, proposed:
@@ -69,7 +69,7 @@ Design, proposed:
   `git add -- PATH` and `git commit -m MESSAGE -- PATH` for the record's
   file alone, leaving other staged or unstaged files as they are, and prints
   the commit in the result (`{id, path, revision, changed, commit}`). The
-  message is generated from the request, `docs(G-076): set status=done`,
+  message is generated from the request, `docs(G-260922-w53bz): set status=done`,
   with several fields joined by spaces and `--unset size` as `unset size`;
   a reasoned message is still written with Git by hand. A no-op update
   commits nothing and says so. Uncommitted edits already in that file, such
@@ -77,11 +77,11 @@ Design, proposed:
 - Refusals: `--commit` without `update` or outside a Git work tree is a
   usage error; a commit that fails after the file was replaced (identity
   unset, a hook, a rebase in progress) reports the update as applied and
-  not committed, with the revision, in the same way G-009 reports a failure
+  not committed, with the revision, in the same way G-260919-shnj5 reports a failure
   after the rename. `--commit` never runs `git commit -a`, never touches
   other paths, and never pushes.
 - Out of scope: a `--message` flag, `--commit` on `new`, any approval or
-  merge action ([G-044](G-044-review-integration.md) owns those), and a
+  merge action ([G-260921-jwk4e](G-260921-jwk4e-review-candidates-and-in.md) owns those), and a
   `--no-commit` default flip.
 
 ## Acceptance
@@ -107,7 +107,7 @@ Design, proposed:
 
 ## Evidence
 
-Implemented on `worktree-G-079` (`.claude/worktrees/G-079`), base `main` at
+Implemented on `worktree-G-260922-q3cr9` (`.claude/worktrees/G-260922-q3cr9`), base `main` at
 `17667d6`, from this record at revision `ada396e6…` with no plan, as Next
 said. Commits: `4ef3129` active, `713de02` the code and tests, `5e4b3a1` the
 four documents, `34ca80f` the review fixes, then this evidence. The
@@ -120,8 +120,8 @@ Behavior against the acceptance, at `34ca80f`:
    `{…, "commit": SHA}`. Fixture: `TestUpdateOptionalExpectAndCommit`
    (`internal/update`) and `TestUpdateCommitResultAndFailure`
    (`internal/cli`). Real use: in a disposable clone of this branch at
-   `5e4b3a1`, `update G-079 --set status=done --set candidate=5e4b3a1
-   --commit` made `e5e8c87` "docs(G-079): set status=done candidate=5e4b3a1"
+   `5e4b3a1`, `update G-260922-q3cr9 --set status=done --set candidate=5e4b3a1
+   --commit` made `e5e8c87` "docs(G-260922-q3cr9): set status=done candidate=5e4b3a1"
    whose `git show --stat` lists this record alone.
 2. A stale `--expect` is refused, exit 1, no write, with the unchanged
    message (fixture and the same clone). The omitted form applied over a
@@ -139,7 +139,7 @@ Behavior against the acceptance, at `34ca80f`:
    `docs/work-shaping.md` say `--expect` is optional for a person and kept
    by a session because its read may be old; every `update` example in the
    two guides is unchanged and still runs (the reviewer checked each and
-   every link). G-009 and G-062 are history and were not rewritten.
+   every link). G-260919-shnj5 and G-260921-vz0v3 are history and were not rewritten.
 6. Open: the owner's own use from a checkout of `main`, at integration.
 
 Decisions taken: the message is `docs(ID): set a=b c=d unset e`, the
@@ -157,7 +157,7 @@ check` OK (80 records); `go test -count=1 -timeout 120s ./...` all ok.
 `versions` (8.0 s) exceeds the five-second budget under the parallel suite
 as before this change; `update` (3.5 s) and `cli` (4.6 s) stay under.
 
-Review: [G-083](G-083-g-079-review.md), independent, examined `5e4b3a1` and
+Review: [G-260922-0em47](G-260922-0em47-review-of-optional-expec.md), independent, examined `5e4b3a1` and
 the fix `34ca80f`: no blocking findings; 2, 3, 5 fixed, 1, 4, 6 accepted.
 
 ## Next
@@ -167,17 +167,17 @@ the branch, in a disposable clone so the ID counter and the branch stay
 clean:
 
 ```sh
-git clone -q -b worktree-G-079 /Users/mascah/GitHub/mascah/grove /tmp/g079 && cd /tmp/g079
-go run ./cmd/grove update G-079 --set status=done --set candidate=$(git rev-parse --short HEAD~1) --commit
+git clone -q -b worktree-G-260922-q3cr9 /Users/mascah/GitHub/mascah/grove /tmp/g079 && cd /tmp/g079
+go run ./cmd/grove update G-260922-q3cr9 --set status=done --set candidate=$(git rev-parse --short HEAD~1) --commit
 git show --stat HEAD
 ```
 
 To integrate (acceptance 6 is this very use): in the `main` checkout,
 
 ```sh
-git merge --ff-only worktree-G-079
-# edit grove/G-079-update-a-record-by-hand-without.md: quote the verdict in this Next
-go run ./cmd/grove update G-079 --set status=done --commit
+git merge --ff-only worktree-G-260922-q3cr9
+# edit grove/G-260922-q3cr9-update-a-record-by-hand.md: quote the verdict in this Next
+go run ./cmd/grove update G-260922-q3cr9 --set status=done --commit
 ```
 
 The candidate in the frontmatter is an ancestor of `main` after the

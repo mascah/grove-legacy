@@ -1,5 +1,5 @@
 ---
-id: "G-017"
+id: "G-260919-k7b8j"
 type: work
 title: "Browse a terminal Kanban board with explicit record versions"
 status: done
@@ -8,8 +8,8 @@ updated: "2026-09-20T05:06:02Z"
 kind: feature
 priority: 2
 size: medium
-depends_on: ["G-014", "G-015", "G-016"]
-relates_to: ["G-002", "G-010", "G-011"]
+depends_on: ["G-260919-8bbvy", "G-260919-z9w13", "G-260919-7qv4x"]
+relates_to: ["G-260919-8jb5s", "G-260919-zb0s8", "G-260919-n9t4p"]
 formerly: "W-009"
 ---
 
@@ -24,8 +24,8 @@ first screen; do not add a `grove board` subcommand. Board-first and this
 entrypoint are selected direction. The layout, context policy and framework
 below were proposed design; they are now implemented on branch
 `worktree-W-009` as described, and remain the owner's to judge in use.
-[Implementation plan](G-021-terminal-picker-plan.md);
-[evidence](G-029-board-review.md).
+[Implementation plan](G-260919-wxbsx-terminal-kanban-and-vers.md);
+[evidence](G-260919-zq52f-terminal-board-evidence.md).
 
 ## What the TUI means here
 
@@ -47,13 +47,13 @@ Proposed board (illustrative data, not current project status):
 ```text
 Grove  /project    Board: live main    4 sources inspected
 Proposed           Active             Done               Abandoned
-> G-014            G-009              G-003
+> G-260919-8bbvy            G-260919-shnj5              G-260919-rt9h9
   Workspace safety Record updates     Inspect records
   4 versions       4 versions         4 versions
-  G-015                               G-007
+  G-260919-z9w13                               G-260919-92n2y
   Preserve updates                    Create records
 
-Other sources: G-023 [2 versions]   (absent from this checkout)
+Other sources: G-260919-nddsf [2 versions]   (absent from this checkout)
 Left/Right columns   Up/Down cards   Enter versions   b checkout   r refresh
 ```
 
@@ -165,8 +165,8 @@ work, so the UI must own and cancel the read context explicitly.
 
 ## Constraints
 
-G-014/G-015/G-016 repairs are prerequisites under the selected after-fixes
-sequence; verify their integration, not only done statuses. G-002 stays accepted.
+G-260919-8bbvy/G-260919-z9w13/G-260919-7qv4x repairs are prerequisites under the selected after-fixes
+sequence; verify their integration, not only done statuses. G-260919-8jb5s stays accepted.
 No record or configuration changes, index/ref changes, worktree provisioning,
 claims, agent launches, child shell/editor, body editing, or new record schema.
 Terminal mode/output is the only intended interactive side effect. Do not create
@@ -186,7 +186,7 @@ current command-required usage error.
 2. Card Enter opens grouped versions without resolving. A version Enter passes
    exactly its displayed selector to Resolve; no source is selected automatically.
    Identical bytes remain separate choices, and each version shows its own status.
-   Deleted/invalid observations cannot resolve; G-002 stays intact.
+   Deleted/invalid observations cannot resolve; G-260919-8jb5s stays intact.
 3. Fresh resolution exits with workspace's output contract; stale/moved/foreign/
    disappearing/ambiguous/missing targets keep the version view with a reason.
    Incomplete warnings stay visible and attributable. Refresh clears old selection
@@ -209,12 +209,12 @@ current command-required usage error.
 
 ## Evidence, 2026-09-19
 
-Implemented on branch `worktree-W-009` from `acfc905`, after the G-014 to G-016
+Implemented on branch `worktree-W-009` from `acfc905`, after the G-260919-8bbvy to G-260919-7qv4x
 repairs were confirmed in main by Git ancestry. Final code revision `184b8c3`.
-The [evidence](G-029-board-review.md) maps each
+The [evidence](G-260919-zq52f-terminal-board-evidence.md) maps each
 acceptance item to its tests, and holds the suite results, both independent
 reviews with dispositions, and the remaining limits; the
-[plan](G-021-terminal-picker-plan.md#adjustments-made-while-implementing-2026-09-19)
+[plan](G-260919-wxbsx-terminal-kanban-and-vers.md#adjustments-made-while-implementing-2026-09-19)
 records what changed from this proposal and why. The changes that matter to
 this record's text:
 
@@ -251,8 +251,8 @@ Observed by the owner, in their terms:
 Measured afterwards, not owner judgment: the 0.6 s is real (0.56 to 0.57 s for
 `versions` from a built binary; `list` of one checkout is under 10 ms). One
 load spawns 44 Git processes, 35 of them single-path `rev-parse` calls made per
-worktree for the G-014/G-016 provenance checks. The cost grows with worktrees
-and branches, not with records. In this repository every version of G-003 has
+worktree for the G-260919-8bbvy/G-260919-7qv4x provenance checks. The cost grows with worktrees
+and branches, not with records. In this repository every version of G-260919-rt9h9 has
 the same content revision, so its eight rows are one content seen from four
 branch tips and four checkouts.
 
@@ -263,8 +263,8 @@ on this branch in `959def6`:
   the same bytes the row is a fold ("▸ done  same on 4 branches, 4 checkouts")
   whose details show the content once and name every place. A fold selects
   nothing: Enter lists its places, and each remains a separate explicit choice
-  that Enter resolves, so acceptance item 2 and G-002 hold. A board card notes
-  "N versions" only when versions differ. G-003 here went from eight rows to one.
+  that Enter resolves, so acceptance item 2 and G-260919-8jb5s hold. A board card notes
+  "N versions" only when versions differ. G-260919-rt9h9 here went from eight rows to one.
 - The interface says "branch" and "checkout" for what the code and the
   `versions` command call committed and live sources. The Other sources shelf
   is now "Elsewhere". `b` reads "view another checkout", and its screen says
@@ -272,21 +272,21 @@ on this branch in `959def6`:
   is. The `versions` and `workspace` commands keep their words and their
   selector contract; only the board changed.
 
-Lineage is [G-030](G-030-card-lineage.md). Load time is
-[G-031](G-031-load-scaling.md), measured and fixed on this branch.
+Lineage is [G-260920-svpbc](G-260920-svpbc-show-a-work-item-s-linea.md). Load time is
+[G-260920-z8vfp](G-260920-z8vfp-keep-a-full-board-load-f.md), measured and fixed on this branch.
 
 ## Owner acceptance, 2026-09-19
 
-After the folded card, the wording, and the G-031 load fix, the owner said the
+After the folded card, the wording, and the G-260920-z8vfp load fix, the owner said the
 board "seems good enough for the moment" and asked to close this out and merge
 it. That is acceptance of a starting point, not of the design: clearer
-boundaries and colour (feedback item 1), lineage (G-030), and whether a load
-should read every branch (G-031) remain open. The other half of acceptance
+boundaries and colour (feedback item 1), lineage (G-260920-svpbc), and whether a load
+should read every branch (G-260920-z8vfp) remain open. The other half of acceptance
 item 6 is met.
 
 ## Next
 
 Nothing under this record. Integrated into main by merge on 2026-09-19.
-Continue with [G-030](G-030-card-lineage.md). Worktree creation, record edits
-from the board, and agent execution remain separate later work; G-023 does not
+Continue with [G-260920-svpbc](G-260920-svpbc-show-a-work-item-s-linea.md). Worktree creation, record edits
+from the board, and agent execution remain separate later work; G-260919-nddsf does not
 depend on this.

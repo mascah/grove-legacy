@@ -1,5 +1,5 @@
 ---
-id: "G-081"
+id: "G-260922-jtsed"
 type: work
 title: "Run secure CI and Dependabot on GitHub"
 status: done
@@ -7,7 +7,7 @@ created: "2026-09-22T16:10:10Z"
 updated: "2026-09-22T18:01:37Z"
 kind: tooling
 size: medium
-relates_to: ["G-040", "G-044"]
+relates_to: ["G-260921-5gz9a", "G-260921-jwk4e"]
 candidate: "81cd0c0"
 ---
 
@@ -29,7 +29,7 @@ citing the comprehensive CI suites of their professional projects (the sibling
   requests; no ruleset requires the checks yet. The owner keeps integrating
   locally with fast-forward merges and direct pushes for now, and wants pull
   requests into `main` supported as a second path. Grove itself has no support
-  for the pull-request path; that is a gap for [G-044](G-044-review-integration.md)'s
+  for the pull-request path; that is a gap for [G-260921-jwk4e](G-260921-jwk4e-review-candidates-and-in.md)'s
   neighbourhood, not this work.
 - The Claude Code GitHub App and its two workflows in
   [PR #1](https://github.com/mascah/grove/pull/1) are dropped for now: the
@@ -76,9 +76,9 @@ citing the comprehensive CI suites of their professional projects (the sibling
   #1 as generated also used floating action tags, reviewed on every push and
   on fork PRs, and set no `timeout-minutes` or `concurrency`.
 - No existing record mentions CI, GitHub Actions, or Dependabot.
-  [G-040](G-040-portable-bootstrap.md) owns selecting a distribution and
+  [G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) owns selecting a distribution and
   upgrade mechanism, so a release workflow (goreleaser or similar) belongs to
-  it, not here; a `worktree-G-040` branch exists at b8f7cf5.
+  it, not here; a `worktree-G-260921-5gz9a` branch exists at b8f7cf5.
 
 **Proposed design (binds nobody; the assignee selects the details):**
 
@@ -103,7 +103,7 @@ citing the comprehensive CI suites of their professional projects (the sibling
   Terraform ecosystems exist here.
 - Not carried over from `xfer`, and why: labeler, stale, PR-title, and
   CODEOWNERS serve a team; release-please and any release build belong to
-  G-040; the scheduled security audits that open issues are covered for Go by
+  G-260921-5gz9a; the scheduled security audits that open issues are covered for Go by
   `govulncheck` plus Dependabot alerts; the Claude review and codebase-review
   workflows are dropped by the decision above. If the App returns, the
   hardening that was shaped and then dropped is: `claude-code-review.yml` on
@@ -136,11 +136,11 @@ citing the comprehensive CI suites of their professional projects (the sibling
 
 ## Evidence
 
-Implemented 2026-09-22 on `worktree-G-081` from `main` 6c11ad8, starting from
+Implemented 2026-09-22 on `worktree-G-260922-jtsed` from `main` 6c11ad8, starting from
 this record at revision ba0e9175 with no plan (the record said none was
 needed). Commits: d8aae4e (`go.mod` to Go 1.26.5), d4f5360 (CI workflow,
 Dependabot, README), 64ad5d3 (review fixes), then the commit carrying this
-evidence and [G-084](G-084-review-of-g-081-ci-dependabot-an.md), which is the
+evidence and [G-260922-q88hk](G-260922-q88hk-review-of-ci-dependabot.md), which is the
 `candidate`.
 
 **Against the acceptance:**
@@ -196,12 +196,12 @@ evidence and [G-084](G-084-review-of-g-081-ci-dependabot-an.md), which is the
 **Verification** at the Go tree of 64ad5d3 (identical to d4f5360), on
 macOS with Go 1.26.5: `gofmt -l .` empty, `go vet ./...`, `go mod tidy
 -diff`, `go build ./...`, `go run ./cmd/grove check` (`OK: 80 records`;
-81 with G-084), `go test -count=1 -timeout 120s ./...` all packages ok,
+81 with G-260922-q88hk), `go test -count=1 -timeout 120s ./...` all packages ok,
 `internal/versions` 7.3 s; `govulncheck` 0 called vulnerabilities, exit 0;
 `actionlint` clean. The reviewer repeated the suite and `grove check` from
 a credential-free shallow clone of 64ad5d3, all green.
 
-**Review:** G-084, two rounds, no blocking findings. Round 1's should-fix
+**Review:** G-260922-q88hk, two rounds, no blocking findings. Round 1's should-fix
 items were the `main` cancellation (fixed), govulncheck's symbol-level scope
 (recorded above), and the settings still off (owner's step); nits fixed:
 gofmt parse errors, README wording, persisted credentials; kept: `go build`
@@ -210,28 +210,28 @@ residual: a third push to `main` inside one run still cancels the pending
 middle run; a per-SHA group on push would close that if it ever matters.
 
 **Second candidate, 2026-09-22.** The owner asked for a pull request, so
-`worktree-G-081` was pushed and PR #2 opened. That push ran lefthook's
+`worktree-G-260922-jtsed` was pushed and PR #2 opened. That push ran lefthook's
 pre-push hook, whose test fixtures inherited the `GIT_DIR` Git exports to
 hooks and committed into this repository: the branch tip, HEAD, four stray
 branches, two temp worktrees, and `core.bare` were damaged and the fixture
 tip reached origin. The owner repaired it by hand; the cause and fix are
-[G-089](G-089-ignore-ambient-git-environment-w.md). The repaired PR then ran
+[G-260922-g6e7p](G-260922-g6e7p-ignore-ambient-git-envir.md). The repaired PR then ran
 CI for the first time: `check (macos-latest)` and `govulncheck` passed,
 `check (ubuntu-latest)` failed on two tests with macOS assumptions, fixed in
 d367972 and shown passing on Linux with the whole suite in
 `docker run golang:1.26` (git 2.47.3, go1.26.8) before pushing again. Until
-G-089 is merged, every push from a linked worktree must use `--no-verify`.
+G-260922-g6e7p is merged, every push from a linked worktree must use `--no-verify`.
 
 ## Next
 
-In Review, second candidate. PR #2 is open from `worktree-G-081`; its CI run
+In Review, second candidate. PR #2 is open from `worktree-G-260922-jtsed`; its CI run
 on this candidate is the evidence for acceptance 1 (`gh pr checks 2`). The
 integrator's steps, from the main checkout:
 
-1. Merge: `main` moved past the base, so `git merge worktree-G-081` makes a
-   merge commit, as today's G-079 and G-040 merges did; then
+1. Merge: `main` moved past the base, so `git merge worktree-G-260922-jtsed` makes a
+   merge commit, as today's G-260922-q3cr9 and G-260921-5gz9a merges did; then
    `git push --no-verify origin main` and `gh run watch` until green. Merge
-   [G-089](G-089-ignore-ambient-git-environment-w.md) next, so the hook is
+   [G-260922-g6e7p](G-260922-g6e7p-ignore-ambient-git-envir.md) next, so the hook is
    safe again.
 2. Settings (acceptance 3), then read them back:
 
@@ -246,7 +246,7 @@ integrator's steps, from the main checkout:
 3. Confirm the Claude Code GitHub App is gone at
    https://github.com/settings/installations (acceptance 4).
 4. Write the verdict into this record with the `gh api` output, then on
-   `main`: `go run ./cmd/grove update G-081 --expect REVISION --set status=done`
+   `main`: `go run ./cmd/grove update G-260922-jtsed --expect REVISION --set status=done`
    and commit. Acceptance 6 is recorded after the first week.
 
 Verdict: approved

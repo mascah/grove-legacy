@@ -1,5 +1,5 @@
 ---
-id: "G-101"
+id: "G-260923-tnn5e"
 type: decision
 title: "Run attempts as a Grove-owned claude -p process"
 status: accepted
@@ -9,7 +9,7 @@ updated: "2026-09-23T02:34:39Z"
 
 ## Decision
 
-An implementation attempt that Grove starts (`grove run`, [G-045](G-045-durable-attempt.md))
+An implementation attempt that Grove starts (`grove run`, [G-260921-h46pb](G-260921-h46pb-run-one-bounded-implemen.md))
 is a Grove-owned `claude -p "/grove-work ID --interaction headless"`
 process under an on-demand owner process, with structured `stream-json`
 events written to files, a required dollar budget and permission mode,
@@ -17,7 +17,7 @@ events written to files, a required dollar budget and permission mode,
 worktree, identity, duplicate-start refusal, Stop and owner-loss handling.
 Ordinary CLI access stays daemon-free: nothing resident is required to
 launch, inspect or stop an attempt. The selection and its evidence are in
-plan [G-100](G-100-g-045-durable-attempt-plan.md); capabilities are pinned
+plan [G-260923-0t43m](G-260923-0t43m-durable-attempt-plan.md); capabilities are pinned
 to Claude Code 2.1.280 and recorded per attempt from the provider's init
 event.
 
@@ -36,7 +36,7 @@ event.
   can host the owner later if operator attachment is wanted.
 - **The predecessor's `claude-p.sh` adapter**: reused an unvalidated
   worktree, skipped permissions, and filled in a tested HEAD it had not
-  tested ([G-024](G-024-predecessor-work-review.md)); its pattern of an
+  tested ([G-260919-ph0w1](G-260919-ph0w1-predecessor-work-review.md)); its pattern of an
   owned process with raw capture is kept, the rest is not.
 
 ## Reconsideration

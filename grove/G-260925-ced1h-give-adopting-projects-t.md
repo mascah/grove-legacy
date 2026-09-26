@@ -1,11 +1,11 @@
 ---
-id: "G-144"
+id: "G-260925-ced1h"
 type: work
 title: "Give adopting projects the record model the guides cite"
 status: done
 created: "2026-09-25T03:53:22Z"
 updated: "2026-09-25T14:41:03Z"
-relates_to: ["G-135", "G-143"]
+relates_to: ["G-260924-59f5k", "G-260925-42j50"]
 candidate: "6def6c6"
 approved: "6def6c6"
 ---
@@ -18,7 +18,7 @@ binary, without looking outside the project.
 
 ## Constraints
 
-Observed at `worktree-G-135` `f37be4e`:
+Observed at `worktree-G-260924-59f5k` `f37be4e`:
 
 - [docs/work-shaping.md](../docs/work-shaping.md) (its read-in-stages
   table, and "Use only the record types, fields, and statuses the record
@@ -30,7 +30,7 @@ Observed at `worktree-G-135` `f37be4e`:
   work|shape`) and the reviewer definition, not the record model, and
   `grove init` writes neither the model nor a pointer to it, so an adopting project has
   no copy.
-- [G-143](G-143-g-135-codex-eval-row-pattern-pla.md) finding 2: in 5 of 9
+- [G-260925-42j50](G-260925-42j50-codex-eval-row-pattern-p.md) finding 2: in 5 of 9
   Codex shaping runs on the eval fixture, which is such a project, the
   session hunted for it, listing the owner's home directory, searching
   other repositories, and reading `docs/record-model.md` from the owner's
@@ -39,13 +39,13 @@ Observed at `worktree-G-135` `f37be4e`:
   session that does find a copy elsewhere may read a version that does not
   match the binary.
 
-Selected design ([G-146](G-146-how-should-an-adopting-project-r.md),
+Selected design ([G-260925-02jsj](G-260925-02jsj-how-should-an-adopting-p.md),
 resolved 2026-09-24): embed `docs/record-model.md` in the binary, print it
 with `grove guide model`, have the three citations name that command, and
 first edit the model to hold no `G-` link and no path link into this
 repository, so it ships verbatim with no preamble. A `G-` ID is a live
 identifier in every adopting project, so the model cannot carry Grove's
-own. G-146 holds the alternatives, the reasons and what the edit covers.
+own. G-260925-02jsj holds the alternatives, the reasons and what the edit covers.
 
 ## Acceptance
 
@@ -58,9 +58,9 @@ own. G-146 holds the alternatives, the reasons and what the edit covers.
 
 ## Evidence
 
-Implemented on `worktree-G-144`, base `main` `670ca9c` (branch point of the
-shaping commits; G-146 resolved at `2d5777e`), from record revision
-`sha256:1bc032d9b226` and plan [G-148](G-148-g-144-plan.md) as committed at
+Implemented on `worktree-G-260925-ced1h`, base `main` `670ca9c` (branch point of the
+shaping commits; G-260925-02jsj resolved at `2d5777e`), from record revision
+`sha256:1bc032d9b226` and plan [G-260925-6ykpv](G-260925-6ykpv-plan-ship-the-record-mod.md) as committed at
 `3a57f52`. Implementation commits `7b841f9`, `3b62bff`, `fa18712`.
 
 What changed:
@@ -70,8 +70,8 @@ What changed:
   (`update`'s failure reporting and the `flock` lock are now stated where
   the links used to point), the brief, command reference and shaping guide
   are named by command, and `main in this repository` and `go run` asides
-  are generic. The only `G-` numbers left are the format examples `G-001`,
-  `G-003`, `G-1000`. Headings are unchanged, so existing anchors resolve.
+  are generic. The only `G-` numbers left are the format examples `G-260919-6mpmw`,
+  `G-260919-rt9h9`, `G-1000`. Headings are unchanged, so existing anchors resolve.
 - `guides.go` embeds it; `grove guide model` prints it with no project; the
   `version` digest hashes work, shape and model; bad names exit 2 with
   "guide requires one argument, work, shape or model".
@@ -80,11 +80,11 @@ What changed:
 - Reconciled: `docs/commands.md` (Version and guide), the usage text,
   README's command and record-model rows, AGENTS.md's pointer, and a new
   AGENTS.md constraint: a document the binary ships links only to other
-  shipped documents, never to a record (G-146).
+  shipped documents, never to a record (G-260925-02jsj).
 - `internal/cli/init_test.go`: `guide model` joins the prefix and
   portability checks, and a new assertion fails on any link other than `#`
   or `https://` and on any `G-` number but the examples. Mutation-checked:
-  appending a G-064 link made it fail with both messages.
+  appending a G-260921-gtydy link made it fail with both messages.
 
 Against acceptance, at `fa18712`:
 
@@ -100,37 +100,37 @@ Against acceptance, at `fa18712`:
 3. `go vet ./...` clean, `gofmt -l .` empty, `go run ./cmd/grove check`
    `OK: 143 records`, `go test -count=1 -timeout 120s ./...` all ok.
 
-Review: [G-149](G-149-g-144-review.md), two independent `grove-reviewer`
+Review: [G-260925-w62y4](G-260925-w62y4-review-record-model-ship.md), two independent `grove-reviewer`
 rounds, `examined` `3b62bff`; `fa18712` applies round 2's two wording
 notes to the model only. No open blocking or should-fix finding.
 
 Limits: the TUI terminal script was not run (no TUI change). The installed
-`~/.local/bin/grove` is not rebuilt. `worktree-G-140` also edits
+`~/.local/bin/grove` is not rebuilt. `worktree-G-260924-ecs9m` also edits
 `docs/record-model.md` (a `run:` configuration key); whichever merges second
 reconciles the model, keeping it free of `G-` links.
 
 ## Next
 
-Captured 2026-09-24 from G-143; shaped through G-146, resolved 2026-09-24,
+Captured 2026-09-24 from G-260925-42j50; shaped through G-260925-02jsj, resolved 2026-09-24,
 which selected the embedded model with no `G-` links.
 
-In review 2026-09-25 on `worktree-G-144`: candidate is the evidence commit
+In review 2026-09-25 on `worktree-G-260925-ced1h`: candidate is the evidence commit
 this record names in `candidate`. For the owner:
 
 - Judge the model edit: `git diff 2d5777e fa18712 -- docs/record-model.md`,
   and read it as an adopting project would with `go run ./cmd/grove guide
   model`.
-- Open for the owner, not done here (G-149 finding 4): the guides still
-  mention Grove's own records as plain text (G-035 and G-038 in
-  `docs/work-execution.md`'s Lifecycle, G-032 in its Invocation, G-050 in
+- Open for the owner, not done here (G-260925-w62y4 finding 4): the guides still
+  mention Grove's own records as plain text (G-260921-tkdwh and G-260921-9wkjt in
+  `docs/work-execution.md`'s Lifecycle, G-260920-j2eyp in its Invocation, G-260921-ahbrj in
   `docs/work-shaping.md`). The new AGENTS.md rule forbids links only; if the
-  G-146 reasoning should cover mentions too, capture that as new work.
+  G-260925-02jsj reasoning should cover mentions too, capture that as new work.
 
 Integration, as given:
 
 ```sh
-go run ./cmd/grove approve G-144 "VERDICT"   # in this worktree
-go run ./cmd/grove integrate G-144           # in the main checkout
+go run ./cmd/grove approve G-260925-ced1h "VERDICT"   # in this worktree
+go run ./cmd/grove integrate G-260925-ced1h           # in the main checkout
 ```
 
 Verdict on candidate 6def6c6, 2026-09-25: approved

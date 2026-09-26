@@ -1,26 +1,26 @@
 ---
-id: "G-099"
+id: "G-260923-r1w6p"
 type: review
-title: "G-044 review-integration review"
+title: "G-260921-jwk4e review-integration review"
 status: current
 created: "2026-09-23T01:12:55Z"
 updated: "2026-09-23T01:16:37Z"
-work: ["G-044"]
+work: ["G-260921-jwk4e"]
 examined: "956da77"
 ---
 
 ## Examined
 
-Branch `worktree-G-044`, base `main` c4b3aea. An independent reviewer (a
-subagent given [G-044](G-044-review-integration.md), the plan
-[G-098](G-098-g-044-review-integration-plan.md), the record model's lifecycle
+Branch `worktree-G-260921-jwk4e`, base `main` c4b3aea. An independent reviewer (a
+subagent given [G-260921-jwk4e](G-260921-jwk4e-review-candidates-and-in.md), the plan
+[G-260923-twv25](G-260923-twv25-review-actions-and-local.md), the record model's lifecycle
 section, the guide's judging section and the diff, with no write access)
 examined `git diff c4b3aea..2e0aca3` in round 1 and the fix commit 956da77
 in round 2, which is the `examined` field. It ran `go vet`, `gofmt -l` and
 `go test -short` per package, and non-short `go test` on tui, cli and
 integrate. The candidate differs from 956da77 by a0b2f2b (a test for
 changes and diffs under a prefix, and the result screen's hint while the
-re-read is pending: the two round-2 notes) and by this record and G-044's
+re-read is pending: the two round-2 notes) and by this record and G-260921-jwk4e's
 evidence.
 
 ## Findings
@@ -83,8 +83,8 @@ implemented.
    Esc.
 7. Fixed: Esc from a detail stops any pending read but the inspect and an
    action; tested.
-8. Recorded as a limit in G-098; the action's commits are in Git.
-9. Recorded as an adjustment in G-098: `check` holds `approved` to the
+8. Recorded as a limit in G-260923-twv25; the action's commits are in Git.
+9. Recorded as an adjustment in G-260923-twv25: `check` holds `approved` to the
    candidate and `integrate` re-checks the tip.
 10. Fixed in the five places.
 11. Fixed: "approved on branch X at TIP (Verdict …)".

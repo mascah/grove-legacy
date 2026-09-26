@@ -1,20 +1,20 @@
 ---
-id: "G-115"
+id: "G-260923-v9wby"
 type: plan
-title: "G-108 eval skeleton plan"
+title: "G-260923-p5pt6 eval skeleton plan"
 status: current
 created: "2026-09-23T19:50:02Z"
 updated: "2026-09-23T19:50:05Z"
-work: ["G-108"]
+work: ["G-260923-p5pt6"]
 ---
 
 ## Design
 
-Prepared 2026-09-23 on `worktree-G-108` from main `6208e82` against
-[G-108](G-108-workflow-evals.md) at `sha256:ff01c9f0…`, in a headless
-`/grove-work G-108` session. Harness here: Claude Code 2.1.281, go 1.26,
+Prepared 2026-09-23 on `worktree-G-260923-p5pt6` from main `6208e82` against
+[G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md) at `sha256:ff01c9f0…`, in a headless
+`/grove-work G-260923-p5pt6` session. Harness here: Claude Code 2.1.281, go 1.26,
 git 2.55.0, Python 3.13, macOS Darwin 25.6.0. Everything below is proposed
-design within G-108's selected skeleton unless it quotes the record.
+design within G-260923-p5pt6's selected skeleton unless it quotes the record.
 
 **Where it lives.** A top-level `evals/` directory: `evals/run.py` (stdlib
 Python, like `internal/tui/testdata/terminal.py`), `evals/fixture/` (the
@@ -35,7 +35,7 @@ neighbour. `AGENTS.md` says only how proposal branches are named
 and `CLAUDE.md` imports it. The runner builds it with `grove init` in a
 disposable directory, so the adapters are the binary's.
 
-**Cases.** Missing choice, the G-078 finding 6 seed transposed: "hide finished
+**Cases.** Missing choice, the G-260922-08wxx finding 6 seed transposed: "hide finished
 tasks from tasks list by default". The planted choice is which statuses are
 "finished": `done` only, or `done` and `dropped`. The brief defines both
 statuses and settles the flag, the count and the default output's audience,
@@ -91,36 +91,36 @@ names, labelled as such.
 
 **Offline self-check.** `python3 evals/run.py selftest` runs the whole runner
 against a fake `claude` (the runner's `--claude PATH`) that performs a
-scripted good outcome for both cases and a G-078-style bad one (no question,
+scripted good outcome for both cases and a G-260922-08wxx-style bad one (no question,
 acceptance presuming the choice, a write to the session checkout), and asserts
 that every check passes for the good runs and that exactly the expected
 checks fail for the bad one. It spends nothing; it builds, so it is not a Go
 test.
 
 **Owner inputs.** The model, the repeat count, the per-run budget, the
-permission mode and the fixture as built are the owner's to agree (G-108
+permission mode and the fixture as built are the owner's to agree (G-260923-p5pt6
 Next). A headless session cannot, so they go to one question that blocks
-G-108; building the runner and fixture does not presume the answers, because
+G-260923-p5pt6; building the runner and fixture does not presume the answers, because
 every one is a runner argument or an editable fixture file, and nothing paid
 runs without them.
 
 ## Steps
 
-1. Commit this plan; set G-108 `active`.
+1. Commit this plan; set G-260923-p5pt6 `active`.
 2. Build `evals/fixture/`, `evals/run.py` and `evals/README.md`; the selftest
    passes. Add the README row to "Where each subject lives".
-3. Persist the mandate question with `blocks` G-108; checkpoint G-108's Next.
+3. Persist the mandate question with `blocks` G-260923-p5pt6; checkpoint G-260923-p5pt6's Next.
 4. Independent review of the runner, fixture and checks; fix and re-review
    within three rounds.
 Status, 2026-09-23: steps 1 to 4 done (`d9dbf23`, `4b5b345`, question
-[G-118](G-118-what-mandate-should-the-g-108-pa.md) at `275bd41`, review
-[G-119](G-119-g-108-eval-skeleton-review.md) examined `1f03a12` with no open
-findings). G-118 was resolved at `1d3ad82` and the eval login
-[G-121](G-121-how-do-the-g-108-eval-runs-log-i.md) at `e57a4c6`.
+[G-260923-659zw](G-260923-659zw-what-mandate-should-the.md) at `275bd41`, review
+[G-260923-50gkk](G-260923-50gkk-eval-skeleton-review.md) examined `1f03a12` with no open
+findings). G-260923-659zw was resolved at `1d3ad82` and the eval login
+[G-260924-y99bx](G-260924-y99bx-how-do-the-eval-runs-log.md) at `e57a4c6`.
 
 5. After the owner answers: the paid runs, then a review record reporting
-   the pattern against G-078 finding 6 (acceptance 5), then handoff.
+   the pattern against G-260922-08wxx finding 6 (acceptance 5), then handoff.
    Done 2026-09-24: runs at `d565fcf` (which also let the runner accept a
    login's settings and synced skills), review
-   [G-122](G-122-g-108-baseline-runs-the-missing.md), handoff in G-108's
+   [G-260924-frzeg](G-260924-frzeg-baseline-runs-the-missin.md), handoff in G-260923-p5pt6's
    Next.

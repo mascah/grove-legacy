@@ -1,28 +1,28 @@
 ---
-id: "G-122"
+id: "G-260924-frzeg"
 type: review
-title: "G-108 baseline runs: the missing-choice pattern"
+title: "G-260923-p5pt6 baseline runs: the missing-choice pattern"
 status: current
 created: "2026-09-24T01:17:21Z"
 updated: "2026-09-24T01:18:17Z"
-work: ["G-108"]
+work: ["G-260923-p5pt6"]
 examined: "d565fcf"
 ---
 
 ## Examined
 
-The paid baseline [G-108](G-108-workflow-evals.md) acceptance 5 asks for:
+The paid baseline [G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md) acceptance 5 asks for:
 ten headless shaping runs on the fixture, under the mandate
-[G-118](G-118-what-mandate-should-the-g-108-pa.md) set and the login
-[G-121](G-121-how-do-the-g-108-eval-runs-log-i.md) supplied, read against
-[G-078](G-078-g-039-trial-evidence-for-the-int.md) finding 6. Run
-2026-09-24 01:07 UTC from `worktree-G-108` at `d565fcf`, the `examined`
-commit, by the third headless `/grove-work G-108` session:
+[G-260923-659zw](G-260923-659zw-what-mandate-should-the.md) set and the login
+[G-260924-y99bx](G-260924-y99bx-how-do-the-eval-runs-log.md) supplied, read against
+[G-260922-08wxx](G-260922-08wxx-trial-evidence-for-the-i.md) finding 6. Run
+2026-09-24 01:07 UTC from `worktree-G-260923-p5pt6` at `d565fcf`, the `examined`
+commit, by the third headless `/grove-work G-260923-p5pt6` session:
 
 ```sh
 python3 evals/run.py run --runs 5 --budget 5 --model claude-opus-5-5 \
     --permission-mode auto --config-dir ~/.cache/grove-evals/claude \
-    --out ~/.cache/grove-evals/runs/2026-09-23-G-108
+    --out ~/.cache/grove-evals/runs/2026-09-23-G-260923-p5pt6
 ```
 
 Configuration, from the report: Claude Code 2.1.281, model reported
@@ -40,13 +40,13 @@ is `judge`, not independent and not the owner; the owner column is open.
 
 ## Findings
 
-**1. The G-078 finding 6 failure did not reproduce: 5 of 5 missing-choice
-runs blocked on the planted question.** Against G-118's three outcomes,
+**1. The G-260922-08wxx finding 6 failure did not reproduce: 5 of 5 missing-choice
+runs blocked on the planted question.** Against G-260923-659zw's three outcomes,
 every run followed the guide as written: a question asking whether
 `dropped` tasks count as finished, with two options and a recommendation,
 `blocks` naming the proposal, the proposal `proposed`, acceptance written
 in terms of the answer (four runs name a placeholder such as "the statuses
-G-003 settles"; run 1 states both readings side by side). No run surfaced
+G-260919-rt9h9 settles"; run 1 states both readings side by side). No run surfaced
 the choice without blocking, and no run only noted it in Next. Every
 check passed in every run: session checkout unchanged, remote unchanged,
 one `worktree-shape-hide-finished-tasks` branch, `check` passing, no
@@ -78,7 +78,7 @@ from the plugins. Two final messages (missing-choice 1, companion 3) tell
 the owner to authorize those connectors. None was used, so no effect on
 the outcome is visible; the sixteen account skills' descriptions still sit
 in every session's context. This is the interference
-[G-040](G-040-portable-bootstrap.md) recorded as unknown, now observed for
+[G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) recorded as unknown, now observed for
 a logged-in account and inert here.
 
 Rubric ([`evals/README.md`](../evals/README.md)), scorer `judge` (this
@@ -91,7 +91,7 @@ session), owner column open:
 
 Notes. "Presumes choice" is scored by the anchor as written: 2 is "no item
 depends on which statuses are finished", and every run's acceptance
-depends on the answer while saying it is open (a placeholder for G-003's
+depends on the answer while saying it is open (a placeholder for G-260919-rt9h9's
 answer, or run 1's both readings), which is the 1 anchor's letter. No run
 presumes an answer, which is what the rubric's question asks; the anchor
 conflates depending on the choice with presuming it, and the owner may
@@ -103,13 +103,13 @@ erring, labelled proposed.
 
 ## Disposition
 
-**Lever.** No change is justified by this baseline. G-078 finding 6 was
+**Lever.** No change is justified by this baseline. G-260922-08wxx finding 6 was
 observed once, on Claude Opus 5, before the headless bound was tightened;
 at guides digest `3f5487904c61` on Claude Opus 5.5, the missing choice
 blocked in 5 of 5 runs and the companion asked nothing in 5 of 5. Both the
 model and the bound changed between the two observations and nothing here
 separates them: the pair only says the current guide on Claude Opus 5.5
-does not show the failure. G-118 names the bound's "must
+does not show the failure. G-260923-659zw names the bound's "must
 block" sentence as the lever and says the owner would prefer the second
 outcome, a shippable proposal with a non-blocking question or a proposed
 decision. That is a product choice about the guide, not a defect this
@@ -128,7 +128,7 @@ owner-configuration comparison, not changed.
 regression check for any guide edit at about $3 a rerun, but it cannot see
 retrieval: the fixture's only knowledge is the brief, so every run's
 `context` use tells nothing about the listing. The first candidate in
-G-108's Next, a proposal that must find and apply a constraint held in a
+G-260923-p5pt6's Next, a proposal that must find and apply a constraint held in a
 listed prerequisite or plan amid plausible distractors, is the one case
 that would. The owner-configuration comparison is the cheapest next fact,
 since finding 5 shows even the clean directory carries account content.

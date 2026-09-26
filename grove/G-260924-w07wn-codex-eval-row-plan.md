@@ -1,21 +1,21 @@
 ---
-id: "G-138"
+id: "G-260924-w07wn"
 type: plan
-title: "G-135 Codex eval row plan"
+title: "G-260924-59f5k Codex eval row plan"
 status: current
 created: "2026-09-24T22:37:53Z"
 updated: "2026-09-24T22:39:42Z"
-work: ["G-135"]
+work: ["G-260924-59f5k"]
 ---
 
 ## Design
 
-Prepared 2026-09-24 on `worktree-G-135` from main `132709e` against
-[G-135](G-135-run-the-g-108-eval-pair-on-codex.md) at `sha256:0baef170…`,
-in a headless `/grove-work G-135 --until plan` session. Here: codex-cli
+Prepared 2026-09-24 on `worktree-G-260924-59f5k` from main `132709e` against
+[G-260924-59f5k](G-260924-59f5k-run-the-eval-pair-on-cod.md) at `sha256:0baef170…`,
+in a headless `/grove-work G-260924-59f5k --until plan` session. Here: codex-cli
 0.156.1, Python 3.13 (`tomllib` available), guides digest `0c163c41a0f2`
-(`grove version` at `132709e`, after G-134's guide edits; G-122 ran at
-`3f5487904c61`). Everything below is proposed design within G-135's
+(`grove version` at `132709e`, after G-260924-5b6pz's guide edits; G-260924-frzeg ran at
+`3f5487904c61`). Everything below is proposed design within G-260924-59f5k's
 selected scope unless it quotes the record.
 
 **Observed here, free.** One `codex exec --json --ephemeral
@@ -128,13 +128,13 @@ from stdin, or `CODEX_API_KEY`), what the home may hold, the cap, cost
 **Mandate.** Runs per case, model, effort, permission mode, cap, the
 login and whether the Claude pair reruns at the same guides digest are
 the owner's: question
-[G-139](G-139-what-mandate-and-login-should-th.md) blocks G-135. Building
+[G-260924-7x7p7](G-260924-7x7p7-what-mandate-and-login-s.md) blocks G-260924-59f5k. Building
 the runner does not presume the answers: each is a runner argument.
 
 **Report record and disposition** (acceptance 4). One review record with
-`work` G-135 and `examined` the commit the runs used: configuration,
-per-case pattern against [G-122](G-122-g-108-baseline-runs-the-missing.md)
-and whatever same-digest Claude rerun G-139 allows, tokens and time,
+`work` G-260924-59f5k and `examined` the commit the runs used: configuration,
+per-case pattern against [G-260924-frzeg](G-260924-frzeg-baseline-runs-the-missin.md)
+and whatever same-digest Claude rerun G-260924-7x7p7 allows, tokens and time,
 retrieval, what the clean home still carried, limits, and whether a Codex
 provider in the attempt runner is worth shaping. What such a seam would
 need, to be judged against the runs: the command line
@@ -144,7 +144,7 @@ item events, a session id Codex generates rather than Grove, Stop by
 process group as today, a budget that can only be time or tokens, the
 permission profile's mapping onto sandbox and approval, and the review
 gate, whose `grove-reviewer` is a Claude agent definition; and whether
-[G-101](G-101-attempt-mechanism.md) would be revisited. No product change.
+[G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md) would be revisited. No product change.
 
 **Adjustment, 2026-09-24, implementation.** The owner's login left the
 eval home's `config.toml` with a `[tui]` table (screen-reader detection,
@@ -153,7 +153,7 @@ Claude's `tui` and `theme` settings are, and ignored anyway under
 `--ignore-user-config`. The runner allows `tui` as well as
 `projects.*.trust_level`; anything else is still refused.
 
-**Adjustment, 2026-09-24, review G-138 step 3.** Codex runs each command
+**Adjustment, 2026-09-24, review G-260924-w07wn step 3.** Codex runs each command
 as `SHELL -lc`, and the owner's `~/.zprofile` then puts the installed
 `~/.local/bin/grove` before the built one (observed: `env PATH=DIR:$PATH
 /bin/zsh -lc 'command -v grove'` found `~/.local/bin/grove`). The Codex
@@ -164,25 +164,25 @@ the built `grove` with that `PATH`, so the Codex sessions' tools are the
 Claude row's.
 
 **Adjustment, 2026-09-24, after the runs.** The attempt ran 9½ Codex runs
-on `gpt-6-astra` at `high`, which G-139 recommended and the owner never
+on `gpt-6-astra` at `high`, which G-260924-7x7p7 recommended and the owner never
 approved, and took the ChatGPT Plus five-hour window from 12% to 95% before
 the owner stopped it. The owner's rule is
-[G-141](G-141-never-run-gpt-6-astra-unless-the.md). The runner now requires
+[G-260925-04ccr](G-260925-04ccr-never-run-gpt-6-astra-un.md). The runner now requires
 `--max-plan-percent` and records each run's plan use from the rollouts'
 `rate_limits`; no further runs are spent, and the report covers the 9 made.
 
 ## Steps
 
-1. Commit this plan and G-139; checkpoint G-135's Next (this session,
+1. Commit this plan and G-260924-7x7p7; checkpoint G-260924-59f5k's Next (this session,
    bounded at the plan; status stays `proposed`).
-2. Set G-135 `active`. Build the Codex branch of `evals/run.py`, its fake
+2. Set G-260924-59f5k `active`. Build the Codex branch of `evals/run.py`, its fake
    and selftest, and the README section; `python3 evals/run.py selftest`
    passes; `go run ./cmd/grove check` passes.
 3. Independent review of the runner before anything is spent; fix and
    re-review within three rounds.
-4. Once G-139 is resolved: one run of `missing-choice` under the mandate,
+4. Once G-260924-7x7p7 is resolved: one run of `missing-choice` under the mandate,
    read in full; adjust parser and fake to what it shows (re-review if the
    change is more than field names); then the remaining runs, and the
-   same-digest Claude pair if G-139 allows it.
+   same-digest Claude pair if G-260924-7x7p7 allows it.
 5. The report review record, a final independent review of the combined
    diff, and the handoff into Review.
