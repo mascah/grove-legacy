@@ -2,12 +2,13 @@
 id: "G-260923-gsthp"
 type: work
 title: "Prepare Grove for external distribution"
-status: active
+status: done
 created: "2026-09-23T16:05:09Z"
-updated: "2026-09-26T20:04:43Z"
+updated: "2026-09-26T20:12:54Z"
 relates_to: ["G-260921-5gz9a", "G-260922-jtsed", "G-260925-358a2"]
 depends_on: ["G-260925-3pj9a", "G-260925-ej1xh"]
 size: small
+candidate: "522f781a231d0ccc401104fa88f613e3437c09dc"
 ---
 
 ## Outcome
@@ -102,21 +103,39 @@ GitHub settings other than the description stay as they are.
 4. The GitHub description is set, or the owner declined it; either is
    recorded here.
 
+## Evidence
+
+Done by hand on `main` on 2026-09-26 at the owner's request, with no branch,
+attempt or independent review, as Next allowed; `candidate` names the commit
+on `main` that holds the edit, accepted by the owner's direction rather than
+through `approve`.
+
+1. `522f781` edits the README's install block (`go install
+   github.com/mascah/grove/cmd/grove@latest`, `@v0.1.0` to pin, `@COMMIT`
+   for a pushed commit, the clone build as the alternative, upgrade as the
+   same line again) and the command reference's `go install` sentence.
+   Neither claims a binary, checksum, release page or site.
+2. `v0.1.0` is an annotated tag at `522f781`, pushed; `git ls-remote --tags
+   origin` shows `refs/tags/v0.1.0^{}` at `522f781a…`.
+3. Through the module proxy, `GOBIN=<scratch> go install
+   github.com/mascah/grove/cmd/grove@v0.1.0` downloaded `v0.1.0` (Go
+   switched to 1.26.8 as `go.mod` requires) and printed `grove v0.1.0
+   (commit unknown) guides sha256:1828d72e34c0 content sha256:07bd3cf86419`;
+   `go build` at the tag printed `grove v0.1.0 (522f781a…)` with the same
+   digests. That installed binary's `init` in a disposable Git repository
+   wrote its files, and its `check` reported `OK: 0 records`.
+4. `gh repo edit --description` set "Local project workspace for humans and
+   agents: work, decisions and knowledge as Markdown in Git, with a CLI and
+   terminal board.", and `gh repo view` reads it back. Topics and homepage
+   were left empty.
+
+Limits: `origin/main` was behind `522f781` when the tag was pushed, so the
+tag was on GitHub before the README that describes it was on the default
+branch; pushing `main` closes that. The license is unchanged (unlicensed,
+the owner's 2026-09-22 choice).
+
 ## Next
 
-Step 1, the README and command-reference edit (acceptance 1), was done by
-hand on `main` on 2026-09-26 at the owner's request, in the commit that set
-this record `active`. Steps 2 to 4 are the owner's, from the main checkout
-with a clean tree, in this order:
-
-```sh
-# 2. publish the tag; the module proxy can lag a few minutes for @latest
-git tag -a v0.1.0 -m "v0.1.0" && git push origin v0.1.0
-# 3. exercise the install away from this checkout
-GOBIN="$(mktemp -d)" go install github.com/mascah/grove/cmd/grove@v0.1.0 && "$(go env GOBIN)"/grove version
-# 4. description
-gh repo edit mascah/grove --description "Local project workspace for humans and agents: work, decisions and knowledge as Markdown in Git, with a CLI and terminal board."
-```
-
-Record the observed `version` line and the description under Evidence, then
-`done` on `main`. Nothing here is published until the owner runs step 2.
+Done. The next distribution change, if any, is a new tag: commit, `git tag
+-a vX.Y.Z -m vX.Y.Z`, push the tag, and `go install …@latest` follows.
+Anything listed above as not selected returns on its stated condition.
