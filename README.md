@@ -54,13 +54,13 @@ and key.
 
 ## Use Grove in another repository
 
-Build one binary from a named commit, put it on `PATH`, and check which
-`grove` answers before `init`:
+Install one binary, put it on `PATH`, and check which `grove` answers
+before `init`:
 
 ```sh
-go build -o "$HOME/.local/bin/grove" ./cmd/grove   # from a clone at that commit
-GOBIN="$HOME/.local/bin" go install github.com/mascah/grove/cmd/grove@COMMIT  # or from the module; pushed commits only
-grove version     # must print "grove … content sha256:…"; a usage error means another grove answered
+GOBIN="$HOME/.local/bin" go install github.com/mascah/grove/cmd/grove@latest   # or @v0.1.0 to pin, or @COMMIT for a pushed commit
+go build -o "$HOME/.local/bin/grove" ./cmd/grove   # or from a clone
+grove version     # prints "grove v0.1.0 (…) guides sha256:… content sha256:…"; a usage error means another grove answered
 grove init        # at the checkout's top, or: grove --project /absolute/path init
 grove check
 git add grove.yaml grove .claude .agents && git commit -m "chore: set up grove"   # at the top
@@ -73,7 +73,7 @@ work, and `/grove-work G-001` carries it out (`$grove-shape` and `$grove-work`
 in Codex), or `grove run G-001 --budget USD --permission-mode MODE` starts it
 as a headless attempt ([Attempts](docs/commands.md#attempts)).
 [Init](docs/commands.md#init) says what `init` writes and how to point Codex
-at the right binary. To upgrade, install the new `grove`, then run
+at the right binary. To upgrade, run the same `go install` line again, then
 `grove init --check`, `grove init` and commit what changed
 ([Entrypoint revisions](docs/commands.md#entrypoint-revisions)).
 

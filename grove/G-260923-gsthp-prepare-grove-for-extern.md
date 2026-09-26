@@ -2,9 +2,9 @@
 id: "G-260923-gsthp"
 type: work
 title: "Prepare Grove for external distribution"
-status: proposed
+status: active
 created: "2026-09-23T16:05:09Z"
-updated: "2026-09-26T20:02:47Z"
+updated: "2026-09-26T20:04:43Z"
 relates_to: ["G-260921-5gz9a", "G-260922-jtsed", "G-260925-358a2"]
 depends_on: ["G-260925-3pj9a", "G-260925-ej1xh"]
 size: small
@@ -104,12 +104,12 @@ GitHub settings other than the description stay as they are.
 
 ## Next
 
-Small enough for the owner to do by hand from the main checkout with a clean
-tree, in this order, or to assign with `/grove-work G-260923-gsthp` for step
-one and take the rest after review:
+Step 1, the README and command-reference edit (acceptance 1), was done by
+hand on `main` on 2026-09-26 at the owner's request, in the commit that set
+this record `active`. Steps 2 to 4 are the owner's, from the main checkout
+with a clean tree, in this order:
 
 ```sh
-# 1. edit README.md and docs/commands.md (acceptance 1), commit
 # 2. publish the tag; the module proxy can lag a few minutes for @latest
 git tag -a v0.1.0 -m "v0.1.0" && git push origin v0.1.0
 # 3. exercise the install away from this checkout

@@ -574,8 +574,9 @@ presents a release. Every artifact of one release, whatever its platform,
 prints the same version, commit, `guides` and `content`, with neither `vcs`
 nor `modified`; any difference means one was built from other inputs.
 
-`go install …@COMMIT` resolves only a pushed commit, and rebuilding an
-installed binary is manual.
+`go install …@v0.1.0` resolves a pushed tag, `@latest` the newest one and
+`@COMMIT` only a pushed commit; upgrading an installed binary is running the
+same line again, and nothing self-updates.
 
 `guide work`, `guide shape` and `guide review` print the
 [work](work-execution.md), [shaping](work-shaping.md) and
