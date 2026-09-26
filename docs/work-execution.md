@@ -238,7 +238,11 @@ that blocks it, resolved ones included, since the answer is the constraint;
 every prerequisite it builds on; the plan or review of a prerequisite whose
 interface it uses; and the terms and decisions it links. The listing told you
 these exist. It did not tell you what they require, and work that contradicts
-an unread answer is not done. Before introducing or changing a domain
+an unread answer is not done. An answer is only what its answerer wrote: an
+item the unit depends on that a resolved question leaves blank or omits is a
+[missing human decision](#when-a-human-decision-is-missing) for that item,
+never the recommendation, and what a paid step spends (model, effort, runs,
+budget or cap) is always such an item. Before introducing or changing a domain
 concept, read the terms and decisions that touch it, found as the shaping
 guide's step 2 finds them (`grove list` and a text search of the record
 bodies), since `context` lists only what the record links; a conflict with a
@@ -378,6 +382,12 @@ are yours to make. A finished candidate awaiting the owner's verdict is not a
 missing decision: that wait is Review status (step 8). Do not build the part that seems independent of the answer
 when shipping it would make the choice in practice, such as a default
 behaviour; stop that unit before implementation instead.
+
+A question you write never offers that a blank item takes the
+recommendation: your recommendation is not a decision, silence is not
+agreement, and an item left blank or missing keeps the question open and
+blocking. Ask for an explicit value on each consequential item, above all
+what a paid step spends: model, effort, runs, budget or cap.
 
 - **Interactive:** ask one concise question, with your recommendation, and
   continue independent work while waiting. Record a consequential answer as
