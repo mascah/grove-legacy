@@ -2,10 +2,11 @@
 id: "G-260925-beby3"
 type: work
 title: "Keep a blank mandate answer from approving spend"
-status: active
+status: review
 created: "2026-09-25T03:47:15Z"
-updated: "2026-09-26T20:46:28Z"
+updated: "2026-09-26T20:49:11Z"
 relates_to: ["G-260924-59f5k", "G-260924-7x7p7", "G-260925-04ccr", "G-260925-gymkr", "G-260925-02jsj", "G-260924-ecs9m"]
+candidate: "f9b38bb574e2e5a3af81ba43b96b01915768c103"
 ---
 
 ## Outcome
