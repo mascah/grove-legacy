@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"path"
 	"strings"
 	"testing"
 
@@ -63,7 +64,7 @@ func TestRenumberThroughTheCLI(t *testing.T) {
 		var m map[string]string
 		json.Unmarshal([]byte(l), &m)
 		if len(m) != 4 || !strings.HasPrefix(m["from_path"], "docs/records/") || !project.IDPattern.MatchString(m["id"]) || len(m["id"]) != len("G-260925-7k2qm") ||
-			!strings.HasPrefix(m["path"], "docs/records/"+m["id"]+"-") {
+			!strings.HasPrefix(m["path"], path.Dir(m["from_path"])+"/"+m["id"]+"-") { // a record keeps its folder
 			t.Fatalf("map line %q", l)
 		}
 	}
