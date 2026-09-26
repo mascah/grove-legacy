@@ -55,12 +55,10 @@ func showJSON(t *testing.T, root, id string) map[string]any {
 func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 	t.Parallel()
 	root := gitFixture(t)
+	id := newID(t, root, "work", "Workflow record", "--slug", "workflow")
+	path := "docs/records/" + id + "-workflow.md"
 	var out, errOut bytes.Buffer
-	if code := Run([]string{"new", "work", "Workflow record", "--slug", "workflow"}, root, &out, &errOut); code != 0 {
-		t.Fatal(errOut.String())
-	}
-	path := strings.TrimSpace(out.String())
-	shown := showJSON(t, root, "G-003")
+	shown := showJSON(t, root, id)
 	created := shown["source"].(string)
 	steps := []struct {
 		args    []string
@@ -74,10 +72,10 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 		{[]string{"--set", "status=active"}, true, "active"},
 	}
 	for _, step := range steps {
-		expect := showJSON(t, root, "G-003")["revision"].(string)
+		expect := showJSON(t, root, id)["revision"].(string)
 		out.Reset()
 		errOut.Reset()
-		args := append([]string{"update", "G-003", "--expect", expect}, step.args...)
+		args := append([]string{"update", id, "--expect", expect}, step.args...)
 		if code := Run(args, filepath.Join(root, "docs"), &out, &errOut); code != 0 {
 			t.Fatalf("%v: %s", args, errOut.String())
 		}
@@ -85,8 +83,8 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 		if err := json.Unmarshal(out.Bytes(), &result); err != nil {
 			t.Fatal(err)
 		}
-		after := showJSON(t, root, "G-003")
-		want := map[string]any{"id": "G-003", "path": path, "revision": after["revision"], "changed": step.changed}
+		after := showJSON(t, root, id)
+		want := map[string]any{"id": id, "path": path, "revision": after["revision"], "changed": step.changed}
 		if !reflect.DeepEqual(result, want) {
 			t.Fatalf("got %v want %v", result, want)
 		}
@@ -101,8 +99,8 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 		}
 		created = after["source"].(string)
 	}
-	final := showJSON(t, root, "G-003")["source"].(string)
-	createdLine := strings.Split(strings.SplitN(showJSON(t, root, "G-003")["source"].(string), "created: ", 2)[1], "\n")[0]
+	final := showJSON(t, root, id)["source"].(string)
+	createdLine := strings.Split(strings.SplitN(showJSON(t, root, id)["source"].(string), "created: ", 2)[1], "\n")[0]
 	if !strings.Contains(created, "created: "+createdLine) || !strings.HasSuffix(final, "## Outcome\n\n## Constraints\n\n## Acceptance\n\n## Next\n") {
 		t.Fatalf("created or body changed:\n%s", final)
 	}
@@ -114,7 +112,7 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 		t.Fatalf("check: %s %s", out.String(), errOut.String())
 	}
 	out.Reset()
-	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), "G-003  work      active    Renamed: 版本 \\\"quoted\\\"") {
+	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), id+"  work      active    Renamed: 版本 \\\"quoted\\\"") {
 		t.Fatalf("list: %s", out.String())
 	}
 	// The new record lands flat under the record root, not in this type

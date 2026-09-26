@@ -14,9 +14,9 @@ import (
 func TestParse(t *testing.T) {
 	t.Parallel()
 	good := map[string]Selection{
-		"committed:refs/heads/main@0123456789ab:G-001@0123456789ab:0123456789abcdef":          {Kind: "committed", Ref: "refs/heads/main", Commit: "0123456789ab", ID: "G-001", Revision: "0123456789ab", Binding: "0123456789abcdef"},
-		"live:.:refs/heads/a@b@0123456789ab:G-1000@0123456789ab:0123456789abcdef":             {Kind: "live", Locator: ".", Ref: "refs/heads/a@b", Commit: "0123456789ab", ID: "G-1000", Revision: "0123456789ab", Binding: "0123456789abcdef"},
-		"live:odd-name-with-space:detached@0123456789ab:G-1001@0123456789ab:0123456789abcdef": {Kind: "live", Locator: "odd-name-with-space", Commit: "0123456789ab", ID: "G-1001", Revision: "0123456789ab", Binding: "0123456789abcdef"},
+		"committed:refs/heads/main@0123456789ab:G-001@0123456789ab:0123456789abcdef":         {Kind: "committed", Ref: "refs/heads/main", Commit: "0123456789ab", ID: "G-001", Revision: "0123456789ab", Binding: "0123456789abcdef"},
+		"live:.:refs/heads/a@b@0123456789ab:G-260925-7k2qm@0123456789ab:0123456789abcdef":    {Kind: "live", Locator: ".", Ref: "refs/heads/a@b", Commit: "0123456789ab", ID: "G-260925-7k2qm", Revision: "0123456789ab", Binding: "0123456789abcdef"},
+		"live:odd-name-with-space:detached@0123456789ab:G-101@0123456789ab:0123456789abcdef": {Kind: "live", Locator: "odd-name-with-space", Commit: "0123456789ab", ID: "G-101", Revision: "0123456789ab", Binding: "0123456789abcdef"},
 	}
 	for selector, want := range good {
 		if got, err := Parse(selector); err != nil || got != want {

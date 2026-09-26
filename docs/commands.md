@@ -18,7 +18,8 @@ the work record that delivered it.
 
 `versions [ID] [--json]` shows one row per version of each record: its
 committed version on every local branch tip and its live version in every
-registered worktree, grouped by ID with each source's own status, so main can
+registered worktree, grouped by ID in [ID order](record-model.md#identity-and-dates)
+with each source's own status, so main can
 see a feature branch's progress without switching or merging. Live rows say
 how the file compares with that checkout's HEAD (`unchanged`, `modified`,
 `renamed`, `added`, `deleted`). Every row ends with a selector that binds the
@@ -153,7 +154,8 @@ each with `GROUP`, `LAYER`, `NEEDS` (its `depends_on`), `UNLOCKS` (the
 unfinished work that names it) and `DELIVERY` (below). Work in one group needs other work in it,
 directly or through anything else; a separate group is unrelated. A layer is
 one more than the deepest work of its group that it needs, so layer 0 needs
-no unfinished work. Equal layers have no declared order, which is not
+no unfinished work. Equal layers list in ID order and have no declared
+order, which is not
 evidence that the work can proceed in parallel. The prerequisites of that
 work which are not unfinished (done, abandoned) are listed after it.
 

@@ -135,9 +135,8 @@ State the checkout, branch, and HEAD that will hold the records.
   the session started in, and never reset, clean, or reuse another session's
   checkout.
 
-`grove new` allocates the next ID across the repository's linked worktrees; a
-separate clone has its own counter, so check for collisions when proposals
-move between clones.
+`grove new` issues IDs without shared state, so records created in separate
+clones need no collision check when proposals move between them.
 
 ## 5. Write the records
 

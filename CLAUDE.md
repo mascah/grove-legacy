@@ -50,9 +50,11 @@ applies whatever that record's status; a rule naming none is this file's own.
 - `schema_version: 3` is the only schema, with no backward compatibility
   before the first release; inspect an old commit with the CLI in that
   commit (G-065, G-052).
-- `new` allocates from one counter in Git's common directory, shared by every
-  linked worktree, and `new` and `update` serialize through a shared write
-  lock (G-007, G-009).
+- `new` and `convert` issue `G-YYMMDD-xxxxx` from the UTC date and a random
+  tail with no shared state, drawing again while a local ref or worktree
+  holds the ID; legacy three-digit IDs stay valid and are never issued; and
+  `new` and `update` serialize through a shared write lock (G-194, G-195,
+  G-009).
 - Every Git process Grove or its tests start goes through `repo.Command`,
   never a bare `exec.Command("git", …)`, and a hook that runs tests scrubs
   `GIT_DIR` and the other repository variables as well (G-089).
@@ -149,7 +151,7 @@ applies whatever that record's status; a rule naming none is this file's own.
 - Do not merge or push unless the assignment says so.
 - Fixtures that create records run in a disposable clone reached by an
   explicit absolute `--project` path, never a `cd` that can fail: `new` in
-  any worktree of this repository advances the shared ID counter.
+  any worktree of this repository writes a record there.
 
 ## Outside this repository
 

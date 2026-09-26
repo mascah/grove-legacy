@@ -177,11 +177,7 @@ func gitError(command, stderr string, err error) error {
 	return fmt.Errorf("git %s: %w", command, err)
 }
 
-// AllocatorLock serializes ID reservation; WriteLock serializes record
-// publication. No command holds both at once.
-func AllocatorLock(common string) (func(), error) {
-	return Lock(filepath.Join(common, "grove", "lock"))
-}
+// WriteLock serializes record creation and publication.
 func WriteLock(common string) (func(), error) {
 	return Lock(filepath.Join(common, "grove", "write.lock"))
 }

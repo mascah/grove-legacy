@@ -1,20 +1,19 @@
-// Package create allocates shared sequential IDs and writes new records.
+// Package create issues coordination-free IDs and writes new records.
 // The reader stays Git-free; Git access goes through internal/repo.
 package create
 
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -35,13 +34,13 @@ var bodies = map[string]string{
 
 var (
 	slugPattern = regexp.MustCompile(`^[a-z0-9-]+$`)
-	idLine      = regexp.MustCompile(`^id:\s*["']?` + project.NeutralPrefix + `-([0-9]+)["']?\s*$`)
+	idLine      = regexp.MustCompile(`^id:\s*["']?(` + project.IDForm + `)["']?\s*$`)
 )
 
-// New allocates the next ID for kind, creates the record without overwriting
+// New issues an ID for kind, creates the record without overwriting
 // anything, and reloads the project so an unreadable result fails loudly.
 // It returns the created file's path relative to the project root.
-func New(p *project.Project, kindName, title, slug string, now time.Time, report io.Writer) (string, error) {
+func New(p *project.Project, kindName, title, slug string, now time.Time) (string, error) {
 	k := project.Type(kindName)
 	if k == nil {
 		return "", fmt.Errorf("record type must be work, question, decision, term, plan, review, or page")
@@ -51,7 +50,7 @@ func New(p *project.Project, kindName, title, slug string, now time.Time, report
 		return "", fmt.Errorf("a nonempty title is required")
 	}
 	// A term's title is its identity, so new can collide where other types
-	// cannot. Refuse before reserving; a term that appears after this load is
+	// cannot. Refuse before locking; a term that appears after this load is
 	// refused again under the write lock, before anything is written.
 	if err := definedTerm(p, kindName, title); err != nil {
 		return "", err
@@ -65,12 +64,31 @@ func New(p *project.Project, kindName, title, slug string, now time.Time, report
 	if err != nil {
 		return "", err
 	}
-	// Every type creates flat in the record root under the one neutral ID.
-	n, err := allocate(common, p.Root, p.RecordDir, showPrefix, report)
+	// The ID is drawn under the write lock that serializes publication with
+	// update, so a second new in any worktree sees the first one's file.
+	unlock, err := repo.WriteLock(common)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("nothing created: %w", err)
 	}
-	id := fmt.Sprintf("%s-%03d", project.NeutralPrefix, n)
+	defer unlock()
+	current, ds := project.Load(p.Root, p.Root)
+	if len(ds) != 0 {
+		return "", fmt.Errorf("nothing created: the project no longer validates:\n%s", diagnostics(ds))
+	}
+	if current.RecordDir != p.RecordDir {
+		return "", fmt.Errorf("nothing created: the record root changed from %s to %s since it was read", p.RecordDir, current.RecordDir)
+	}
+	if err := definedTerm(current, kindName, title); err != nil {
+		return "", fmt.Errorf("nothing created: %w", err)
+	}
+	if !bytes.Equal(current.Config, p.Config) {
+		return "", fmt.Errorf("nothing created: grove.yaml changed since it was read; inspect it and retry")
+	}
+	id, err := Issue(current, showPrefix, now)
+	if err != nil {
+		return "", fmt.Errorf("nothing created: %w", err)
+	}
+	// Every type creates flat in the record root.
 	relative := path.Join(filepath.ToSlash(p.RecordDir), id+"-"+slug+".md")
 	stamp := now.UTC().Format("2006-01-02T15:04:05Z")
 	status := ""
@@ -81,33 +99,12 @@ func New(p *project.Project, kindName, title, slug string, now time.Time, report
 	content := fmt.Sprintf("---\nid: %q\ntype: %s\ntitle: %q\n%screated: %q\nupdated: %q\n---\n\n%s",
 		id, kindName, title, status, stamp, stamp, bodies[kindName])
 	full := filepath.Join(p.Root, filepath.FromSlash(relative))
-	// The reservation is already durable, so a failure from here on consumes
-	// it. Publication is serialized with update through the shared write lock,
-	// which is only taken after the allocator lock was released.
-	unlock, err := repo.WriteLock(common)
-	if err != nil {
-		return "", fmt.Errorf("%s reserved but not created: %w", id, err)
-	}
-	defer unlock()
-	current, ds := project.Load(p.Root, p.Root)
-	if len(ds) != 0 {
-		return "", fmt.Errorf("%s reserved but not created: the project no longer validates:\n%s", id, diagnostics(ds))
-	}
-	if current.RecordDir != p.RecordDir {
-		return "", fmt.Errorf("%s reserved but not created: the record root changed from %s to %s during allocation", id, p.RecordDir, current.RecordDir)
-	}
-	if err := definedTerm(current, kindName, title); err != nil {
-		return "", fmt.Errorf("%s reserved but not created: %w", id, err)
-	}
-	if !bytes.Equal(current.Config, p.Config) {
-		return "", fmt.Errorf("%s reserved but not created: grove.yaml changed during allocation; inspect it and retry", id)
-	}
 	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
-		return "", fmt.Errorf("%s reserved but not created: %w", id, err)
+		return "", fmt.Errorf("nothing created: %w", err)
 	}
 	f, err := os.OpenFile(full, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
-		return "", fmt.Errorf("%s reserved but not created: %w", id, err)
+		return "", fmt.Errorf("nothing created: %w", err)
 	}
 	if _, err := f.WriteString(content); err != nil {
 		f.Close()
@@ -154,8 +151,8 @@ func Slug(title string) string {
 		}
 	}
 	s := b.String()
-	if len(s) > 32 {
-		s = s[:32]
+	if len(s) > 24 {
+		s = s[:24]
 	}
 	s = strings.TrimRight(s, "-")
 	if s == "" {
@@ -164,117 +161,69 @@ func Slug(title string) string {
 	return s
 }
 
-// Allocate reserves the next number in the Git repository containing root.
-// Every worktree shares one lock under the Git common directory; the issued
-// number is never at or below an ID found in any local ref or worktree's live
-// records. An existing next-ids file from before the one neutral counter is
-// simply ignored.
-func Allocate(root, recordDir string, report io.Writer) (int, error) {
-	common, showPrefix, err := repo.CommonDir(root)
-	if err != nil {
-		return 0, err
+// tries bounds the draws for one ID. With 32^5 tails a day, needing more
+// means a broken random source, not bad luck.
+const tries = 8
+
+const crockford = "0123456789abcdefghjkmnpqrstvwxyz"
+
+// tail draws the random part of an ID from crypto/rand; tests replace it.
+var tail = func() string {
+	b := make([]byte, 5)
+	rand.Read(b) // never fails: crypto/rand crashes the program instead
+	for i := range b {
+		b[i] = crockford[b[i]&31]
 	}
-	return allocate(common, root, recordDir, showPrefix, report)
+	return string(b)
 }
 
-func allocate(common, root, recordDir, showPrefix string, report io.Writer) (int, error) {
-	unlock, err := repo.AllocatorLock(common)
+// Issue draws an ID for now, the UTC date and a random tail, that no record
+// in p, on any local ref or in any worktree already holds (G-194). It reads
+// no shared state and writes nothing; callers hold the write lock.
+func Issue(p *project.Project, showPrefix string, now time.Time) (string, error) {
+	day := project.NeutralPrefix + "-" + now.UTC().Format("060102") + "-"
+	used, err := usedIDs(p.Root, p.RecordDir, showPrefix, day)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
-	defer unlock()
-	counterPath := filepath.Join(common, "grove", "neutral-ids")
-	current, known, err := readCounter(counterPath)
-	if err != nil {
-		return 0, err
+	for _, r := range p.Records {
+		used[r.ID] = true
 	}
-	floor, err := highestUsed(root, recordDir, showPrefix)
-	if err != nil {
-		return 0, err
-	}
-	next := floor + 1
-	switch {
-	case !known:
-		fmt.Fprintf(report, "Initialized the %s counter at %d from records in local refs and worktrees; reservations for records never written or since deleted cannot be recovered.\n", project.NeutralPrefix, next)
-	case current < next:
-		fmt.Fprintf(report, "The %s counter (%d) was below records in use; continuing at %d.\n", project.NeutralPrefix, current, next)
-	default:
-		next = current
-	}
-	if err := writeCounter(counterPath, next+1); err != nil {
-		return 0, fmt.Errorf("no ID issued: %w", err)
-	}
-	return next, nil
-}
-
-func readCounter(path string) (int, bool, error) {
-	data, err := os.ReadFile(path)
-	if errors.Is(err, fs.ErrNotExist) {
-		return 0, false, nil
-	}
-	if err != nil {
-		return 0, false, err
-	}
-	fields := strings.Fields(strings.TrimSpace(string(data)))
-	var n int
-	if len(fields) == 2 {
-		n, err = strconv.Atoi(fields[1])
-	}
-	if len(fields) != 2 || err != nil || n < 1 || fields[0] != project.NeutralPrefix {
-		return 0, false, fmt.Errorf("%s is corrupt (%q); fix or remove it to reinitialize from existing records", path, strings.TrimSpace(string(data)))
-	}
-	return n, true, nil
-}
-
-func writeCounter(path string, n int) error {
-	tmp, err := os.CreateTemp(filepath.Dir(path), "neutral-ids-*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := fmt.Fprintf(tmp, "%s %d\n", project.NeutralPrefix, n); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), path)
-}
-
-// highestUsed scans committed records on every local ref and live records in
-// every worktree. Lines that merely look like IDs only raise the floor.
-// ponytail: one git grep over all refs per allocation; scan only on
-// initialization or mismatch if repositories with many refs make this slow.
-func highestUsed(root, recordDir, showPrefix string) (int, error) {
-	highest := 0
-	note := func(line string) {
-		m := idLine.FindStringSubmatch(line)
-		if m == nil {
-			return
+	for range tries {
+		if id := day + tail(); !used[id] {
+			return id, nil
 		}
-		if n, err := strconv.Atoi(m[1]); err == nil && n > highest {
-			highest = n
+	}
+	return "", fmt.Errorf("every one of %d random IDs for %s was already in use", tries, strings.TrimSuffix(day, "-"))
+}
+
+// usedIDs collects the IDs starting with day in committed records on every
+// local ref and live records in every worktree. Lines that merely look like
+// IDs only count as used.
+// ponytail: one git grep over all refs per new; narrow the refs if
+// repositories with many refs make this slow.
+func usedIDs(root, recordDir, showPrefix, day string) (map[string]bool, error) {
+	used := map[string]bool{}
+	note := func(line string) {
+		if m := idLine.FindStringSubmatch(line); m != nil {
+			used[m[1]] = true
 		}
 	}
 	refs, err := repo.Git(root, "for-each-ref", "--format=%(objectname)", "refs/heads", "refs/remotes", "refs/tags")
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	if trees := strings.Fields(refs); len(trees) != 0 {
-		// git grep only pre-filters; note validates every line.
-		args := append([]string{"grep", "-h", "-I", "-e", "^id:"}, trees...)
+		// git grep only pre-filters; note validates every line. day is
+		// letters, digits and hyphens, so it is its own pattern.
+		args := append([]string{"grep", "-h", "-I", "-e", "^id:.*" + day}, trees...)
 		cmd := repo.Command(context.Background(), root, append(args, "--", recordDir)...)
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		out, err := cmd.Output()
 		var exit *exec.ExitError
 		if err != nil && !(errors.As(err, &exit) && exit.ExitCode() == 1) { // 1 means no matches
-			return 0, fmt.Errorf("git grep: %s", strings.TrimSpace(stderr.String()))
+			return nil, fmt.Errorf("git grep: %s", strings.TrimSpace(stderr.String()))
 		}
 		for _, line := range strings.Split(string(out), "\n") {
 			note(line)
@@ -282,7 +231,7 @@ func highestUsed(root, recordDir, showPrefix string) (int, error) {
 	}
 	worktrees, err := repo.Worktrees(root)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	for _, w := range worktrees {
 		tree := filepath.Join(w.Path, filepath.FromSlash(showPrefix), recordDir)
@@ -303,10 +252,10 @@ func highestUsed(root, recordDir, showPrefix string) (int, error) {
 			return nil
 		})
 		// A worktree without the record folder is normal; anything else would
-		// silently lower the floor and risk reissuing an ID.
+		// silently miss an ID in use and risk issuing it again.
 		if err != nil && !(errors.Is(err, fs.ErrNotExist) && strings.HasPrefix(err.Error(), "lstat "+tree)) {
-			return 0, fmt.Errorf("cannot scan worktree records: %w", err)
+			return nil, fmt.Errorf("cannot scan worktree records: %w", err)
 		}
 	}
-	return highest, nil
+	return used, nil
 }

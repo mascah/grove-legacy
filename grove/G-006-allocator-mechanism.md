@@ -2,10 +2,10 @@
 id: "G-006"
 type: decision
 title: Allocate IDs with flock, a counter file, and a ref scan floor
-status: accepted
-relates_to: ["G-004", "G-007"]
+status: superseded
+relates_to: ["G-004", "G-007", "G-194"]
 created: "2026-09-19T15:25:51Z"
-updated: "2026-09-19T15:52:00Z"
+updated: "2026-09-26T05:21:42Z"
 formerly: "D-003"
 ---
 
@@ -71,3 +71,10 @@ Revisit if Windows support is required (no `flock`; use `LockFileEx`), if the
 ref scan becomes slow on large repositories (scan only on initialization or
 mismatch, keeping the counter authoritative), or if separate clones need a
 shared allocation authority.
+
+## Superseded
+
+[G-194](G-194-identify-records-by-creation-dat.md), accepted 2026-09-25,
+retired this mechanism for future creation, and
+[G-195](G-195-coordination-free-record-ids.md) deleted the counter, the
+allocator lock and the floor scan. The IDs it issued stay valid.

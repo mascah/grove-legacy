@@ -2,10 +2,12 @@
 id: "G-195"
 type: work
 title: "Coordination-free record IDs"
-status: proposed
+status: review
 created: "2026-09-26T02:56:11Z"
-updated: "2026-09-26T02:58:10Z"
+updated: "2026-09-26T15:12:17Z"
 relates_to: ["G-194", "G-004", "G-006", "G-064"]
+candidate: "f6f180279905e07427b31851ca32569f92475992"
+approved: "f6f180279905e07427b31851ca32569f92475992"
 ---
 
 ## Outcome
@@ -88,9 +90,104 @@ form. The derived slug cap is in `create.Slug`.
 7. The owner opens the board and a directory listing with a few new
    records and judges the names readable in an actual terminal.
 
+## Evidence
+
+Implemented headless on branch `worktree-G-195`
+(`.claude/worktrees/worktree-G-195`), based on main `fa4acc1`, from this
+record at `sha256:dc126f3f…` and the plan
+[G-199](G-199-coordination-free-record-ids.md) as committed in `613cfb1`.
+Code and documents: `f5cbdfa`, `653a8b6`, `af6d0be`, `a9a63c2` (reviewed
+tip). The candidate is the commit that adds this evidence and the review
+record on top of `a9a63c2`, and changes nothing outside `grove/`.
+
+Against acceptance:
+
+1. `create.Issue` draws `G-YYMMDD-` plus five Crockford base32 characters
+   from `crypto/rand`, under the write lock, and draws again, at most eight
+   times, while the ID is held by the loaded project, an `id:` line on any
+   local branch, remote-tracking ref or tag (one `git grep` for that day's
+   prefix), or a live record in any worktree. Tests:
+   `TestNewInSeparateClonesMergesClean` (two clones, three `new` each, pull,
+   `check` OK: 8 records); `TestNewSkipsIDsInRefsAndWorktrees` (injected
+   tails held only in branch history, only in another worktree, only here);
+   `TestIssueBoundsItsDraws` (exactly 8 draws, then nothing created);
+   `TestNewConcurrentAcrossWorktrees` (12 concurrent `new` from a source that
+   repeats every tail: 12 distinct IDs). Mutating the grep pattern fails the
+   ref test. By hand, two clones of this checkout each issued date-form IDs
+   and `check` passed after the pull (197 records).
+2. `project.IDForm` is `G-(?:[0-9]{3}|[0-9]{6}-[0-9a-hjkmnp-tv-z]{5})` and
+   `G-000` is refused. `check` here: `OK: 193 records`, no rename.
+   `G-1234`, `G-01`, `G-0001`, short, uppercase and `l` tails fail
+   (`TestStrictRecordMetadata`). `new` and `convert` only issue through
+   `Issue`.
+3. `neutral-ids`, `grove/lock`, `create.Allocate` and `repo.AllocatorLock`
+   are deleted; `TestNewCreatesOnlyTheWriteLock`,
+   `TestCoordinationStateStaysUnderTheCommonDirectory` and the convert
+   refusal test find only `write.lock`; the read-only commands still create
+   nothing (`TestNewCreatesRecordAndReadCommandsLeaveNoState`). No fetch.
+4. `project.CompareIDs` (length, then bytes) orders `versions` groups,
+   `deps` rows, groups and outside prerequisites, candidate groups and the
+   board's blocking and unlocks lists: legacy first, then date form by date
+   (`TestOverviewOrdersLegacyThenDateForm`, which fails with a plain sort;
+   `TestOrderUsesCreationThenNumericID`). Board card order is unchanged.
+5. `create.Slug` caps at 24 (`TestSlug`); a generated filename is at most
+   42 characters, as the demonstration showed; `--slug` keeps only its
+   character check.
+6. The record model (identity, placement, issue, conversion, Identity and
+   dates, `new`), the commands reference (ID order), the shaping and work
+   guides, README (opening and index) and `CLAUDE.md` (contract and fixture
+   lines) describe the date form; `grove --help` too. `grove guide model`
+   prints it; the shipped-document test now also checks date-form IDs.
+7. Not judged: the owner's.
+
+Decisions taken, within the outcome:
+
+- Legacy IDs validate as exactly three digits, not the proposed `{3,}`,
+  because acceptance 2 requires `G-1234` to fail. Every legacy ID here and
+  in nullsec (highest G-127) is below G-1000.
+- The ID is drawn under the write lock, so two `new` in worktrees of one
+  repository serialize and see each other; nothing is reserved, and errors
+  say "nothing created" or "nothing converted".
+- Tests inject the tail through the package variable `create.tail`; tests
+  outside `create` read issued IDs from `new`'s output.
+- Contrary to the observed note above, `internal/attempt` parsed IDs back
+  (`^[A-Z]+-[0-9]+$`): `run` and attempt listings now use `IDForm`
+  (`TestRefusals`, `TestAttemptNames`).
+- The board's deps preview and search pad the ID column to the longest ID,
+  keeping today's widths as the minimum.
+- `evals/run.py` reads IDs by pattern, not as five characters.
+- Knowledge: G-006 is `superseded`, linked to G-194; G-004 and G-064 stay
+  `accepted`, linked forward to G-194 with a line naming what it revised.
+
+Verification at `a9a63c2`: `go vet ./...` clean; `gofmt -l .` empty;
+`go run ./cmd/grove check` OK: 193 records;
+`go test -count=1 -timeout 120s ./...` all packages ok; at `653a8b6`
+`python3 internal/tui/testdata/terminal.py BINARY` all ok; at `af6d0be`
+`python3 evals/run.py selftest` ok.
+
+Review: [G-260926-afe5w](G-260926-afe5w-review-of-g-195-coordina.md), three
+rounds, `Open findings: none`.
+
+Limits: `-race` and the Linux container run were not done (no concurrency
+primitive changed; the lock is the existing one). With 14-character IDs a
+card's version tag clips below about 29-column board columns. The change is
+about 1,100 lines, over the standing policy's `max_lines`, so it waits for
+the owner.
+
 ## Next
 
-Assign. The attempt's plan should settle the ID comparator, the retry bound
-and how tests inject the tail generator; nothing here waits on another
-record. The brief's foundation sentence on sequential IDs changes at the
-owner's hand, with this work or before it.
+In review, awaiting the owner's judgment, acceptance 7 included: open the
+board and a directory listing with a few new records (for example, run
+`go run ./cmd/grove new page "Probe"` in a disposable clone) in a real
+terminal. Owner decisions outside this work: whether G-004 should become
+`superseded` too, and the brief's foundation sentence on sequential IDs and
+clone collision checks (grove/brief.md), which is the owner's to change.
+
+To accept, in this checkout, then in main's:
+
+```sh
+go run ./cmd/grove approve G-195 "VERDICT"
+go run ./cmd/grove integrate G-195
+```
+
+Verdict on candidate f6f1802, 2026-09-26: approved

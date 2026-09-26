@@ -97,7 +97,7 @@ func TestInitCreatesAProjectAndRerunsWithoutTouchingUserFiles(t *testing.T) {
 		t.Fatalf("the initialized project must validate: %d %s %s", code, checkOut.String(), checkErr.String())
 	}
 	checkOut.Reset()
-	if code := Run([]string{"--project", root, "new", "work", "First"}, t.TempDir(), &checkOut, &checkErr); code != 0 || checkOut.String() != "grove/G-001-first.md\n" {
+	if code := Run([]string{"--project", root, "new", "work", "First"}, t.TempDir(), &checkOut, &checkErr); code != 0 || !strings.HasSuffix(checkOut.String(), "-first.md\n") {
 		t.Fatalf("new must work in the initialized project: %d %s %s", code, checkOut.String(), checkErr.String())
 	}
 
@@ -261,7 +261,7 @@ func TestGuideAndVersionNeedNoProject(t *testing.T) {
 	// G- IDs of their own, so none links outside itself, names a G- ID beyond
 	// its own examples, or points at Grove's repository or the predecessor.
 	shipped := map[string]string{}
-	examples := map[string][]string{"work": {"G-030", "G-031"}, "shape": {"G-037"}, "review": nil, "model": {"G-001", "G-003", "G-1000"}}
+	examples := map[string][]string{"work": {"G-030", "G-031"}, "shape": {"G-037"}, "review": nil, "model": {"G-001", "G-003", "G-999", "G-1234", "G-260925-7k2qm"}}
 	for name := range examples {
 		var out, errOut bytes.Buffer
 		Run([]string{"guide", name}, t.TempDir(), &out, &errOut)
@@ -273,7 +273,7 @@ func TestGuideAndVersionNeedNoProject(t *testing.T) {
 				t.Errorf("%s links outside itself: %s", name, link[1])
 			}
 		}
-		for _, id := range regexp.MustCompile(`G-[0-9]+`).FindAllString(text, -1) {
+		for _, id := range regexp.MustCompile(`G-[0-9]+(?:-[0-9a-z]{5}\b)?`).FindAllString(text, -1) {
 			if !slices.Contains(examples[name], id) {
 				t.Errorf("%s names %s, which is a live ID in an adopting project", name, id)
 			}

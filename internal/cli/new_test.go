@@ -15,7 +15,7 @@ import (
 	"github.com/mascah/grove/internal/repo"
 )
 
-// gitFixture commits the plain fixture so new can allocate IDs.
+// gitFixture commits the plain fixture so new can issue IDs.
 func gitFixture(t *testing.T) string {
 	t.Helper()
 	if _, err := exec.LookPath("git"); err != nil {
@@ -41,27 +41,58 @@ func TestNewCreatesRecordAndReadCommandsLeaveNoState(t *testing.T) {
 		}
 	}
 	if _, err := os.Stat(state); !errors.Is(err, fs.ErrNotExist) {
-		t.Fatalf("read commands must not create allocator state: %v", err)
+		t.Fatalf("read commands must not create coordination state: %v", err)
+	}
+	second := newID(t, root, "work", "Second thing", "--slug", "second")
+	if _, err := os.Stat(filepath.Join(root, "docs/records", second+"-second.md")); err != nil {
+		t.Fatal(err)
 	}
 	var out, errOut bytes.Buffer
-	if code := Run([]string{"new", "work", "Second thing", "--slug", "second"}, root, &out, &errOut); code != 0 {
-		t.Fatal(errOut.String())
-	}
-	if out.String() != "docs/records/G-003-second.md\n" || !strings.Contains(errOut.String(), "Initialized") {
-		t.Fatalf("stdout=%q stderr=%q", out.String(), errOut.String())
-	}
-	out.Reset()
-	errOut.Reset()
-	if code := Run([]string{"--project", root, "new", "question", "Why?"}, t.TempDir(), &out, &errOut); code != 0 || out.String() != "docs/records/G-004-why.md\n" {
+	if code := Run([]string{"--project", root, "new", "question", "Why?"}, t.TempDir(), &out, &errOut); code != 0 || !strings.HasSuffix(out.String(), "-why.md\n") {
 		t.Fatalf("code=%d stdout=%q stderr=%q", code, out.String(), errOut.String())
+	}
+	if !strings.HasPrefix(errOut.String(), "Project: ") || strings.Count(errOut.String(), "\n") != 1 {
+		t.Fatalf("new prints no notice: %q", errOut.String())
 	}
 	out.Reset()
 	if code := Run([]string{"check"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), "4 records") {
 		t.Fatalf("created records must validate: %s %s", out.String(), errOut.String())
 	}
 	out.Reset()
-	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), "G-003  work      proposed  Second thing") {
+	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), second+"  work      proposed  Second thing") {
 		t.Fatalf("list must show the created record: %s", out.String())
+	}
+	// G-195 acceptance 3: the write lock is the only coordination state.
+	if entries, err := os.ReadDir(state); err != nil || len(entries) != 1 || entries[0].Name() != "write.lock" {
+		t.Fatalf("state after new: %v, %v", entries, err)
+	}
+}
+
+// G-195 acceptance 1: two clones that share nothing each issue date-form IDs,
+// and the merge of one into the other still checks.
+func TestNewInSeparateClonesMergesClean(t *testing.T) {
+	t.Parallel()
+	root := gitFixture(t)
+	clone := filepath.Join(t.TempDir(), "clone")
+	git := func(dir string, args ...string) {
+		t.Helper()
+		args = append([]string{"-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", "-c", "maintenance.auto=false"}, args...)
+		if out, err := repo.Command(context.Background(), dir, args...).CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	git(root, "clone", "-q", root, clone)
+	for _, dir := range []string{root, clone} {
+		for _, title := range []string{"Shaped here", "Planned here", "Reviewed here"} {
+			newID(t, dir, "work", title)
+		}
+		git(dir, "add", "-A")
+		git(dir, "commit", "-q", "-m", "records")
+	}
+	git(clone, "pull", "-q", "--no-rebase", "--no-edit", root, "main")
+	var out, errOut bytes.Buffer
+	if code := Run([]string{"check"}, clone, &out, &errOut); code != 0 || out.String() != "OK: 8 records\n" {
+		t.Fatalf("code=%d stdout=%q stderr=%s", code, out.String(), errOut.String())
 	}
 }
 

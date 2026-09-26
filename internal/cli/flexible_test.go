@@ -1,41 +1,41 @@
 package cli
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/mascah/grove/internal/project"
 )
 
-// The fixture holds G-001 (work) and G-002 (question), so creation order fixes
-// the IDs below.
 func TestPagesAndConvertThroughTheCLI(t *testing.T) {
 	t.Parallel()
 	root := knowledgeFixture(t)
-	if code, out, errOut := run(t, root, "new", "page", "Probe synthesis"); code != 0 || out != "docs/records/G-003-probe-synthesis.md\n" {
-		t.Fatalf("new page: code=%d stdout=%q stderr=%s", code, out, errOut)
-	}
+	page := newID(t, root, "page", "Probe synthesis")
 	// A page has no status, and is never selectable work.
-	if code, out, errOut := run(t, root, "list"); code != 0 || !strings.Contains(out, "G-003  page      -") {
+	if code, out, errOut := run(t, root, "list"); code != 0 || !strings.Contains(out, page+"  page      -") {
 		t.Fatalf("list: code=%d stdout=%q stderr=%s", code, out, errOut)
 	}
-	if code, out, errOut := run(t, root, "context", "G-003"); code != 1 || out != "" || !strings.Contains(errOut, "G-003 is a page; only work can be selected") {
+	if code, out, errOut := run(t, root, "context", page); code != 1 || out != "" || !strings.Contains(errOut, page+" is a page; only work can be selected") {
 		t.Fatalf("context: code=%d stdout=%q stderr=%s", code, out, errOut)
 	}
 
 	write(t, root, "docs/legacy-note.md", "# Legacy note\n\nBody.\n")
-	want := `{"from":"docs/legacy-note.md","from_path":"docs/legacy-note.md","id":"G-004","path":"docs/records/G-004-note.md"}` + "\n"
-	if code, out, errOut := run(t, root, "convert", "docs/legacy-note.md", "--type", "plan", "--title", "Legacy note", "--slug", "note"); code != 0 || out != want {
+	code, out, errOut := run(t, root, "convert", "docs/legacy-note.md", "--type", "plan", "--title", "Legacy note", "--slug", "note")
+	var c struct{ ID string }
+	json.Unmarshal([]byte(out), &c)
+	want := `{"from":"docs/legacy-note.md","from_path":"docs/legacy-note.md","id":"` + c.ID + `","path":"docs/records/` + c.ID + `-note.md"}` + "\n"
+	if code != 0 || out != want || !project.IDPattern.MatchString(c.ID) || len(c.ID) != len("G-260925-7k2qm") {
 		t.Fatalf("convert: code=%d stdout=%q stderr=%s", code, out, errOut)
 	}
-	if source := showJSON(t, root, "G-004")["source"].(string); !strings.Contains(source, "type: plan\ntitle: \"Legacy note\"\nstatus: current\nformerly: \"docs/legacy-note.md\"\n") || !strings.HasSuffix(source, "# Legacy note\n\nBody.\n") {
+	if source := showJSON(t, root, c.ID)["source"].(string); !strings.Contains(source, "type: plan\ntitle: \"Legacy note\"\nstatus: current\nformerly: \"docs/legacy-note.md\"\n") || !strings.HasSuffix(source, "# Legacy note\n\nBody.\n") {
 		t.Fatalf("converted record:\n%s", source)
 	}
-	// A rerun is refused and reserves nothing: the next record is G-005.
-	if code, out, errOut := run(t, root, "convert", "docs/legacy-note.md", "--type", "plan", "--title", "Legacy note"); code != 1 || out != "" || !strings.Contains(errOut, "already converted to G-004") {
+	// A rerun is refused and writes nothing.
+	if code, out, errOut := run(t, root, "convert", "docs/legacy-note.md", "--type", "plan", "--title", "Legacy note"); code != 1 || out != "" || !strings.Contains(errOut, "already converted to "+c.ID) {
 		t.Fatalf("rerun: code=%d stdout=%q stderr=%s", code, out, errOut)
 	}
-	if code, out, errOut := run(t, root, "new", "page", "Next"); code != 0 || out != "docs/records/G-005-next.md\n" {
-		t.Fatalf("new after refusal: code=%d stdout=%q stderr=%s", code, out, errOut)
-	}
+	newID(t, root, "page", "Next")
 	if code, _, errOut := run(t, root, "check"); code != 0 {
 		t.Fatal(errOut)
 	}

@@ -70,6 +70,22 @@ func TestOverviewLayersGroupsAndUnlocks(t *testing.T) {
 	}
 }
 
+// G-195: legacy IDs come first in numeric order, then date-form IDs by date,
+// where a plain string sort would put G-251231-… before G-300.
+func TestOverviewOrdersLegacyThenDateForm(t *testing.T) {
+	v := Overview([]*project.Record{
+		work("G-260101-aaaaa", "proposed"), work("G-300", "proposed", "G-251231-zzzzz", "G-005"),
+		work("G-251231-zzzzz", "done"), work("G-005", "done"), work("G-002", "proposed"), work("G-251231-00000", "proposed"),
+	}, false)
+	var got []string
+	for _, it := range v.Items {
+		got = append(got, it.ID)
+	}
+	if want := []string{"G-002", "G-300", "G-251231-00000", "G-260101-aaaaa", "G-005", "G-251231-zzzzz"}; !slices.Equal(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}
+
 func TestPreviewKeepsTheSelectionAndAddsNothing(t *testing.T) {
 	v, err := Preview(backlog(), []string{"S-05", "S-03", "S-09"})
 	if err != nil {

@@ -219,7 +219,7 @@ func inspect(ctx context.Context, root, id string, between func()) (*Result, err
 	for _, g := range groups {
 		result.Groups = append(result.Groups, *g)
 	}
-	slices.SortFunc(result.Groups, func(a, b Group) int { return compareIDs(a.ID, b.ID) })
+	slices.SortFunc(result.Groups, func(a, b Group) int { return project.CompareIDs(a.ID, b.ID) })
 	committed.project(result)
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -309,15 +309,6 @@ func compareSources(a, b *Source) int {
 		return c
 	}
 	return strings.Compare(a.Worktree, b.Worktree)
-}
-
-// compareIDs orders IDs numerically: every ID shares the neutral prefix, so
-// length comparison avoids both lexical G-1000 < G-999 and integer overflow.
-func compareIDs(a, b string) int {
-	if len(a) != len(b) {
-		return len(a) - len(b)
-	}
-	return strings.Compare(a, b)
 }
 
 type branch struct{ ref, commit string }

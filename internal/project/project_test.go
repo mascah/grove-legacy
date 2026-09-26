@@ -158,6 +158,12 @@ func TestStrictRecordMetadata(t *testing.T) {
 		{"zero id", record("G-000", "work", ""), "id"},
 		{"short id", record("G-1", "work", ""), "id"},
 		{"extra padding", record("G-0001", "work", ""), "id"},
+		{"short legacy id", record("G-01", "work", ""), "id"},
+		{"long legacy id", record("G-1234", "work", ""), "id"},
+		{"short tail", record("G-260925-7k2q", "work", ""), "id"},
+		{"uppercase tail", record("G-260925-7K2QM", "work", ""), "id"},
+		{"ambiguous tail letter", record("G-260925-7k2ql", "work", ""), "id"},
+		{"short date", record("G-26092-7k2qm", "work", ""), "id"},
 		{"unknown prefix", record("X-001", "work", ""), "id"},
 		{"lifecycle", strings.Replace(base, "status: proposed", "status: resolved", 1), "status"},
 		{"unclosed header", strings.TrimSuffix(base, "---\nBody with --- inside.\n"), "frontmatter"},
@@ -203,7 +209,7 @@ func TestRejectSymlinks(t *testing.T) {
 func TestOrderUsesCreationThenNumericID(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
-	for _, id := range []string{"G-1000", "G-999", "G-002", "G-001"} {
+	for _, id := range []string{"G-260101-00000", "G-251231-zzzzz", "G-999", "G-002", "G-001"} {
 		extra := ""
 		if id == "G-002" {
 			extra = "created: \"2026-09-19T12:00:00Z\"\n"
@@ -218,7 +224,7 @@ func TestOrderUsesCreationThenNumericID(t *testing.T) {
 	for _, r := range p.Records {
 		ids = append(ids, r.ID)
 	}
-	if strings.Join(ids, ",") != "G-002,G-001,G-999,G-1000" {
+	if strings.Join(ids, ",") != "G-002,G-001,G-999,G-251231-zzzzz,G-260101-00000" {
 		t.Fatal(ids)
 	}
 }
@@ -475,8 +481,8 @@ func TestRecordProblems(t *testing.T) {
 		{"work record missing status", "grove/a.md", "---\nid: G-002\ntype: work\ntitle: T\n---\n", "status: required field is missing"},
 		{"work with a bad status", "grove/a.md", typed("G-002", "work", "settled", ""), "status: unsupported lifecycle value for work"},
 		{"plain Markdown", "grove/a.md", "# Just prose\n", "frontmatter: expected an opening --- line"},
-		{"uncanonical ID", "grove/a.md", typed("G-02", "work", "proposed", ""), "id: expected a canonical positive ID, e.g. G-001"},
-		{"unknown prefix", "grove/a.md", typed("X-002", "work", "proposed", ""), "id: expected a canonical positive ID"},
+		{"uncanonical ID", "grove/a.md", typed("G-02", "work", "proposed", ""), "id: expected a canonical ID, e.g. G-260925-7k2qm or a legacy G-001"},
+		{"unknown prefix", "grove/a.md", typed("X-002", "work", "proposed", ""), "id: expected a canonical ID"},
 		{"duplicate ID across folders", "grove/x/y/a.md", typed("G-001", "term", "settled", ""), "id: duplicate G-001 in grove/G-001.md, grove/x/y/a.md"},
 		{"non-work target", "grove/a.md", typed("G-002", "plan", "current", "work: [\"G-009\"]\n"), "work: target G-009 must be work"},
 		{"formerly twice", "grove/a.md", typed("G-002", "work", "done", "formerly: \"W-007\"\n"), "formerly: W-007 was already converted to G-001"},

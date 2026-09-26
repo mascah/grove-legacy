@@ -19,6 +19,8 @@ FIXTURE = os.path.join(ROOT, "evals", "fixture")
 # Variables through which Git takes a repository from its caller; a hook exports GIT_DIR (G-089).
 GIT_LOCATION = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE")
 IDENTITY = ["-c", "user.name=Grove Eval", "-c", "user.email=eval@example.invalid", "-c", "commit.gpgsign=false"]
+# A record's ID leads its generated filename: a legacy G-001 or the date form G-260925-7k2qm (G-195).
+record_id = lambda path: re.match(r"G-(?:[0-9]{6}-[0-9a-hjkmnp-tv-z]{5}|[0-9]{3})", os.path.basename(path)).group()
 TIMEOUT = 1800  # seconds per run; failure detection only, the budget is the real bound
 PAIR = ("presumes choice", "planted question", "brief constraint", "handoff")
 KNOWN = ("constraint applied", "brief constraint", "handoff")
@@ -172,12 +174,12 @@ def build(work, cases):
             fixtures[name] = {"path": template, "commit": base, "records": {}}
             continue
         path = os.path.join(work, "fixture-" + name)
-        shutil.copytree(template, path, symlinks=True)  # with .git, so the ID counter continues after the shared records
+        shutil.copytree(template, path, symlinks=True)  # with .git, since new needs Git
         recs = {}
         for key, kind, title, _ in case["records"]:
             rel = sh(grove, "--project", path, "new", kind, title).stdout.strip()
             fill(path, rel, key)
-            recs[key] = {"id": os.path.basename(rel)[:5], "path": rel, "type": kind}
+            recs[key] = {"id": record_id(rel), "path": rel, "type": kind}
         for key, _, _, fields in case["records"]:
             sets = [a for k, v in fields.items() for a in ("--set", f"{k}={json.dumps([recs[x]['id'] for x in v])}" if isinstance(v, list) else f"{k}={v}")]
             sets += ["--set", f"candidate={base}"] if fields.get("status") == "done" else []  # done needs a candidate HEAD holds
@@ -236,7 +238,7 @@ def checks(case, before, after, message):
         out.update({k: "not judged: no single proposal branch" for k in wanted})
         return out
     b = after["proposals"][names[0]]
-    ident = lambda p, f: f.get("id") or os.path.basename(p)[:5]
+    ident = lambda p, f: f.get("id") or record_id(p)
     work = {ident(p, f): f for p, f in b["touched"].items() if f.get("type") == "work"}
     questions = {ident(p, f): f for p, f in b["touched"].items() if f.get("type") == "question"}
     out["proposal-proposed"] = "pass" if work and all(f.get("status") == "proposed" for f in work.values()) \
@@ -673,7 +675,7 @@ def fake(harness, argv):
     missing, mode = topic == CASES["missing-choice"]["topic"], os.environ["GROVE_EVAL_FAKE"]
     case = next(c for c in CASES.values() if c["topic"] == topic)
     titles = {frontmatter(open(p).read()).get("title"): p for p in glob.glob(os.path.join("grove", "*.md"))}
-    recs = {key: {"path": titles[title], "id": os.path.basename(titles[title])[:5]} for key, _, title, _ in case.get("records", ())}
+    recs = {key: {"path": titles[title], "id": record_id(titles[title])} for key, _, title, _ in case.get("records", ())}
     emit = lambda ev: print(json.dumps(ev), flush=True)
     if codex:  # Codex wraps every command in the user's shell and reads files through commands
         thread = f"fake-{os.getpid()}"
@@ -711,7 +713,7 @@ def fake(harness, argv):
                     "surfaced": f"grove context {other['id']} --include{sep}{hold['path']}" if other else f"cat {hold['path']}"}[mode]
             tool("Bash", command=read + ("" if mode == "bad" else " && grove search tasks.py"))
         for key in case.get("distractors", ())[:1]:  # one distractor's file read; surfaced shows the other too
-            pattern = recs[key]["path"][:len("grove/G-000")] + "*.md"  # good reads it by glob, surfaced by a loop over one
+            pattern = os.path.join(os.path.dirname(recs[key]["path"]), recs[key]["id"]) + "*.md"  # good reads it by glob, surfaced by a loop over one
             tool("Bash", command={"good": f"cat {pattern}", "surfaced": f'for f in {pattern}; do echo "== $f"; cat "$f"; done'}.get(mode, f"cat {recs[key]['path']}"))
         for key in case.get("distractors", ())[1:] if mode == "surfaced" else ():
             tool("Bash", command=f"grove --project . show {recs[key]['id']}")
@@ -719,7 +721,7 @@ def fake(harness, argv):
     wt = os.path.abspath(os.path.join(".claude", "worktrees", branch))
     git(".", "worktree", "add", "-q", "-b", branch, wt, "main")
     grove = lambda *a: sh("grove", "--project", wt, *a).stdout.strip()
-    new = lambda kind, title: os.path.basename(grove("new", kind, title))[:5]
+    new = lambda kind, title: record_id(grove("new", kind, title))
     work = new("work", "Hide finished tasks from tasks list")
     ask = missing == (mode != "bad")  # the guide asks only on the missing choice; bad inverts it
     q = new("question", "Which statuses count as finished?") if ask else None
@@ -799,7 +801,7 @@ def selftest():
                 # bad's context lists the holding record (listed) or is refused on a decision (code): neither reads it; surfaced code reads its file
                 assert f["context_or_show"] == (bool(case.get("holding")) and not (mode == "surfaced" and not listed)), f
                 assert mode != "surfaced" or r["case"] != "code-constraint" or any("keep-the-owner" in p for p in f["files_read"]), f
-                distractor = [os.path.basename(p)[:5] for p in f["files_read"] if "export-tasks-as-csv" in p]
+                distractor = [record_id(p) for p in f["files_read"] if "export-tasks-as-csv" in p]
                 assert len(distractor) == listed and f.get("distractors_read", [None])[:1] == (distractor[:1] if case.get("holding") else [None]), f
                 assert len(f.get("distractors_read") or []) == (2 if listed and mode == "surfaced" else len(distractor)), f  # the second through show
                 assert not (listed and mode == "surfaced") or any("add-tasks-export" in p for p in f["files_read"]), f  # read through --include, spaced on claude, = on codex
@@ -807,7 +809,7 @@ def selftest():
                 assert "tasks.py" in f["files_read"] and "grove/brief.md" in f["files_read"] and len(f["unneeded"]) == 1 + len(distractor) and f["unneeded"][0].endswith(outside), f
     assert open(os.path.join(tmp, "out-claude", "good", "report.md")).read().count("- config dir synced skills: pdf") == 1
     out = os.path.join(tmp, "out-claude", "good")  # the pair's fixture keeps only the shared record; each new case has its own
-    assert [os.path.basename(p)[:5] for p in glob.glob(os.path.join(out, "missing-choice-1", "p", "grove", "G-*.md"))] == ["G-001"]
+    assert len(glob.glob(os.path.join(out, "missing-choice-1", "p", "grove", "G-*.md"))) == 1
     recs = {r["fields"]["title"]: r["fields"] for r in records(os.path.join(out, "listed-constraint-1", "p"), "main").values()}
     export, due = recs["Add tasks export"], recs["Give tasks a due date"]
     assert export["status"] == "done" and export["candidate"] and due["depends_on"] == [export["id"]] and len(due["relates_to"]) == 2, recs

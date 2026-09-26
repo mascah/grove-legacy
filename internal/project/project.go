@@ -352,15 +352,7 @@ func compareRecords(a, b *Record) int {
 			return c
 		}
 	}
-	// Canonical IDs share the neutral prefix and zero padding. Length
-	// comparison avoids both lexical G-1000 < G-999 and integer overflow.
-	if len(a.ID) >= 2 && len(b.ID) >= 2 && a.ID[:2] == b.ID[:2] && len(a.ID) != len(b.ID) {
-		if len(a.ID) < len(b.ID) {
-			return -1
-		}
-		return 1
-	}
-	if c := strings.Compare(a.ID, b.ID); c != 0 {
+	if c := CompareIDs(a.ID, b.ID); c != 0 {
 		return c
 	}
 	return strings.Compare(a.Path, b.Path)
