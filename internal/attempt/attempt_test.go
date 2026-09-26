@@ -75,7 +75,10 @@ func fixture(t *testing.T) string {
 	if err := os.Mkdir(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	git(t, root, "init", "-q", "-b", "main") // identity comes from git()'s -c flags; the fakes that commit pass their own
+	git(t, root, "init", "-q", "-b", "main")
+	for _, kv := range [][2]string{{"user.name", "t"}, {"user.email", "t@t"}, {"commit.gpgsign", "false"}, {"maintenance.auto", "false"}} {
+		git(t, root, "config", kv[0], kv[1]) // the product's commit and a bare merge use the repository's own identity
+	}
 	write(t, root, "grove.yaml", config)
 	write(t, root, "grove/G-260101-00001-first.md", fmt.Sprintf(work, "proposed"))
 	write(t, root, SkillPath, "---\nname: grove-work\n---\n")

@@ -66,6 +66,9 @@ func repoFixture(t *testing.T) string {
 		t.Fatal(err)
 	}
 	git(t, root, "init", "-q", "-b", "main")
+	for _, kv := range [][2]string{{"user.name", "t"}, {"user.email", "t@t"}, {"commit.gpgsign", "false"}, {"maintenance.auto", "false"}} {
+		git(t, root, "config", kv[0], kv[1]) // the product's commit and a bare merge use the repository's own identity
+	}
 	write(t, root, "grove.yaml", config)
 	write(t, root, "grove/work/G-260101-00001-first.md", record("G-260101-00001", "work", "proposed", "Main body.\n"))
 	write(t, root, "grove/questions/G-260101-00002-q.md", record("G-260101-00002", "question", "open", "Q.\n"))
