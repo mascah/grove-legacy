@@ -79,8 +79,7 @@ read may be old; a person at a shell omits it, and may add `--commit` to
 commit the record's file alone with a generated message. Do not invent IDs, statuses, fields, or schema. No command
 changes an ID. `grove convert` makes a record from a Markdown document outside
 the record root, and only an assignment that calls for it authorizes it. Commands
-write `Project:` and `File:` lines to stderr and results to stdout. The first
-`new` in a repository may print a one-time counter notice; that is expected.
+write `Project:` and `File:` lines to stderr and results to stdout.
 
 ## Read in stages
 

@@ -23,12 +23,15 @@ and the board as a source it cannot inspect.
   the lowercase `.md` extension counts. The brief may be any clean
   project-relative `.md` path.
   Symlinks are refused.
-- **Identity.** An ID is `G-`, and a canonical number of at least
-  three digits (`G-001`, `G-1000`). It carries no type: `new` issues `G-NNN`
-  for every type, and a record keeps its ID whatever happens to its `type`.
-  IDs are unique per checkout and matched exactly. Any other spelling,
-  a typed `W-001` included, is an invalid ID.
-- **Placement.** `new` writes `ROOT/G-NNN-slug.md`, flat. No command moves or
+- **Identity.** An ID is `G-`, the UTC date of creation as `YYMMDD`, a
+  hyphen and five lowercase Crockford base32 characters: `G-260925-7k2qm`.
+  A legacy ID, `G-` and three digits other than `000` (`G-001`), stays
+  valid and is never issued again. Neither carries a type: `new` issues the
+  date form for every type, and a record keeps its ID whatever happens to
+  its `type`. IDs are unique per checkout and matched exactly. Any other
+  spelling, a typed `W-001`, a four-digit `G-1234` or an uppercase tail
+  included, is an invalid ID.
+- **Placement.** `new` writes `ROOT/G-YYMMDD-xxxxx-slug.md`, flat. No command moves or
   renames a record when its title, type or status changes. `convert` below is
   the only command that moves a file.
 - **Pages.** `type: page` is general knowledge with no lifecycle. Its envelope
@@ -41,7 +44,7 @@ and the board as a source it cannot inspect.
   card, cannot be selected by `context`, cannot be a `depends_on`, `members`,
   `blocks` or `work` target, and gains nothing from its folder or its prose.
   `context` lists a related page (its status shown as `-`) and reads it only
-  through `--include PATH`; `show G-NNN` prints it.
+  through `--include PATH`; `show ID` prints it.
 - **Reclassification.** `update ID --set type=TYPE` changes
   classification in place. The result must satisfy the new type's whole
   contract in that one update, for example `--set type=work --set
@@ -55,12 +58,10 @@ and the board as a source it cannot inspect.
   conversion cannot quietly restore a second owner: a restored typed-ID record
   fails `check` on its ID.
 
-**Allocation.** Numbers come from the one counter file `grove/neutral-ids` in
-the Git common directory, under `grove/lock`, in the form `G 12`, with the
-floor scan (text files beneath the record root on every branch,
-remote-tracking ref and tag, and in every worktree, nested included) and recovery notices described under
-[Identity and dates](#identity-and-dates). A `grove/next-ids` file left by the
-deleted typed counters is never read or written.
+**Issue.** `new` and `convert` draw an ID without shared state, as
+[Identity and dates](#identity-and-dates) describes. The files earlier CLIs
+kept in the Git common directory, `grove/neutral-ids`, `grove/lock` and
+`grove/next-ids`, are never read or written.
 
 **Conversion (`grove convert`).** Turns a Markdown document outside the record
 root into a record, one source per run. Its other form, which gave a typed-ID
@@ -80,9 +81,8 @@ IDs:
 - A source that some record's `formerly` already names (compared without case,
   since a case-insensitive filesystem opens `docs/Plan.md` as `docs/plan.md`)
   and a missing source are refused before any
-  ID is reserved, so a rerun neither duplicates a record nor remaps an
-  identity. A refusal after the reservation, such as an existing target file,
-  consumes the number and says so; gaps are acceptable, as for `new`.
+  ID is drawn, so a rerun neither duplicates a record nor remaps an
+  identity.
 - Not rewritten: body prose, Markdown links (the moved file's own relative
   links included), `examined`, and anything outside the record root. The
   caller repairs links from the mapping; `check` does not verify them.
@@ -111,7 +111,7 @@ Terms, plans and reviews:
 - `work` is an optional list of work IDs the plan or review belongs to, checked
   like `depends_on` targets. One plan can name several work items. Work does
   not name its plans or reviews back: that side is derived, and
-  `context G-NNN` lists them without reading them. `new` takes no fields, so
+  `context ID` lists them without reading them. `new` takes no fields, so
   set it with `update ID --set 'work=["G-001"]'`.
 - `examined` is an optional quoted Git commit, 7 to 40 lowercase hex digits:
   what the review looked at. Whether the reviewed content has changed since is
@@ -316,11 +316,11 @@ are not records. A missing record root is an error.
 
 Generate short filenames as `<id>-<slug>.md`.
 
-Keep dates in frontmatter. The number supplies allocation order; it
+Keep dates in frontmatter. An ID's date is the UTC day it was issued; it
 does not prove creation time, priority, or execution order.
 Use a short descriptive slug, with the full title in frontmatter. `grove new`
 accepts an explicit `--slug`, or derives lowercase ASCII
-letters/digits separated by hyphens from the title, trim to at most 32 characters
+letters/digits separated by hyphens from the title, trim to at most 24 characters
 and strip trailing hyphens, falling back to `record` when empty. Generated names
 stay short even when titles are long. Title edits do not extend the filename.
 
@@ -331,55 +331,44 @@ survive renaming; ordinary Markdown path links still need updating when moved.
 
 ### Identity and dates
 
-Use neutral sequential IDs, `G-001` for every type, from one counter. The
-full ID is the canonical identity, not an alias for a hidden random value.
-Start at 1, pad to a minimum of three digits, and expand beyond 999
-(`G-1000`) without wrapping or renumbering older records. Require canonical
-padding. Store IDs as strings and match references exactly; `show G-001`
-needs no abbreviated-ID lookup. Numeric ordering must not rely on
-lexicographic sorting once the counter expands.
+Use neutral IDs, one form for every type, issued without coordination so
+that records created in separate clones need no reconciling. The full ID is
+the canonical identity, not an alias for a hidden random value. An ID Grove
+issues is `G-`, the UTC date as `YYMMDD`, a hyphen, and five characters from
+`crypto/rand` in lowercase Crockford base32 (`0-9a-hjkmnp-tv-z`, without
+`i`, `l`, `o` or `u`): `G-260925-7k2qm`, so the longest generated filename is
+42 characters. Legacy IDs, `G-001` to `G-999` from the sequential counter
+that preceded this form, stay valid identities; none is renumbered or issued
+again. Store IDs as strings and match references exactly; `show
+G-260925-7k2qm` needs no abbreviated-ID lookup. Where a command orders by
+ID, legacy IDs come first in numeric order, then date-form IDs by date and
+tail; the board orders cards by their dates.
 
-Creation coordinates through the directory that
+Creation needs Git, and no network or shared state beyond the one
+repository. `new` takes `grove/write.lock` in the directory that
 `git rev-parse --path-format=absolute --git-common-dir` returns, never a
 worktree's own `.git` path, since linked worktrees have private metadata as
 well as a shared common directory
 ([Git's worktree documentation](https://git-scm.com/docs/git-worktree#_details)).
-Allocation in one local repository:
+It is an `flock`, which the kernel releases when the holder exits, and it
+serializes `new`, `convert` and `update` in every worktree. Under it, `new`:
 
-1. Take `grove/lock` in the common directory, one lock for every worktree and
-   every record type. It is an `flock`, which the kernel releases when the
-   holder exits, so a crash leaves no stale lock.
-2. Reserve the next number and durably save the advanced counter while holding
-   the lock. If locking or persistence fails, no ID is issued and no record is
-   created.
-3. Release the lock, then create the record in its checkout without
-   overwriting an existing file. A failed or abandoned creation consumes the
-   reservation; gaps are acceptable and numbers are not recycled.
+1. Draws a tail, and draws again while the ID is already held by the
+   project, by an `id:` line in any text file beneath the record root on any
+   branch, remote-tracking ref or tag, or by a live record in any worktree,
+   nested folders included. After eight draws it fails and creates nothing.
+2. Creates the record in its checkout without overwriting an existing file.
+   A failure before the file exists creates nothing and consumes nothing.
 
-The counter, `grove/neutral-ids` in the form `G 12` (the next number), belongs
-to the local repository, not to a branch, worktree, or record-root path. It is
-local coordination state, not a tracked record, and needs no daemon. `new`
-and `update` serialize publication
-through `grove/write.lock` beside it. The read-only commands never create any
-of these files, and none is ever unlinked.
+The lock is local coordination state, not a tracked record, and needs no
+daemon. The read-only commands never create it, and it is never unlinked.
 
-Separate clones do not share reservations. Directly authored IDs also bypass
-allocation. Imported records and independently allocated clone histories require
-collision checks and explicit reconciliation; matching IDs alone cannot prove
-two independently created records are the same item. Two files with one ID in
-one checkout remain an error even when their contents match. Genuine branch
-copies of one record retain their identity.
-
-Counter state never silently restarts at 1. Each allocation floors the
-counter by the highest ID in use: an `id:` line in any text file beneath the
-record root on every branch, remote-tracking ref and tag, and every live
-record in every worktree, nested folders included. A missing counter is
-initialized from that floor with a notice on stderr that reservations for
-records never written or since deleted cannot be recovered; a counter below
-the floor continues above it, with a notice. A corrupt counter refuses
-allocation until it is fixed or removed. Concurrent imports and manual edits
-are outside the allocator's exclusivity guarantee. Reading needs no Git or
-allocator state; allocation outside Git is not provided.
+Separate clones share nothing: the one collision left is two clones drawing
+one tail on one day. After a merge, `check` reports it as two files with one
+ID, an error even when their contents match; matching IDs alone cannot prove
+two independently created records are the same item. Genuine branch copies
+of one record retain their identity. Directly authored IDs bypass the draw.
+Reading needs no Git; creation outside Git is not provided.
 
 Keep `created` and `updated` optional on every type. When present, require quoted
 UTC timestamps in `YYYY-MM-DDTHH:MM:SSZ` form, and require `updated >= created`
@@ -425,8 +414,8 @@ Relationships resolve within one checkout.
 `list`, `show <id>`, and `check` read the selected checkout's live files,
 including uncommitted records. Present the selected project path so the source
 is clear. Those commands change no records, dates, configuration, or Git state.
-`new <type> <title> [--slug SLUG]` allocates the next ID as specified above
-(refusing an unknown type before reserving anything),
+`new <type> <title> [--slug SLUG]` issues an ID as specified above
+(refusing an unknown type before anything else),
 writes `<id>-<slug>.md` with a body skeleton and equal `created`/`updated`
 timestamps, prints the root-relative path, and fails without deleting the file
 if the project no longer validates. It requires Git and never overwrites.

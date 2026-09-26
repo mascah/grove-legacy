@@ -410,7 +410,7 @@ func (m *Model) depsBody(w, n int) []string {
 // openBlocks maps each record to the open questions blocking it.
 func openBlocks(byID map[string]*project.Record) map[string][]string {
 	blockedBy := map[string][]string{}
-	for _, id := range slices.Sorted(maps.Keys(byID)) {
+	for _, id := range slices.SortedFunc(maps.Keys(byID), project.CompareIDs) {
 		if r := byID[id]; r.Type == "question" && r.Status == "open" {
 			for _, b := range r.Blocks {
 				blockedBy[b] = append(blockedBy[b], id)
@@ -427,7 +427,7 @@ func openBlocks(byID map[string]*project.Record) map[string][]string {
 // (shown above), never expanded twice. focused marks the pane Tab gave focus.
 func (m *Model) treeRows(it deps.Item, place string, byID map[string]*project.Record, blockedBy map[string][]string, focused bool, w int) []string {
 	unlocks := map[string][]string{}
-	for _, id := range slices.Sorted(maps.Keys(byID)) {
+	for _, id := range slices.SortedFunc(maps.Keys(byID), project.CompareIDs) {
 		if r := byID[id]; r.Type == "work" && (m.depsAll || r.Status == "proposed" || r.Status == "active" || r.Status == "review") {
 			for _, p := range r.DependsOn {
 				unlocks[p] = append(unlocks[p], id)
@@ -546,8 +546,12 @@ func (m *Model) previewRows(w int) []string {
 		}
 		return strings.Join(ids, " ")
 	}
+	idw := 7 // widens so a date-form ID keeps the columns aligned
+	for _, it := range v.Items {
+		idw = max(idw, len(it.ID))
+	}
 	item := func(n string, it deps.Item) {
-		rows = append(rows, line(fmt.Sprintf(" %-3s %-7s %-9s %s", n, it.ID, it.Status, it.Title), w))
+		rows = append(rows, line(fmt.Sprintf(" %-3s %-*s %-9s %s", n, idw, it.ID, it.Status, it.Title), w))
 		facts := "needs " + list(it.Needs)
 		if it.Outside {
 			facts = "needed by " + list(it.NeededBy) + " · " + facts

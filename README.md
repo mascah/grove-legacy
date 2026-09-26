@@ -3,11 +3,12 @@
 A local project workspace for humans and agents: work, questions, decisions,
 plans, reviews and knowledge as Markdown files with YAML frontmatter in your
 Git repository, read and changed through a CLI and a terminal board, with no
-service to run. Records carry sequential IDs shared by every linked worktree;
-Grove reads each record's versions across local branches and worktrees and
-decides which are current by Git ancestry. Two workflows, shaping ideas into
-proposed work and executing assigned work into a candidate for review, travel
-inside the binary for agents to follow.
+service to run. Records carry IDs issued from the date and a random tail,
+with no counter for separate clones to share; Grove reads each record's
+versions across local branches and worktrees and decides which are current by
+Git ancestry. Two workflows, shaping ideas into proposed work and executing
+assigned work into a candidate for review, travel inside the binary for agents
+to follow.
 
 ## Run it
 

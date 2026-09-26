@@ -211,9 +211,13 @@ func (m *Model) searchBody(w, n int) []string {
 	if strings.TrimSpace(m.query) != "" {
 		unit = 2
 	}
+	idw := 6 // widens so a date-form ID keeps the columns aligned
+	for _, h := range hits {
+		idw = max(idw, len(h.id))
+	}
 	var rows []string
 	for i, h := range hits {
-		rows = append(rows, mark(i == m.hit, fmt.Sprintf("%-6s  %-9s  %-9s  %s", h.id, h.kind, h.status, h.title), w))
+		rows = append(rows, mark(i == m.hit, fmt.Sprintf("%-*s  %-9s  %-9s  %s", idw, h.id, h.kind, h.status, h.title), w))
 		if unit == 2 {
 			why := tiers[h.tier]
 			if h.where != "" {
