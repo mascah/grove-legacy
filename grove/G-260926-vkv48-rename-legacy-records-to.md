@@ -2,12 +2,13 @@
 id: "G-260926-vkv48"
 type: work
 title: "Rename legacy records to the date form"
-status: active
+status: review
 created: "2026-09-26T16:09:19Z"
-updated: "2026-09-26T16:26:03Z"
+updated: "2026-09-26T17:00:41Z"
 kind: refactor
 size: large
 relates_to: ["G-260926-yvjy6", "G-260926-2da4n", "G-260926-pgj43", "G-260921-r491p", "G-260921-gtydy", "G-260921-czt8x", "G-260921-905y3"]
+candidate: "6e7ae1399969aa709c1dea3a4e7f4e935d602741"
 ---
 
 ## Outcome
