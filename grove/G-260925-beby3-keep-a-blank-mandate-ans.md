@@ -76,11 +76,50 @@ software check on a question's body.
 2. `go run ./cmd/grove guide work` prints the change and
    `go run ./cmd/grove check` passes.
 
+## Evidence
+
+Implemented 2026-09-26 on `worktree-G-260925-beby3`, based on main
+`0cd121b`, headless (`/grove-work G-260925-beby3 --interaction headless`),
+from record revision
+`sha256:06f8f4dda8aa1c2d3bc6c1e3441c4a61cdec0cdd60dfe58fbcb0a52eeec80265`. No
+plan: two passages in one guide, as the proposed design says. Code commit
+`31ac0d5`; the candidate adds only this evidence and review
+[G-260926-hn8xq](G-260926-hn8xq-review-of-g-260925-beby3.md).
+
+1. [docs/work-execution.md](../docs/work-execution.md) now says it in both
+   places. In step 5, where a session reads a resolved question: "An answer is only what
+   its answerer wrote": an item the unit depends on that a resolved question
+   leaves blank or omits is a missing human decision for that item, never
+   the recommendation, and what a paid step spends (model, effort, runs,
+   budget or cap) is always such an item. In "When a human decision is
+   missing", before the interactive and headless bullets so both modes
+   read it: a question never offers that a blank item takes the
+   recommendation, "your recommendation is not a decision, silence is not
+   agreement", a blank or missing item keeps the question open and
+   blocking, and each consequential item, above all what a paid step
+   spends, needs an explicit value. It is written for every consequential
+   item, with spend as the named example, as the design proposed. The
+   shipped-document rule holds: the only link is the in-document anchor,
+   and it names no record.
+2. At `31ac0d5`: `go run ./cmd/grove guide work` prints both passages
+   (guide lines 241–245 and 386–390); `go run ./cmd/grove check` printed
+   `OK: 200 records`; `gofmt -l .` printed nothing; `go vet ./...` passed;
+   `go test -count=1 -timeout 120s ./...` passed in every package.
+
+Review: G-260926-hn8xq, one round by a fresh `grove-reviewer`, examined
+`31ac0d5`. Open findings: none. It noted, outside this record's scope, that
+a paid step taken without any question is not covered by these passages;
+`grove run` and `evals/run.py` already bound that in software.
+
+Limits: no entrypoint revision changes, since the entrypoints need nothing
+new of the binary. `AGENTS.md`, the shaping guide and the record model are
+unchanged, as scoped.
+
 ## Next
 
-Captured 2026-09-24 from the G-260924-59f5k incident. Shaped 2026-09-26:
-recommendation is to assign it as written, a documentation-only change
-with link and consistency checks; the alternative is to abandon it and
-rely on every paid work record naming G-260925-04ccr, as G-260925-pbx81 did,
-which leaves unlinked sessions and adopting projects uncovered. Owner
-decides: `/grove-work G-260925-beby3`, or `update` to `abandoned`.
+In review with the candidate named in `candidate`. The owner judges the two
+passages against G-260925-04ccr. From this checkout
+(`.claude/worktrees/worktree-G-260925-beby3`):
+`go run ./cmd/grove approve G-260925-beby3 "VERDICT"`, then in the main
+checkout `go run ./cmd/grove integrate G-260925-beby3 --cleanup`, or
+`go run ./cmd/grove feedback G-260925-beby3 "TEXT"` here.
