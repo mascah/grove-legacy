@@ -114,7 +114,7 @@ func Group(records []*project.Record, r *project.Record) []*project.Record {
 			group = append(group, o)
 		}
 	}
-	slices.SortFunc(group, func(a, b *project.Record) int { return project.CompareIDs(a.ID, b.ID) })
+	slices.SortFunc(group, func(a, b *project.Record) int { return strings.Compare(a.ID, b.ID) })
 	return group
 }
 

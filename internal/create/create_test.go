@@ -43,7 +43,7 @@ func write(t *testing.T, root, path, source string) {
 	}
 }
 
-// gitProject returns a committed Git project containing G-001.
+// gitProject returns a committed Git project containing G-260101-00001.
 func gitProject(t *testing.T) string {
 	t.Helper()
 	if _, err := exec.LookPath("git"); err != nil {
@@ -55,7 +55,7 @@ func gitProject(t *testing.T) string {
 	}
 	git(t, root, "init", "-q", "-b", "main")
 	write(t, root, "grove.yaml", config)
-	write(t, root, "grove/G-001-first.md", record("G-001", "work", "done"))
+	write(t, root, "grove/G-260101-00001-first.md", record("G-260101-00001", "work", "done"))
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-q", "-m", "init")
 	return root
@@ -174,8 +174,8 @@ func TestNewRefusesWhenAWorktreeCannotBeScanned(t *testing.T) {
 	root := gitProject(t)
 	wt := filepath.Join(filepath.Dir(root), filepath.Base(root)+"-wt")
 	git(t, root, "worktree", "add", "-q", "-b", "feature", wt)
-	hidden := filepath.Join(wt, "grove/G-030-unreadable.md")
-	write(t, wt, "grove/G-030-unreadable.md", record("G-030", "work", "proposed"))
+	hidden := filepath.Join(wt, "grove/G-260101-00030-unreadable.md")
+	write(t, wt, "grove/G-260101-00030-unreadable.md", record("G-260101-00030", "work", "proposed"))
 	if err := os.Chmod(hidden, 0); err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ func TestNewRequiresGit(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
 	write(t, root, "grove.yaml", config)
-	write(t, root, "grove/G-001-first.md", record("G-001", "work", "done"))
+	write(t, root, "grove/G-260101-00001-first.md", record("G-260101-00001", "work", "done"))
 	if _, err := New(load(t, root), "work", "T", "", now); err == nil || !strings.Contains(err.Error(), "Git") {
 		t.Fatalf("expected a Git requirement error, got %v", err)
 	}
@@ -301,7 +301,7 @@ func TestNewRefusesWhenRecordRootChangedAfterLoad(t *testing.T) {
 	t.Parallel()
 	root := gitProject(t)
 	p := load(t, root)
-	write(t, root, "other/G-001-first.md", record("G-001", "work", "done"))
+	write(t, root, "other/G-260101-00001-first.md", record("G-260101-00001", "work", "done"))
 	write(t, root, "grove.yaml", "schema_version: 3\nrecords: other\n")
 	_, err := New(p, "work", "Moved", "moved", now)
 	if err == nil || !strings.Contains(err.Error(), "nothing created: the record root changed") {
@@ -344,7 +344,7 @@ func TestNewScansOddlyNamedWorktrees(t *testing.T) {
 		}
 		root := filepath.Join(parent, "new\nline")
 		write(t, filepath.Join(root, prefix), "grove.yaml", config)
-		write(t, filepath.Join(root, prefix), "grove/G-001-first.md", record("G-001", "work", "done"))
+		write(t, filepath.Join(root, prefix), "grove/G-260101-00001-first.md", record("G-260101-00001", "work", "done"))
 		git(t, root, "init", "-q", "-b", "main")
 		git(t, root, "add", "-A")
 		git(t, root, "commit", "-q", "-m", "init")
@@ -422,7 +422,7 @@ func TestNewConcurrentAcrossWorktrees(t *testing.T) {
 	seen := map[string]bool{}
 	for _, dir := range []string{root, wt} {
 		for _, r := range load(t, dir).Records {
-			if r.ID == "G-001" {
+			if r.ID == "G-260101-00001" {
 				continue // committed baseline, held by both worktrees
 			}
 			if seen[r.ID] {

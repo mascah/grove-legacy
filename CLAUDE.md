@@ -53,9 +53,9 @@ applies whatever that record's status; a rule naming none is this file's own.
   commit (G-260921-ebsby, G-260921-r491p).
 - `new` and `convert` issue `G-YYMMDD-xxxxx` from the UTC date and a random
   tail with no shared state, drawing again while a local ref or worktree
-  holds the ID; legacy three-digit IDs stay valid and are never issued; and
-  `new` and `update` serialize through a shared write lock (G-260926-2da4n, G-260926-pgj43,
-  G-260919-shnj5).
+  holds the ID; it is the only ID form; and `new` and `update` serialize
+  through a shared write lock (G-260926-2da4n, G-260926-pgj43,
+  G-260926-yvjy6, G-260919-shnj5).
 - Every Git process Grove or its tests start goes through `repo.Command`,
   never a bare `exec.Command("git", …)`, and a hook that runs tests scrubs
   `GIT_DIR` and the other repository variables as well (G-260922-g6e7p).
@@ -137,17 +137,19 @@ applies whatever that record's status; a rule naming none is this file's own.
 
 - Shape with `/grove-shape TOPIC` (Claude) or `$grove-shape TOPIC` (Codex);
   shaping never assigns, implements or merges. Execute assigned IDs with
-  `/grove-work G-030` or `$grove-work G-030`; `grove run G-030` (board `R`)
-  runs the same headless as a Grove-owned attempt that outlives the terminal.
+  `/grove-work G-260925-7k2qm` or `$grove-work G-260925-7k2qm`;
+  `grove run G-260925-7k2qm` (board `R`) runs the same headless as a
+  Grove-owned attempt that outlives the terminal.
 - The adapters in `.claude/skills/`, `.agents/skills/` and
   `.claude/agents/` load this file and this checkout's guide files, not the
   binary's copies, and carry no init marker on purpose.
 - `grove context IDs` reads the selected records in full and lists the rest;
   a listing is not a reading, and `context` writes nothing and authorizes
   nothing. The guides say what to read at each step.
-- Work branches are `worktree-G-030`, or `worktree-G-030-G-031` for several
-  IDs, and a headless proposal branch is `worktree-shape-SLUG`, each in a
-  linked worktree under `.claude/worktrees/`. The base is `main` only when it
+- Work branches are `worktree-G-260925-7k2qm`, or
+  `worktree-G-260925-7k2qm-G-260925-8m3xd` for several IDs, and a headless
+  proposal branch is `worktree-shape-SLUG`, each in a linked worktree under
+  `.claude/worktrees/`. The base is `main` only when it
   holds the selected records; otherwise the work guide says what to do.
 - Do not merge or push unless the assignment says so.
 - Fixtures that create records run in a disposable clone reached by an

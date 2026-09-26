@@ -11,7 +11,7 @@ import (
 // line, and nothing that only looks like one.
 func TestMentions(t *testing.T) {
 	t.Parallel()
-	r := &project.Record{Path: "grove/G-001-x.md", Source: []byte("---\nid: G-001\n---\n\n" +
+	r := &project.Record{Path: "grove/G-260101-00001-x.md", Source: []byte("---\nid: G-260101-00001\n---\n\n" +
 		"See [search](../internal/tui/search.go) and `ws.rs` here.\n" +
 		"[`run.py`](../evals/run.py#top), [web](https://example.com), [up](../../out.md), ![img](../a.png)\n\n" +
 		"```\n`fenced` [not](../fenced.go)\n```\n\n" +

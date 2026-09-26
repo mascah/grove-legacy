@@ -124,13 +124,13 @@ func TestResolution(t *testing.T) {
 	t.Parallel()
 	root := repoFixture(t)
 	ctx := context.Background()
-	const path = "grove/work/G-001-first.md"
+	const path = "grove/work/G-260101-00001-first.md"
 	write(t, root, "shared.txt", "one\n")
 	commit(t, root, "shared")
 	wt := addWorktree(t, root, "work", "main", "-b", "work")
 	write(t, wt, "shared.txt", "work\n")
 	previous := commit(t, wt, "work")
-	write(t, wt, path, strings.Replace(record("G-001", "work", "active", "Body.\n"), "status: active\n", "status: active\ncandidate: \""+previous+"\"\n", 1))
+	write(t, wt, path, strings.Replace(record("G-260101-00001", "work", "active", "Body.\n"), "status: active\n", "status: active\ncandidate: \""+previous+"\"\n", 1))
 	commit(t, wt, "feedback")
 	changes := func(candidate string) *Changes {
 		t.Helper()

@@ -13,8 +13,8 @@ import (
 	"testing"
 )
 
-const work = "---\nid: G-001\ntype: work\ntitle: Inspect records\nstatus: proposed\nrelates_to: [G-002]\n---\nAn outcome.\n"
-const question = "---\nid: G-002\ntype: question\ntitle: Which version?\nstatus: open\nblocks: []\n---\nAn uncertainty.\n"
+const work = "---\nid: G-260101-00001\ntype: work\ntitle: Inspect records\nstatus: proposed\nrelates_to: [G-260101-00002]\n---\nAn outcome.\n"
+const question = "---\nid: G-260101-00002\ntype: question\ntitle: Which version?\nstatus: open\nblocks: []\n---\nAn uncertainty.\n"
 
 func write(t *testing.T, root, path, source string) {
 	t.Helper()
@@ -67,7 +67,7 @@ func TestCommandsInspectWithoutChangingFiles(t *testing.T) {
 	t.Parallel()
 	root := projectFixture(t)
 	before := hashes(t, root)
-	for _, args := range [][]string{{"list"}, {"show", "G-001"}, {"check"}, {"list", "--project", root}, {"--project=" + root, "show", "G-002"}} {
+	for _, args := range [][]string{{"list"}, {"show", "G-260101-00001"}, {"check"}, {"list", "--project", root}, {"--project=" + root, "show", "G-260101-00002"}} {
 		var out, errOut bytes.Buffer
 		code := Run(args, filepath.Join(root, "docs", "records"), &out, &errOut)
 		if code != 0 || !strings.Contains(errOut.String(), root) {
@@ -75,7 +75,7 @@ func TestCommandsInspectWithoutChangingFiles(t *testing.T) {
 		}
 		switch args[0] {
 		case "list":
-			if !strings.Contains(out.String(), "G-001") || !strings.Contains(out.String(), "proposed") || !strings.Contains(out.String(), "Inspect records") || !strings.Contains(out.String(), "question") {
+			if !strings.Contains(out.String(), "G-260101-00001") || !strings.Contains(out.String(), "proposed") || !strings.Contains(out.String(), "Inspect records") || !strings.Contains(out.String(), "question") {
 				t.Fatal(out.String())
 			}
 		case "show":
@@ -100,9 +100,9 @@ func TestCommandsInspectWithoutChangingFiles(t *testing.T) {
 func TestInvalidNeighborPreventsPartialOutput(t *testing.T) {
 	t.Parallel()
 	root := projectFixture(t)
-	write(t, root, "docs/records/work/broken.md", "---\nid: G-003\ntype: work\ntitle: Broken\nstatus: imaginary\n---\n")
+	write(t, root, "docs/records/work/broken.md", "---\nid: G-260101-00003\ntype: work\ntitle: Broken\nstatus: imaginary\n---\n")
 	before := hashes(t, root)
-	for _, args := range [][]string{{"list"}, {"show", "G-001"}, {"check"}} {
+	for _, args := range [][]string{{"list"}, {"show", "G-260101-00001"}, {"check"}} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, root, &out, &errOut); code != 1 {
 			t.Fatalf("%v returned %d", args, code)
@@ -119,7 +119,7 @@ func TestInvalidNeighborPreventsPartialOutput(t *testing.T) {
 func TestUsageAndMissingID(t *testing.T) {
 	t.Parallel()
 	// No command at all selects the board; see TestBoardInvocation.
-	for _, args := range [][]string{{"unknown"}, {"show"}, {"show", "G-001", "extra"}, {"list", "extra"}, {"--project"}, {"list", "--wat"}, {"--project=", "list"}, {"--project", "a", "--project", "b", "list"}} {
+	for _, args := range [][]string{{"unknown"}, {"show"}, {"show", "G-260101-00001", "extra"}, {"list", "extra"}, {"--project"}, {"list", "--wat"}, {"--project=", "list"}, {"--project", "a", "--project", "b", "list"}} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, t.TempDir(), &out, &errOut); code != 2 || out.Len() != 0 || !strings.Contains(errOut.String(), "Usage:") {
 			t.Fatalf("%v: code=%d stderr=%s", args, code, errOut.String())
@@ -133,7 +133,7 @@ func TestUsageAndMissingID(t *testing.T) {
 	}
 	root := projectFixture(t)
 	var out, errOut bytes.Buffer
-	if code := Run([]string{"show", "G-999"}, root, &out, &errOut); code != 1 || out.Len() != 0 || !strings.Contains(errOut.String(), "G-999") {
+	if code := Run([]string{"show", "G-260101-00999"}, root, &out, &errOut); code != 1 || out.Len() != 0 || !strings.Contains(errOut.String(), "G-260101-00999") {
 		t.Fatalf("missing identity: code=%d stderr=%s", code, errOut.String())
 	}
 }
@@ -154,7 +154,7 @@ func TestEmptyProjectAndLiteralSource(t *testing.T) {
 	write(t, root, "docs/records/questions/custom.md", source)
 	out.Reset()
 	errOut.Reset()
-	if code := Run([]string{"show", "G-002"}, root, &out, &errOut); code != 0 || out.String() != source {
+	if code := Run([]string{"show", "G-260101-00002"}, root, &out, &errOut); code != 0 || out.String() != source {
 		t.Fatal("show normalized line endings or final newline")
 	}
 }
@@ -166,7 +166,7 @@ func (brokenWriter) Write([]byte) (int, error) { return 0, errors.New("output un
 func TestOutputFailureReturnsNonzero(t *testing.T) {
 	t.Parallel()
 	root := projectFixture(t)
-	for _, args := range [][]string{{"list"}, {"show", "G-001"}, {"check"}, {"--help"}} {
+	for _, args := range [][]string{{"list"}, {"show", "G-260101-00001"}, {"check"}, {"--help"}} {
 		var errOut bytes.Buffer
 		if code := Run(args, root, brokenWriter{}, &errOut); code != 1 {
 			t.Fatalf("%v: code=%d", args, code)
@@ -194,7 +194,7 @@ func TestListEscapesMultilineAndControlCharacters(t *testing.T) {
 func TestListFiltersByStatus(t *testing.T) {
 	t.Parallel()
 	root := projectFixture(t)
-	write(t, root, "docs/records/G-003-page.md", "---\nid: G-003\ntype: page\ntitle: Notes\n---\nKnowledge.\n")
+	write(t, root, "docs/records/G-260101-00003-page.md", "---\nid: G-260101-00003\ntype: page\ntitle: Notes\n---\nKnowledge.\n")
 	// rows returns each line as its columns: the tabwriter fits column widths
 	// to the rows it prints, so a filtered table is narrower, never reordered.
 	columns := regexp.MustCompile("  +")
@@ -227,7 +227,7 @@ func TestListFiltersByStatus(t *testing.T) {
 		}
 	}
 	// Usage errors are refused before any project is read: an empty checkout suffices.
-	for _, args := range [][]string{{"list", "--status", "settledd"}, {"list", "--status="}, {"list", "--status"}, {"show", "G-001", "--status", "proposed"}, {"check", "--status=open"}} {
+	for _, args := range [][]string{{"list", "--status", "settledd"}, {"list", "--status="}, {"list", "--status"}, {"show", "G-260101-00001", "--status", "proposed"}, {"check", "--status=open"}} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, t.TempDir(), &out, &errOut); code != 2 || out.Len() != 0 || !strings.Contains(errOut.String(), "--status") {
 			t.Fatalf("%v: code=%d stderr=%s", args, code, errOut.String())

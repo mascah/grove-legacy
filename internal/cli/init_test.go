@@ -261,7 +261,7 @@ func TestGuideAndVersionNeedNoProject(t *testing.T) {
 	// G- IDs of their own, so none links outside itself, names a G- ID beyond
 	// its own examples, or points at Grove's repository or the predecessor.
 	shipped := map[string]string{}
-	examples := map[string][]string{"work": {"G-030", "G-031"}, "shape": {"G-037"}, "review": nil, "model": {"G-001", "G-003", "G-999", "G-1234", "G-260925-7k2qm"}}
+	examples := map[string][]string{"work": {"G-260925-7k2qm", "G-260925-8m3xd"}, "shape": {"G-260925-7k2qm"}, "review": nil, "model": {"G-260924-2b8rc", "G-1234", "G-260925-7k2qm"}}
 	for name := range examples {
 		var out, errOut bytes.Buffer
 		Run([]string{"guide", name}, t.TempDir(), &out, &errOut)
@@ -323,7 +323,7 @@ func runInitCheck(t *testing.T, root string) (int, string, string) {
 }
 
 // An install from before entrypoint revisions is diagnosed without a write as
-// legacy, which this binary does not serve, refreshed by init with the
+// unrevised, which this binary does not serve, refreshed by init with the
 // project's own file kept, and then current; a newer, older-than-served or
 // missing entrypoint fails the check, and other text at a served revision
 // does not.
@@ -338,14 +338,14 @@ func TestInitCheckDiagnosesAnOldInstallAndInitRefreshesIt(t *testing.T) {
 	write(t, root, custom, "our own shaping skill\n")
 	before := hashes(t, root)
 	code, out, errOut := runInitCheck(t, root)
-	legacy := " (no revision line: written before entrypoint revisions, so this grove cannot tell what it expects; init rewrites it)\n"
+	unrevised := " (no revision line: written before entrypoint revisions, so this grove cannot tell what it expects; init rewrites it)\n"
 	want := "custom " + custom + " (no init marker: the project's own, not judged; delete it to get the managed version)\n" +
-		"legacy .agents/skills/grove-shape/agents/openai.yaml" + legacy +
-		"legacy .agents/skills/grove-work/SKILL.md" + legacy +
-		"legacy .agents/skills/grove-work/agents/openai.yaml" + legacy +
-		"legacy .claude/agents/grove-reviewer.md" + legacy +
-		"legacy .claude/skills/grove-shape/SKILL.md" + legacy +
-		"legacy .claude/skills/grove-work/SKILL.md" + legacy
+		"unrevised .agents/skills/grove-shape/agents/openai.yaml" + unrevised +
+		"unrevised .agents/skills/grove-work/SKILL.md" + unrevised +
+		"unrevised .agents/skills/grove-work/agents/openai.yaml" + unrevised +
+		"unrevised .claude/agents/grove-reviewer.md" + unrevised +
+		"unrevised .claude/skills/grove-shape/SKILL.md" + unrevised +
+		"unrevised .claude/skills/grove-work/SKILL.md" + unrevised
 	if code != 1 || out != want || !strings.Contains(errOut, "grove: 6 entrypoints are missing or unusable with this grove; nothing was written.") {
 		t.Fatalf("check of an old install: %d\n%s%s", code, out, errOut)
 	}

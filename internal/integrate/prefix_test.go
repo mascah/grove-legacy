@@ -14,7 +14,7 @@ func TestIntegrateMergesTheInspectedCommitUnderAPrefix(t *testing.T) {
 	root, _, candidate := fixture(t, true, "sub")
 	git(t, root, "tag", "feature", "main") // a tag of the branch's name, which git merge feature would take
 	facts, err := run(t, root, root, false)
-	if err != nil || len(facts) != 3 || !strings.HasPrefix(facts[1], "merge: fast-forward main from ") || !strings.HasPrefix(facts[2], "done: G-001 done at commit ") {
+	if err != nil || len(facts) != 3 || !strings.HasPrefix(facts[1], "merge: fast-forward main from ") || !strings.HasPrefix(facts[2], "done: G-260101-00001 done at commit ") {
 		t.Fatalf("%v; facts %q", err, facts)
 	}
 	if r := record(t, root); r.Status != "done" || r.Candidate != candidate || r.Approved != candidate {

@@ -129,11 +129,7 @@ func (m *Model) sharing(v *versions.Version, paths bool) []string {
 			}
 		}
 	}
-	if paths {
-		slices.Sort(out)
-	} else {
-		slices.SortFunc(out, project.CompareIDs)
-	}
+	slices.Sort(out)
 	return out
 }
 

@@ -41,7 +41,7 @@ func newID(t *testing.T, root string, args ...string) string {
 func TestKnowledgeRecordsThroughNewUpdateAndContext(t *testing.T) {
 	t.Parallel()
 	root := knowledgeFixture(t)
-	// G-001 (work) and G-002 (question) already exist from the fixture.
+	// G-260101-00001 (work) and G-260101-00002 (question) already exist from the fixture.
 	term := newID(t, root, "term", "Attempt")
 	plan := newID(t, root, "plan", "Shared plan")
 	review := newID(t, root, "review", "First review")
@@ -57,12 +57,12 @@ func TestKnowledgeRecordsThroughNewUpdateAndContext(t *testing.T) {
 	}
 	newID(t, root, "term", "Candidate")
 	revision := func(id string) string { return showJSON(t, root, id)["revision"].(string) }
-	if code, _, errOut := run(t, root, "update", plan, "--expect", revision(plan), "--set", `work=["G-001"]`); code != 0 {
+	if code, _, errOut := run(t, root, "update", plan, "--expect", revision(plan), "--set", `work=["G-260101-00001"]`); code != 0 {
 		t.Fatal(errOut)
 	}
 	// An all-letter or all-digit commit must stay a YAML string.
 	for _, commit := range []string{"abcdefa", "1234567"} {
-		if code, _, errOut := run(t, root, "update", review, "--expect", revision(review), "--set", `work=["G-001"]`, "--set", "examined="+commit); code != 0 {
+		if code, _, errOut := run(t, root, "update", review, "--expect", revision(review), "--set", `work=["G-260101-00001"]`, "--set", "examined="+commit); code != 0 {
 			t.Fatalf("examined=%s: %s", commit, errOut)
 		}
 		if source := showJSON(t, root, review)["source"].(string); !strings.Contains(source, `examined: "`+commit+`"`) {
@@ -71,10 +71,10 @@ func TestKnowledgeRecordsThroughNewUpdateAndContext(t *testing.T) {
 	}
 	for _, c := range []struct{ id, set, want string }{
 		{review, "examined=main", "examined: expected a quoted Git commit"},
-		{plan, `work=["G-404"]`, "work: unresolved target G-404"},
+		{plan, `work=["G-260101-00404"]`, "work: unresolved target G-260101-00404"},
 		{plan, `work=["` + term + `"]`, "work: target " + term + " must be work"},
 		{plan, "examined=abcdefa", "examined is not a field that update accepts on plan records"},
-		{term, `work=["G-001"]`, "work is not a field that update accepts on term records"},
+		{term, `work=["G-260101-00001"]`, "work is not a field that update accepts on term records"},
 	} {
 		before := revision(c.id)
 		if code, _, errOut := run(t, root, "update", c.id, "--expect", before, "--set", c.set); code != 1 || !strings.Contains(errOut, c.want) || revision(c.id) != before {
@@ -84,11 +84,11 @@ func TestKnowledgeRecordsThroughNewUpdateAndContext(t *testing.T) {
 	if code, out, errOut := run(t, root, "check"); code != 0 || out != "OK: 6 records\n" {
 		t.Fatalf("code=%d stdout=%q stderr=%s", code, out, errOut)
 	}
-	code, out, errOut := run(t, root, "context", "G-001")
+	code, out, errOut := run(t, root, "context", "G-260101-00001")
 	if code != 0 {
 		t.Fatal(errOut)
 	}
-	for _, want := range []string{plan + "  plan  current  listed  plan for G-001", review + "  review  current  listed  review of G-001"} {
+	for _, want := range []string{plan + "  plan  current  listed  plan for G-260101-00001", review + "  review  current  listed  review of G-260101-00001"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("context must list %q:\n%s", want, out)
 		}
@@ -98,13 +98,13 @@ func TestKnowledgeRecordsThroughNewUpdateAndContext(t *testing.T) {
 	}
 	// One plan shared by several work items is listed for each, never copied.
 	second := newID(t, root, "work", "Second")
-	if code, _, errOut := run(t, root, "update", plan, "--expect", revision(plan), "--set", `work=["G-001", "`+second+`"]`); code != 0 {
+	if code, _, errOut := run(t, root, "update", plan, "--expect", revision(plan), "--set", `work=["G-260101-00001", "`+second+`"]`); code != 0 {
 		t.Fatal(errOut)
 	}
-	if code, out, errOut := run(t, root, "context", second, "G-001"); code != 0 || !strings.Contains(out, plan+"  plan  current  listed  plan for "+second+"; plan for G-001") {
+	if code, out, errOut := run(t, root, "context", second, "G-260101-00001"); code != 0 || !strings.Contains(out, plan+"  plan  current  listed  plan for "+second+"; plan for G-260101-00001") {
 		t.Fatalf("code=%d stderr=%s\n%s", code, errOut, out)
 	}
-	if code, out, errOut = run(t, root, "context", "G-001", "--include", "docs/records/"+plan+"-shared-plan.md"); code != 0 || !strings.Contains(out, plan+"  plan  current  included") {
+	if code, out, errOut = run(t, root, "context", "G-260101-00001", "--include", "docs/records/"+plan+"-shared-plan.md"); code != 0 || !strings.Contains(out, plan+"  plan  current  included") {
 		t.Fatalf("a caller can include the plan: code=%d stderr=%s\n%s", code, errOut, out)
 	}
 }

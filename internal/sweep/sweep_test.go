@@ -25,8 +25,8 @@ func TestMain(m *testing.M) {
 }
 
 const (
-	work   = "---\nid: \"G-001\"\ntype: work\ntitle: First\nstatus: %s\n---\n\n## Outcome\n\nBody.\n"
-	review = "---\nid: \"G-005\"\ntype: review\ntitle: Review of G-001\nstatus: current\nwork: [\"G-001\"]\nexamined: \"%s\"\n---\n\nFindings: none.\n\n%s\n"
+	work   = "---\nid: \"G-260101-00001\"\ntype: work\ntitle: First\nstatus: %s\n---\n\n## Outcome\n\nBody.\n"
+	review = "---\nid: \"G-260101-00005\"\ntype: review\ntitle: Review of G-260101-00001\nstatus: current\nwork: [\"G-260101-00001\"]\nexamined: \"%s\"\n---\n\nFindings: none.\n\n%s\n"
 	policy = "schema_version: 3\nrecords: grove\ntarget: main\npolicy:\n  budget: 5\n  resolve:\n    budget: 1\n  approve:\n    verify: [%s]\n    max_lines: 30\n    never: [grove.yaml, secret/**]\n  integrate: true\nrun:\n  permission_mode: acceptEdits\n"
 )
 
@@ -53,8 +53,8 @@ func write(t *testing.T, root, rel, content string) {
 	}
 }
 
-// fixture is main with config, and branch worktree-G-001 in its checkout
-// where G-001 is in review: its candidate writes files over code.txt's
+// fixture is main with config, and branch worktree-G-260101-00001 in its checkout
+// where G-260101-00001 is in review: its candidate writes files over code.txt's
 // "base", and a review record, added after it, examined it and closes with
 // closing. It returns main's checkout and the branch's.
 func fixture(t *testing.T, config string, files map[string]string, closing string) (root, wt string) {
@@ -66,30 +66,30 @@ func fixture(t *testing.T, config string, files map[string]string, closing strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	root, wt = filepath.Join(dir, "repo"), filepath.Join(dir, "repo", ".claude", "worktrees", "worktree-G-001")
+	root, wt = filepath.Join(dir, "repo"), filepath.Join(dir, "repo", ".claude", "worktrees", "worktree-G-260101-00001")
 	git(t, dir, "init", "-q", "-b", "main", root)
 	for _, kv := range [][2]string{{"user.name", "t"}, {"user.email", "t@t"}, {"commit.gpgsign", "false"}, {"maintenance.auto", "false"}} {
 		git(t, root, "config", kv[0], kv[1])
 	}
 	write(t, root, ".gitignore", ".claude/worktrees/\n")
 	write(t, root, "grove.yaml", config)
-	write(t, root, "grove/G-001-first.md", strings.Replace(work, "%s", "active", 1))
+	write(t, root, "grove/G-260101-00001-first.md", strings.Replace(work, "%s", "active", 1))
 	write(t, root, attempt.SkillPath, "---\nname: grove-work\n---\n")
 	write(t, root, "code.txt", "base\n")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "init")
-	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-001", wt)
+	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-260101-00001", wt)
 	for name, content := range files {
 		write(t, wt, name, content)
 	}
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "feat: the change")
 	examined := git(t, wt, "rev-parse", "HEAD")
-	write(t, wt, "grove/G-005-review.md", strings.Replace(strings.Replace(review, "%s", examined, 1), "%s", closing, 1))
+	write(t, wt, "grove/G-260101-00005-review.md", strings.Replace(strings.Replace(review, "%s", examined, 1), "%s", closing, 1))
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "docs: review")
 	candidate := git(t, wt, "rev-parse", "HEAD")
-	if _, err := update.Apply(wt, update.Request{ID: "G-001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: candidate}}, Commit: true}, now, nil); err != nil {
+	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: candidate}}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
 	}
 	return root, wt
@@ -102,11 +102,11 @@ func record(t *testing.T, dir string) *project.Record {
 		t.Fatalf("%v", ds)
 	}
 	for _, r := range p.Records {
-		if r.ID == "G-001" {
+		if r.ID == "G-260101-00001" {
 			return r
 		}
 	}
-	t.Fatal("no G-001")
+	t.Fatal("no G-260101-00001")
 	return nil
 }
 
@@ -123,12 +123,12 @@ func sweep(t *testing.T, root string) (*Sweep, []string) {
 
 func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 	t.Parallel()
-	root, _ := fixture(t, strings.Replace(policy, "%s", "grep -q change code.txt, test -f grove/G-005-review.md", 1), map[string]string{"code.txt": "the change\n"}, ClosingLine)
+	root, _ := fixture(t, strings.Replace(policy, "%s", "grep -q change code.txt, test -f grove/G-260101-00005-review.md", 1), map[string]string{"code.txt": "the change\n"}, ClosingLine)
 	s, err := Plan(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(s.Items) != 1 || s.Items[0].Act != Integrate || !strings.Contains(s.Items[0].Why, "review G-005 has no open finding; 14 changed lines") {
+	if len(s.Items) != 1 || s.Items[0].Act != Integrate || !strings.Contains(s.Items[0].Why, "review G-260101-00005 has no open finding; 14 changed lines") {
 		t.Fatalf("plan: %+v", s.Items)
 	}
 	if !strings.HasPrefix(s.Attribution, "policy grove.yaml sha256:") {
@@ -137,7 +137,7 @@ func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 	var facts []string
 	s.Run(now, func(f string) { facts = append(facts, f) })
 	joined := strings.Join(facts, "\n")
-	for _, want := range []string{"G-001: verified: the merge of", "G-001: approved under policy grove.yaml sha256:", "G-001: merge: fast-forward main", "G-001: done: G-001 done at commit"} {
+	for _, want := range []string{"G-260101-00001: verified: the merge of", "G-260101-00001: approved under policy grove.yaml sha256:", "G-260101-00001: merge: fast-forward main", "G-260101-00001: done: G-260101-00001 done at commit"} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("missing %q in:\n%s", want, joined)
 		}
@@ -147,8 +147,8 @@ func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 		t.Fatalf("record on main:\n%s", r.Source)
 	}
 	for _, want := range []string{
-		": delegated under " + s.Attribution + ": review G-005 examined ",
-		"verification passed (grep -q change code.txt; test -f grove/G-005-review.md); no Grove attempt is recorded as producing it",
+		": delegated under " + s.Attribution + ": review G-260101-00005 examined ",
+		"verification passed (grep -q change code.txt; test -f grove/G-260101-00005-review.md); no Grove attempt is recorded as producing it",
 		"Integrated under " + s.Attribution + " by fast-forwarding main from ",
 	} {
 		if !strings.Contains(string(r.Source), want) {
@@ -160,7 +160,7 @@ func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 	}
 	// Integrated, it is no longer a candidate in review anywhere but on its
 	// branch, which the target now holds.
-	if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "G-001: skipped: ") {
+	if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "G-260101-00001: skipped: ") {
 		t.Fatalf("second sweep: %q", facts)
 	}
 }
@@ -168,12 +168,12 @@ func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 func TestSweepLeavesAFailedVerificationUnchanged(t *testing.T) {
 	t.Parallel()
 	root, wt := fixture(t, strings.Replace(policy, "%s", "'true', 'echo broken; exit 3'", 1), map[string]string{"code.txt": "the change\n"}, ClosingLine)
-	main, branch := git(t, root, "rev-parse", "main"), git(t, root, "rev-parse", "worktree-G-001")
+	main, branch := git(t, root, "rev-parse", "main"), git(t, root, "rev-parse", "worktree-G-260101-00001")
 	_, facts := sweep(t, root)
-	if len(facts) != 1 || !strings.Contains(facts[0], "G-001: waits: verification of the merge with main at ") || !strings.Contains(facts[0], "echo broken; exit 3: exit status 3; last output: broken; nothing was approved") {
+	if len(facts) != 1 || !strings.Contains(facts[0], "G-260101-00001: waits: verification of the merge with main at ") || !strings.Contains(facts[0], "echo broken; exit 3: exit status 3; last output: broken; nothing was approved") {
 		t.Fatalf("facts %q", facts)
 	}
-	if git(t, root, "rev-parse", "main") != main || git(t, root, "rev-parse", "worktree-G-001") != branch || record(t, wt).Approved != "" {
+	if git(t, root, "rev-parse", "main") != main || git(t, root, "rev-parse", "worktree-G-260101-00001") != branch || record(t, wt).Approved != "" {
 		t.Fatal("a failed verification changed something")
 	}
 }
@@ -188,7 +188,7 @@ func TestSweepWaitsOutsideThePolicy(t *testing.T) {
 		"a never path":    {map[string]string{"secret/key": "x\n"}, ClosingLine, "changes secret/key, which never matches (secret/**)"},
 		"the policy":      {map[string]string{"grove.yaml": strings.Replace(policy, "%s", "'true'", 1) + "# more\n"}, ClosingLine, "changes grove.yaml, which never matches (grove.yaml)"},
 		"too many lines":  {map[string]string{"code.txt": strings.Repeat("line\n", 30)}, ClosingLine, "lines, over the policy's 30"},
-		"an open finding": {map[string]string{"code.txt": "the change\n"}, "Open findings: 1", `review G-005 of candidate `},
+		"an open finding": {map[string]string{"code.txt": "the change\n"}, "Open findings: 1", `review G-260101-00005 of candidate `},
 		"a binary":        {map[string]string{"blob": "\x00\x01"}, ClosingLine, "changes the binary file blob"},
 		"no closing line": {map[string]string{"code.txt": "the change\n"}, "", `does not end with "Open findings: none"`},
 	} {
@@ -197,7 +197,7 @@ func TestSweepWaitsOutsideThePolicy(t *testing.T) {
 			root, _ := fixture(t, strings.Replace(policy, "%s", "'true'", 1), c.files, c.closing)
 			main := git(t, root, "rev-parse", "main")
 			_, facts := sweep(t, root)
-			if len(facts) != 1 || !strings.HasPrefix(facts[0], "G-001: waits: ") || !strings.Contains(facts[0], c.want) {
+			if len(facts) != 1 || !strings.HasPrefix(facts[0], "G-260101-00001: waits: ") || !strings.Contains(facts[0], c.want) {
 				t.Fatalf("facts %q, want %q", facts, c.want)
 			}
 			if git(t, root, "rev-parse", "main") != main {
@@ -208,10 +208,10 @@ func TestSweepWaitsOutsideThePolicy(t *testing.T) {
 	t.Run("approved by the owner", func(t *testing.T) {
 		t.Parallel()
 		root, wt := fixture(t, strings.Replace(policy, "%s", "'true'", 1), map[string]string{"code.txt": "x\n"}, ClosingLine)
-		if _, err := update.Approve(wt, "G-001", "Mine.", now); err != nil {
+		if _, err := update.Approve(wt, "G-260101-00001", "Mine.", now); err != nil {
 			t.Fatal(err)
 		}
-		if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "waits: approved by the owner; integrating it is the owner's: grove integrate G-001") {
+		if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "waits: approved by the owner; integrating it is the owner's: grove integrate G-260101-00001") {
 			t.Fatalf("facts %q", facts)
 		}
 	})
@@ -264,7 +264,7 @@ func TestSweepResolvesAConflictOncePerTargetCommit(t *testing.T) {
 	}
 	deadline := time.Now().Add(20 * time.Second)
 	for {
-		views, err := attempt.List(root, "G-001")
+		views, err := attempt.List(root, "G-260101-00001")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -283,7 +283,7 @@ func TestSweepResolvesAConflictOncePerTargetCommit(t *testing.T) {
 	}
 	// The attempt handed the same candidate back without resolving: the
 	// conflict with the same main commit waits for the owner.
-	if _, err := update.Apply(wt, update.Request{ID: "G-001", Set: []update.Field{{Name: "status", Value: "review"}}, Commit: true}, now, nil); err != nil {
+	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "waits: ") || !strings.Contains(facts[0], "again after a resolution of main at ") {
@@ -318,15 +318,15 @@ func TestSweepKeepsResolutionsInsideTheBudget(t *testing.T) {
 // something.
 func TestSweepHeedsEveryReviewOfTheCandidate(t *testing.T) {
 	t.Parallel()
-	r := &project.Record{ID: "G-001", Candidate: "abcdef1234"}
+	r := &project.Record{ID: "G-260101-00001", Candidate: "abcdef1234"}
 	rev := func(id, closing string) *project.Record {
-		return &project.Record{ID: id, Type: "review", Status: "current", Work: []string{"G-001"}, Examined: "abcdef1234", Source: []byte("Findings.\n\n" + closing + "\n")}
+		return &project.Record{ID: id, Type: "review", Status: "current", Work: []string{"G-260101-00001"}, Examined: "abcdef1234", Source: []byte("Findings.\n\n" + closing + "\n")}
 	}
 	s := &Sweep{}
-	if got, why := s.review(r, []*project.Record{rev("G-005", ClosingLine), rev("G-007", "Open findings: 1")}); got != nil || !strings.Contains(why, "review G-007 of candidate abcdef1 does not end with") {
+	if got, why := s.review(r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", "Open findings: 1")}); got != nil || !strings.Contains(why, "review G-260101-00007 of candidate abcdef1 does not end with") {
 		t.Fatalf("got %v, %q", got, why)
 	}
-	if got, _ := s.review(r, []*project.Record{rev("G-005", ClosingLine), rev("G-007", ClosingLine)}); got == nil || got.ID != "G-007" {
+	if got, _ := s.review(r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", ClosingLine)}); got == nil || got.ID != "G-260101-00007" {
 		t.Fatalf("got %v, want the newest", got)
 	}
 }
@@ -337,17 +337,17 @@ func TestSweepHeedsEveryReviewOfTheCandidate(t *testing.T) {
 func TestSweepIntegratesSeveralCandidatesInOneSweep(t *testing.T) {
 	t.Parallel()
 	root, _ := fixture(t, strings.Replace(policy, "%s", "'true'", 1), map[string]string{"code.txt": "the change\n"}, ClosingLine)
-	wt := filepath.Join(root, ".claude", "worktrees", "worktree-G-002")
-	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-002", wt)
-	write(t, wt, "grove/G-002-second.md", strings.Replace(strings.Replace(work, "G-001", "G-002", 1), "%s", "active", 1))
+	wt := filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00002")
+	git(t, root, "worktree", "add", "-q", "-b", "worktree-G-260101-00002", wt)
+	write(t, wt, "grove/G-260101-00002-second.md", strings.Replace(strings.Replace(work, "G-260101-00001", "G-260101-00002", 1), "%s", "active", 1))
 	write(t, wt, "other.txt", "more\n")
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "feat: another")
 	examined := git(t, wt, "rev-parse", "HEAD")
-	write(t, wt, "grove/G-006-review.md", strings.NewReplacer("G-005", "G-006", "G-001", "G-002").Replace(strings.Replace(strings.Replace(review, "%s", examined, 1), "%s", ClosingLine, 1)))
+	write(t, wt, "grove/G-260101-00006-review.md", strings.NewReplacer("G-260101-00005", "G-260101-00006", "G-260101-00001", "G-260101-00002").Replace(strings.Replace(strings.Replace(review, "%s", examined, 1), "%s", ClosingLine, 1)))
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "docs: review")
-	if _, err := update.Apply(wt, update.Request{ID: "G-002", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: git(t, wt, "rev-parse", "HEAD")}}, Commit: true}, now, nil); err != nil {
+	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00002", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: git(t, wt, "rev-parse", "HEAD")}}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
 	}
 	_, facts := sweep(t, root)

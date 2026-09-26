@@ -2,23 +2,17 @@
 
 `grove --help` gives every command's usage. This document owns what it does
 not say about the commands below. The commands over records (`list`, `show`,
-`brief`, `check`, `new`, `update`, `convert`, `renumber`), project discovery
-and exit codes belong to the record model: its
+`brief`, `check`, `new`, `update`, `convert`), project discovery and exit
+codes belong to the record model: its
 [reading and writing](record-model.md#reading-and-writing-records),
 [configuration and discovery](record-model.md#configuration-and-discovery),
-[conversion and renumbering](record-model.md#identity-and-placement-apart-from-classification)
+[conversion](record-model.md#identity-and-placement-apart-from-classification)
 and [brief](record-model.md#knowledge-records-and-the-brief) sections. `approve`,
 `feedback` and `integrate` belong to its
 [work lifecycle](record-model.md#work-lifecycle); `resolve` is under
 [attempts](#resolving-a-conflict). [The board](board.md) has
 its own document. Each command's acceptance, evidence and limits belong to
 the work record that delivered it.
-
-`renumber` is one-time: it renamed this repository's legacy records
-([G-260926-vkv48](../grove/G-260926-vkv48-rename-legacy-records-to.md)) and
-is for an adopter to do the same, and
-[G-260926-19gzg](../grove/G-260926-19gzg-retire-the-legacy-id-for.md)
-removes it once they have.
 
 ## Versions
 
@@ -69,7 +63,7 @@ absolute project directory of the existing checkout holding it, ready for
 `--project`:
 
 ```sh
-grove --project "$(grove workspace --source SELECTOR)" show G-003
+grove --project "$(grove workspace --source SELECTOR)" show G-260925-7k2qm
 ```
 
 A live selection resolves to its worktree. A committed selection resolves to
@@ -215,7 +209,7 @@ attempt of proposed or active work as a Grove-owned `claude -p "/grove-work
 ID... --interaction headless"` process that outlives the terminal
 ([G-260923-tnn5e](../grove/G-260923-tnn5e-run-attempts-as-a-grove.md),
 [G-260921-h46pb](../grove/G-260921-h46pb-run-one-bounded-implemen.md)), the IDs passed as given. It creates `worktree-` plus the IDs joined by `-`
-(`worktree-G-030`, `worktree-G-030-G-031`) under
+(`worktree-G-260925-7k2qm`, `worktree-G-260925-7k2qm-G-260925-8m3xd`) under
 `.claude/worktrees/` from this checkout's HEAD, or reuses the branch's
 registered worktree so a next attempt continues from preserved partial work,
 then starts an owner process in its own session that runs the provider there
@@ -300,7 +294,7 @@ the skill the prompt names, which `init` writes and you commit
 is checked in HEAD before it is created. It likewise refuses a worktree
 whose marked `grove-work` skill or reviewer definition carries an
 [entrypoint revision](#entrypoint-revisions) the launching `grove` does not
-serve, legacy included, which would stop or contradict the guide after the
+serve, unrevised included, which would stop or contradict the guide after the
 spend began
 ([G-260925-p2k54](../grove/G-260925-p2k54-keep-installed-harness-e.md)). An open
 question that blocks the work is the wait the headless guide persists, so
@@ -474,7 +468,7 @@ the guides'), so a guide change never needs a new revision; one changes only
 when an entrypoint needs something an older `grove` lacks, or a newer one
 stops serving what an older entrypoint asks. This `grove` writes and serves
 revision 2. What `init` wrote before revisions existed, marked files with no
-revision line, is revision 1, `legacy`: each generation kept its own
+revision line, is revision 1, `unrevised`: each generation kept its own
 assignment grammar and review brief (the earliest rejects `--until plan`,
 and has no reviewer), and nothing in the file says which, so it is not
 served. Refresh it with `init`.
@@ -483,18 +477,18 @@ served. Refresh it with `init`.
 nothing and saying how to repair it, and a `grove` from before revisions
 refuses the option; either way the entrypoint stops at its first command,
 before any work. A plain `guide` always prints, since a person reads it the
-same way, and a legacy skill loads its guide that way; so the work and
+same way, and an unrevised skill loads its guide that way; so the work and
 shaping guides' Inputs tell a session loaded through a managed skill with no
-revision line to stop and name the repair. A legacy reviewer loads no guide
+revision line to stop and name the repair. An unrevised reviewer loads no guide
 and is reached only through `init --check` and `run`.
 
 `init --check` diagnoses each managed path and writes nothing, one line
 each: `current` (this `grove`'s template), `compatible` (a served revision
-in other text, older or edited), `legacy` (no revision line), `incompatible`
+in other text, older or edited), `unrevised` (no revision line), `incompatible`
 (a stated revision this `grove` does not serve, newer or older, or not a
 number), `missing`, `custom` (no marker: yours, listed and never judged), or
 `conflict` (not a file `init` could replace). It exits 1 when any path is
-legacy, incompatible, missing or a conflict. Different text alone never
+unrevised, incompatible, missing or a conflict. Different text alone never
 makes a file incompatible.
 
 Upgrading is installing the new `grove`, then in the target's checkout

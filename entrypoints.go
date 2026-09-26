@@ -43,10 +43,10 @@ func ServedEntrypoints() string {
 
 // Diagnose says how an installed file stands against this binary's template
 // for path: custom (no marker: the project's own, not judged), current (the
-// template's bytes), legacy (marked, with no revision line: revision 1),
+// template's bytes), unrevised (marked, with no revision line: revision 1),
 // incompatible (a stated revision this binary does not serve), or compatible
 // (a served revision in other bytes, older or edited). Revision is as the
-// file states it, "1" for legacy and "" for custom. A marked file is usable
+// file states it, "1" for unrevised and "" for custom. A marked file is usable
 // with this binary exactly when SupportsEntrypoint(revision).
 func Diagnose(path, have string) (verdict, revision string) {
 	if !strings.Contains(have, ManagedMarker) {
@@ -61,7 +61,7 @@ func Diagnose(path, have string) (verdict, revision string) {
 	case have == Entrypoints()[path]:
 		return "current", revision
 	case m == nil:
-		return "legacy", revision
+		return "unrevised", revision
 	case !SupportsEntrypoint(revision):
 		return "incompatible", revision
 	}

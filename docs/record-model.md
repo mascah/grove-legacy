@@ -25,15 +25,13 @@ and the board as a source it cannot inspect.
   Symlinks are refused.
 - **Identity.** An ID is `G-`, the UTC date of creation as `YYMMDD`, a
   hyphen and five lowercase Crockford base32 characters: `G-260925-7k2qm`.
-  A legacy ID, `G-` and three digits other than `000` (`G-001`), stays
-  valid and is never issued again. Neither carries a type: `new` issues the
-  date form for every type, and a record keeps its ID whatever happens to
-  its `type`. IDs are unique per checkout and matched exactly. Any other
-  spelling, a typed `W-001`, a four-digit `G-1234` or an uppercase tail
-  included, is an invalid ID.
+  It carries no type: `new` issues the same form for every type, and a
+  record keeps its ID whatever happens to its `type`. IDs are unique per
+  checkout and matched exactly. Any other spelling, a typed `W-001`, a
+  numeric `G-1234` or an uppercase tail included, is an invalid ID.
 - **Placement.** `new` writes `ROOT/G-YYMMDD-xxxxx-slug.md`, flat. No command moves or
-  renames a record when its title, type or status changes. `convert` and the
-  one-time `renumber` below are the only commands that move a file.
+  renames a record when its title, type or status changes. `convert` below is
+  the only command that moves a file.
 - **Pages.** `type: page` is general knowledge with no lifecycle. Its envelope
   is `id`, `type` and `title`, with optional `relates_to`, `created`, `updated`
   and `formerly`; `status` and every work, question, plan or review field are
@@ -90,45 +88,8 @@ IDs:
   refuses the run untouched. The original document is never modified or
   removed.
 
-**Renumbering (`grove renumber`).** A one-time command, to be removed before
-the first release, that retires legacy IDs: every record with one gets a
-date-form ID and a filename derived from it. It takes no arguments.
-
-- Under the write lock, for each legacy record in ID order: the date is its
-  `created`, else the UTC author date of the first commit of the path its
-  `formerly` names, else of its own path's first commit, and a missing
-  `created` is written with that time. The ID is drawn for that date as
-  `new` draws one, and the slug is derived as `new` derives it, from the
-  title less the IDs it cites (and a following `'s`), since a slug of IDs
-  says nothing. The file is renamed; `updated` is left alone, so the
-  board's order holds. A date-form record whose filename cites a legacy ID
-  keeps its ID and takes the same slug.
-- Then every file beneath the record root is rewritten, each old filename
-  first and then each old ID as a whole token: one not joined to a letter
-  or digit, while a hyphen bounds it, so an ID inside a hyphenated branch
-  name is rewritten too. Frontmatter, links and prose are rewritten
-  alike. The attempts under the Git common directory follow:
-  each directory named for a legacy ID is renamed, and every file of every
-  attempt that is neither running nor orphaned is rewritten.
-- Stdout is one JSON line per record, `{from, from_path, id, path}`, as
-  `convert` prints, in legacy order: that is the map. Outside the record
-  root, and in Git history, references keep their old IDs, which the
-  caller repairs or resolves from the map.
-- Refused, writing nothing, when `check` fails, when no record has a
-  legacy ID (so a rerun is harmless), while a local branch other than the
-  checkout's and the target holds any file beneath the record root, since
-  every view reads every local branch and would show both forms, or while
-  an attempt whose selection holds a legacy ID is running or orphaned.
-- The attempts directory is not in Git: copy it first. A run that fails
-  after renaming records cannot be rerun, since no legacy record is left,
-  and the map it prints and that copy are what finishing it by hand needs.
-- `git log --follow` finds a renamed record's earlier history only when
-  the rename commit keeps enough of its content: commit the renames alone
-  first (the old content at the new paths), then the rewrite, when a
-  record's references are a large part of its text.
-
 Not provided: lookup of a record by its former ID, batch conversion, link
-rewriting outside `renumber`, and per-type folders or prefixes.
+rewriting, and per-type folders or prefixes.
 
 ## Knowledge records and the brief
 
@@ -149,7 +110,7 @@ Terms, plans and reviews:
   like `depends_on` targets. One plan can name several work items. Work does
   not name its plans or reviews back: that side is derived, and
   `context ID` lists them without reading them. `new` takes no fields, so
-  set it with `update ID --set 'work=["G-001"]'`.
+  set it with `update ID --set 'work=["G-260925-7k2qm"]'`.
 - `examined` is an optional quoted Git commit, 7 to 40 lowercase hex digits:
   what the review looked at. Whether the reviewed content has changed since is
   a comparison a reader makes, not stored state, against the work's
@@ -228,7 +189,7 @@ These distinctions hold:
 ## On-disk contract
 
 No command renames, moves (other than `convert`), deletes or edits the body
-of a record, other than the one-time `renumber`.
+of a record.
 
 ### Configuration and discovery
 
@@ -340,8 +301,8 @@ configuration.
 grove.yaml
 grove/
   brief.md
-  G-001-starter-defaults.md
-  G-003-inspect-records.md
+  G-260924-2b8rc-starter-defaults.md
+  G-260925-7k2qm-inspect-records.md
 ```
 
 Read `.md` files recursively beneath the record root. Nested folders may
@@ -374,12 +335,10 @@ the canonical identity, not an alias for a hidden random value. An ID Grove
 issues is `G-`, the UTC date as `YYMMDD`, a hyphen, and five characters from
 `crypto/rand` in lowercase Crockford base32 (`0-9a-hjkmnp-tv-z`, without
 `i`, `l`, `o` or `u`): `G-260925-7k2qm`, so the longest generated filename is
-42 characters. Legacy IDs, `G-001` to `G-999` from the sequential counter
-that preceded this form, stay valid identities and are never issued again;
-only the one-time `renumber` above replaces them. Store IDs as strings and match references exactly; `show
+42 characters. Store IDs as strings and match references exactly; `show
 G-260925-7k2qm` needs no abbreviated-ID lookup. Where a command orders by
-ID, legacy IDs come first in numeric order, then date-form IDs by date and
-tail; the board orders cards by their dates.
+ID, it orders them as strings, which is by date and then tail; the board
+orders cards by their dates.
 
 Creation needs Git, and no network or shared state beyond the one
 repository. `new` takes `grove/write.lock` in the directory that
@@ -388,7 +347,7 @@ worktree's own `.git` path, since linked worktrees have private metadata as
 well as a shared common directory
 ([Git's worktree documentation](https://git-scm.com/docs/git-worktree#_details)).
 It is an `flock`, which the kernel releases when the holder exits, and it
-serializes `new`, `convert`, `renumber` and `update` in every worktree. Under it, `new`:
+serializes `new`, `convert` and `update` in every worktree. Under it, `new`:
 
 1. Draws a tail, and draws again while the ID is already held by the
    project, by an `id:` line in any text file beneath the record root on any

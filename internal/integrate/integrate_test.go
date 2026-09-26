@@ -17,8 +17,8 @@ import (
 
 const (
 	config = "schema_version: 3\nrecords: grove\ntarget: main\n"
-	work   = "---\nid: \"G-001\"\ntype: work\ntitle: First\nstatus: %s\n---\n\n## Outcome\n\nBody.\n"
-	review = "---\nid: \"G-005\"\ntype: review\ntitle: Review of G-001\nstatus: current\nwork: [\"G-001\"]\nexamined: \"%s\"\n---\n\nFindings.\n"
+	work   = "---\nid: \"G-260101-00001\"\ntype: work\ntitle: First\nstatus: %s\n---\n\n## Outcome\n\nBody.\n"
+	review = "---\nid: \"G-260101-00005\"\ntype: review\ntitle: Review of G-260101-00001\nstatus: current\nwork: [\"G-260101-00001\"]\nexamined: \"%s\"\n---\n\nFindings.\n"
 )
 
 var now = time.Date(2026, 9, 22, 18, 30, 0, 0, time.UTC)
@@ -54,7 +54,7 @@ func record(t *testing.T, root string) *project.Record {
 }
 
 // fixture is a main checkout with target main, and a linked worktree on
-// branch feature where G-001 is in review, approved, with a review record in
+// branch feature where G-260101-00001 is in review, approved, with a review record in
 // its candidate. It returns the main root, the worktree, and the candidate.
 func fixture(t *testing.T, approve bool, sub ...string) (root, wt, candidate string) {
 	t.Helper()
@@ -76,24 +76,24 @@ func fixture(t *testing.T, approve bool, sub ...string) (root, wt, candidate str
 	// sub places the project under a prefix, with the code above it.
 	project, wtProject := filepath.Join(append([]string{root}, sub...)...), filepath.Join(append([]string{wt}, sub...)...)
 	write(t, project, "grove.yaml", config)
-	write(t, project, "grove/G-001-first.md", strings.Replace(work, "%s", "proposed", 1))
+	write(t, project, "grove/G-260101-00001-first.md", strings.Replace(work, "%s", "proposed", 1))
 	write(t, root, "code.txt", "before\n")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "init")
 	git(t, root, "worktree", "add", "-q", "-b", "feature", wt)
-	write(t, wtProject, "grove/G-001-first.md", strings.Replace(work, "%s", "active", 1))
+	write(t, wtProject, "grove/G-260101-00001-first.md", strings.Replace(work, "%s", "active", 1))
 	write(t, wt, "code.txt", "the change\n")
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "feat: implement")
-	write(t, wtProject, "grove/G-005-review.md", strings.Replace(review, "%s", git(t, wt, "rev-parse", "HEAD"), 1))
+	write(t, wtProject, "grove/G-260101-00005-review.md", strings.Replace(review, "%s", git(t, wt, "rev-parse", "HEAD"), 1))
 	git(t, wt, "add", "-A")
 	git(t, wt, "commit", "-qm", "docs: evidence and review")
 	candidate = git(t, wt, "rev-parse", "HEAD")
-	if _, err := update.Apply(wtProject, update.Request{ID: "G-001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: candidate}}, Commit: true}, now, nil); err != nil {
+	if _, err := update.Apply(wtProject, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: candidate}}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
 	}
 	if approve {
-		if _, err := update.Approve(wtProject, "G-001", "Ship it.", now); err != nil {
+		if _, err := update.Approve(wtProject, "G-260101-00001", "Ship it.", now); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -103,7 +103,7 @@ func fixture(t *testing.T, approve bool, sub ...string) (root, wt, candidate str
 func run(t *testing.T, root, cwd string, cleanup bool) ([]string, error) {
 	t.Helper()
 	var facts []string
-	err := Run(Request{Root: root, ID: "G-001", Cwd: cwd, Cleanup: cleanup}, now, func(f string) { facts = append(facts, f) })
+	err := Run(Request{Root: root, ID: "G-260101-00001", Cwd: cwd, Cleanup: cleanup}, now, func(f string) { facts = append(facts, f) })
 	return facts, err
 }
 
@@ -135,9 +135,9 @@ func TestIntegrateFastForwardAndCleanup(t *testing.T) {
 	}
 	head := git(t, root, "rev-parse", "HEAD")
 	want := []string{
-		"approval: candidate " + candidate[:7] + " of G-001 approved on branch feature at " + tip[:7] + " (Verdict on candidate " + candidate[:7] + ", 2026-09-22: Ship it.)",
+		"approval: candidate " + candidate[:7] + " of G-260101-00001 approved on branch feature at " + tip[:7] + " (Verdict on candidate " + candidate[:7] + ", 2026-09-22: Ship it.)",
 		"merge: fast-forward main from " + before[:7] + " to " + tip[:7],
-		"done: G-001 done at commit " + head[:7],
+		"done: G-260101-00001 done at commit " + head[:7],
 		"cleanup: removed worktree " + wt,
 		"cleanup: deleted branch feature",
 	}
@@ -148,10 +148,10 @@ func TestIntegrateFastForwardAndCleanup(t *testing.T) {
 	if r.Status != "done" || r.Candidate != candidate || r.Approved != candidate || !strings.Contains(string(r.Source), "Verdict on candidate") {
 		t.Fatalf("record on main: %+v", r)
 	}
-	if files := git(t, root, "show", "--format=", "--name-only", "HEAD"); files != "grove/G-001-first.md" {
+	if files := git(t, root, "show", "--format=", "--name-only", "HEAD"); files != "grove/G-260101-00001-first.md" {
 		t.Fatalf("the done commit must hold the record alone: %q", files)
 	}
-	if msg := git(t, root, "log", "-1", "--format=%s"); msg != "docs(G-001): set status=done" {
+	if msg := git(t, root, "log", "-1", "--format=%s"); msg != "docs(G-260101-00001): set status=done" {
 		t.Fatalf("message: %q", msg)
 	}
 	if _, err := os.Stat(wt); !os.IsNotExist(err) {
@@ -161,7 +161,7 @@ func TestIntegrateFastForwardAndCleanup(t *testing.T) {
 		t.Fatal("the branch remains")
 	}
 	// Running again finds no candidate: the branch is gone.
-	refused(t, root, false, "no branch holds G-001 in review; nothing to integrate")
+	refused(t, root, false, "no branch holds G-260101-00001 in review; nothing to integrate")
 }
 
 func TestIntegrateMergeCommitWhenTheTargetMoved(t *testing.T) {
@@ -184,7 +184,7 @@ func TestIntegrateMergeCommitWhenTheTargetMoved(t *testing.T) {
 	}
 	// A second integration has nothing to merge and nothing to close.
 	facts, err = run(t, root, root, false)
-	if err != nil || facts[1] != "merge: nothing to merge; feature is already in main at "+git(t, root, "rev-parse", "--short=7", "HEAD") || facts[2] != "done: G-001 was already done here" {
+	if err != nil || facts[1] != "merge: nothing to merge; feature is already in main at "+git(t, root, "rev-parse", "--short=7", "HEAD") || facts[2] != "done: G-260101-00001 was already done here" {
 		t.Fatalf("%v; facts %q", err, facts)
 	}
 }
@@ -203,7 +203,7 @@ func TestIntegrateRefusesConflictsBeforeAnythingChanges(t *testing.T) {
 		moved := git(t, root, "rev-parse", "--short=7", "HEAD")
 		refs := git(t, root, "for-each-ref")
 		facts := refused(t, root, false, "merge of feature into main refused: it conflicts with main at "+moved+" in code.txt; nothing was merged, main is unchanged at "+moved+
-			" and G-001 stays in review. Next: grove resolve G-001 records that as feedback and starts one attempt to merge main at "+moved+", resolve and hand off a new candidate; or by hand, in "+wt+", git merge main, resolve the conflicts and commit, then hand that commit to review as the new candidate")
+			" and G-260101-00001 stays in review. Next: grove resolve G-260101-00001 records that as feedback and starts one attempt to merge main at "+moved+", resolve and hand off a new candidate; or by hand, in "+wt+", git merge main, resolve the conflicts and commit, then hand that commit to review as the new candidate")
 		if len(facts) != 1 || !strings.HasPrefix(facts[0], "approval: ") {
 			t.Fatalf("facts %q", facts)
 		}
@@ -216,13 +216,13 @@ func TestIntegrateRefusesConflictsBeforeAnythingChanges(t *testing.T) {
 		// The candidate adds the review record, which an untracked file in
 		// the target's checkout stands in the way of: the merge refuses it.
 		root, _, candidate := fixture(t, true)
-		write(t, root, "grove/G-005-review.md", git(t, root, "show", candidate+":grove/G-005-review.md")+"\nA local edit.\n")
+		write(t, root, "grove/G-260101-00005-review.md", git(t, root, "show", candidate+":grove/G-260101-00005-review.md")+"\nA local edit.\n")
 		refused(t, root, false, "merge of feature into main refused: error: The following untracked working tree files would be overwritten by merge")
 	})
 	t.Run("the record changed on the target", func(t *testing.T) {
 		t.Parallel()
 		root, _, _ := fixture(t, true)
-		write(t, root, "grove/G-001-first.md", strings.Replace(work, "%s", "abandoned", 1))
+		write(t, root, "grove/G-260101-00001-first.md", strings.Replace(work, "%s", "abandoned", 1))
 		git(t, root, "commit", "-qam", "docs: abandon on main")
 		refused(t, root, false, "main is unchanged at")
 	})
@@ -269,13 +269,13 @@ func TestIntegrateRefusesWhatIsNotReadyToMerge(t *testing.T) {
 	t.Run("unapproved", func(t *testing.T) {
 		t.Parallel()
 		root, wt, _ := fixture(t, false)
-		refused(t, root, false, "G-001 is in review on feature but not approved: run grove approve G-001 VERDICT in "+wt+" first")
+		refused(t, root, false, "G-260101-00001 is in review on feature but not approved: run grove approve G-260101-00001 VERDICT in "+wt+" first")
 	})
 	t.Run("two branches", func(t *testing.T) {
 		t.Parallel()
 		root, _, _ := fixture(t, true)
 		git(t, root, "branch", "feature2", "feature")
-		facts := refused(t, root, false, "G-001 is approved in review on several branches (feature, feature2); integrate needs one")
+		facts := refused(t, root, false, "G-260101-00001 is approved in review on several branches (feature, feature2); integrate needs one")
 		if len(facts) != 0 {
 			t.Fatalf("facts %q", facts)
 		}
@@ -283,10 +283,10 @@ func TestIntegrateRefusesWhatIsNotReadyToMerge(t *testing.T) {
 	t.Run("not in review", func(t *testing.T) {
 		t.Parallel()
 		root, wt, _ := fixture(t, true)
-		if _, err := update.Feedback(wt, "G-001", "no", now); err != nil {
+		if _, err := update.Feedback(wt, "G-260101-00001", "no", now); err != nil {
 			t.Fatal(err)
 		}
-		refused(t, root, false, "no branch holds G-001 in review")
+		refused(t, root, false, "no branch holds G-260101-00001 in review")
 	})
 }
 
@@ -347,13 +347,13 @@ func TestIntegrateReportsADoneWriteThatFailedAfterTheMerge(t *testing.T) {
 	}
 	git(t, root, "config", "core.hooksPath", hooks)
 	facts, err := run(t, root, root, true)
-	if err == nil || !strings.Contains(err.Error(), "merged as "+tip[:7]+", but marking G-001 done failed: ") || !strings.Contains(err.Error(), "commit the staged record here: git commit -m 'docs(G-001): set status=done' -- grove/G-001-first.md") {
+	if err == nil || !strings.Contains(err.Error(), "merged as "+tip[:7]+", but marking G-260101-00001 done failed: ") || !strings.Contains(err.Error(), "commit the staged record here: git commit -m 'docs(G-260101-00001): set status=done' -- grove/G-260101-00001-first.md") {
 		t.Fatalf("%v; facts %q", err, facts)
 	}
 	if len(facts) != 2 || git(t, root, "rev-parse", "HEAD") != tip {
 		t.Fatalf("the merge must stand: facts %q", facts)
 	}
-	if r := record(t, root); r.Status != "done" || !strings.HasPrefix(git(t, root, "status", "--porcelain"), "M  grove/G-001-first.md") { // staged, uncommitted
+	if r := record(t, root); r.Status != "done" || !strings.HasPrefix(git(t, root, "status", "--porcelain"), "M  grove/G-260101-00001-first.md") { // staged, uncommitted
 		t.Fatalf("the applied but uncommitted done write: %+v %q", r, git(t, root, "status", "--porcelain"))
 	}
 	if _, err := os.Stat(wt); err != nil {
@@ -369,7 +369,7 @@ func TestIntegrateUnderAPolicy(t *testing.T) {
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "docs: notes")
 	moved := git(t, root, "rev-parse", "HEAD")
-	req := Request{Root: root, ID: "G-001", Expect: before, Policy: "policy grove.yaml sha256:x"}
+	req := Request{Root: root, ID: "G-260101-00001", Expect: before, Policy: "policy grove.yaml sha256:x"}
 	err := Run(req, now, func(string) {})
 	if err == nil || !strings.Contains(err.Error(), "main moved from "+before[:7]+", where the merge was verified, to "+moved[:7]) || git(t, root, "rev-parse", "HEAD") != moved {
 		t.Fatalf("a moved target: %v", err)

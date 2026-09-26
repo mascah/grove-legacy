@@ -9,17 +9,17 @@ import (
 	"github.com/mascah/grove/internal/project"
 )
 
-// sampleProject builds on gitProject's G-001..G-004 (two work, a question, a
+// sampleProject builds on gitProject's G-260101-00001..G-260101-00004 (two work, a question, a
 // decision) with a plan shared by two work items, a review with an examined
-// commit, and legacy documents outside the record root for convert to bring
+// commit, and documents outside the record root for convert to bring
 // in: one predating plan records, one plain.
 func sampleProject(t *testing.T) string {
 	t.Helper()
 	root := gitProject(t)
-	write(t, root, "grove/G-005-shared.md", "---\nid: \"G-005\"\ntype: plan\ntitle: Shared\nstatus: superseded\nwork: [\"G-002\", \"G-001\"]\n---\nPlan.\n")
-	write(t, root, "grove/G-006-first-review.md", "---\nid: \"G-006\"\ntype: review\ntitle: Review\nstatus: current\nwork: [\"G-001\"]\nexamined: \"fc9bef1\"\ncreated: \"2026-09-20T10:00:00Z\"\nupdated: \"2026-09-21T10:00:00Z\"\n---\nFindings.\n")
+	write(t, root, "grove/G-260101-00005-shared.md", "---\nid: \"G-260101-00005\"\ntype: plan\ntitle: Shared\nstatus: superseded\nwork: [\"G-260101-00002\", \"G-260101-00001\"]\n---\nPlan.\n")
+	write(t, root, "grove/G-260101-00006-first-review.md", "---\nid: \"G-260101-00006\"\ntype: review\ntitle: Review\nstatus: current\nwork: [\"G-260101-00001\"]\nexamined: \"fc9bef1\"\ncreated: \"2026-09-20T10:00:00Z\"\nupdated: \"2026-09-21T10:00:00Z\"\n---\nFindings.\n")
 	write(t, root, "docs/plans/old-plan.md", "# Old plan\n\nWritten before plan records.\n")
-	write(t, root, "docs/other.md", "# Other\n\nA legacy note.\n")
+	write(t, root, "docs/other.md", "# Other\n\nAn old note.\n")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-q", "-m", "sample project")
 	return root
@@ -91,7 +91,7 @@ func TestConvertRefusals(t *testing.T) {
 	}
 	// An existing target file is refused before anything else is touched.
 	write(t, root, "docs/blocker.md", "")
-	if err := os.Rename(filepath.Join(root, "docs/blocker.md"), filepath.Join(root, "grove/G-008-second.md")); err != nil {
+	if err := os.Rename(filepath.Join(root, "docs/blocker.md"), filepath.Join(root, "grove/G-260101-00008-second.md")); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := Convert(root, ConvertRequest{Source: "docs/other.md", Type: "page", Title: "Blocked", Slug: "second"}); err == nil {
@@ -104,7 +104,7 @@ func TestConvertRefusals(t *testing.T) {
 func TestReclassifyKeepsIdentityAndPath(t *testing.T) {
 	t.Parallel()
 	root := sampleProject(t)
-	write(t, root, "grove/notes/G-050-idea.md", "---\nid: \"G-050\"\ntype: page\ntitle: Idea\n---\nProse that says status: done and approved.\n")
+	write(t, root, "grove/notes/G-260101-00050-idea.md", "---\nid: \"G-260101-00050\"\ntype: page\ntitle: Idea\n---\nProse that says status: done and approved.\n")
 	rev := func(id string) string {
 		p, _ := project.Load(root, root)
 		for _, r := range p.Records {
@@ -115,27 +115,27 @@ func TestReclassifyKeepsIdentityAndPath(t *testing.T) {
 		t.Fatalf("%s missing", id)
 		return ""
 	}
-	if _, err := Apply(root, Request{ID: "G-050", Expect: rev("G-050"), Set: []Field{{"type", "work"}}}, now, nil); err == nil || !strings.Contains(err.Error(), "status: required field is missing") {
+	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "work"}}}, now, nil); err == nil || !strings.Contains(err.Error(), "status: required field is missing") {
 		t.Fatalf("a page became work without a status: %v", err)
 	}
-	res, err := Apply(root, Request{ID: "G-050", Expect: rev("G-050"), Set: []Field{{"type", "work"}, {"status", "proposed"}, {"priority", "2"}}}, now, nil)
-	if err != nil || res.Path != "grove/notes/G-050-idea.md" || res.ID != "G-050" {
+	res, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "work"}, {"status", "proposed"}, {"priority", "2"}}}, now, nil)
+	if err != nil || res.Path != "grove/notes/G-260101-00050-idea.md" || res.ID != "G-260101-00050" {
 		t.Fatalf("res=%+v err=%v", res, err)
 	}
-	if _, err := Apply(root, Request{ID: "G-050", Expect: rev("G-050"), Set: []Field{{"type", "page"}}, Unset: []string{"status"}}, now, nil); err == nil || !strings.Contains(err.Error(), "priority: unknown field") {
+	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status"}}, now, nil); err == nil || !strings.Contains(err.Error(), "priority: unknown field") {
 		t.Fatalf("work fields survived on a page: %v", err)
 	}
-	if _, err := Apply(root, Request{ID: "G-050", Expect: rev("G-050"), Set: []Field{{"type", "page"}}, Unset: []string{"status", "priority"}}, now, nil); err != nil {
+	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status", "priority"}}, now, nil); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Apply(root, Request{ID: "G-002", Expect: rev("G-002"), Set: []Field{{"type", "decision"}}}, now, nil); err == nil {
+	if _, err := Apply(root, Request{ID: "G-260101-00002", Expect: rev("G-260101-00002"), Set: []Field{{"type", "decision"}}}, now, nil); err == nil {
 		t.Fatal("work that a plan names became a decision")
 	}
-	if _, err := Apply(root, Request{ID: "G-050", Expect: rev("G-050"), Unset: []string{"type"}}, now, nil); err == nil {
+	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Unset: []string{"type"}}, now, nil); err == nil {
 		t.Fatal("type was unset")
 	}
 	for _, name := range []string{"id", "formerly"} {
-		if _, err := Apply(root, Request{ID: "G-050", Expect: rev("G-050"), Set: []Field{{name, "G-051"}}}, now, nil); err == nil || !strings.Contains(err.Error(), "cannot be changed by update") {
+		if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{name, "G-260101-00051"}}}, now, nil); err == nil || !strings.Contains(err.Error(), "cannot be changed by update") {
 			t.Fatalf("%s: %v", name, err)
 		}
 	}

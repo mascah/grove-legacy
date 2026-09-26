@@ -122,7 +122,7 @@ func source(p *project.Project, req ConvertRequest) ([]byte, error) {
 	case clean != req.Source || !filepath.IsLocal(req.Source) || path.Ext(clean) != ".md":
 		return nil, fmt.Errorf("the source must be a project-relative .md file as a clean path")
 	case strings.HasPrefix(strings.ToLower(clean), strings.ToLower(root)) || strings.EqualFold(clean, p.Brief):
-		return nil, fmt.Errorf("%s is not a legacy document: it is inside the record root or is the brief", req.Source)
+		return nil, fmt.Errorf("%s is not a document to convert: it is inside the record root or is the brief", req.Source)
 	case t == nil || strings.TrimSpace(req.Title) == "":
 		return nil, fmt.Errorf("converting a document requires --type (work, question, decision, term, plan, review, or page) and a nonempty --title")
 	}

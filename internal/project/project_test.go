@@ -52,16 +52,16 @@ func diagnostics(ds []Diagnostic) string {
 func TestLoadRenamedNestedRecordsAndPreserveSource(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
-	source := record("G-001", "work", "kind: investigation\npriority: 2\nsize: small\ncreated: \"2026-09-19T14:08:40Z\"\n")
+	source := record("G-260101-00001", "work", "kind: investigation\npriority: 2\nsize: small\ncreated: \"2026-09-19T14:08:40Z\"\n")
 	source = string(rune(0xFEFF)) + strings.ReplaceAll(source, "\n", "\r\n")
 	put(t, root, "grove/work/nested/custom.md", source)
-	put(t, root, "grove/questions/anything.md", record("G-002", "question", ""))
+	put(t, root, "grove/questions/anything.md", record("G-260101-00002", "question", ""))
 	put(t, root, "grove/notes.txt", "not a record")
 	p, ds := Load(filepath.Join(root, "grove", "work", "nested"), "")
 	if len(ds) != 0 {
 		t.Fatal(diagnostics(ds))
 	}
-	if len(p.Records) != 2 || p.Records[0].ID != "G-001" {
+	if len(p.Records) != 2 || p.Records[0].ID != "G-260101-00001" {
 		t.Fatalf("records: %+v", p.Records)
 	}
 	if string(p.Records[0].Source) != source || p.Records[0].Path != "grove/work/nested/custom.md" {
@@ -133,33 +133,33 @@ func TestInvalidConfiguration(t *testing.T) {
 
 func TestStrictRecordMetadata(t *testing.T) {
 	t.Parallel()
-	base := record("G-001", "work", "")
+	base := record("G-260101-00001", "work", "")
 	for _, tc := range []struct{ name, source, field string }{
 		{"missing title", strings.Replace(base, "title: Example\n", "", 1), "title"},
 		{"numeric title", strings.Replace(base, "title: Example", "title: 123", 1), "title"},
 		{"empty title", strings.Replace(base, "title: Example", "title: \"  \"", 1), "title"},
-		{"null", record("G-001", "work", "size: null\n"), "size"},
-		{"priority float", record("G-001", "work", "priority: 2.0\n"), "priority"},
-		{"priority range", record("G-001", "work", "priority: 6\n"), "priority"},
-		{"size", record("G-001", "work", "size: spike\n"), "size"},
-		{"kind", record("G-001", "work", "kind: magic\n"), "kind"},
-		{"unknown", record("G-001", "work", "priorty: 2\n"), "priorty"},
-		{"duplicate key", record("G-001", "work", "title: Again\n"), "title"},
-		{"duplicate relationship", record("G-001", "work", "relates_to: [G-002, G-002]\n"), "relates_to"},
-		{"sequence required", record("G-001", "work", "depends_on: G-002\n"), "depends_on"},
-		{"nonstring target", record("G-001", "work", "depends_on: [42]\n"), "depends_on"},
-		{"wrong type field", record("G-001", "work", "blocks: []\n"), "blocks"},
-		{"bare timestamp", record("G-001", "work", "created: 2026-09-19T12:00:00Z\n"), "created"},
-		{"offset timestamp", record("G-001", "work", "created: \"2026-09-19T12:00:00+00:00\"\n"), "created"},
-		{"fraction timestamp", record("G-001", "work", "created: \"2026-09-19T12:00:00.123Z\"\n"), "created"},
-		{"invalid date", record("G-001", "work", "created: \"2026-02-30T12:00:00Z\"\n"), "created"},
-		{"backward date", record("G-001", "work", "created: \"2026-09-19T12:00:00Z\"\nupdated: \"2026-09-18T12:00:00Z\"\n"), "updated"},
-		{"backward zero date", record("G-001", "work", "created: \"0001-01-01T00:00:00Z\"\nupdated: \"0000-01-01T00:00:00Z\"\n"), "updated"},
-		{"zero id", record("G-000", "work", ""), "id"},
+		{"null", record("G-260101-00001", "work", "size: null\n"), "size"},
+		{"priority float", record("G-260101-00001", "work", "priority: 2.0\n"), "priority"},
+		{"priority range", record("G-260101-00001", "work", "priority: 6\n"), "priority"},
+		{"size", record("G-260101-00001", "work", "size: spike\n"), "size"},
+		{"kind", record("G-260101-00001", "work", "kind: magic\n"), "kind"},
+		{"unknown", record("G-260101-00001", "work", "priorty: 2\n"), "priorty"},
+		{"duplicate key", record("G-260101-00001", "work", "title: Again\n"), "title"},
+		{"duplicate relationship", record("G-260101-00001", "work", "relates_to: [G-260101-00002, G-260101-00002]\n"), "relates_to"},
+		{"sequence required", record("G-260101-00001", "work", "depends_on: G-260101-00002\n"), "depends_on"},
+		{"nonstring target", record("G-260101-00001", "work", "depends_on: [42]\n"), "depends_on"},
+		{"wrong type field", record("G-260101-00001", "work", "blocks: []\n"), "blocks"},
+		{"bare timestamp", record("G-260101-00001", "work", "created: 2026-09-19T12:00:00Z\n"), "created"},
+		{"offset timestamp", record("G-260101-00001", "work", "created: \"2026-09-19T12:00:00+00:00\"\n"), "created"},
+		{"fraction timestamp", record("G-260101-00001", "work", "created: \"2026-09-19T12:00:00.123Z\"\n"), "created"},
+		{"invalid date", record("G-260101-00001", "work", "created: \"2026-02-30T12:00:00Z\"\n"), "created"},
+		{"backward date", record("G-260101-00001", "work", "created: \"2026-09-19T12:00:00Z\"\nupdated: \"2026-09-18T12:00:00Z\"\n"), "updated"},
+		{"backward zero date", record("G-260101-00001", "work", "created: \"0001-01-01T00:00:00Z\"\nupdated: \"0000-01-01T00:00:00Z\"\n"), "updated"},
 		{"short id", record("G-1", "work", ""), "id"},
 		{"extra padding", record("G-0001", "work", ""), "id"},
-		{"short legacy id", record("G-01", "work", ""), "id"},
-		{"long legacy id", record("G-1234", "work", ""), "id"},
+		{"short numeric id", record("G-01", "work", ""), "id"},
+		{"long numeric id", record("G-1234", "work", ""), "id"},
+		{"retired numeric id", record("G-"+"001", "work", ""), "id"}, // split so a search for the retired form finds no fixture (G-260926-19gzg)
 		{"short tail", record("G-260925-7k2q", "work", ""), "id"},
 		{"uppercase tail", record("G-260925-7K2QM", "work", ""), "id"},
 		{"ambiguous tail letter", record("G-260925-7k2ql", "work", ""), "id"},
@@ -168,7 +168,7 @@ func TestStrictRecordMetadata(t *testing.T) {
 		{"lifecycle", strings.Replace(base, "status: proposed", "status: resolved", 1), "status"},
 		{"unclosed header", strings.TrimSuffix(base, "---\nBody with --- inside.\n"), "frontmatter"},
 		{"no header", "Hello\n", "frontmatter"},
-		{"alias", "---\nid: G-001\ntype: work\ntitle: &label Example\nstatus: *label\n---\n", "alias"},
+		{"alias", "---\nid: G-260101-00001\ntype: work\ntitle: &label Example\nstatus: *label\n---\n", "alias"},
 		{"custom tag", strings.Replace(base, "title: Example", "title: !special Example", 1), "title"},
 		{"invalid utf8", base + "\xff", "UTF-8"},
 	} {
@@ -191,7 +191,7 @@ func TestRejectSymlinks(t *testing.T) {
 		t.Run(target, func(t *testing.T) {
 			root := fixture(t)
 			outside := t.TempDir()
-			put(t, outside, "target", record("G-001", "work", ""))
+			put(t, outside, "target", record("G-260101-00001", "work", ""))
 			path := filepath.Join(root, target)
 			os.Remove(path)
 			os.MkdirAll(filepath.Dir(path), 0755)
@@ -206,36 +206,13 @@ func TestRejectSymlinks(t *testing.T) {
 	}
 }
 
-func TestOrderUsesCreationThenNumericID(t *testing.T) {
-	t.Parallel()
-	root := fixture(t)
-	for _, id := range []string{"G-260101-00000", "G-251231-zzzzz", "G-999", "G-002", "G-001"} {
-		extra := ""
-		if id == "G-002" {
-			extra = "created: \"2026-09-19T12:00:00Z\"\n"
-		}
-		put(t, root, "grove/work/"+id+".md", record(id, "work", extra))
-	}
-	p, ds := Load(root, "")
-	if len(ds) != 0 {
-		t.Fatal(diagnostics(ds))
-	}
-	var ids []string
-	for _, r := range p.Records {
-		ids = append(ids, r.ID)
-	}
-	if strings.Join(ids, ",") != "G-002,G-001,G-999,G-251231-zzzzz,G-260101-00000" {
-		t.Fatal(ids)
-	}
-}
-
 func TestExplicitZeroTimeIsNotAnAbsentDate(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
-	put(t, root, "grove/work/undated.md", record("G-001", "work", ""))
-	put(t, root, "grove/work/dated.md", record("G-999", "work", "created: \"0001-01-01T00:00:00Z\"\n"))
+	put(t, root, "grove/work/undated.md", record("G-260101-00001", "work", ""))
+	put(t, root, "grove/work/dated.md", record("G-260101-00999", "work", "created: \"0001-01-01T00:00:00Z\"\n"))
 	p, ds := Load(root, "")
-	if len(ds) != 0 || p.Records[0].ID != "G-999" {
+	if len(ds) != 0 || p.Records[0].ID != "G-260101-00999" {
 		t.Fatalf("a present timestamp must sort before undated records: %s", diagnostics(ds))
 	}
 }
@@ -254,10 +231,10 @@ func typed(id, kind, status, extra string) string {
 func TestKnowledgeRecords(t *testing.T) {
 	t.Parallel()
 	root := schema3(t, "")
-	put(t, root, "grove/G-001.md", typed("G-001", "work", "proposed", ""))
-	put(t, root, "grove/terms/G-002-attempt.md", typed("G-002", "term", "settled", "relates_to: [\"G-001\"]\n"))
-	put(t, root, "grove/plans/G-003-shared.md", typed("G-003", "plan", "current", "work: [\"G-001\"]\n"))
-	put(t, root, "grove/reviews/G-004-first.md", typed("G-004", "review", "current", "work: [\"G-001\"]\nexamined: \"42c077d\"\n"))
+	put(t, root, "grove/G-260101-00001.md", typed("G-260101-00001", "work", "proposed", ""))
+	put(t, root, "grove/terms/G-260101-00002-attempt.md", typed("G-260101-00002", "term", "settled", "relates_to: [\"G-260101-00001\"]\n"))
+	put(t, root, "grove/plans/G-260101-00003-shared.md", typed("G-260101-00003", "plan", "current", "work: [\"G-260101-00001\"]\n"))
+	put(t, root, "grove/reviews/G-260101-00004-first.md", typed("G-260101-00004", "review", "current", "work: [\"G-260101-00001\"]\nexamined: \"42c077d\"\n"))
 	p, ds := Load(root, root)
 	if len(ds) != 0 {
 		t.Fatalf("unexpected diagnostics:\n%s", diagnostics(ds))
@@ -266,7 +243,7 @@ func TestKnowledgeRecords(t *testing.T) {
 		t.Fatalf("got %d records", len(p.Records))
 	}
 	for _, r := range p.Records {
-		if r.ID == "G-004" && (r.Examined != "42c077d" || len(r.Work) != 1) {
+		if r.ID == "G-260101-00004" && (r.Examined != "42c077d" || len(r.Work) != 1) {
 			t.Fatalf("review fields not read: %+v", r)
 		}
 	}
@@ -275,19 +252,19 @@ func TestKnowledgeRecords(t *testing.T) {
 func TestKnowledgeRecordProblemsNameFileAndField(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct{ name, path, source, want string }{
-		{"missing work target", "grove/plans/G-002.md", typed("G-002", "plan", "current", "work: [\"G-009\"]\n"), "grove/plans/G-002.md: work: unresolved target G-009"},
-		{"work target not work", "grove/plans/G-002.md", typed("G-002", "plan", "current", "work: [\"G-002\"]\n"), "work: self-reference"},
-		{"work names a term", "grove/reviews/G-002.md", typed("G-002", "review", "current", "work: [\"G-001\"]\n"), "grove/reviews/G-002.md: work: target G-001 must be work"},
-		{"unquoted numeric commit", "grove/reviews/G-002.md", typed("G-002", "review", "current", "examined: 1234567\n"), "examined: expected a nonempty string"},
-		{"not a commit", "grove/reviews/G-002.md", typed("G-002", "review", "current", "examined: \"main\"\n"), "examined: expected a quoted Git commit"},
-		{"examined on a plan", "grove/plans/G-002.md", typed("G-002", "plan", "current", "examined: \"42c077d\"\n"), "examined: unknown field"},
-		{"work on a term", "grove/terms/G-003.md", typed("G-003", "term", "proposed", "work: [\"G-001\"]\n"), "work: unknown field"},
-		{"bad status", "grove/terms/G-003.md", typed("G-003", "term", "done", ""), "status: unsupported lifecycle value for term"},
+		{"missing work target", "grove/plans/G-260101-00002.md", typed("G-260101-00002", "plan", "current", "work: [\"G-260101-00009\"]\n"), "grove/plans/G-260101-00002.md: work: unresolved target G-260101-00009"},
+		{"work target not work", "grove/plans/G-260101-00002.md", typed("G-260101-00002", "plan", "current", "work: [\"G-260101-00002\"]\n"), "work: self-reference"},
+		{"work names a term", "grove/reviews/G-260101-00002.md", typed("G-260101-00002", "review", "current", "work: [\"G-260101-00001\"]\n"), "grove/reviews/G-260101-00002.md: work: target G-260101-00001 must be work"},
+		{"unquoted numeric commit", "grove/reviews/G-260101-00002.md", typed("G-260101-00002", "review", "current", "examined: 1234567\n"), "examined: expected a nonempty string"},
+		{"not a commit", "grove/reviews/G-260101-00002.md", typed("G-260101-00002", "review", "current", "examined: \"main\"\n"), "examined: expected a quoted Git commit"},
+		{"examined on a plan", "grove/plans/G-260101-00002.md", typed("G-260101-00002", "plan", "current", "examined: \"42c077d\"\n"), "examined: unknown field"},
+		{"work on a term", "grove/terms/G-260101-00003.md", typed("G-260101-00003", "term", "proposed", "work: [\"G-260101-00001\"]\n"), "work: unknown field"},
+		{"bad status", "grove/terms/G-260101-00003.md", typed("G-260101-00003", "term", "done", ""), "status: unsupported lifecycle value for term"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			root := schema3(t, "")
-			put(t, root, "grove/G-001.md", typed("G-001", "term", "settled", ""))
+			put(t, root, "grove/G-260101-00001.md", typed("G-260101-00001", "term", "settled", ""))
 			put(t, root, tc.path, tc.source)
 			_, ds := Load(root, root)
 			if got := diagnostics(ds); !strings.Contains(got, tc.want) {
@@ -300,10 +277,10 @@ func TestKnowledgeRecordProblemsNameFileAndField(t *testing.T) {
 func TestDuplicateTermTitle(t *testing.T) {
 	t.Parallel()
 	root := schema3(t, "")
-	put(t, root, "grove/terms/G-001.md", "---\nid: G-001\ntype: term\ntitle: Attempt\nstatus: settled\n---\n")
-	put(t, root, "grove/terms/G-002.md", "---\nid: G-002\ntype: term\ntitle: \" attempt\"\nstatus: proposed\n---\n")
+	put(t, root, "grove/terms/G-260101-00001.md", "---\nid: G-260101-00001\ntype: term\ntitle: Attempt\nstatus: settled\n---\n")
+	put(t, root, "grove/terms/G-260101-00002.md", "---\nid: G-260101-00002\ntype: term\ntitle: \" attempt\"\nstatus: proposed\n---\n")
 	_, ds := Load(root, root)
-	if got := diagnostics(ds); !strings.Contains(got, "grove/terms/G-002.md: title: term already defined by G-001") {
+	if got := diagnostics(ds); !strings.Contains(got, "grove/terms/G-260101-00002.md: title: term already defined by G-260101-00001") {
 		t.Fatalf("got %s", got)
 	}
 }
@@ -313,7 +290,7 @@ func TestDuplicateTermTitle(t *testing.T) {
 func briefFixture(t *testing.T, config string) string {
 	t.Helper()
 	root := schema3(t, config)
-	put(t, root, "grove/G-001.md", record("G-001", "work", ""))
+	put(t, root, "grove/G-260101-00001.md", record("G-260101-00001", "work", ""))
 	return root
 }
 
@@ -443,19 +420,19 @@ func TestBrief(t *testing.T) {
 	})
 }
 
-const page = "---\nid: G-002\ntype: page\ntitle: Synthesis\nrelates_to: [\"G-001\"]\n---\nNotes.\n"
+const page = "---\nid: G-260101-00002\ntype: page\ntitle: Synthesis\nrelates_to: [\"G-260101-00001\"]\n---\nNotes.\n"
 
-// Location carries no meaning: the root, a legacy-named folder, and an
+// Location carries no meaning: the root, a type-named folder, and an
 // arbitrary nested folder all hold any type, under recursive discovery.
 func TestDiscoversByIdentityNotLocation(t *testing.T) {
 	t.Parallel()
 	root := schema3(t, "brief: grove/brief.md\n")
 	put(t, root, "grove/brief.md", "# Brief, not a record\n")
-	put(t, root, "grove/G-001-work.md", typed("G-001", "work", "proposed", ""))
-	put(t, root, "grove/G-002-synthesis.md", page)
-	put(t, root, "grove/decisions/deep/er/G-003.md", typed("G-003", "plan", "current", "work: [\"G-001\"]\n"))
-	put(t, root, "grove/work/G-004-legacy-folder.md", typed("G-004", "work", "done", "depends_on: [\"G-001\"]\n"))
-	put(t, root, "grove/G-005-reclassified.md", typed("G-005", "term", "settled", "formerly: \"docs/old.md\"\n"))
+	put(t, root, "grove/G-260101-00001-work.md", typed("G-260101-00001", "work", "proposed", ""))
+	put(t, root, "grove/G-260101-00002-synthesis.md", page)
+	put(t, root, "grove/decisions/deep/er/G-260101-00003.md", typed("G-260101-00003", "plan", "current", "work: [\"G-260101-00001\"]\n"))
+	put(t, root, "grove/work/G-260101-00004-typed-folder.md", typed("G-260101-00004", "work", "done", "depends_on: [\"G-260101-00001\"]\n"))
+	put(t, root, "grove/G-260101-00005-reclassified.md", typed("G-260101-00005", "term", "settled", "formerly: \"docs/old.md\"\n"))
 	put(t, root, "grove/notes.txt", "ignored")
 	p, ds := Load(root, root)
 	if len(ds) != 0 {
@@ -465,7 +442,7 @@ func TestDiscoversByIdentityNotLocation(t *testing.T) {
 		t.Fatalf("got %d records", len(p.Records))
 	}
 	for _, r := range p.Records {
-		if r.ID == "G-002" && (r.Type != "page" || r.Status != "" || r.Title != "Synthesis") {
+		if r.ID == "G-260101-00002" && (r.Type != "page" || r.Status != "" || r.Title != "Synthesis") {
 			t.Fatalf("page not read: %+v", r)
 		}
 	}
@@ -474,26 +451,26 @@ func TestDiscoversByIdentityNotLocation(t *testing.T) {
 func TestRecordProblems(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct{ name, path, source, want string }{
-		{"page with a lifecycle", "grove/a.md", "---\nid: G-002\ntype: page\ntitle: T\nstatus: proposed\n---\n", "status: unknown field"},
-		{"page with a work field", "grove/a.md", "---\nid: G-002\ntype: page\ntitle: T\npriority: 1\n---\n", "priority: unknown field"},
-		{"no type is not a page", "grove/a.md", "---\nid: G-002\ntitle: T\n---\n", "type: required field is missing"},
-		{"unknown type", "grove/a.md", typed("G-002", "note", "open", ""), "type: unknown record type"},
-		{"work record missing status", "grove/a.md", "---\nid: G-002\ntype: work\ntitle: T\n---\n", "status: required field is missing"},
-		{"work with a bad status", "grove/a.md", typed("G-002", "work", "settled", ""), "status: unsupported lifecycle value for work"},
+		{"page with a lifecycle", "grove/a.md", "---\nid: G-260101-00002\ntype: page\ntitle: T\nstatus: proposed\n---\n", "status: unknown field"},
+		{"page with a work field", "grove/a.md", "---\nid: G-260101-00002\ntype: page\ntitle: T\npriority: 1\n---\n", "priority: unknown field"},
+		{"no type is not a page", "grove/a.md", "---\nid: G-260101-00002\ntitle: T\n---\n", "type: required field is missing"},
+		{"unknown type", "grove/a.md", typed("G-260101-00002", "note", "open", ""), "type: unknown record type"},
+		{"work record missing status", "grove/a.md", "---\nid: G-260101-00002\ntype: work\ntitle: T\n---\n", "status: required field is missing"},
+		{"work with a bad status", "grove/a.md", typed("G-260101-00002", "work", "settled", ""), "status: unsupported lifecycle value for work"},
 		{"plain Markdown", "grove/a.md", "# Just prose\n", "frontmatter: expected an opening --- line"},
-		{"uncanonical ID", "grove/a.md", typed("G-02", "work", "proposed", ""), "id: expected a canonical ID, e.g. G-260925-7k2qm or a legacy G-001"},
+		{"uncanonical ID", "grove/a.md", typed("G-02", "work", "proposed", ""), "id: expected a canonical ID, e.g. G-260925-7k2qm"},
 		{"unknown prefix", "grove/a.md", typed("X-002", "work", "proposed", ""), "id: expected a canonical ID"},
-		{"duplicate ID across folders", "grove/x/y/a.md", typed("G-001", "term", "settled", ""), "id: duplicate G-001 in grove/G-001.md, grove/x/y/a.md"},
-		{"non-work target", "grove/a.md", typed("G-002", "plan", "current", "work: [\"G-009\"]\n"), "work: target G-009 must be work"},
-		{"formerly twice", "grove/a.md", typed("G-002", "work", "done", "formerly: \"W-007\"\n"), "formerly: W-007 was already converted to G-001"},
-		{"formerly twice by another case", "grove/a.md", typed("G-002", "work", "done", "formerly: \"w-007\"\n"), "formerly: w-007 was already converted to G-001"},
-		{"formerly still present", "grove/a.md", typed("G-002", "work", "done", "formerly: \"G-009\"\n"), "formerly: G-009 still exists in grove/G-009.md"},
+		{"duplicate ID across folders", "grove/x/y/a.md", typed("G-260101-00001", "term", "settled", ""), "id: duplicate G-260101-00001 in grove/G-260101-00001.md, grove/x/y/a.md"},
+		{"non-work target", "grove/a.md", typed("G-260101-00002", "plan", "current", "work: [\"G-260101-00009\"]\n"), "work: target G-260101-00009 must be work"},
+		{"formerly twice", "grove/a.md", typed("G-260101-00002", "work", "done", "formerly: \"W-007\"\n"), "formerly: W-007 was already converted to G-260101-00001"},
+		{"formerly twice by another case", "grove/a.md", typed("G-260101-00002", "work", "done", "formerly: \"w-007\"\n"), "formerly: w-007 was already converted to G-260101-00001"},
+		{"formerly still present", "grove/a.md", typed("G-260101-00002", "work", "done", "formerly: \"G-260101-00009\"\n"), "formerly: G-260101-00009 still exists in grove/G-260101-00009.md"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			root := schema3(t, "")
-			put(t, root, "grove/G-001.md", typed("G-001", "work", "proposed", "formerly: \"W-007\"\n"))
-			put(t, root, "grove/G-009.md", "---\nid: G-009\ntype: page\ntitle: P\n---\n")
+			put(t, root, "grove/G-260101-00001.md", typed("G-260101-00001", "work", "proposed", "formerly: \"W-007\"\n"))
+			put(t, root, "grove/G-260101-00009.md", "---\nid: G-260101-00009\ntype: page\ntitle: P\n---\n")
 			put(t, root, tc.path, tc.source)
 			_, ds := Load(root, root)
 			if got := diagnostics(ds); !strings.Contains(got, tc.path+":") && !strings.Contains(got, tc.path+": ") || !strings.Contains(got, tc.want) {
@@ -508,26 +485,26 @@ func TestReviewLifecycleAndCandidate(t *testing.T) {
 	commit := "candidate: \"0123456789abcdef0123456789abcdef01234567\"\n"
 	approved := "approved: \"0123456789abcdef0123456789abcdef01234567\"\n"
 	for _, tc := range []struct{ name, source, want string }{
-		{"review needs a candidate", typed("G-002", "work", "review", ""), "grove/G-002.md: candidate: required while status is review"},
-		{"review with one", typed("G-002", "work", "review", commit), ""},
-		{"historical done keeps validating", typed("G-002", "work", "done", ""), ""},
-		{"done with one", typed("G-002", "work", "done", commit), ""},
-		{"not a commit", typed("G-002", "work", "active", "candidate: \"main\"\n"), "candidate: expected a quoted Git commit"},
-		{"unquoted", typed("G-002", "work", "active", "candidate: 1234567\n"), "candidate: expected a nonempty string"},
-		{"only on work", typed("G-002", "plan", "current", commit), "candidate: unknown field"},
-		{"review is a work status only", typed("G-002", "plan", "review", ""), "status: unsupported lifecycle value for plan"},
-		{"approved in review", typed("G-002", "work", "review", commit+approved), ""},
-		{"approved in done", typed("G-002", "work", "done", commit+approved), ""},
-		{"approved must name the candidate", typed("G-002", "work", "review", "candidate: \"abcdef0\"\n"+approved), "approved: must name the candidate"},
-		{"approved needs a candidate", typed("G-002", "work", "done", approved), "approved: must name the candidate"},
-		{"approved before review", typed("G-002", "work", "active", commit+approved), "approved: applies only while status is review or done"},
-		{"approved not a commit", typed("G-002", "work", "review", commit+"approved: \"HEAD\"\n"), "approved: expected a quoted Git commit"},
-		{"approved only on work", typed("G-002", "review", "current", approved), "approved: unknown field"},
+		{"review needs a candidate", typed("G-260101-00002", "work", "review", ""), "grove/G-260101-00002.md: candidate: required while status is review"},
+		{"review with one", typed("G-260101-00002", "work", "review", commit), ""},
+		{"historical done keeps validating", typed("G-260101-00002", "work", "done", ""), ""},
+		{"done with one", typed("G-260101-00002", "work", "done", commit), ""},
+		{"not a commit", typed("G-260101-00002", "work", "active", "candidate: \"main\"\n"), "candidate: expected a quoted Git commit"},
+		{"unquoted", typed("G-260101-00002", "work", "active", "candidate: 1234567\n"), "candidate: expected a nonempty string"},
+		{"only on work", typed("G-260101-00002", "plan", "current", commit), "candidate: unknown field"},
+		{"review is a work status only", typed("G-260101-00002", "plan", "review", ""), "status: unsupported lifecycle value for plan"},
+		{"approved in review", typed("G-260101-00002", "work", "review", commit+approved), ""},
+		{"approved in done", typed("G-260101-00002", "work", "done", commit+approved), ""},
+		{"approved must name the candidate", typed("G-260101-00002", "work", "review", "candidate: \"abcdef0\"\n"+approved), "approved: must name the candidate"},
+		{"approved needs a candidate", typed("G-260101-00002", "work", "done", approved), "approved: must name the candidate"},
+		{"approved before review", typed("G-260101-00002", "work", "active", commit+approved), "approved: applies only while status is review or done"},
+		{"approved not a commit", typed("G-260101-00002", "work", "review", commit+"approved: \"HEAD\"\n"), "approved: expected a quoted Git commit"},
+		{"approved only on work", typed("G-260101-00002", "review", "current", approved), "approved: unknown field"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			root := schema3(t, "")
-			put(t, root, "grove/G-002.md", tc.source)
+			put(t, root, "grove/G-260101-00002.md", tc.source)
 			p, ds := Load(root, root)
 			if got := diagnostics(ds); tc.want == "" && got != "" || tc.want != "" && !strings.Contains(got, tc.want) {
 				t.Fatalf("wanted %q; got %q", tc.want, got)

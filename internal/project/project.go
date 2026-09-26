@@ -352,7 +352,7 @@ func compareRecords(a, b *Record) int {
 			return c
 		}
 	}
-	if c := CompareIDs(a.ID, b.ID); c != 0 {
+	if c := strings.Compare(a.ID, b.ID); c != 0 {
 		return c
 	}
 	return strings.Compare(a.Path, b.Path)

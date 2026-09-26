@@ -762,7 +762,7 @@ func entrypoints(worktree, prefix, branch string) error {
 // begun (G-260925-p2k54). A custom one is the project's own and is not judged.
 func incompatible(prefix, path, where, content string) error {
 	if verdict, revision := grove.Diagnose(path, content); verdict != "custom" && !grove.SupportsEntrypoint(revision) {
-		if verdict == "legacy" {
+		if verdict == "unrevised" {
 			revision = "1 (no revision line)"
 		}
 		return fmt.Errorf("%s in %s is entrypoint revision %s, and this grove serves %s; run grove init with this grove, commit what it wrote, and launch again", filepath.Join(prefix, path), where, revision, grove.ServedEntrypoints())

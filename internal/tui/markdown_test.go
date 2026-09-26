@@ -11,8 +11,8 @@ import (
 func TestBodyDropsTheFrontmatter(t *testing.T) {
 	t.Parallel()
 	for _, c := range [][2]string{
-		{"---\nid: G-001\n---\n\n# Hi\n", "\n# Hi\n"},
-		{"\xef\xbb\xbf---\r\nid: G-001\r\n---\r\nbody\r\n", "body\r\n"},
+		{"---\nid: G-260101-00001\n---\n\n# Hi\n", "\n# Hi\n"},
+		{"\xef\xbb\xbf---\r\nid: G-260101-00001\r\n---\r\nbody\r\n", "body\r\n"},
 		{"---\n---\nempty\n", "empty\n"},
 		{"no frontmatter\n", "no frontmatter\n"},
 		{"---\nnever closed\n", "---\nnever closed\n"},
@@ -28,7 +28,7 @@ func TestBodyDropsTheFrontmatter(t *testing.T) {
 func TestRenderedRowsHoldOnlyGlamourStyles(t *testing.T) {
 	t.Parallel()
 	md := "## Outcome\n\nA **bold** claim with \x1b[31mred\x1b[m, a title \x1b]0;pwned\x07, C1 \u009b31m, " +
-		"an override \u202e and a [link](G-093-current-view-plan.md) to http://example.com/x.\n\n" +
+		"an override \u202e and a [link](G-260101-00093-current-view-plan.md) to http://example.com/x.\n\n" +
 		"- one 日本語の長いタイトルがここにあります\n- two\n\n```sh\ngo run ./cmd/grove\n```\n\n| a | b |\n|---|---|\n| 1 | 2 |\n" +
 		// Character references decode after the escaping, in text, code
 		// spans, headings, HTML and cells: they must stay literal.
@@ -56,7 +56,7 @@ func TestRenderedRowsHoldOnlyGlamourStyles(t *testing.T) {
 				}
 			}
 		}
-		for _, want := range []string{"## Outcome", `\x1b[31mred`, `\x1b]0;pwned\a`, `\u009b31m`, `\u202e`, "link", "G-093-", "plan.md", "go run", "日本語",
+		for _, want := range []string{"## Outcome", `\x1b[31mred`, `\x1b]0;pwned\a`, `\u009b31m`, `\u202e`, "link", "00093-", "plan.md", "go run", "日本語",
 			"&#27;]52;c;", "[8mhidden", "&#x202e;bidi", "&rlm;named", "&amp;", "code &#x1b;", "&#x1b;]2;title", "&#27;[31m", "&#x1b;x", "&#X1B;y"} {
 			if !strings.Contains(text, want) {
 				t.Errorf("width %d: %q missing from\n%s", w, want, text)
