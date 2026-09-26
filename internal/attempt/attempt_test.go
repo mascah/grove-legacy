@@ -673,7 +673,7 @@ func TestRefusals(t *testing.T) {
 	}
 }
 
-// G-260926-pgj43: attempts of date-form work are attempts, whatever the ID's form.
+// G-260926-pgj43, G-260926-19gzg: an attempt's name is a date-form ID and a timestamp.
 func TestAttemptNames(t *testing.T) {
 	t.Parallel()
 	for name, want := range map[string]bool{
@@ -681,6 +681,7 @@ func TestAttemptNames(t *testing.T) {
 		"G-260925-7k2qm.20260922T183000Z":    true,
 		"G-260925-7k2qm":                     false,
 		"G-1234.20260922T183000Z":            false,
+		"G-" + "001.20260922T183000Z":        false, // the retired numeric form, split as in project_test.go
 		"../G-260101-00001.20260922T183000Z": false,
 	} {
 		if attemptPattern.MatchString(name) != want {

@@ -18,7 +18,7 @@ Each such file states it as `grove entrypoint revision N` and passes it as
 `guide` refuses an `--entrypoint` outside it, `init --check` reports a
 marked file outside it and exits 1, and `run` refuses to launch with one. A
 file with the managed marker and no revision line predates revisions and is
-revision 1, legacy.
+revision 1, unrevised.
 
 Not a [revision](G-260921-vz0v3-revision.md): that is one file's `sha256:` content
 identity, and two files of one entrypoint revision may differ in every

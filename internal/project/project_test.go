@@ -159,6 +159,7 @@ func TestStrictRecordMetadata(t *testing.T) {
 		{"extra padding", record("G-0001", "work", ""), "id"},
 		{"short numeric id", record("G-01", "work", ""), "id"},
 		{"long numeric id", record("G-1234", "work", ""), "id"},
+		{"retired numeric id", record("G-"+"001", "work", ""), "id"}, // split so a search for the retired form finds no fixture (G-260926-19gzg)
 		{"short tail", record("G-260925-7k2q", "work", ""), "id"},
 		{"uppercase tail", record("G-260925-7K2QM", "work", ""), "id"},
 		{"ambiguous tail letter", record("G-260925-7k2ql", "work", ""), "id"},
