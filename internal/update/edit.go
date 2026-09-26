@@ -645,3 +645,8 @@ func (e *editor) scanBlockScalar(start, indent int) int {
 	}
 	return end
 }
+
+// Set is Edit of one field to value, raw YAML: a caller quotes a string.
+func Set(source []byte, key, value string) ([]byte, error) {
+	return Edit(source, []change{set(key, value)})
+}

@@ -32,8 +32,8 @@ and the board as a source it cannot inspect.
   spelling, a typed `W-001`, a four-digit `G-1234` or an uppercase tail
   included, is an invalid ID.
 - **Placement.** `new` writes `ROOT/G-YYMMDD-xxxxx-slug.md`, flat. No command moves or
-  renames a record when its title, type or status changes. `convert` below is
-  the only command that moves a file.
+  renames a record when its title, type or status changes. `convert` and the
+  one-time `renumber` below are the only commands that move a file.
 - **Pages.** `type: page` is general knowledge with no lifecycle. Its envelope
   is `id`, `type` and `title`, with optional `relates_to`, `created`, `updated`
   and `formerly`; `status` and every work, question, plan or review field are
@@ -90,8 +90,39 @@ IDs:
   refuses the run untouched. The original document is never modified or
   removed.
 
+**Renumbering (`grove renumber`).** A one-time command, to be removed before
+the first release, that retires legacy IDs: every record with one gets a
+date-form ID and a filename derived from it. It takes no arguments.
+
+- Under the write lock, for each legacy record in ID order: the date is its
+  `created`, else the UTC author date of the first commit of the path its
+  `formerly` names, else of its own path's first commit, and a missing
+  `created` is written with that time. The ID is drawn for that date as
+  `new` draws one, and the slug comes from the title as `new` derives it.
+  The file is renamed; `updated` is left alone, so the board's order holds.
+- Then every file beneath the record root is rewritten, each old filename
+  first and then each old ID as a whole token: one not joined to a letter
+  or digit, while a hyphen bounds it, so an ID inside a hyphenated branch
+  name is rewritten too. Frontmatter, links and prose are rewritten
+  alike. The attempts under the Git common directory follow:
+  each directory named for a legacy ID is renamed, and every file of every
+  attempt that is neither running nor orphaned is rewritten.
+- Stdout is one JSON line per record, `{from, from_path, id, path}`, as
+  `convert` prints, in legacy order: that is the map. Outside the record
+  root, and in Git history, references keep their old IDs, which the
+  caller repairs or resolves from the map.
+- Refused, writing nothing, when `check` fails, when no record has a
+  legacy ID (so a rerun is harmless), while a local branch other than the
+  checkout's and the target holds any file beneath the record root, since
+  every view reads every local branch and would show both forms, or while
+  an attempt whose selection holds a legacy ID is running or orphaned.
+- `git log --follow` finds a renamed record's earlier history only when
+  the rename commit keeps enough of its content: commit the renames alone
+  first (the old content at the new paths), then the rewrite, when a
+  record's references are a large part of its text.
+
 Not provided: lookup of a record by its former ID, batch conversion, link
-rewriting, and per-type folders or prefixes.
+rewriting outside `renumber`, and per-type folders or prefixes.
 
 ## Knowledge records and the brief
 
@@ -191,7 +222,7 @@ These distinctions hold:
 ## On-disk contract
 
 No command renames, moves (other than `convert`), deletes or edits the body
-of a record.
+of a record, other than the one-time `renumber`.
 
 ### Configuration and discovery
 
@@ -351,7 +382,7 @@ worktree's own `.git` path, since linked worktrees have private metadata as
 well as a shared common directory
 ([Git's worktree documentation](https://git-scm.com/docs/git-worktree#_details)).
 It is an `flock`, which the kernel releases when the holder exits, and it
-serializes `new`, `convert` and `update` in every worktree. Under it, `new`:
+serializes `new`, `convert`, `renumber` and `update` in every worktree. Under it, `new`:
 
 1. Draws a tail, and draws again while the ID is already held by the
    project, by an `id:` line in any text file beneath the record root on any

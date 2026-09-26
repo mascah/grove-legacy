@@ -22,6 +22,7 @@ import (
 	"github.com/mascah/grove/internal/handoff"
 	"github.com/mascah/grove/internal/integrate"
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/renumber"
 	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
@@ -42,6 +43,7 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"                                     [--effort LEVEL] [--branch NAME] [--worktree DIR]\n" +
 	"       grove [--project DIR] attempts [ID] | attempt ATTEMPT [--json] | stop ATTEMPT\n" +
 	"       grove [--project DIR] convert PATH --type TYPE --title TITLE [--slug SLUG]\n" +
+	"       grove [--project DIR] renumber\n" +
 	"       grove [--project DIR] versions [ID] [--json]\n" +
 	"       grove [--project DIR] workspace --source SELECTOR [--json]\n" +
 	"       grove [--project DIR] context WORK_ID... [--json] [--interaction interactive|headless]\n" +
@@ -177,6 +179,15 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             the original is left in place. Prints {from, from_path, id, path}. Bodies\n" +
 	"             and Markdown links are never rewritten. A source already converted is\n" +
 	"             refused, writing nothing.\n" +
+	"  renumber   One-time, and leaving before the first release: rename every record with a\n" +
+	"             legacy G-NNN ID to a G-YYMMDD-xxxxx ID dated by its created (else the first\n" +
+	"             commit of its formerly path, else of its own, written as created), with a\n" +
+	"             slug from its title, and rewrite every old filename and ID under the record\n" +
+	"             root and in the attempt store. Prints {from, from_path, id, path} per\n" +
+	"             record. Refused, writing nothing, when check fails, when no record is\n" +
+	"             legacy, while a local branch other than this one and the target holds\n" +
+	"             records, or while an attempt of legacy work runs. References outside the\n" +
+	"             record root are the caller's to repair from the printed map.\n" +
 	"  versions   Show each record's committed version on every local branch and live\n" +
 	"             version in every worktree, whether it is current or older and on the\n" +
 	"             integration target, with a selector per version; exit 1 if any source\n" +
@@ -423,6 +434,20 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 			return 1
 		}
 		return code
+	case "renumber":
+		renames, err := renumber.Run(p.Root)
+		var lines []byte
+		for _, m := range renames {
+			lines = append(lines, marshal(map[string]any{"from": m.From, "from_path": m.FromPath, "id": m.ID, "path": m.Path})...)
+		}
+		if _, werr := out.Write(lines); werr != nil && err == nil {
+			err = werr
+		}
+		if err != nil {
+			report(errOut, err)
+			return 1
+		}
+		return 0
 	case "new":
 		path, err := create.New(p, a.kind, a.title, a.slug, time.Now())
 		if err != nil {
@@ -784,6 +809,10 @@ func parseArgs(args []string) (a invocation, err error) {
 		}
 	case "deps":
 		a.ids = positional[1:]
+	case "renumber":
+		if len(positional) != 1 {
+			err = fmt.Errorf("renumber takes no arguments")
+		}
 	case "convert":
 		if len(positional) != 2 {
 			err = fmt.Errorf("convert requires exactly one document path")

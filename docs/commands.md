@@ -2,17 +2,23 @@
 
 `grove --help` gives every command's usage. This document owns what it does
 not say about the commands below. The commands over records (`list`, `show`,
-`brief`, `check`, `new`, `update`, `convert`), project discovery and exit
-codes belong to the record model: its
+`brief`, `check`, `new`, `update`, `convert`, `renumber`), project discovery
+and exit codes belong to the record model: its
 [reading and writing](record-model.md#reading-and-writing-records),
 [configuration and discovery](record-model.md#configuration-and-discovery),
-[conversion](record-model.md#identity-and-placement-apart-from-classification)
+[conversion and renumbering](record-model.md#identity-and-placement-apart-from-classification)
 and [brief](record-model.md#knowledge-records-and-the-brief) sections. `approve`,
 `feedback` and `integrate` belong to its
 [work lifecycle](record-model.md#work-lifecycle); `resolve` is under
 [attempts](#resolving-a-conflict). [The board](board.md) has
 its own document. Each command's acceptance, evidence and limits belong to
 the work record that delivered it.
+
+`renumber` is one-time: it renamed this repository's legacy records
+([G-260926-vkv48](../grove/G-260926-vkv48-rename-legacy-records-to.md)) and
+is for an adopter to do the same, and
+[G-260926-19gzg](../grove/G-260926-19gzg-retire-the-legacy-id-for.md)
+removes it once they have.
 
 ## Versions
 
