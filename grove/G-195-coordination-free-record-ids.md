@@ -2,9 +2,9 @@
 id: "G-195"
 type: work
 title: "Coordination-free record IDs"
-status: proposed
+status: active
 created: "2026-09-26T02:56:11Z"
-updated: "2026-09-26T02:58:10Z"
+updated: "2026-09-26T05:02:34Z"
 relates_to: ["G-194", "G-004", "G-006", "G-064"]
 ---
 
