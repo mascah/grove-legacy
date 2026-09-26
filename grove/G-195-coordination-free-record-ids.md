@@ -4,9 +4,10 @@ type: work
 title: "Coordination-free record IDs"
 status: review
 created: "2026-09-26T02:56:11Z"
-updated: "2026-09-26T05:28:33Z"
+updated: "2026-09-26T15:12:17Z"
 relates_to: ["G-194", "G-004", "G-006", "G-064"]
 candidate: "f6f180279905e07427b31851ca32569f92475992"
+approved: "f6f180279905e07427b31851ca32569f92475992"
 ---
 
 ## Outcome
@@ -188,3 +189,5 @@ To accept, in this checkout, then in main's:
 go run ./cmd/grove approve G-195 "VERDICT"
 go run ./cmd/grove integrate G-195
 ```
+
+Verdict on candidate f6f1802, 2026-09-26: approved
