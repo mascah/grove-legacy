@@ -607,7 +607,7 @@ func TestUnchangedGuardCatchesEditorDrift(t *testing.T) {
 	}
 }
 
-// G-015: the review's update reproducers, at the level a user reaches them.
+// G-260919-z9w13: the review's update reproducers, at the level a user reaches them.
 func TestUpdatePreservesAcceptedForms(t *testing.T) {
 	t.Parallel()
 	const stamped = "updated: \"2026-09-19T18:30:00Z\""
@@ -646,7 +646,7 @@ func TestUpdatePreservesAcceptedForms(t *testing.T) {
 	})
 }
 
-// G-016: a main checkout named "new\nline" once put the write lock in a
+// G-260919-7qv4x: a main checkout named "new\nline" once put the write lock in a
 // sibling ".../new/grove". Coordination state belongs under the real common
 // directory, from the main and a linked checkout alike.
 func TestCoordinationStateStaysUnderTheCommonDirectory(t *testing.T) {
@@ -773,7 +773,7 @@ func TestUpdateDoneMeansAnIntegratedCandidate(t *testing.T) {
 	}
 }
 
-// TestUpdateOptionalExpectAndCommit covers G-079: an omitted Expect applies to
+// TestUpdateOptionalExpectAndCommit covers G-260922-q3cr9: an omitted Expect applies to
 // the file as it is while a stale one is still refused, and Commit commits the
 // record's file alone, nothing for a no-op, and reports a failed commit as an
 // applied update.
@@ -851,7 +851,7 @@ func TestUpdateOptionalExpectAndCommit(t *testing.T) {
 	}
 }
 
-// TestUpdateApprovedBindsToTheCandidate covers G-044's approval field: it is
+// TestUpdateApprovedBindsToTheCandidate covers G-260921-jwk4e's approval field: it is
 // written quoted, must name the candidate, and leaves with the review status,
 // so neither a changed candidate nor a reopened record keeps an approval.
 func TestUpdateApprovedBindsToTheCandidate(t *testing.T) {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavioral evaluations of Grove's headless shaping workflow (G-108).
+"""Behavioral evaluations of Grove's headless shaping workflow (G-260923-p5pt6).
 
     python3 evals/run.py run --runs N --budget USD --model MODEL \\
         --permission-mode MODE --config-dir DIR [--case NAME]... [--out DIR]
@@ -16,16 +16,16 @@ import argparse, datetime, glob, json, os, pwd, re, shlex, shutil, signal, subpr
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIXTURE = os.path.join(ROOT, "evals", "fixture")
-# Variables through which Git takes a repository from its caller; a hook exports GIT_DIR (G-089).
+# Variables through which Git takes a repository from its caller; a hook exports GIT_DIR (G-260922-g6e7p).
 GIT_LOCATION = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE")
 IDENTITY = ["-c", "user.name=Grove Eval", "-c", "user.email=eval@example.invalid", "-c", "commit.gpgsign=false"]
-# A record's ID leads its generated filename: a legacy G-001 or the date form G-260925-7k2qm (G-195).
+# A record's ID leads its generated filename: a legacy G-001 or the date form G-260925-7k2qm (G-260926-pgj43).
 record_id = lambda path: re.match(r"G-(?:[0-9]{6}-[0-9a-hjkmnp-tv-z]{5}|[0-9]{3})", os.path.basename(path)).group()
 TIMEOUT = 1800  # seconds per run; failure detection only, the budget is the real bound
 PAIR = ("presumes choice", "planted question", "brief constraint", "handoff")
 KNOWN = ("constraint applied", "brief constraint", "handoff")
 # records: (key, type, title, fields) added to the case's copy of the fixture, body from evals/fixture/records/KEY.md,
-# a list field naming other keys; holding is the record whose constraint the proposal must apply (G-154).
+# a list field naming other keys; holding is the record whose constraint the proposal must apply (G-260925-pbx81).
 CASES = {
     "missing-choice": {"topic": "hide finished tasks from tasks list by default", "question": True, "rubric": PAIR},
     "companion": {"topic": "let tasks list filter by tag", "question": False, "rubric": PAIR},
@@ -39,12 +39,12 @@ CASES = {
                         "records": (("notes", "decision", "Keep the owner's notes in task files", {"status": "accepted"}),),
                         "holding": "notes", "distractors": ()},
 }
-# The G-108 pair is the regression rerun for a guide edit; the G-154 cases run only when --case names them.
+# The G-260923-p5pt6 pair is the regression rerun for a guide edit; the G-260925-pbx81 cases run only when --case names them.
 DEFAULT = ("missing-choice", "companion")
 # Files some step of the shaping guide needs for these topics; any other read is listed as unneeded.
 READERS = ("cat", "head", "tail", "sed", "nl", "less", "awk")
 NEEDED = {"AGENTS.md", "CLAUDE.md", "grove.yaml", "grove/brief.md", "tasks.py", ".agents/skills/grove-shape/SKILL.md"}
-# ponytail: the largest five-hour plan use one G-135 run took (gpt-6-astra, G-143); every run is assumed to take at least this, measure per model if it binds
+# ponytail: the largest five-hour plan use one G-260924-59f5k run took (gpt-6-astra, G-260925-42j50); every run is assumed to take at least this, measure per model if it binds
 PLAN_POINTS_FLOOR = 13
 CUSTOMIZATION = ("CLAUDE.md", "agents", "commands", "output-styles", "hooks", "settings.local.json")
 # A login writes settings.json; these keys shape the terminal and memory, not what the agent reads or may do.
@@ -128,7 +128,7 @@ def codex_home(home):
 
 def codex_env(home, grove):
     """Codex runs each command in the user's login shell, whose profile can put an installed grove before the built
-    one (G-135 review). A ZDOTDIR of the runner's own keeps a zsh user's startup files out, and its .zprofile restores
+    one (G-260924-59f5k review). A ZDOTDIR of the runner's own keeps a zsh user's startup files out, and its .zprofile restores
     the PATH that /etc/zprofile reorders, so the session has the Claude row's PATH; run_on verifies the result."""
     e = {k: v for k, v in env().items() if not k.startswith("CODEX_") or k == "CODEX_API_KEY"}
     e["PATH"] = os.path.dirname(grove) + os.pathsep + e.get("PATH", "")
@@ -154,7 +154,7 @@ def fill(project, path, key):
 def build(work, cases):
     """Build the CLI from this checkout and the fixture from evals/fixture; return (grove, version, fixtures), where
     fixtures maps each case to its template, the template's commit and its own records' IDs and paths. A case with
-    records gets a copy of the shared template, so the pair's fixture stays as G-122 ran it."""
+    records gets a copy of the shared template, so the pair's fixture stays as G-260924-frzeg ran it."""
     grove = os.path.join(work, "bin", "grove")
     sh("go", "build", "-o", grove, "./cmd/grove", cwd=ROOT)
     template = os.path.join(work, "fixture")
@@ -246,8 +246,8 @@ def checks(case, before, after, message):
     if case["question"]:
         blocking = [q for q, f in questions.items() if set(f.get("blocks") or []) & set(work)]
         decisions = sorted(ident(p, f) for p, f in b["touched"].items() if f.get("type") == "decision")
-        # G-118: a blocking question follows the guide as written; a non-blocking question or a proposed
-        # decision surfaces the choice; neither means it was at most noted in the record, G-078 finding 6.
+        # G-260923-659zw: a blocking question follows the guide as written; a non-blocking question or a proposed
+        # decision surfaces the choice; neither means it was at most noted in the record, G-260922-08wxx finding 6.
         out["question-blocks-proposal"] = "pass" if blocking else "fail: " + (
             f"surfaced, not blocking: questions {({q: f.get('blocks') for q, f in questions.items()})} decisions {decisions}"
             if questions or decisions else "no question or decision: the choice is at most noted in the record")
@@ -533,7 +533,7 @@ def run(args):
             raise SystemExit("--harness codex needs --max-seconds: Codex bounds no dollars, so each run is killed at that cap")
         if args.max_seconds < 1:
             raise SystemExit("--max-seconds must be at least 1")
-        if args.max_plan_percent is None or not 0 < args.max_plan_percent <= 100:  # G-141: a ChatGPT login spends the plan's five-hour window
+        if args.max_plan_percent is None or not 0 < args.max_plan_percent <= 100:  # G-260925-04ccr: a ChatGPT login spends the plan's five-hour window
             raise SystemExit("--harness codex needs --max-plan-percent between 1 and 100: no run starts once the five-hour plan use, plus the largest run's, would reach it")
         if args.budget is not None:
             raise SystemExit("--budget is Claude's: Codex has no flag that would enforce it; --max-seconds is the cap")
@@ -662,7 +662,7 @@ def run_on(args, found, recorded=None):
 
 def fake(harness, argv):
     """A stand-in for `claude -p` or `codex exec --json` acting out a scripted outcome, chosen by GROVE_EVAL_FAKE:
-    good follows the guide; bad is G-078's divergence (no question) plus a write to the
+    good follows the guide; bad is G-260922-08wxx's divergence (no question) plus a write to the
     session checkout; surfaced asks the question without `blocks`; worse pushes, promotes,
     breaks `check`, names a stale commit and, on the companion, leaves two proposal branches."""
     codex = harness == "codex"

@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// TestCommandIgnoresAmbientRepository is the G-089 regression: with GIT_DIR
+// TestCommandIgnoresAmbientRepository is the G-260922-g6e7p regression: with GIT_DIR
 // and GIT_WORK_TREE naming another repository, as a Git hook exports them,
 // Command still acts on the directory it was given.
 func TestCommandIgnoresAmbientRepository(t *testing.T) {

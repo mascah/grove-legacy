@@ -18,11 +18,11 @@ import (
 	"github.com/mascah/grove/internal/versions"
 )
 
-// The review view (G-044): a work record in review shows the facts a judgment
+// The review view (G-260921-jwk4e): a work record in review shows the facts a judgment
 // needs, its changed files and their diffs on demand, and three explicit
 // actions, each confirmed, run through the same functions the CLI offers in
 // the checkout the facts name, and for a conflict with the target a fourth,
-// m, which records feedback and launches one attempt (G-178). Nothing else
+// m, which records feedback and launches one attempt (G-260925-dz10z). Nothing else
 // the board does writes.
 
 type changesRead struct {
@@ -108,7 +108,7 @@ func (m *Model) changesKey(v *versions.Version) string {
 	return v.Record.Candidate + "\x00" + v.Source.Commit + "\x00" + m.res.Target + "\x00" + strings.Join(m.sharing(v, true), "\x00")
 }
 
-// sharing is the work records on v's source whose candidate is v's (G-188),
+// sharing is the work records on v's source whose candidate is v's (G-260925-wc2pz),
 // v's own included, as their paths, or with paths false, the IDs of the
 // others in review:
 // one candidate handed off for a selection is judged per record and
@@ -330,7 +330,7 @@ func (m *Model) reviewRows(g *versions.Group, v *versions.Version) []string {
 	}
 	if read, held := m.changes[m.changesKey(v)]; held && read.c != nil && read.c.Merge != nil {
 		// The prediction names the target commit it read, which the board's
-		// own reading of the target may no longer be (G-177).
+		// own reading of the target may no longer be (G-260925-h8rj5).
 		text := read.c.Merge.Text(m.res.Target)
 		if tip := m.targetTip(); tip != "" && tip != read.c.Merge.Target {
 			text += "; the board read " + m.res.Target + " at " + short7(tip) + " (r re-reads)"
@@ -419,7 +419,7 @@ func (m *Model) changesSection(v *versions.Version, w int, heading func(string),
 }
 
 // describedBy names the records, other than the open one, that link a
-// changed file or name it in a code span (G-153), each once at its first
+// changed file or name it in a code span (G-260925-dzxm6), each once at its first
 // tier, in the inspection's order. It reads the loaded records only: no Git
 // process, nothing stored. A file is a path from the repository's top, or a
 // rename's two; the prefix, which ends in a slash, makes it a project path,
@@ -577,7 +577,7 @@ func (m *Model) conflicted(v *versions.Version) *versions.Merge {
 }
 
 // resolveConflict opens the resolve line for a candidate in review that
-// conflicts with the target (G-178), or says why not: it records the
+// conflicts with the target (G-260925-dz10z), or says why not: it records the
 // feedback in the branch's checkout and launches one attempt there, with
 // the defaults that checkout's grove.yaml sets.
 func (m *Model) resolveConflict() {

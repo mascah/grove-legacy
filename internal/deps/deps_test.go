@@ -15,7 +15,7 @@ func work(id, status string, needs ...string) *project.Record {
 	return &project.Record{ID: id, Type: "work", Title: "Title " + id, Status: status, DependsOn: needs, Source: []byte(id + status)}
 }
 
-// backlog is G-165's synthetic backlog: a chain, a shared prerequisite, a
+// backlog is G-260925-e5qhz's synthetic backlog: a chain, a shared prerequisite, a
 // convergence, unrelated work, a candidate in review, an abandoned
 // prerequisite, and a blocking question.
 func backlog() []*project.Record {
@@ -70,7 +70,7 @@ func TestOverviewLayersGroupsAndUnlocks(t *testing.T) {
 	}
 }
 
-// G-195: legacy IDs come first in numeric order, then date-form IDs by date,
+// G-260926-pgj43: legacy IDs come first in numeric order, then date-form IDs by date,
 // where a plain string sort would put G-251231-… before G-300.
 func TestOverviewOrdersLegacyThenDateForm(t *testing.T) {
 	v := Overview([]*project.Record{

@@ -1,6 +1,6 @@
 // Package attempt runs one bounded implementation of a work record as a
 // Grove-owned `claude -p` process that outlives the launching terminal, and
-// reads what such a run left behind (G-045, plan G-100).
+// reads what such a run left behind (G-260921-h46pb, plan G-260923-0t43m).
 //
 // An attempt is a directory under the repository's Git common directory,
 // <common>/grove/attempts/<WORK.TIMESTAMP>/, shared by every worktree and
@@ -68,7 +68,7 @@ const stopGrace = 15 * time.Second
 const ReviewerPath = ".claude/agents/grove-reviewer.md"
 
 // SkillPath is where a checkout holds the grove-work skill the attempt's
-// prompt names, relative to the project; init writes it (G-150).
+// prompt names, relative to the project; init writes it (G-260925-3pj9a).
 const SkillPath = ".claude/skills/grove-work/SKILL.md"
 
 // Launch is what the launcher records before the owner starts.
@@ -222,7 +222,7 @@ type Request struct {
 	Worktree       string // default <root>/.claude/worktrees/<branch>
 	Expect         string // one work's record revision the caller read in root; "" checks nothing
 	Digest         string // the digest Preview gave; "" checks nothing
-	Policy         string // Resolve's attribution to a standing policy (G-182), whose checkout's run: defaults apply; "" is the owner's own act
+	Policy         string // Resolve's attribution to a standing policy (G-260925-wh9ax), whose checkout's run: defaults apply; "" is the owner's own act
 }
 
 // ErrUnsupplied refuses a launch that has no budget or permission mode from
@@ -230,7 +230,7 @@ type Request struct {
 var ErrUnsupplied = errors.New("run requires --budget USD and --permission-mode MODE, or their defaults under run: in grove.yaml; Grove itself sets no default spend or permission profile")
 
 // flags is run's option table, which grove run and the board's launch line
-// both parse through Flag (G-140).
+// both parse through Flag (G-260924-ecs9m).
 var flags = []struct {
 	name, what string
 	field      func(*Request) *string
@@ -464,7 +464,7 @@ func onBranch(s *Selection, dir, branch, worktree, until string, contains func(s
 		if c.Status != "proposed" && c.Status != "active" {
 			return fmt.Errorf("%s is %s on %s at %s; judge that candidate (approve, feedback) before another attempt", c.ID, c.Status, branch, worktree)
 		}
-		// Feedback reopens a group sharing a candidate (G-188); its next
+		// Feedback reopens a group sharing a candidate (G-260925-wc2pz); its next
 		// candidate is the group's, so the group runs again together.
 		for _, o := range wp.Records {
 			if o.Type == "work" && !selected(o.ID) && (o.Status == "active" || o.Status == "review") && c.Candidate != "" && update.SameCommit(o.Candidate, c.Candidate) {
@@ -759,7 +759,7 @@ func entrypoints(worktree, prefix, branch string) error {
 
 // incompatible refuses a marked entrypoint whose revision this grove does
 // not serve: it would stop, or contradict the guide, after the spend has
-// begun (G-169). A custom one is the project's own and is not judged.
+// begun (G-260925-p2k54). A custom one is the project's own and is not judged.
 func incompatible(prefix, path, where, content string) error {
 	if verdict, revision := grove.Diagnose(path, content); verdict != "custom" && !grove.SupportsEntrypoint(revision) {
 		if verdict == "legacy" {

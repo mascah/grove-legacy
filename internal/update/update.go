@@ -44,7 +44,7 @@ type Result struct {
 	ID, Path, Revision, Commit string
 	Changed                    bool
 	// Reopened is, for feedback, the other members of the record's group
-	// returned to active with it (G-188), each its own commit.
+	// returned to active with it (G-260925-wc2pz), each its own commit.
 	Reopened []Result
 }
 
@@ -189,7 +189,7 @@ func appended(source []byte, text string) ([]byte, error) {
 	return append(append(out, text...), newline...), nil
 }
 
-// message names the request, as in "docs(G-076): set status=done candidate=abc unset size",
+// message names the request, as in "docs(G-260922-w53bz): set status=done candidate=abc unset size",
 // on one line whatever a value holds.
 func message(id string, req Request) string {
 	var words []string
@@ -324,7 +324,7 @@ func plan(r *project.Record, req Request) ([]change, error) {
 // checkout's HEAD already contains, so a checkout without the code cannot
 // close the work. Where grove.yaml names the target, done is also refused
 // off that branch, since on the work branch the candidate is an ancestor
-// too (G-044); without one, which branch is the target stays the guide's
+// too (G-260921-jwk4e); without one, which branch is the target stays the guide's
 // rule. A done record without a candidate predates this meaning and its
 // other fields stay editable.
 func integrated(root, target string, before, after *project.Record) error {
@@ -433,7 +433,7 @@ func publish(root string, snapshot *project.Project, idx int, candidate []byte, 
 			}
 			// A filesystem such as ext4 reuses a freed inode number at once, so a
 			// file removed and recreated can satisfy SameFile; its modification
-			// time still tells (G-089, found by CI on Linux).
+			// time still tells (G-260922-g6e7p, found by CI on Linux).
 			if !after.Mode().IsRegular() || !os.SameFile(before, after) || !after.ModTime().Equal(before.ModTime()) || after.Mode().Perm() != before.Mode().Perm() {
 				return errors.New("the file was replaced, rewritten, or its permissions changed")
 			}

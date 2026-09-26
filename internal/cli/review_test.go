@@ -23,7 +23,7 @@ func TestApproveAndFeedbackUsage(t *testing.T) {
 	}
 }
 
-// TestApproveAndFeedbackCommands drives G-044's two dispositions through the
+// TestApproveAndFeedbackCommands drives G-260921-jwk4e's two dispositions through the
 // CLI on a work branch: approve prints what update prints and commits,
 // feedback reopens the work and says where to continue.
 func TestApproveAndFeedbackCommands(t *testing.T) {

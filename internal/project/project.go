@@ -28,7 +28,7 @@ type Project struct {
 }
 
 // RunDefaults are grove.yaml's optional run: values, which grove run and the
-// board's launch use for any flag not given (G-140); "" where none is set.
+// board's launch use for any flag not given (G-260924-ecs9m); "" where none is set.
 type RunDefaults struct {
 	BudgetUSD, PermissionMode, Model, Effort string
 }

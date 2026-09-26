@@ -15,7 +15,7 @@ import (
 )
 
 // Resolve updates a candidate in review that conflicts with the target
-// through one bounded attempt (G-178): it records feedback naming the target
+// through one bounded attempt (G-260925-dz10z): it records feedback naming the target
 // commit and the conflicting files, which is the attempt's whole mandate,
 // then starts one attempt on the candidate's branch in its checkout, with the
 // launch defaults. req names one work and any launch flags; where it runs is
@@ -73,7 +73,7 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 		return nil, fmt.Errorf("candidate %s of %s %s: there is no conflict to resolve", short(r.Candidate), id, m.Text(p.Target))
 	}
 
-	// The group reopens with the feedback (G-188), so it runs together.
+	// The group reopens with the feedback (G-260925-wc2pz), so it runs together.
 	ids := []string{id}
 	for _, o := range update.Group(branchRecords(res, from), r) {
 		if o.ID != id && o.Status == "review" {

@@ -1,5 +1,5 @@
 // Package sweep acts on candidates in review under the owner's standing
-// policy (G-180, G-182): it starts one resolution attempt for a candidate that
+// policy (G-260925-5wrn8, G-260925-wh9ax): it starts one resolution attempt for a candidate that
 // conflicts with the target, and approves and integrates one that meets the
 // policy's conditions once the merged result passed its verification. Each
 // act is attributed to the policy's grove.yaml revision. Everything the

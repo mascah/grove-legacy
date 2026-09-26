@@ -144,7 +144,7 @@ func GitContext(ctx context.Context, dir string, args ...string) (string, error)
 // nothing else: the environment variables through which Git takes a
 // repository, work tree, or index from its caller are dropped, because a Git
 // hook exports GIT_DIR to what it runs, and a child that inherited it would
-// act on that repository instead of dir's (G-089 saw test fixtures commit into
+// act on that repository instead of dir's (G-260922-g6e7p saw test fixtures commit into
 // the real repository that way). Every Git process Grove or its tests start
 // goes through here.
 func Command(ctx context.Context, dir string, args ...string) *exec.Cmd {

@@ -50,7 +50,7 @@ cycle; then a version is current when everything newer than it, through any
 chain, is also older than it, and a note says so. A branch whose current
 state removes the record gets a committed `deleted` row. Dates, status order,
 and branch names never decide, so the answer is the same from every checkout,
-and no branch is special. [G-042](../grove/G-042-current-view.md) owns this.
+and no branch is special. [G-260921-ms6ev](../grove/G-260921-ms6ev-derive-a-project-wide-cu.md) owns this.
 
 With an integration target named in `grove.yaml` (`target: main` here),
 stderr names it and the `TARGET` column says whether that branch holds the
@@ -200,8 +200,8 @@ outcome, conflicts}` or null and `merge_order` lists `{id, target, commit,
 outcome, conflicts}` up to the first conflict or is null, with `selected`
 null for the overview. The command writes
 nothing but the objects a merge writes, and no ref.
-[G-161](../grove/G-161-dependency-view.md) owns it, and
-[G-177](../grove/G-177-merge-prediction.md) the merge prediction; the board's
+[G-260925-g39ga](../grove/G-260925-g39ga-see-work-dependencies-an.md) owns it, and
+[G-260925-h8rj5](../grove/G-260925-h8rj5-predict-whether-a-candid.md) the merge prediction; the board's
 `g` shows the same interpretation ([Dependencies](board.md#dependencies)).
 
 ## Attempts
@@ -213,8 +213,8 @@ work, or one explicit selection of work, per attempt. `run ID...
 [--worktree DIR]` starts one bounded implementation
 attempt of proposed or active work as a Grove-owned `claude -p "/grove-work
 ID... --interaction headless"` process that outlives the terminal
-([G-101](../grove/G-101-attempt-mechanism.md),
-[G-045](../grove/G-045-durable-attempt.md)), the IDs passed as given. It creates `worktree-` plus the IDs joined by `-`
+([G-260923-tnn5e](../grove/G-260923-tnn5e-run-attempts-as-a-grove.md),
+[G-260921-h46pb](../grove/G-260921-h46pb-run-one-bounded-implemen.md)), the IDs passed as given. It creates `worktree-` plus the IDs joined by `-`
 (`worktree-G-030`, `worktree-G-030-G-031`) under
 `.claude/worktrees/` from this checkout's HEAD, or reuses the branch's
 registered worktree so a next attempt continues from preserved partial work,
@@ -225,7 +225,7 @@ files under the Git common directory (`.git/grove/attempts/ATTEMPT/`, shared
 by every worktree, never committed). Budget and permission mode are required,
 from the flags or from the launching checkout's `grove.yaml` `run:` defaults
 ([record model](record-model.md#configuration-and-discovery),
-[G-140](../grove/G-140-default-an-attempt-s-budget-mode.md)), which may also
+[G-260924-ecs9m](../grove/G-260924-ecs9m-default-an-attempt-s-bud.md)), which may also
 set the model and effort; a flag overrides its default for one launch, and
 `attempt.json` records the resolved values alike. Without either source `run`
 is refused as a usage error: Grove itself sets no default spend or profile.
@@ -233,8 +233,8 @@ Grove starts one process and never retries; subagents the provider starts
 share the budget.
 
 Several IDs are one selection
-([G-162](../grove/G-162-bounded-work-selection.md),
-[G-188](../grove/G-188-selected-work-shared-candidate.md)): still one
+([G-260925-7c8g9](../grove/G-260925-7c8g9-execute-an-explicitly-se.md),
+[G-260925-wc2pz](../grove/G-260925-wc2pz-review-an-explicitly-sel.md)): still one
 process, one worktree and one budget over all of it, never one process per
 ID. `run` orders the members as [`deps`](#dependencies) does and adds
 nothing: a prerequisite outside the selection is listed with its delivery at
@@ -266,7 +266,7 @@ member revisions; an attempt from before selections reads as a selection of
 its one work.
 
 Three options shape one launch, recorded in `attempt.json` and reported as
-the attempt's `Requested:` fact ([G-134](../grove/G-134-bound-an-attempt-at-its-plan-and.md)).
+the attempt's `Requested:` fact ([G-260924-5b6pz](../grove/G-260924-5b6pz-bound-an-attempt-at-its.md)).
 `--until plan` adds the bound to the assignment (`/grove-work ID --until plan
 --interaction headless`): the attempt stops at a committed plan with the
 record's status as it found it and the continuation in its Next, as the work
@@ -296,13 +296,13 @@ Next.
 `grove --help` lists what `run` refuses. The worktree holds only what is
 committed, so `run` refuses a worktree without `.claude/skills/grove-work/SKILL.md`,
 the skill the prompt names, which `init` writes and you commit
-([G-150](../grove/G-150-launch-attempts-only-where-the-w.md)); a new branch
+([G-260925-3pj9a](../grove/G-260925-3pj9a-launch-attempts-only-whe.md)); a new branch
 is checked in HEAD before it is created. It likewise refuses a worktree
 whose marked `grove-work` skill or reviewer definition carries an
 [entrypoint revision](#entrypoint-revisions) the launching `grove` does not
 serve, legacy included, which would stop or contradict the guide after the
 spend began
-([G-169](../grove/G-169-harness-upgrade-compatibility.md)). An open
+([G-260925-p2k54](../grove/G-260925-p2k54-keep-installed-harness-e.md)). An open
 question that blocks the work is the wait the headless guide persists, so
 rerunning with nothing changed refuses the same way: a selection none of
 whose members can start is refused, naming each wait, whether the launching
@@ -340,7 +340,7 @@ selected).
 
 `resolve ID` runs from any checkout, for work in review whose candidate
 conflicts with the target
-([G-178](../grove/G-178-candidate-target-update.md)). It predicts the merge
+([G-260925-dz10z](../grove/G-260925-dz10z-update-a-conflicting-can.md)). It predicts the merge
 as [`deps`](#dependencies) does, against the target's current tip. It
 records feedback in the branch's checkout, as `feedback` would, with
 generated text naming the target commit and the conflicting files. That
@@ -389,8 +389,8 @@ another executable, for fakes.
 
 `sweep` acts on every candidate in review under the owner's standing
 policy, the `policy:` mapping the [record model](record-model.md) describes
-([G-180](../grove/G-180-policy-driven-integration.md), under decision
-[G-182](../grove/G-182-standing-policy-delegation.md)). It runs in the
+([G-260925-5wrn8](../grove/G-260925-5wrn8-resolve-approve-and-inte.md), under decision
+[G-260925-wh9ax](../grove/G-260925-wh9ax-delegate-conflict-resolu.md)). It runs in the
 target's checkout, whose committed `grove.yaml` holds the policy, and every
 act is attributed to that file's revision, as `policy grove.yaml
 sha256:…`. Without a policy it is refused: nothing is automatic. Grove runs

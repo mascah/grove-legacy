@@ -1,5 +1,5 @@
 # The local evidence contract from CLAUDE.md and lefthook.yml, run on GitHub
-# as a signal: no ruleset requires these checks (G-081).
+# as a signal: no ruleset requires these checks (G-260922-jtsed).
 name: CI
 
 on:

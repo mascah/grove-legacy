@@ -18,7 +18,7 @@ both prerequisites merged: G-260921-9wkjt (candidate `fae1e4c`) and G-260921-k0m
 [G-260922-1w0hn](G-260922-1w0hn-board-and-detail-design.md) (whose "review view"
 section this plan builds), G-260921-tkdwh, G-260921-7trd7, G-260921-gtydy, the terms G-260921-jatts to G-260921-3qgsf, the
 brief, the record model, the work guide's "Judging and integrating" section,
-the G-260921-9t178 trial evidence [G-260922-08wxx](G-260922-08wxx-g-039-trial-evidence-for-the-in.md),
+the G-260921-9t178 trial evidence [G-260922-08wxx](G-260922-08wxx-trial-evidence-for-the-i.md),
 and the code: `internal/update`, `internal/cli`, `internal/repo`,
 `internal/tui` (`model.go`, `detail.go`, `view.go`, `search.go`, `run.go`),
 `internal/versions` (`versions.go`, `current.go`), the justfile's

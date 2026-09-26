@@ -124,7 +124,7 @@ func TestCancellationKillsGitAndWritesNothing(t *testing.T) {
 			return res != nil, err
 		}},
 		// Nothing after this re-entry would fail the inspection by itself.
-		// G-071: an unchanged checkout is not re-entered, so a HEAD file
+		// G-260922-9cbh6: an unchanged checkout is not re-entered, so a HEAD file
 		// appears in the project directory, where Git discovery would look.
 		{"inspect re-entering a worktree after the second inventory", func(ctx context.Context) (bool, error) {
 			marker := filepath.Join(wt, "sub", "HEAD")

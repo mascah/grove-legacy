@@ -1,14 +1,14 @@
 // Package tui is Grove's terminal interface: a Kanban board of the project's
-// current work across every branch and checkout (G-042), or of one checkout's
+// current work across every branch and checkout (G-260921-ms6ev), or of one checkout's
 // files, whose cards open a record's differing versions with the branches and
 // checkouts holding each, the focused one's history of commits, and explicit
 // selection of one existing workspace. It reads through Backend, and writes
-// only through Backend's three actions on a record in review (G-044), each
+// only through Backend's three actions on a record in review (G-260921-jwk4e), each
 // behind a prompt: approve, feedback, and integrate, through Conflict's
-// feedback before its attempt (G-178), and through Answer behind its prompt
-// after the owner's editor has an open question (G-125); it starts and stops
+// feedback before its attempt (G-260925-dz10z), and through Answer behind its prompt
+// after the owner's editor has an open question (G-260924-wp2pe); it starts and stops
 // processes only through Backend's Launch, Conflict and Stop of an attempt
-// (G-046), each behind a prompt too, and Edit, which suspends it for that
+// (G-260921-7trd7), each behind a prompt too, and Edit, which suspends it for that
 // editor.
 package tui
 
@@ -32,7 +32,7 @@ import (
 )
 
 // Backend is every effect the interface has besides drawing. The reads are
-// the board's; the three actions are G-044's, each run in the checkout the
+// the board's; the three actions are G-260921-jwk4e's, each run in the checkout the
 // review view names and returning the facts to show.
 type Backend struct {
 	Inspect func(ctx context.Context, root, id string) (*versions.Result, error)
@@ -52,31 +52,31 @@ type Backend struct {
 	Integrate func(ctx context.Context, root, id string, cleanup bool) ([]string, error)
 	// Attempts lists the attempts in the repository's attempts directory,
 	// starting no process, and Attempt reads one in root with the end of its
-	// activity (G-046); nil leaves attempts out. Launch starts one and Stop
+	// activity (G-260921-7trd7); nil leaves attempts out. Launch starts one and Stop
 	// stops one, each returning the facts to show; nil leaves the action out.
 	Attempts func(ctx context.Context, dir string) ([]attempt.View, error)
 	Attempt  func(ctx context.Context, root, id string) (*attempt.View, attempt.Activity, error)
 	Launch   func(ctx context.Context, req attempt.Request) ([]string, error)
 	Stop     func(ctx context.Context, root, id string) ([]string, error)
 	// Conflict records feedback on a candidate that conflicts with the target
-	// and launches one attempt to resolve it (G-178), refusing if shown is no
+	// and launches one attempt to resolve it (G-260925-dz10z), refusing if shown is no
 	// longer the fact; nil leaves m out.
 	Conflict func(ctx context.Context, req attempt.Request, shown *versions.Merge) ([]string, error)
 	// Tips maps each local branch to its tip. It is read beside the attempts
-	// only while one runs, so a moved branch re-reads the board (G-124); nil
+	// only while one runs, so a moved branch re-reads the board (G-260924-zxvqf); nil
 	// leaves that out.
 	Tips func(ctx context.Context, root string) (map[string]string, error)
 	// Edit suspends the board for the owner's editor on path and delivers
 	// done's message when it exits, and Answer resolves a question and
 	// commits its file in root, refusing unless it is still at expect
-	// (G-125); nil leaves e out.
+	// (G-260924-wp2pe); nil leaves e out.
 	Edit   func(path string, done func(error) tea.Msg) tea.Cmd
 	Answer func(ctx context.Context, root, id, expect string) ([]string, error)
 	// Ancestry answers whether a commit is in a ref in the checkout at root,
-	// for the dependency preview's delivery (G-161); nil leaves it unread.
+	// for the dependency preview's delivery (G-260925-g39ga); nil leaves it unread.
 	Ancestry func(ctx context.Context, root string) func(commit, ref string) (bool, error)
 	// Predict merges commits into the target in order in the checkout at
-	// root, in objects only (G-177); nil predicts nothing.
+	// root, in objects only (G-260925-h8rj5); nil predicts nothing.
 	Predict func(ctx context.Context, root, target string, commits []string) ([]versions.Merge, error)
 }
 
@@ -276,7 +276,7 @@ type Model struct {
 	workBack        screen           // where Esc leaves a record o opened from an attempt
 	workDepth       int              // that record's place on the stack, 0 when none
 
-	// The dependency view (G-161): its focus and explicit selection, kept as
+	// The dependency view (G-260925-g39ga): its focus and explicit selection, kept as
 	// IDs, and the preview of that selection, recomputed on every re-read.
 	depsAt     string
 	depsPicked []string // in the order marked
@@ -517,7 +517,7 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		m.ticking = false
 		m.attemptsStale = m.attemptsStale || m.running()
 	case tea.FocusMsg:
-		// Coming back to the window is when the owner pressed r (G-124); a
+		// Coming back to the window is when the owner pressed r (G-260924-zxvqf); a
 		// read or action under way is left to finish. Blur does nothing.
 		if !m.done && !m.busy() && !m.pinned() {
 			return m.refresh()
@@ -1020,7 +1020,7 @@ func (m *Model) cardRows() int {
 	return cardHeight
 }
 
-// currentCards places each work record by its current states (G-042). One
+// currentCards places each work record by its current states (G-260921-ms6ev). One
 // state puts the card in its status. Diverging states make one card, marked,
 // in the earliest status among them: the owner's choice, so that work is not
 // shown further along until its branches agree. A state held only by

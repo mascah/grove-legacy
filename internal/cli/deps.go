@@ -15,7 +15,7 @@ import (
 )
 
 // runDeps prints the dependency overview of unfinished work, or a preview of
-// an explicit selection, bound to this checkout's records (G-161). Like
+// an explicit selection, bound to this checkout's records (G-260925-g39ga). Like
 // versions, an inspection that could not read every source still prints and
 // exits 1.
 func runDeps(p *project.Project, a invocation, out, errOut io.Writer) int {

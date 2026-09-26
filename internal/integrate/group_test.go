@@ -14,7 +14,7 @@ import (
 
 // groupFixture is a main checkout and a worktree on branch feature where
 // G-001 and G-003, selected together, share one candidate: the code commit,
-// then one commit putting both in review with it (G-188).
+// then one commit putting both in review with it (G-260925-wc2pz).
 func groupFixture(t *testing.T) (root, wt, candidate string) {
 	t.Helper()
 	if _, err := exec.LookPath("git"); err != nil {

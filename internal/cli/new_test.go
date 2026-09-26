@@ -62,13 +62,13 @@ func TestNewCreatesRecordAndReadCommandsLeaveNoState(t *testing.T) {
 	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), second+"  work      proposed  Second thing") {
 		t.Fatalf("list must show the created record: %s", out.String())
 	}
-	// G-195 acceptance 3: the write lock is the only coordination state.
+	// G-260926-pgj43 acceptance 3: the write lock is the only coordination state.
 	if entries, err := os.ReadDir(state); err != nil || len(entries) != 1 || entries[0].Name() != "write.lock" {
 		t.Fatalf("state after new: %v, %v", entries, err)
 	}
 }
 
-// G-195 acceptance 1: two clones that share nothing each issue date-form IDs,
+// G-260926-pgj43 acceptance 1: two clones that share nothing each issue date-form IDs,
 // and the merge of one into the other still checks.
 func TestNewInSeparateClonesMergesClean(t *testing.T) {
 	t.Parallel()

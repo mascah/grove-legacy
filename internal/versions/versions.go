@@ -29,7 +29,7 @@ type Source struct {
 	Present        bool   // grove.yaml exists at the project prefix
 	Valid          bool   // present, validated, and stable while being read
 	ConfigRevision string
-	Run            project.RunDefaults // a valid source's grove.yaml run: defaults (G-140)
+	Run            project.RunDefaults // a valid source's grove.yaml run: defaults (G-260924-ecs9m)
 	Note           string              // live: why changes against HEAD are unknown
 	Diagnostics    []string
 	project        *project.Project
@@ -329,7 +329,7 @@ func listBranches(ctx context.Context, root string) ([]branch, error) {
 
 // TipsContext maps each local branch's full ref to its tip through one Git
 // process, the same listing Inspect starts from, so a reader can tell
-// whether any branch moved since a Result was read (G-124).
+// whether any branch moved since a Result was read (G-260924-zxvqf).
 func TipsContext(ctx context.Context, root string) (map[string]string, error) {
 	branches, err := listBranches(ctx, root)
 	if err != nil {

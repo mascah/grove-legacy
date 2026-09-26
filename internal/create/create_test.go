@@ -112,7 +112,7 @@ func TestTailIsFiveCrockfordCharacters(t *testing.T) {
 	}
 }
 
-// G-195 acceptance 1: a tail already held by a record on a local ref, in
+// G-260926-pgj43 acceptance 1: a tail already held by a record on a local ref, in
 // another worktree or in the loaded project is drawn again.
 func TestNewSkipsIDsInRefsAndWorktrees(t *testing.T) {
 	root := gitProject(t)
@@ -152,7 +152,7 @@ func TestIssueBoundsItsDraws(t *testing.T) {
 	}
 }
 
-// G-195 acceptance 3: new reads and writes no counter or allocator lock; the
+// G-260926-pgj43 acceptance 3: new reads and writes no counter or allocator lock; the
 // write lock is the only state it creates.
 func TestNewCreatesOnlyTheWriteLock(t *testing.T) {
 	t.Parallel()

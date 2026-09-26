@@ -16,7 +16,7 @@ import (
 // Search lists every record of the project in its current state, of every
 // type, including what the board hides: Abandoned, Done beyond its page,
 // and knowledge that is never a card (pages, terms, decisions, questions,
-// plans, reviews). Typed text is matched by tier (G-153): the ID, type,
+// plans, reviews). Typed text is matched by tier (G-260925-dzxm6): the ID, type,
 // status and title; a link in the body to that project path or under it; a
 // code span naming it; then the body's text. A record hits once, at its
 // first tier, with the line that matched; hits sort by tier, then in the

@@ -2,15 +2,15 @@
 
 These evaluations measure how Grove's headless shaping workflow guides an
 agent, which the Go tests cannot: those check what `context` prints, not what
-an agent decides after reading it. [G-108](../grove/G-108-workflow-evals.md)
-owns the outcome and acceptance, and [G-115](../grove/G-115-g-108-eval-skeleton-plan.md)
+an agent decides after reading it. [G-260923-p5pt6](../grove/G-260923-p5pt6-establish-behavioral-eva.md)
+owns the outcome and acceptance, and [G-260923-v9wby](../grove/G-260923-v9wby-eval-skeleton-plan.md)
 the design. The first increment asks one question: does the workflow tell a
 missing owner decision, which must become a question, from a choice the
-project's brief already answers? [G-135](../grove/G-135-run-the-g-108-eval-pair-on-codex.md)
-adds the same cases on Codex. [G-154](../grove/G-154-listed-constraint-eval.md)
+project's brief already answers? [G-260924-59f5k](../grove/G-260924-59f5k-run-the-eval-pair-on-cod.md)
+adds the same cases on Codex. [G-260925-pbx81](../grove/G-260925-pbx81-evaluate-whether-agents.md)
 adds two cases that ask whether an agent finds and applies a constraint that
 only another record holds, with its plan in
-[G-155](../grove/G-155-g-154-listed-and-code-constraint.md).
+[G-260925-a4kn8](../grove/G-260925-a4kn8-listed-and-code-constrai.md).
 
 ## Run
 
@@ -26,7 +26,7 @@ python3 evals/run.py run --harness codex --runs 5 --model MODEL --effort EFFORT 
 It has no default for any spend parameter, is never part of `go test` or CI,
 and runs only under a mandate that names the model, repeat count, budget and
 permission mode. `--case NAME` runs one case and may repeat; without it
-`run` runs the G-108 pair, `missing-choice` and `companion`, and the G-154
+`run` runs the G-260923-p5pt6 pair, `missing-choice` and `companion`, and the G-260925-pbx81
 cases run only when named; `--out DIR` keeps the output
 somewhere other than a new temporary directory, and must not sit under a
 directory holding a `CLAUDE.md`, which the session would load.
@@ -53,9 +53,9 @@ memories -m MODEL -c model_reasoning_effort=EFFORT` with `$grove-shape TOPIC
 cap exists: `--max-seconds` is required, each run is killed at it, and the
 runner prints the cap, runs × cases × seconds, before the first run.
 A ChatGPT login spends the plan's five-hour window instead, and seconds do
-not bound that: G-135's `gpt-6-astra` runs took 6 to 13 points of a Plus
-window each ([G-143](../grove/G-143-g-135-codex-eval-row-pattern-pla.md),
-[G-141](../grove/G-141-never-run-gpt-6-astra-unless-the.md)).
+not bound that: G-260924-59f5k's `gpt-6-astra` runs took 6 to 13 points of a Plus
+window each ([G-260925-42j50](../grove/G-260925-42j50-codex-eval-row-pattern-p.md),
+[G-260925-04ccr](../grove/G-260925-04ccr-never-run-gpt-6-astra-un.md)).
 `--max-plan-percent P` is required too: before each run the runner takes
 the last reading of the newest rollout under `CODEX_HOME` (0 once its window
 has reset), and starts no run once that reading plus the largest run's use
@@ -63,7 +63,7 @@ so far, never less than 13 points, would reach P (a new home with no
 reading counts as 0), or once a run left no reading; the report says where it stopped. P is not a ceiling: a run
 already started is not stopped, and use elsewhere on the account since the
 last reading is not seen. Model, effort, runs and both
-caps are the owner's explicit answer, never a default (G-141).
+caps are the owner's explicit answer, never a default (G-260925-04ccr).
 `--budget` is refused with Codex, and `--effort`, `--max-seconds` and
 `--max-plan-percent` with Claude. `--permission-mode` is a sandbox (`read-only`, `workspace-write`,
 `danger-full-access`), passed as `-s`, or `approve-for-me`, the
@@ -100,7 +100,7 @@ in the account-wide readings.
    repository, `grove init`, the fixture's brief, one unrelated proposed
    record, one commit. The fixture is `tasks`, a small to-do tool whose brief
    states constraints and conventions the cases depend on. A case with
-   records of its own (the two G-154 cases) gets a copy of that template
+   records of its own (the two G-260925-pbx81 cases) gets a copy of that template
    with them added through the built CLI, from
    [`evals/fixture/records/`](fixture/records), and its own commit; the
    first pair's fixture stays as it was, and the report gives each case's
@@ -118,7 +118,7 @@ in the account-wide readings.
 | `listed-constraint` | make due dates for tasks ready to assign | A proposal and no question that keeps `due` out of `export`: the `done` prerequisite of the proposed due-date record says the phone widget rejects any other key, and `load` passes every frontmatter key through |
 | `code-constraint` | add a tasks tag command that adds or removes tags on an existing task | A proposal and no question that keeps a task file's notes below its title: an `accepted` decision says so and names `write` in `tasks.py`, which drops them, in code spans |
 
-The first transposes [G-078](../grove/G-078-g-039-trial-evidence-for-the-int.md)
+The first transposes [G-260922-08wxx](../grove/G-260922-08wxx-trial-evidence-for-the-i.md)
 finding 6 onto the fixture. The second catches a guide change that makes
 agents ask about what the brief already answers. In the third, the fixture
 adds a proposed "Give tasks a due date" whose Next asks for acceptance, its
@@ -162,8 +162,8 @@ On the clone, never the final message except where named. Each is `pass`,
 | `remote-unchanged` | The bare remote's refs are as before: nothing pushed |
 | `proposal-branch` | Exactly one `worktree-shape-*` branch exists |
 | `proposal-proposed` | The branch adds or changes at least one work record, and every one is `proposed` |
-| `question-blocks-proposal` | (missing-choice) A question on the branch has `blocks` naming that work. The failure reason tells a choice surfaced without blocking (a non-blocking question or a decision record) from one at most noted in the record, the G-078 finding 6 outcome |
-| `no-question` | (companion and the G-154 cases) The branch adds or changes no question: the brief or a record answers the choice |
+| `question-blocks-proposal` | (missing-choice) A question on the branch has `blocks` naming that work. The failure reason tells a choice surfaced without blocking (a non-blocking question or a decision record) from one at most noted in the record, the G-260922-08wxx finding 6 outcome |
+| `no-question` | (companion and the G-260925-pbx81 cases) The branch adds or changes no question: the brief or a record answers the choice |
 | `no-promotion` | No record the branch touches is in any status but `proposed`, `open` or `current` |
 | `check-passes` | `grove check` passes in a checkout of the branch |
 | `message-names` | The final message names the branch, its tip commit (7 or more hex digits) and, for missing-choice, the blocking question's ID |
@@ -176,7 +176,7 @@ file), and ran `list`, `context` or `show`, counting only a command whose
 program is `grove` and whose subcommand is that word; every file it read; and the reads
 no step needed, meaning anything but `AGENTS.md`, `CLAUDE.md`, `grove.yaml`,
 the brief, `tasks.py`, `tasks/`, the Codex adapter
-`.agents/skills/grove-shape/SKILL.md`, the records it wrote, and a G-154
+`.agents/skills/grove-shape/SKILL.md`, the records it wrote, and a G-260925-pbx81
 case's own records other than its distractors. Reads through
 `cat`, `head`, `tail`, `sed`, `nl`, `less` or `awk` count; `grep` and other
 tools do not. A glob among their arguments reads every file it matches in
@@ -188,8 +188,8 @@ inside `$(…)` is missed, and a heredoc line starting with `grove` is counted:
 read the transcript before resting a conclusion on one fact.
 
 Every case also reports whether `grove search` ran, a command no Grove
-release has yet: [G-153](../grove/G-153-search-and-code-links.md) shipped
-body search on the board only. The G-154 cases add
+release has yet: [G-260925-dzxm6](../grove/G-260925-dzxm6-search-record-bodies-and.md) shipped
+body search on the board only. The G-260925-pbx81 cases add
 `holding read`, whether the record holding the constraint was read, and
 `distractors read`, which of the case's distractors were: a record counts as
 read when a read above names its file, a `grove show` names its ID, or a
@@ -216,7 +216,7 @@ met, 0 not met.
 | Does the proposal respect the brief's constraints? | Hide: no file moves or renames, count and `--all` per convention. Tag: no index, OR within `--tag`, AND with `--status` | One convention missed | A constraint broken: an archive directory, an index, AND within `--tag` |
 | Is the handoff usable? | Branch, commit, records and the wait or next action, without the transcript | One of them missing | The owner needs the transcript |
 
-The companion scores only the last two. The G-154 cases score these, and the
+The companion scores only the last two. The G-260925-pbx81 cases score these, and the
 last two above:
 
 | Question | 2 | 1 | 0 |
@@ -229,26 +229,26 @@ stays readable and in place; tags stay lowercase and no file moves.
 
 ## Comparing two guides digests
 
-The G-154 cases can measure whether an agent-facing retrieval change, such as
+The G-260925-pbx81 cases can measure whether an agent-facing retrieval change, such as
 a `grove search` command or guide text that points at it, changes what agents
 find. Their `without` row ran at guides digest `41324c3655a1`
-([G-160](../grove/G-160-g-154-without-row-both-constrain.md)); a `with` row
+([G-260925-khwkq](../grove/G-260925-khwkq-without-row-both-constra.md)); a `with` row
 runs from a checkout holding the change, with the same cases, runs, model,
 budget, permission mode and config directory; each report's digest line says
-which row it is. [G-153](../grove/G-153-search-and-code-links.md) shipped no
-such change, so G-154 ran no `with` row
-([G-173](../grove/G-173-what-should-g-154-s-with-row-bec.md)); the work that
+which row it is. [G-260925-dzxm6](../grove/G-260925-dzxm6-search-record-bodies-and.md) shipped no
+such change, so G-260925-pbx81 ran no `with` row
+([G-260925-9bjrx](../grove/G-260925-9bjrx-what-should-with-row-bec.md)); the work that
 ships one carries it.
 Compare per case and row: the rubric's constraint row, `holding read`,
 `distractors read`, `search`, the unneeded reads, turns and cost.
 
 ## Limits
 
-- Headless shaping on Claude and Codex only. The runner accepts the G-154
+- Headless shaping on Claude and Codex only. The runner accepts the G-260925-pbx81
   cases with `--harness codex`, and the selftest drives them on its fake;
-  G-154 runs them on Claude only, a rule of that work and G-141, not of the
+  G-260925-pbx81 runs them on Claude only, a rule of that work and G-260925-04ccr, not of the
   runner. The work row through
-  `grove run`, and every other case in G-108's Next, are not built.
+  `grove run`, and every other case in G-260923-p5pt6's Next, are not built.
 - The checks see the clone. A session could write outside it, for example to
   the owner's home; the trace shows such writes, the checks do not.
 - Few runs show patterns, not rates, and no result gates anything.

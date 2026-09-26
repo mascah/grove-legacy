@@ -1,9 +1,9 @@
 // Package integrate merges an approved candidate into the configured target
 // and marks its work done there, as a sequence of separately reported facts
-// (G-044): approval found, merge made or refused, done written, cleanup done
+// (G-260921-jwk4e): approval found, merge made or refused, done written, cleanup done
 // or kept. Every refusal happens before anything changes, and nothing after
 // the merge undoes it. A candidate shared by several work records on its
-// branch (G-188) is integrated as their group: merging the commit merges all
+// branch (G-260925-wc2pz) is integrated as their group: merging the commit merges all
 // of it, so every member must be approved, and each is marked done alone.
 package integrate
 
@@ -33,7 +33,7 @@ type Request struct {
 	// the merge against: a target at any other commit is refused unmerged.
 	Expect string
 	// Policy, when set, attributes the integration to a standing policy
-	// (G-182): each done update appends it with the merge and its revert.
+	// (G-260925-wh9ax): each done update appends it with the merge and its revert.
 	Policy string
 }
 
@@ -128,7 +128,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if req.Expect != "" && before != req.Expect {
 		return fmt.Errorf("%s moved from %s, where the merge was verified, to %s; nothing was merged and %s stays in review", p.Target, short(req.Expect), short(before), req.ID)
 	}
-	// A conflict is refused before the merge starts (G-177): merge-tree
+	// A conflict is refused before the merge starts (G-260925-h8rj5): merge-tree
 	// performs it in objects only, against the commit that would be merged
 	// into, and names the files. A prediction that fails, as on a Git
 	// before 2.38, leaves the refusal to the merge below.

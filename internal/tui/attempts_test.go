@@ -601,7 +601,7 @@ func TestAttemptActivityIsBounded(t *testing.T) {
 	}
 }
 
-// Where each attempt stands now (G-117): only the latest attempt of work
+// Where each attempt stands now (G-260923-hvnqh): only the latest attempt of work
 // still proposed, active or in review needs the owner, and an orphan always
 // does; every settled attempt says why.
 func TestAttemptStandings(t *testing.T) {
@@ -895,7 +895,7 @@ func TestMovedTipRereadsTheBoard(t *testing.T) {
 	}
 }
 
-// A selection's attempt (G-162) is listed by its first ID and how many
+// A selection's attempt (G-260925-7c8g9) is listed by its first ID and how many
 // more, found from any member, stands for the members its worktree handed
 // off together, and lists each member's state.
 func TestSelectionAttempt(t *testing.T) {

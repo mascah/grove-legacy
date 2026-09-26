@@ -61,7 +61,7 @@ func openReview(t *testing.T, f *fake, w, h int) *Model {
 }
 
 // A prediction read against a target commit other than the board's reading
-// of the target says so (G-177): one of the two is stale, and r re-reads.
+// of the target says so (G-260925-h8rj5): one of the two is stale, and r re-reads.
 func TestReviewMergePredictionNamesAMovedTarget(t *testing.T) {
 	t.Parallel()
 	f := reviewFixture(newFixture(), true)
@@ -416,7 +416,7 @@ func TestReviewListsRecordsDescribingEachFile(t *testing.T) {
 	}
 }
 
-// Records sharing a candidate on the branch (G-188) are named where the
+// Records sharing a candidate on the branch (G-260925-wc2pz) are named where the
 // action covers them, and their files are not changes after the candidate.
 func TestReviewNamesTheGroupSharingACandidate(t *testing.T) {
 	t.Parallel()
@@ -449,7 +449,7 @@ func TestReviewNamesTheGroupSharingACandidate(t *testing.T) {
 
 // m on a candidate that conflicts with the target opens the resolve line,
 // over the branch checkout's run: defaults, and runs Conflict with the fact
-// the board showed (G-178); without a conflict it says there is nothing to
+// the board showed (G-260925-dz10z); without a conflict it says there is nothing to
 // resolve.
 func TestReviewResolveAConflictFromTheBoard(t *testing.T) {
 	t.Parallel()
@@ -521,7 +521,7 @@ func TestReviewNamesTheResolution(t *testing.T) {
 }
 
 // A verdict given under the standing policy is told apart from the owner's
-// in the Review block (G-180).
+// in the Review block (G-260925-5wrn8).
 func TestReviewNamesADelegatedApproval(t *testing.T) {
 	t.Parallel()
 	f := reviewFixture(newFixture(), true)

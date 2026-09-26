@@ -15,7 +15,7 @@ GROVE = os.path.abspath(sys.argv[1])
 ONLY = sys.argv[2:]
 TIMEOUT = 20  # failure detection only; nothing waits on a guessed delay
 GIT = shutil.which("git")
-# Variables through which Git takes a repository from its caller; a hook exports GIT_DIR (G-089).
+# Variables through which Git takes a repository from its caller; a hook exports GIT_DIR (G-260922-g6e7p).
 GIT_LOCATION = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE")
 ENTER, DOWN, ESC, CTRL_C = b"\r", b"\x1b[B", b"\x1b", b"\x03"
 ALT_ON, ALT_OFF = b"\x1b[?1049h", b"\x1b[?1049l"
@@ -542,7 +542,7 @@ def attempt_lifecycle(root, wt, base):
     with open(os.path.join(root, "grove.yaml"), "w") as f:
         f.write("schema_version: 3\nrecords: grove\ntarget: main\n")
     git(root, "commit", "-qam", "target")
-    # The skill as init leaves it: written, not committed (G-150).
+    # The skill as init leaves it: written, not committed (G-260925-3pj9a).
     skill = os.path.join(root, ".claude", "skills", "grove-work", "SKILL.md")
     os.makedirs(os.path.dirname(skill))
     with open(skill, "w") as f:
@@ -620,7 +620,7 @@ def attempt_lifecycle(root, wt, base):
     s = Session(root, env=env)  # reconnect: the same attempt, never a second start
     s.expect("Board: current view")
     mark = s.expect("running")  # the card's tag
-    # A status committed on the running attempt's branch moves its card with no key pressed (G-124).
+    # A status committed on the running attempt's branch moves its card with no key pressed (G-260924-zxvqf).
     wt1 = os.path.join(root, ".claude", "worktrees", "worktree-G-001")
     record = os.path.join(wt1, "grove", "work", "G-001-first.md")
     with open(record) as f:
@@ -660,7 +660,7 @@ def attempt_lifecycle(root, wt, base):
     s.send(b"R")
     mark = s.expect("blocked by open question G-002", mark)
     check(count() == 2, "the wait started nothing more")
-    # The owner answers from the attempt (G-125): e suspends the board for the
+    # The owner answers from the attempt (G-260924-wp2pe): e suspends the board for the
     # editor on the branch's copy, then resolves and commits it there.
     s.send(b"A")
     mark = s.expect("answer question G-002", mark)

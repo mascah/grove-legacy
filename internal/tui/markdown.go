@@ -65,7 +65,7 @@ var reference = regexp.MustCompile(`&(#[0-9]+|#[xX][0-9a-fA-F]+|[a-zA-Z][a-zA-Z0
 
 // render turns Markdown from a record into rows of exactly w cells. The text
 // is escaped before glamour sees it, so the only sequences in the rows are
-// glamour's own styles. Its terminal hyperlinks are removed: G-017 lets no
+// glamour's own styles. Its terminal hyperlinks are removed: G-260919-k7b8j lets no
 // file-provided sequence reach the terminal, and the owner chose plain
 // links on 2026-09-22. Markdown glamour cannot render is shown wrapped.
 func render(markdown string, w int) []string {

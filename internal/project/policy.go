@@ -8,7 +8,7 @@ import (
 )
 
 // Policy is grove.yaml's optional policy: mapping, the owner's standing
-// delegation (G-182): what grove sweep may do to a candidate in review with
+// delegation (G-260925-wh9ax): what grove sweep may do to a candidate in review with
 // no per-candidate human act. A nil Policy, the default, means nothing is
 // automatic; a missing section means that act waits for the owner.
 type Policy struct {

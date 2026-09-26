@@ -7,7 +7,7 @@ run:
   permission_mode: auto
   model: opus
   effort: high
-policy:                 # standing delegation (G-182); absent means nothing automatic
+policy:                 # standing delegation (G-260925-wh9ax); absent means nothing automatic
   budget: 30            # dollars, aggregate for every automatic act in one sweep
   resolve:
     budget: 10          # one attempt per candidate per target movement; run: defaults otherwise

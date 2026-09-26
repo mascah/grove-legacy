@@ -178,7 +178,7 @@ var tail = func() string {
 }
 
 // Issue draws an ID for now, the UTC date and a random tail, that no record
-// in p, on any local ref or in any worktree already holds (G-194). It reads
+// in p, on any local ref or in any worktree already holds (G-260926-2da4n). It reads
 // no shared state and writes nothing; callers hold the write lock.
 func Issue(p *project.Project, showPrefix string, now time.Time) (string, error) {
 	day := project.NeutralPrefix + "-" + now.UTC().Format("060102") + "-"

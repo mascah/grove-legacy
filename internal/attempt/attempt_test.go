@@ -576,7 +576,7 @@ func TestRefusals(t *testing.T) {
 	try(Request{PermissionMode: "auto"}, "run requires --budget USD and --permission-mode MODE")
 	try(Request{IDs: []string{"G-009"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-009 is not in this checkout")
 	try(Request{IDs: []string{"nope"}, BudgetUSD: "1", PermissionMode: "auto"}, "nope is not a record ID")
-	try(Request{IDs: []string{"G-260925-7k2qm"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-260925-7k2qm is not in this checkout") // G-195: a date-form ID is an ID
+	try(Request{IDs: []string{"G-260925-7k2qm"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-260925-7k2qm is not in this checkout") // G-260926-pgj43: a date-form ID is an ID
 	try(Request{BudgetUSD: "1", PermissionMode: "auto", Until: "review"}, `--until must be plan, not "review"`)
 	try(Request{BudgetUSD: "1", PermissionMode: "auto", Expect: "sha256:old"}, "G-001 changed since it was read: grove/G-001-first.md is sha256:")
 	write(t, root, "grove/G-002-q.md", question)
@@ -605,7 +605,7 @@ func TestRefusals(t *testing.T) {
 	}
 	git(t, root, "worktree", "remove", "--force", wt)
 	git(t, root, "branch", "-qD", "worktree-G-001")
-	// An init nobody committed (G-150): the skill is on disk here but not in
+	// An init nobody committed (G-260925-3pj9a): the skill is on disk here but not in
 	// HEAD, so a new branch is refused before it exists, and an existing
 	// branch without it is refused in its checkout. Committed, the launch
 	// passes every check, as the owner case below shows.
@@ -621,7 +621,7 @@ func TestRefusals(t *testing.T) {
 	git(t, root, "branch", "-qD", "worktree-G-001")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "commit what init wrote")
-	// An entrypoint revision this grove does not serve (G-169): a newer or a
+	// An entrypoint revision this grove does not serve (G-260925-p2k54): a newer or a
 	// revision-less skill in HEAD is refused before a new branch exists, and
 	// an older reviewer on an existing branch in its checkout, all before any
 	// attempt.
@@ -673,7 +673,7 @@ func TestRefusals(t *testing.T) {
 	}
 }
 
-// G-195: attempts of date-form work are attempts, whatever the ID's form.
+// G-260926-pgj43: attempts of date-form work are attempts, whatever the ID's form.
 func TestAttemptNames(t *testing.T) {
 	t.Parallel()
 	for name, want := range map[string]bool{

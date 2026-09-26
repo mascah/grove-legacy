@@ -28,7 +28,8 @@ Every other fact has one owner. Read it when the task needs it, not up front:
   [`docs/work-shaping.md`](docs/work-shaping.md): the two workflows
   (`grove guide work`, `grove guide shape`).
 - Records under `grove/`: each outcome, its acceptance, evidence and Next.
-  [G-069](grove/G-069-migration-map.md) maps old typed IDs and paths.
+  [G-260921-czt8x](grove/G-260921-czt8x-identity-and-path-migrat.md) maps
+  old typed IDs, three-digit `G-` IDs and paths to what they became.
 
 Each rule below names the record or document that holds its reasons and
 applies whatever that record's status; a rule naming none is this file's own.
@@ -49,37 +50,37 @@ applies whatever that record's status; a rule naming none is this file's own.
 
 - `schema_version: 3` is the only schema, with no backward compatibility
   before the first release; inspect an old commit with the CLI in that
-  commit (G-065, G-052).
+  commit (G-260921-ebsby, G-260921-r491p).
 - `new` and `convert` issue `G-YYMMDD-xxxxx` from the UTC date and a random
   tail with no shared state, drawing again while a local ref or worktree
   holds the ID; legacy three-digit IDs stay valid and are never issued; and
-  `new` and `update` serialize through a shared write lock (G-194, G-195,
-  G-009).
+  `new` and `update` serialize through a shared write lock (G-260926-2da4n, G-260926-pgj43,
+  G-260919-shnj5).
 - Every Git process Grove or its tests start goes through `repo.Command`,
   never a bare `exec.Command("git", …)`, and a hook that runs tests scrubs
-  `GIT_DIR` and the other repository variables as well (G-089).
+  `GIT_DIR` and the other repository variables as well (G-260922-g6e7p).
 - Read every branch through one `git cat-file` process scoped to what the
   project loader reads, merge bases included, never a process per branch
-  (G-031, G-042).
+  (G-260920-z8vfp, G-260921-ms6ev).
 - The current view derives from Git ancestry in
   `internal/versions/current.go`, and `b` still chooses one checkout's own
-  board (G-042).
+  board (G-260921-ms6ev).
 - Bare `grove` opens the board (`internal/tui`), and explicit subcommands
-  stay noninteractive (G-017).
+  stay noninteractive (G-260919-k7b8j).
 - Read a record's Git history only while its card is open, as a read any
-  key may cancel, never during the board load (G-030).
+  key may cancel, never during the board load (G-260920-svpbc).
 - Keep the board's text escaping and exact source targeting, with freshness
-  checks before acting on a selected version (G-017, G-011).
+  checks before acting on a selected version (G-260919-k7b8j, G-260919-n9t4p).
 - Escape a rendered body before glamour and filter it to glamour's own
-  styles after; keep both layers (G-043).
+  styles after; keep both layers (G-260921-k0mwk).
 - A document the binary ships (`grove guide work|shape|review|model`) links
   only within itself or to `https://`, names another shipped document by its
   command, never by path, never links a record or names one beyond its own
-  example IDs, and never names Grove's repository or the predecessor (G-146,
-  G-151). The entrypoints `init` generates follow
+  example IDs, and never names Grove's repository or the predecessor (G-260925-02jsj,
+  G-260925-ej1xh). The entrypoints `init` generates follow
   the same rule, stay thin, and load their guide with their entrypoint
   revision; a change to what they need of the binary is a new revision
-  (G-169).
+  (G-260925-p2k54).
 
 ### Changes and verification
 
@@ -94,19 +95,19 @@ applies whatever that record's status; a rule naming none is this file's own.
 - Reproduce a Linux-only failure with `docker run --rm -v "$PWD":/src -w /src
   -e GOFLAGS=-buildvcs=false golang:1.26 go test ./...`.
 - Never `-p 1`, and never `-race` across the suite on macOS, where the race
-  runtime hangs in the forked child before `exec` (G-081). Run `-race` per
+  runtime hangs in the forked child before `exec` (G-260922-jtsed). Run `-race` per
   package, only for a concurrency change, with `-timeout 120s`; a hang in
   `syscall.forkExec` is that bug, not evidence, and kill any `*.test`
   process a timeout leaves behind.
 - No package over five seconds, and no test that builds, sleeps, or waits on
-  a shim without a `-short` skip and a comment saying why (G-071).
+  a shim without a `-short` skip and a comment saying why (G-260922-9cbh6).
 - TUI work also needs the terminal lifecycle and connected-workflow checks:
   `python3 internal/tui/testdata/terminal.py BINARY` (Unix; skipped without
   `python3` and under `-short`).
 - Run `lefthook install` once per clone: pre-commit formats staged Go files
   and runs `go vet` and `go mod tidy -diff`; there is no pre-push hook.
   GitHub Actions runs the same checks on Ubuntu and macOS as a signal, not a
-  gate (G-081).
+  gate (G-260922-jtsed).
 - `just clean-merged` removes local branches merged into `main` and their
   clean worktrees, after asking.
 
@@ -117,16 +118,16 @@ applies whatever that record's status; a rule naming none is this file's own.
 - Create records only with `go run ./cmd/grove new`, and change status or
   fields with `update`. Never hand-author or renumber an ID, and never move
   or rename a record file; `convert` is for documents outside the record
-  root (G-064).
+  root (G-260921-gtydy).
 - Plans and reviews are records: `new plan` or `new review`, then `update`
   to set `work` and a review's `examined`.
 - Work runs `proposed`, `active`, `review`, `done`, and an implementation
   ends in `review` with its `candidate` commit. `done` is written on `main`
   after the merge, never on the work branch; `update` refuses a candidate
   HEAD lacks and a checkout off the target `grove.yaml` names. Never
-  backfill a candidate on a `done` record that has none (G-038).
+  backfill a candidate on a `done` record that has none (G-260921-9wkjt).
 - `approve`, `feedback` and `integrate` (board `a`, `f`, `i`) record the
-  verdict and merge (G-044).
+  verdict and merge (G-260921-jwk4e).
 - Progress and the next action belong in a record's Next, never the brief.
   Change the brief only when the direction it selects changes, and never
   keep a second editable account of that direction. When a contract
@@ -160,7 +161,7 @@ applies whatever that record's status; a rule naming none is this file's own.
   are evidence, never in an implementation's write scope. Follow their own
   instructions, name the repository when a `G-` ID could be either's, and
   never invoke the predecessor's `grove:*` skills or close/archive commands
-  (G-041).
+  (G-260921-905y3).
 - The archived application is history: do not revive its service,
   architecture, credentials, deployment or backlog, and copy no private local
   data into this repository (the brief).

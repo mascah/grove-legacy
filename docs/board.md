@@ -113,14 +113,14 @@ screen shows its facts, or why it was refused, and the board is re-read. A
 candidate without a clean checkout of its branch, or a target without one, is
 reported instead; the board never creates a checkout. Other work records on
 the branch whose candidate is the same commit, a selection handed off
-together ([G-188](../grove/G-188-selected-work-shared-candidate.md)), are
+together ([G-260925-wc2pz](../grove/G-260925-wc2pz-review-an-explicitly-sel.md)), are
 named where an action covers them: `f` returns them to `active` too, `i`
 merges them as one group and marks each done, refused until each is
 approved, and their record files do not count as changes since the
 candidate.
 
 When the candidate conflicts with the target, `m` opens a line like `R`'s
-([G-178](../grove/G-178-candidate-target-update.md)). It names the conflict
+([G-260925-dz10z](../grove/G-260925-dz10z-update-a-conflicting-can.md)). It names the conflict
 and the launch, over the branch checkout's `run:` defaults with any flags
 typed over them except `--until`. Enter runs
 [`resolve`](commands.md#resolving-a-conflict) with the prediction shown:
@@ -144,13 +144,13 @@ unrelated history hides it.
 ## Attempts
 
 Work's detail also names its attempts
-([G-046](../grove/G-046-managed-runs.md)): how many, and the latest with its
+([G-260921-7trd7](../grove/G-260921-7trd7-launch-and-inspect-manag.md)): how many, and the latest with its
 state and time. `R` on proposed or active work opens one launch line
-([G-140](../grove/G-140-default-an-attempt-s-budget-mode.md)) naming the
+([G-260924-ecs9m](../grove/G-260924-ecs9m-default-an-attempt-s-bud.md)) naming the
 launch it would start: budget, permission mode, bound, model and effort from
 this checkout's `grove.yaml` `run:` defaults, and where it runs. Enter
 launches it. Text typed there is `run`'s own flags, such as `--until plan
---effort xhigh` ([G-134](../grove/G-134-bound-an-attempt-at-its-plan-and.md)),
+--effort xhigh` ([G-260924-5b6pz](../grove/G-260924-5b6pz-bound-an-attempt-at-its.md)),
 which override the defaults for that launch; what `run` refuses the line
 refuses with the same message, and `--branch` and `--worktree` too, since
 the board chooses where. Without a default for the budget or the mode, the
@@ -166,7 +166,7 @@ delivered without `--until plan`, and one more: the record in this checkout chan
 read it.
 
 `A` lists the attempts of the open work, or on the board every attempt
-([G-109](../grove/G-109-attempts-usability.md)), in three groups, newest first
+([G-260923-895zb](../grove/G-260923-895zb-make-attempts-easy-to-sc.md)), in three groups, newest first
 within each: **Needs you**, **Running** and **Settled**. Each row gives the
 work's ID and title, a short state and how long it has run or how long ago it
 ended. The title goes below 60 columns, and the state is cut last. Only the
@@ -184,7 +184,7 @@ abandoned are settled, and each says why, such as `done: candidate 1614e89`
 or `candidate 71a650e, superseded`.
 
 `R` launches one work; a selection of several is launched with `run ID...`
-([G-162](../grove/G-162-bounded-work-selection.md)). Its attempt is listed by
+([G-260925-7c8g9](../grove/G-260925-7c8g9-execute-an-explicitly-se.md)). Its attempt is listed by
 its first ID as given and how many more, such as `G-030+2`, is among the
 attempts of each member's work, and stands for the members its worktree
 handed off in review, such as `candidate ready: G-030, G-031 in review`.
@@ -245,7 +245,7 @@ An attempt that needs a decision writes a question that `blocks` its work
 and ends ([work guide](work-execution.md#when-a-human-decision-is-missing)).
 `e` on an open question's detail, or on the attempts list or one attempt
 waiting on a question, which opens that question's detail above the attempt,
-answers it ([G-125](../grove/G-125-answer-a-blocking-question-from.md)). The
+answers it ([G-260924-wp2pe](../grove/G-260924-wp2pe-answer-a-blocking-questi.md)). The
 detail's header names where `e` writes, or why it cannot: the one checkout on
 the branch the question's current state stands on, whose copy is still what
 the board read. No such checkout, two on the branch, or a file changed since
@@ -282,7 +282,7 @@ the newest listed commit's, a first `here` row gives it and says why. History
 is read from Git when a detail is open, never while the board loads, and no
 key waits for a read still in progress. It says what happened on one branch
 and nothing about whether another branch contains it.
-[G-030](../grove/G-030-card-lineage.md) owns this.
+[G-260920-svpbc](../grove/G-260920-svpbc-show-a-work-item-s-linea.md) owns this.
 
 ## Versions and selecting a checkout
 

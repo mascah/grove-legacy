@@ -1,4 +1,4 @@
-# pre-commit jobs inherit GIT_DIR and GIT_INDEX_FILE too; they start no Git fixtures, so they are not scrubbed (G-089).
+# pre-commit jobs inherit GIT_DIR and GIT_INDEX_FILE too; they start no Git fixtures, so they are not scrubbed (G-260922-g6e7p).
 pre-commit:
   parallel: true
   jobs:

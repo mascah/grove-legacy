@@ -160,7 +160,7 @@ func running(t *testing.T, root, work string) func() {
 	return func() { lock.Close(); os.RemoveAll(adir) }
 }
 
-// A candidate shared by a group (G-188) is resolved for the group: the
+// A candidate shared by a group (G-260925-wc2pz) is resolved for the group: the
 // feedback reopens every member and the attempt selects them all, the given
 // ID first, and any member's running attempt refuses it.
 func TestResolveAGroup(t *testing.T) {

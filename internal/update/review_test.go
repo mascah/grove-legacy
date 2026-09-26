@@ -36,7 +36,7 @@ func reviewFixture(t *testing.T) (root, candidate string) {
 	return root, candidate
 }
 
-// TestApproveAndFeedback covers G-044's two dispositions: approval binds the
+// TestApproveAndFeedback covers G-260921-jwk4e's two dispositions: approval binds the
 // candidate and quotes the verdict, feedback reopens the work with the text
 // and no approval, each as one commit of the record alone, and the earlier
 // review record is left as it was.

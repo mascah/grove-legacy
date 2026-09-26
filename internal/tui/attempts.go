@@ -19,12 +19,12 @@ import (
 	"github.com/mascah/grove/internal/versions"
 )
 
-// Managed attempts (G-046): R on proposed or active work launches one
-// bounded attempt through G-045's attempt.Start from one line, grove.yaml's
-// run: defaults with any flags typed over them (G-140); A lists attempts and Enter opens one, showing its facts,
+// Managed attempts (G-260921-7trd7): R on proposed or active work launches one
+// bounded attempt through G-260921-h46pb's attempt.Start from one line, grove.yaml's
+// run: defaults with any flags typed over them (G-260924-ecs9m); A lists attempts and Enter opens one, showing its facts,
 // an outcome derived from them, the final report and recent activity; x
 // stops one. The board only observes: each attempt's owner process and files
-// are G-045's, so closing the board changes nothing and reopening it reads
+// are G-260921-h46pb's, so closing the board changes nothing and reopening it reads
 // the same attempts again.
 
 // attemptsMsg is one read of the repository's attempts and, when the
@@ -60,7 +60,7 @@ func (m *Model) wantAttempts() tea.Cmd {
 		open = m.runID
 	}
 	// While an attempt runs, one for-each-ref tells whether its branch moved
-	// (G-124); otherwise the board starts no process of its own.
+	// (G-260924-zxvqf); otherwise the board starts no process of its own.
 	tips := m.backend.Tips != nil && m.running()
 	ctx, backend := m.ctx, m.backend
 	return func() tea.Msg {
@@ -258,7 +258,7 @@ func (m *Model) outcome(v *attempt.View) (kind, text string) {
 
 // handedOff is the record an ended attempt stands for: its work's, or for a
 // selection the first member the worktree held committed in review with a
-// candidate, with the other members sharing that candidate (G-188).
+// candidate, with the other members sharing that candidate (G-260925-wc2pz).
 func handedOff(v *attempt.View) (work string, rec *attempt.State, uncommitted bool, with []string) {
 	r := v.Result
 	ready := func(s *attempt.State, uncommitted bool) bool {
@@ -283,7 +283,7 @@ func (m *Model) outcomeOf(v *attempt.View) string {
 	return text
 }
 
-// Attempts fall in three groups (G-117): those that need the owner, those
+// Attempts fall in three groups (G-260923-hvnqh): those that need the owner, those
 // running, and the settled rest, each of which says why nothing is needed.
 const (
 	needsYou = iota
@@ -496,7 +496,7 @@ func (m *Model) blockingQuestion(work string) string {
 
 // answeredSince names a resolved question that blocks work, not asked after
 // an attempt ended and last written in or after the second it ended, as
-// updated counts: the answer that attempt waited for (G-125), or "".
+// updated counts: the answer that attempt waited for (G-260924-wp2pe), or "".
 func (m *Model) answeredSince(work string, ended time.Time) string {
 	if m.res == nil || ended.IsZero() {
 		return ""
@@ -837,7 +837,7 @@ func (m *Model) attemptsBody(w, n int) []string {
 	return rows[min(off, len(rows)):]
 }
 
-// attemptRows is the attempt screen (G-117): the work and a coloured state,
+// attemptRows is the attempt screen (G-260923-hvnqh): the work and a coloured state,
 // the run's configuration and what it has used, State and Next, the
 // details folded behind d, then the final report beside the activity,
 // newest first, or above it where the terminal is narrow.

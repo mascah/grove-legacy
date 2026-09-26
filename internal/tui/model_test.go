@@ -971,7 +971,7 @@ func TestBoardFollowsTypeNotIDOrPlacement(t *testing.T) {
 	}
 }
 
-// TestCurrentViewBoard: the board opens on the current view (G-042), the same
+// TestCurrentViewBoard: the board opens on the current view (G-260921-ms6ev), the same
 // whichever checkout invoked it. W-001 is done on feature, which main's older
 // active copy does not obscure; W-002 diverges, so it is one marked card in
 // the earlier of its statuses; W-003's current state is an uncommitted edit;

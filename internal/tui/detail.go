@@ -217,7 +217,7 @@ func (m *Model) linked(id string, r *project.Record) []entry {
 		seen[o.ID] = true
 		e := entry{role: role, id: o.ID, title: o.Title, status: o.Status}
 		// A review says what it examined, and whether that is the work's
-		// candidate: the fact G-044's review view starts from.
+		// candidate: the fact G-260921-jwk4e's review view starts from.
 		if o.Type == "review" && o.Examined != "" {
 			e.note = "examined " + o.Examined[:min(len(o.Examined), 7)]
 			switch {

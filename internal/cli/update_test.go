@@ -163,7 +163,7 @@ func TestUpdateOperationErrorsAndOutputFailure(t *testing.T) {
 	}
 }
 
-// TestUpdateCommitResultAndFailure covers the CLI side of G-079: no --expect,
+// TestUpdateCommitResultAndFailure covers the CLI side of G-260922-q3cr9: no --expect,
 // commit in the result (null for a no-op), and a failed commit reported as an
 // applied update with exit 1.
 func TestUpdateCommitResultAndFailure(t *testing.T) {

@@ -144,7 +144,7 @@ func TestInspectWorktreeReplacedByPlainDirectory(t *testing.T) {
 	}
 }
 
-// G-071: Git answers through a symlink at the registered path exactly as it
+// G-260922-9cbh6: Git answers through a symlink at the registered path exactly as it
 // does for the checkout itself, so only the path's own entry can refuse it.
 func TestInspectWorktreeReplacedBySymlink(t *testing.T) {
 	t.Parallel()
@@ -303,7 +303,7 @@ func TestInspectForeignRepositoryRegisteredAsWorktree(t *testing.T) {
 	}
 }
 
-// G-071: the second inventory re-enters a checkout through Git only when a
+// G-260922-9cbh6: the second inventory re-enters a checkout through Git only when a
 // cheap read says something changed. Each change here leaves the inventory
 // row, the project location, and grove.yaml as they were, so only Git's
 // answer, asked again, can refuse the source.

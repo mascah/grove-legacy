@@ -15,14 +15,14 @@ import (
 	"github.com/mascah/grove/internal/versions"
 )
 
-// The owner's two dispositions of a candidate in review (G-044), each an
+// The owner's two dispositions of a candidate in review (G-260921-jwk4e), each an
 // ordinary update of the record committed alone in the checkout of the branch
 // that holds it: approval binds the candidate through the approved field and
 // quotes the verdict in the body; feedback reopens the work with the text in
 // the body and no approval left behind. Neither touches any other file, ref,
 // or worktree.
 //
-// A candidate can be shared (G-188): when an explicitly selected set of work
+// A candidate can be shared (G-260925-wc2pz): when an explicitly selected set of work
 // is handed off together, the records on the branch whose candidate is the
 // same commit are one group. Approval stays per record, and ignores the
 // other members' own record commits; feedback on any member reopens the
@@ -105,7 +105,7 @@ func Feedback(root, id, text string, now time.Time) (Result, error) {
 }
 
 // Group is the work in records whose candidate is r's commit, r included,
-// ordered by ID (G-188): the members one shared candidate was handed off
+// ordered by ID (G-260925-wc2pz): the members one shared candidate was handed off
 // for. A record without a candidate is a group of none.
 func Group(records []*project.Record, r *project.Record) []*project.Record {
 	var group []*project.Record
@@ -198,7 +198,7 @@ func clean(root string, r *project.Record) error {
 func short(commit string) string { return commit[:min(len(commit), 7)] }
 
 // Delegated reports whether the latest verdict on r's candidate was given
-// under a standing policy (G-182) rather than by the owner: the sweep writes
+// under a standing policy (G-260925-wh9ax) rather than by the owner: the sweep writes
 // its verdicts beginning "delegated under policy".
 func Delegated(r *project.Record) bool {
 	prefix := "Verdict on candidate " + short(r.Candidate) + ", "

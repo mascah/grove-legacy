@@ -19,7 +19,7 @@ const ManagedMarker = "Managed by grove init: rerunning init rewrites this file;
 // serves. Revision 1 is init's files from before revisions were written: no
 // revision line, and each generation kept its own assignment grammar (the
 // earliest rejects --until plan) and review brief, which no metadata tells
-// apart, so none is served (G-169).
+// apart, so none is served (G-260925-p2k54).
 const EntrypointRevision, MinEntrypointRevision = 2, 2
 
 var currentRevision = strconv.Itoa(EntrypointRevision)

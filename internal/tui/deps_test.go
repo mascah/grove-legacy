@@ -15,7 +15,7 @@ import (
 	"github.com/mascah/grove/internal/versions"
 )
 
-// backlog is G-165's synthetic unfinished backlog on main, in the checkout
+// backlog is G-260925-e5qhz's synthetic unfinished backlog on main, in the checkout
 // and on the branch: a chain, a shared prerequisite (W-02), a convergence
 // (W-05), unrelated work (W-09, W-11), a review candidate not on main (W-07),
 // an abandoned prerequisite (W-10), a done one with its candidate (W-01) and
@@ -271,7 +271,7 @@ func TestDepsPreview(t *testing.T) {
 	if screen = plain(m); !strings.Contains(screen, "W-03 changed since this preview was last read") || !strings.Contains(screen, "1   W-03    review") || strings.Contains(screen, "changed while it was being read") {
 		t.Errorf("the re-read preview does not say W-03 changed:\n%s", screen)
 	}
-	// Two candidates in review now: merged in the preview's order (G-177).
+	// Two candidates in review now: merged in the preview's order (G-260925-h8rj5).
 	if want := "Merged into main at ttttttt in this order, each onto the ones before, in objects only: W-03 merges cleanly, W-07 conflicts in x.go; the first conflict is W-07's. Grove chose no order, and a clean order is not evidence that the changes work together."; !slices.Contains(m.preview.Notes, want) {
 		t.Errorf("notes %q", m.preview.Notes)
 	}
@@ -299,7 +299,7 @@ func TestDepsPreviewBindsToOneCheckout(t *testing.T) {
 	}
 }
 
-// Review G-161 gate 2: each finding's regression.
+// Review G-260925-g39ga gate 2: each finding's regression.
 func TestDepsReviewRegressions(t *testing.T) {
 	t.Run("the trees fit the smallest terminal", func(t *testing.T) {
 		for _, w := range []int{40, 45, 50, 60} {

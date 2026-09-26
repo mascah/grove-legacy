@@ -91,7 +91,7 @@ func (s boardSession) run(cmd tea.Cmd) (quit bool) {
 		switch msg := msg.(type) {
 		case tea.QuitMsg:
 			return true
-		case tea.BatchMsg: // the attempts read beside another (G-046)
+		case tea.BatchMsg: // the attempts read beside another (G-260921-7trd7)
 			for _, c := range msg {
 				quit = s.run(c) || quit
 			}

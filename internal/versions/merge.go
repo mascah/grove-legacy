@@ -13,7 +13,7 @@ import (
 	"github.com/mascah/grove/internal/repo"
 )
 
-// Merge predicts what merging a commit into the target would do now (G-177),
+// Merge predicts what merging a commit into the target would do now (G-260925-h8rj5),
 // read-only: nothing is checked out or written to a ref, and at most objects
 // are written, as a merge would. It is a fact about the target commit it
 // names, stale once the target moves, and says nothing about whether the

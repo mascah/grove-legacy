@@ -12,7 +12,7 @@ import (
 	"github.com/mascah/grove/internal/project"
 )
 
-// The current view (G-042). Every valid source observes a record once: its
+// The current view (G-260921-ms6ev). Every valid source observes a record once: its
 // exact bytes there, or its absence. A branch observes at its tip. A checkout
 // whose file has its HEAD's bytes observes that commit; one whose bytes differ
 // observes an uncommitted change on top of HEAD. Observation A is older than B

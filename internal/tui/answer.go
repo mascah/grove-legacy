@@ -19,7 +19,7 @@ import (
 	"github.com/mascah/grove/internal/update"
 )
 
-// Answering a question (G-125): e on an open question's detail, or on an
+// Answering a question (G-260924-wp2pe): e on an open question's detail, or on an
 // attempt waiting on one, suspends the board for the owner's editor on the
 // question's file in the checkout holding the shown version; on return it
 // offers to resolve the question and commit it there. The board writes only

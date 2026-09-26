@@ -18,7 +18,7 @@ Requires Go 1.26.8 or later (`go.mod`). From this repository:
 go run ./cmd/grove              # the terminal board; needs a terminal
 go run ./cmd/grove --help       # every command's usage
 go run ./cmd/grove list
-go run ./cmd/grove show G-003
+go run ./cmd/grove show G-260919-rt9h9
 go run ./cmd/grove check
 ```
 
@@ -85,13 +85,13 @@ at the right binary. To upgrade, install the new `grove`, then run
 | Command behaviour | [Command reference](docs/commands.md), [record model](docs/record-model.md) |
 | The board | [docs/board.md](docs/board.md) |
 | Record types, fields, statuses, validation and lifecycle | [Record model](docs/record-model.md), printed by `grove guide model` |
-| Executing assigned work (`grove-work`) | [Work guide](docs/work-execution.md), loaded by the [Claude](.claude/skills/grove-work/SKILL.md) and [Codex](.agents/skills/grove-work/SKILL.md) adapters; [G-032](grove/G-032-dogfood-review.md) records which invocations were exercised |
-| Shaping ideas into proposed work (`grove-shape`) | [Shaping guide](docs/work-shaping.md), loaded by the [Claude](.claude/skills/grove-shape/SKILL.md) and [Codex](.agents/skills/grove-shape/SKILL.md) adapters; [G-050](grove/G-050-shaping-review.md) records what was exercised |
-| How well the guides steer an agent, measured (behavioral evaluations) | [evals/README.md](evals/README.md); [G-108](grove/G-108-workflow-evals.md) owns the outcome |
+| Executing assigned work (`grove-work`) | [Work guide](docs/work-execution.md), loaded by the [Claude](.claude/skills/grove-work/SKILL.md) and [Codex](.agents/skills/grove-work/SKILL.md) adapters; [G-260920-j2eyp](grove/G-260920-j2eyp-dogfooding-evidence.md) records which invocations were exercised |
+| Shaping ideas into proposed work (`grove-shape`) | [Shaping guide](docs/work-shaping.md), loaded by the [Claude](.claude/skills/grove-shape/SKILL.md) and [Codex](.agents/skills/grove-shape/SKILL.md) adapters; [G-260921-ahbrj](grove/G-260921-ahbrj-shaping-entrypoint-evide.md) records what was exercised |
+| How well the guides steer an agent, measured (behavioral evaluations) | [evals/README.md](evals/README.md); [G-260923-p5pt6](grove/G-260923-p5pt6-establish-behavioral-eva.md) owns the outcome |
 | Why Grove exists and its selected direction | [The brief](grove/brief.md) |
 | Progress and the next action on any work | That work's record: `grove list`, or `/` on the board |
 | Developing Grove, and its constraints | [CLAUDE.md](CLAUDE.md) |
-| An old typed ID such as `W-001` | [G-069](grove/G-069-migration-map.md) |
+| An old typed ID such as `W-001`, or a three-digit `G-` ID from before the date form | [G-260921-czt8x](grove/G-260921-czt8x-identity-and-path-migrat.md) |
 
 ## Develop Grove
 

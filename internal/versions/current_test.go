@@ -41,7 +41,7 @@ func expectStanding(t *testing.T, res *Result, id string, want ...string) {
 	}
 }
 
-// TestCurrentView builds one repository holding every case of G-042's
+// TestCurrentView builds one repository holding every case of G-260921-ms6ev's
 // projection and checks each record's current and older observations.
 func TestCurrentView(t *testing.T) {
 	t.Parallel()
@@ -53,7 +53,7 @@ func TestCurrentView(t *testing.T) {
 	c0 := commit(t, root, "records")
 
 	// A stale branch with its own commits, none touching the record folder:
-	// the G-030/G-023 shape, where its old Proposed copy must not obscure main.
+	// the G-260920-svpbc/G-260919-nddsf shape, where its old Proposed copy must not obscure main.
 	git(t, root, "branch", "stale")
 	stale := addWorktree(t, root, "stale", "stale")
 	write(t, stale, "notes.txt", "unrelated\n")

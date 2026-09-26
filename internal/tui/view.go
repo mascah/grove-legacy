@@ -193,7 +193,7 @@ func pick(w int, hints ...string) string {
 func (m *Model) View() tea.View {
 	v := tea.NewView(m.render())
 	v.AltScreen = true
-	v.ReportFocus = true // a terminal that reports focus re-reads the board on return (G-124)
+	v.ReportFocus = true // a terminal that reports focus re-reads the board on return (G-260924-zxvqf)
 	return v
 }
 
@@ -908,7 +908,7 @@ func places(sources []*versions.Source) string {
 	return strings.Join(parts, ", ")
 }
 
-// older marks versions that another is newer than (G-042): a fold only when
+// older marks versions that another is newer than (G-260921-ms6ev): a fold only when
 // every place in it holds an older copy.
 func older(vs ...*versions.Version) string {
 	for _, v := range vs {

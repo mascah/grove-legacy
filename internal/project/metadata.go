@@ -202,7 +202,7 @@ var datePattern = regexp.MustCompile("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]
 
 // IDForm is the shape of any record ID, unanchored: a legacy number of three
 // digits, never issued again, or the form new issues, the UTC creation date
-// YYMMDD and five lowercase Crockford base32 characters (G-194).
+// YYMMDD and five lowercase Crockford base32 characters (G-260926-2da4n).
 const IDForm = NeutralPrefix + "-(?:[0-9]{3}|[0-9]{6}-[0-9a-hjkmnp-tv-z]{5})"
 
 // IDPattern matches the shape of any record ID; validID also refuses G-000.
@@ -317,7 +317,7 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 		} else if r.Candidate == "" && r.Status == "review" {
 			m.problem("candidate", "required while status is review: the commit offered for judgment")
 		}
-		// Approval is of one commit (G-059): the field must name the candidate,
+		// Approval is of one commit (G-260921-btyck): the field must name the candidate,
 		// so a changed candidate cannot inherit it, and it belongs only to a
 		// candidate awaiting integration or integrated. Feedback that reopens
 		// the work removes it in the same update.

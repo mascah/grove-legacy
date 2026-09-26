@@ -12,7 +12,7 @@ import (
 )
 
 // Mention is something a record's body names that a search for a file can
-// find (G-153): a real link that resolves to a project path, or a code span,
+// find (G-260925-dzxm6): a real link that resolves to a project path, or a code span,
 // with the body line it starts on. Exactly one of Path and Span is set.
 type Mention struct {
 	Path, Span, Line string

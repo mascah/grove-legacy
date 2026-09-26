@@ -11,8 +11,8 @@ import (
 	"github.com/mascah/grove/internal/project"
 )
 
-// Selection is the explicit set of work one attempt runs (G-162, decision
-// G-188): the IDs as given, the order deps gives them, each member as the
+// Selection is the explicit set of work one attempt runs (G-260925-7c8g9, decision
+// G-260925-wc2pz): the IDs as given, the order deps gives them, each member as the
 // launching checkout held it and whether it can start, the prerequisites
 // outside it with their delivery at the base, and a digest over what the
 // launch would run. The attempt implements the members in order under one
@@ -48,7 +48,7 @@ type Outside struct {
 // preview and the attempt; the work guide carries it to the agent.
 const Continuation = "members run in order, one at a time; a member that waits is not started, and a new question, an outside blocker or a failure stops that member and every selected member that needs it while the rest continue; budget exhaustion or Stop ends the attempt with what is committed kept"
 
-// Boundary is the review boundary every selection has (G-188).
+// Boundary is the review boundary every selection has (G-260925-wc2pz).
 const Boundary = "one review at the end: the complete members enter review together on one shared candidate, each judged on its own acceptance and integrated as a group; a started member left incomplete holds the whole branch out of review"
 
 // Members lists the attempt's selected work in order; an attempt launched

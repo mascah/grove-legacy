@@ -14,7 +14,7 @@ import (
 	"github.com/mascah/grove/internal/versions"
 )
 
-// The dependency view (G-161, layout B of G-166): the board's work as a list
+// The dependency view (G-260925-g39ga, layout B of G-260925-t2nb3): the board's work as a list
 // grouped by what connects it and indented by layer, the focused item's
 // prerequisites and what it unlocks as trees beside it, or behind Tab on a
 // narrow terminal, and a preview of an explicit selection bound to one

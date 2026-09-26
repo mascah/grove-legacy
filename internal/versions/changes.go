@@ -20,9 +20,9 @@ type Change struct {
 	Added, Removed int
 }
 
-// Changes is what the review view shows about a candidate (G-044): its files
+// Changes is what the review view shows about a candidate (G-260921-jwk4e): its files
 // against the target, whether the target already contains it, what merging
-// it into the target would do (G-177), and what the branch tip changed after
+// it into the target would do (G-260925-h8rj5), and what the branch tip changed after
 // it besides the record itself, which makes the tip a new candidate.
 type Changes struct {
 	Base     string // the merge base of the target and the candidate; "" without a target
@@ -37,7 +37,7 @@ type Changes struct {
 }
 
 // Resolution is the latest merge of a target commit into the candidate's
-// branch (G-178): what a resolution attempt hands off, so that the owner
+// branch (G-260925-dz10z): what a resolution attempt hands off, so that the owner
 // judges the resolution rather than the whole change again.
 type Resolution struct {
 	Merge    string     `json:"merge"`    // the merge commit, on the branch's first-parent line

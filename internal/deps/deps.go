@@ -1,5 +1,5 @@
 // Package deps interprets work dependencies in one checkout's records
-// (G-161): the order a selection must follow, the layers and groups of the
+// (G-260925-g39ga): the order a selection must follow, the layers and groups of the
 // work shown, what each item needs and unlocks, and, on demand, what Git says
 // about delivery and what the current view says about other versions. Only
 // depends_on orders; members, priority and questions never do. The command
@@ -38,7 +38,7 @@ type Item struct {
 	NeededBy  []string `json:"needed_by"` // outside: the rows that need it
 	Delivery  string   `json:"delivery"`  // what Deliver found; "" until it runs
 	// Merge is what merging a candidate in review into the target would do,
-	// when Deliver could predict it (G-177).
+	// when Deliver could predict it (G-260925-h8rj5).
 	Merge *versions.Merge `json:"merge"`
 }
 
@@ -368,7 +368,7 @@ func sameSet(a, b []string) bool {
 
 func short(commit string) string { return commit[:min(len(commit), 7)] }
 
-// Compare adds what the current view (G-042) says about each item beyond
+// Compare adds what the current view (G-260921-ms6ev) says about each item beyond
 // here, the source whose records the View was built from, using res, an
 // inspection of every branch and checkout. The View stays that source's:
 // other versions, their edges included, are described and never merged in.
