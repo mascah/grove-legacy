@@ -547,7 +547,7 @@ func TestNewAndUpdateShareTheWriteLockAcrossWorktrees(t *testing.T) {
 		if len(ds) != 0 {
 			t.Error(ds)
 		}
-		if _, err := create.New(p, "work", "Third", "third", now, &bytes.Buffer{}); err != nil {
+		if _, err := create.New(p, "work", "Third", "third", now); err != nil {
 			t.Error(err)
 		}
 		done <- "new"
@@ -674,13 +674,9 @@ func TestCoordinationStateStaysUnderTheCommonDirectory(t *testing.T) {
 		if len(ds) != 0 {
 			t.Fatal(ds)
 		}
-		if _, err := create.New(p, "work", "Odd", "odd", now, &bytes.Buffer{}); err != nil {
+		if _, err := create.New(p, "work", "Odd", "odd", now); err != nil {
 			t.Fatal(err)
 		}
-	}
-	// The second creation came from the other checkout and the shared counter.
-	if _, err := os.Stat(filepath.Join(wt, "grove/G-005-odd.md")); err != nil {
-		t.Fatalf("linked checkouts must share one ID sequence: %v", err)
 	}
 	var state []string
 	filepath.WalkDir(parent, func(path string, entry os.DirEntry, err error) error {
@@ -691,7 +687,7 @@ func TestCoordinationStateStaysUnderTheCommonDirectory(t *testing.T) {
 	})
 	slices.Sort(state)
 	common := filepath.Join(root, ".git", "grove")
-	if want := []string{filepath.Join(common, "lock"), filepath.Join(common, "neutral-ids"), filepath.Join(common, "write.lock")}; !slices.Equal(state, want) {
+	if want := []string{filepath.Join(common, "write.lock")}; !slices.Equal(state, want) {
 		t.Fatalf("coordination state: %q\nwant %q", state, want)
 	}
 	if entries, _ := os.ReadDir(parent); len(entries) != 2 {

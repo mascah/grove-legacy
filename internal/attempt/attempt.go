@@ -225,8 +225,6 @@ type Request struct {
 	Policy         string // Resolve's attribution to a standing policy (G-182), whose checkout's run: defaults apply; "" is the owner's own act
 }
 
-var idPattern = regexp.MustCompile(`^[A-Z]+-[0-9]+$`)
-
 // ErrUnsupplied refuses a launch that has no budget or permission mode from
 // a flag or from grove.yaml: Grove itself sets no default spend or profile.
 var ErrUnsupplied = errors.New("run requires --budget USD and --permission-mode MODE, or their defaults under run: in grove.yaml; Grove itself sets no default spend or permission profile")
@@ -297,7 +295,7 @@ func Defaulted(req Request, d project.RunDefaults) Request {
 	return req
 }
 
-var attemptPattern = regexp.MustCompile(`^[A-Z]+-[0-9]+\.[0-9]{8}T[0-9]{6}Z$`)
+var attemptPattern = regexp.MustCompile(`^` + project.IDForm + `\.[0-9]{8}T[0-9]{6}Z$`)
 
 // Dir is where root's repository keeps attempts.
 func Dir(root string) (string, error) {
@@ -323,7 +321,7 @@ func prepare(req Request) (*prepared, error) {
 		return nil, errors.New("run requires at least one work ID")
 	}
 	for _, id := range req.IDs {
-		if !idPattern.MatchString(id) {
+		if !project.IDPattern.MatchString(id) {
 			return nil, fmt.Errorf("%s is not a record ID", id)
 		}
 	}

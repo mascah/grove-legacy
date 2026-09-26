@@ -576,6 +576,7 @@ func TestRefusals(t *testing.T) {
 	try(Request{PermissionMode: "auto"}, "run requires --budget USD and --permission-mode MODE")
 	try(Request{IDs: []string{"G-009"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-009 is not in this checkout")
 	try(Request{IDs: []string{"nope"}, BudgetUSD: "1", PermissionMode: "auto"}, "nope is not a record ID")
+	try(Request{IDs: []string{"G-260925-7k2qm"}, BudgetUSD: "1", PermissionMode: "auto"}, "G-260925-7k2qm is not in this checkout") // G-195: a date-form ID is an ID
 	try(Request{BudgetUSD: "1", PermissionMode: "auto", Until: "review"}, `--until must be plan, not "review"`)
 	try(Request{BudgetUSD: "1", PermissionMode: "auto", Expect: "sha256:old"}, "G-001 changed since it was read: grove/G-001-first.md is sha256:")
 	write(t, root, "grove/G-002-q.md", question)
@@ -669,6 +670,22 @@ func TestRefusals(t *testing.T) {
 	}
 	if _, err := Show(root, "bogus"); err == nil || !strings.Contains(err.Error(), "is not an attempt id") {
 		t.Fatal(err)
+	}
+}
+
+// G-195: attempts of date-form work are attempts, whatever the ID's form.
+func TestAttemptNames(t *testing.T) {
+	t.Parallel()
+	for name, want := range map[string]bool{
+		"G-001.20260922T183000Z":          true,
+		"G-260925-7k2qm.20260922T183000Z": true,
+		"G-260925-7k2qm":                  false,
+		"G-1234.20260922T183000Z":         false,
+		"../G-001.20260922T183000Z":       false,
+	} {
+		if attemptPattern.MatchString(name) != want {
+			t.Errorf("%s: want %v", name, want)
+		}
 	}
 }
 

@@ -3,12 +3,12 @@ package update
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/mascah/grove/internal/create"
@@ -28,8 +28,8 @@ type Conversion struct{ From, FromPath, ID, Path string }
 // refuses. A document becomes a new record with its bytes as the body and
 // formerly: PATH; the original is left in place. Neither bodies nor Markdown
 // links are ever rewritten. formerly makes a rerun a refusal, decided before
-// any ID is reserved.
-func Convert(root string, req ConvertRequest, report io.Writer) (Conversion, error) {
+// any ID is drawn.
+func Convert(root string, req ConvertRequest) (Conversion, error) {
 	p, ds := project.Load(root, root)
 	if len(ds) != 0 {
 		return Conversion{}, fmt.Errorf("the project is not valid; fix it before converting:\n%s", diagnostics(ds))
@@ -37,29 +37,28 @@ func Convert(root string, req ConvertRequest, report io.Writer) (Conversion, err
 	if _, err := source(p, req); err != nil {
 		return Conversion{}, err
 	}
-	n, err := create.Allocate(p.Root, p.RecordDir, report)
+	common, showPrefix, err := repo.CommonDir(p.Root)
 	if err != nil {
 		return Conversion{}, err
 	}
-	id := fmt.Sprintf("%s-%03d", project.NeutralPrefix, n)
-	reserved := func(err error) (Conversion, error) {
-		return Conversion{}, fmt.Errorf("%s reserved but nothing converted: %w", id, err)
-	}
-	common, _, err := repo.CommonDir(p.Root)
-	if err != nil {
-		return reserved(err)
-	}
 	unlock, err := repo.WriteLock(common)
 	if err != nil {
-		return reserved(err)
+		return Conversion{}, err
 	}
 	defer unlock()
+	refused := func(err error) (Conversion, error) {
+		return Conversion{}, fmt.Errorf("nothing converted: %w", err)
+	}
 	if p, ds = project.Load(root, root); len(ds) != 0 {
-		return reserved(fmt.Errorf("the project no longer validates:\n%s", diagnostics(ds)))
+		return refused(fmt.Errorf("the project no longer validates:\n%s", diagnostics(ds)))
 	}
 	document, err := source(p, req)
 	if err != nil {
-		return reserved(err)
+		return refused(err)
+	}
+	id, err := create.Issue(p, showPrefix, time.Now())
+	if err != nil {
+		return refused(err)
 	}
 	result := Conversion{From: req.Source, FromPath: req.Source, ID: id}
 	slug, records := req.Slug, slices.Clone(p.Records)
@@ -75,17 +74,17 @@ func Convert(root string, req ConvertRequest, report io.Writer) (Conversion, err
 	result.Path = path.Join(filepath.ToSlash(p.RecordDir), id+"-"+slug+".md")
 	converted, ds := project.ParseRecord(result.Path, content)
 	if len(ds) != 0 {
-		return reserved(fmt.Errorf("the converted record would be invalid:\n%s", diagnostics(ds)))
+		return refused(fmt.Errorf("the converted record would be invalid:\n%s", diagnostics(ds)))
 	}
 	records = append(records, converted)
 	if ds := project.Validate(records); len(ds) != 0 {
-		return reserved(fmt.Errorf("the conversion would leave the project invalid:\n%s", diagnostics(ds)))
+		return refused(fmt.Errorf("the conversion would leave the project invalid:\n%s", diagnostics(ds)))
 	}
 	// Everything is validated; only now is anything written.
 	full := filepath.Join(p.Root, filepath.FromSlash(result.Path))
 	f, err := os.OpenFile(full, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
-		return reserved(err)
+		return refused(err)
 	}
 	if _, err = f.Write(content); err == nil {
 		err = f.Sync()
@@ -95,7 +94,7 @@ func Convert(root string, req ConvertRequest, report io.Writer) (Conversion, err
 	}
 	if err != nil {
 		os.Remove(full) // O_EXCL made it ours, and nothing else has been touched yet
-		return reserved(fmt.Errorf("%s: %w", result.Path, err))
+		return refused(fmt.Errorf("%s: %w", result.Path, err))
 	}
 	if _, ds := project.Load(root, root); len(ds) != 0 {
 		return result, fmt.Errorf("the project no longer validates:\n%s (%s was written as %s, so the conversion is incomplete; inspect with Git)", diagnostics(ds), result.Path, id)

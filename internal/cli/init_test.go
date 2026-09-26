@@ -97,7 +97,7 @@ func TestInitCreatesAProjectAndRerunsWithoutTouchingUserFiles(t *testing.T) {
 		t.Fatalf("the initialized project must validate: %d %s %s", code, checkOut.String(), checkErr.String())
 	}
 	checkOut.Reset()
-	if code := Run([]string{"--project", root, "new", "work", "First"}, t.TempDir(), &checkOut, &checkErr); code != 0 || checkOut.String() != "grove/G-001-first.md\n" {
+	if code := Run([]string{"--project", root, "new", "work", "First"}, t.TempDir(), &checkOut, &checkErr); code != 0 || !strings.HasSuffix(checkOut.String(), "-first.md\n") {
 		t.Fatalf("new must work in the initialized project: %d %s %s", code, checkOut.String(), checkErr.String())
 	}
 

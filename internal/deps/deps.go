@@ -79,7 +79,7 @@ func Overview(records []*project.Record, every bool) *View {
 			rows = append(rows, r.ID)
 		}
 	}
-	slices.Sort(rows)
+	slices.SortFunc(rows, project.CompareIDs)
 	return build(records, rows, nil)
 }
 
@@ -148,7 +148,7 @@ func build(records []*project.Record, rows, selected []string) *View {
 		}
 	}
 	groups := 0
-	for _, id := range slices.Sorted(slices.Values(rows)) {
+	for _, id := range slices.SortedFunc(slices.Values(rows), project.CompareIDs) {
 		if group[id] == 0 {
 			groups++
 			join(id, groups)
@@ -184,7 +184,7 @@ func build(records []*project.Record, rows, selected []string) *View {
 	for _, id := range rows {
 		needs := byID[id].DependsOn
 		if selected != nil {
-			needs = slices.Sorted(maps.Keys(reach[id]))
+			needs = slices.SortedFunc(maps.Keys(reach[id]), project.CompareIDs)
 		}
 		for _, p := range needs {
 			if !slices.Contains(rows, p) && !slices.Contains(neededBy[p], id) {
@@ -192,7 +192,7 @@ func build(records []*project.Record, rows, selected []string) *View {
 			}
 		}
 	}
-	for _, p := range slices.Sorted(maps.Keys(neededBy)) {
+	for _, p := range slices.SortedFunc(maps.Keys(neededBy), project.CompareIDs) {
 		it := Item{ID: p, Title: "(not among the records read)", Needs: []string{}, Unlocks: []string{}}
 		if byID[p] != nil {
 			it = item(byID[p])

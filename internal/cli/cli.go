@@ -410,7 +410,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		}
 		return 0
 	case "convert":
-		c, err := update.Convert(p.Root, a.convert, errOut)
+		c, err := update.Convert(p.Root, a.convert)
 		code := 0
 		if err != nil {
 			report(errOut, err)
@@ -424,7 +424,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		}
 		return code
 	case "new":
-		path, err := create.New(p, a.kind, a.title, a.slug, time.Now(), errOut)
+		path, err := create.New(p, a.kind, a.title, a.slug, time.Now())
 		if err != nil {
 			report(errOut, err)
 			return 1

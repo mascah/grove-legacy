@@ -200,18 +200,29 @@ func Type(name string) *TypeInfo {
 
 var datePattern = regexp.MustCompile("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
 
-// IDPattern matches the shape of any record ID; validID adds canonical padding.
-var IDPattern = regexp.MustCompile("^" + NeutralPrefix + "-[0-9]{3,}$")
+// IDForm is the shape of any record ID, unanchored: a legacy number of three
+// digits, never issued again, or the form new issues, the UTC creation date
+// YYMMDD and five lowercase Crockford base32 characters (G-194).
+const IDForm = NeutralPrefix + "-(?:[0-9]{3}|[0-9]{6}-[0-9a-hjkmnp-tv-z]{5})"
+
+// IDPattern matches the shape of any record ID; validID also refuses G-000.
+var IDPattern = regexp.MustCompile("^" + IDForm + "$")
 var commitPattern = regexp.MustCompile("^[0-9a-f]{7,40}$")
 
-// validID reports whether id is a canonical positive ID: an ID is an identity
-// only, so a reclassified or converted record keeps its own whatever its type.
+// validID reports whether id is a canonical ID: an ID is an identity only, so
+// a reclassified or converted record keeps its own whatever its type.
 func validID(id string) bool {
-	if !IDPattern.MatchString(id) {
-		return false
+	return IDPattern.MatchString(id) && id != NeutralPrefix+"-000"
+}
+
+// CompareIDs orders canonical IDs: legacy numbers first, numerically, then
+// the date form by date and tail. Every legacy ID is shorter than every
+// date-form ID, so length then bytes gives exactly that.
+func CompareIDs(a, b string) int {
+	if len(a) != len(b) {
+		return len(a) - len(b)
 	}
-	number := id[len(NeutralPrefix)+1:]
-	return strings.TrimLeft(number, "0") != "" && (len(number) == 3 || number[0] != '0')
+	return strings.Compare(a, b)
 }
 
 func (m *metadata) dateField(key string) *time.Time {
@@ -272,7 +283,7 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 		m.problem("type", "unknown record type; expected work, question, decision, term, plan, review, or page")
 	}
 	if !validID(r.ID) {
-		m.problem("id", "expected a canonical positive ID, e.g. G-001")
+		m.problem("id", "expected a canonical ID, e.g. G-260925-7k2qm or a legacy G-001")
 	}
 	r.Formerly = m.stringField("formerly", false)
 	if t != nil && len(t.Statuses) == 0 { // a page has no lifecycle, so status is an unknown field on it
