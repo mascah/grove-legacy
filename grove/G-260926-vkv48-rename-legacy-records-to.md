@@ -108,12 +108,123 @@ day are `Issue`'s to avoid, as today.
 8. The owner opens the board and the directory listing and judges the
    names readable.
 
+## Evidence
+
+Headless attempt `G-260926-vkv48.20260926T162220Z`, branch
+`worktree-G-260926-vkv48` in `.claude/worktrees/worktree-G-260926-vkv48`,
+base `main` `a9f8fce`, started from this record at
+`sha256:a68aadb2fc39f30456f7cfc88a09c18cd8c7f9480628934874de52ce7ee981e5`.
+Plan [G-260926-yzd8f](G-260926-yzd8f-plan-for-renaming-legacy.md), review
+[G-260926-w0std](G-260926-w0std-review-of-the-renumber-c.md) (three rounds,
+examined `24a43fa`, "Open findings: none"). The candidate differs from
+`24a43fa` only in this record, the plan and the review.
+
+Commits: `80e3397` the command (`internal/renumber`, `grove renumber`,
+`update.Set`, docs); `ade21b3`, `fd04146` the slug rule; `ef1cdfc` the
+194 renames alone, content unchanged; `b3d6c92` the rewrite the command
+made plus nullsec's numbers restored by hand; `ac69921` references outside
+`grove/` and the map table; `3bdcf25`, `502d4bf`, `24a43fa` review fixes.
+
+**Decisions taken, and why.**
+
+- A slug leaves out every ID its title cites, with a following `'s`:
+  102 titles cite IDs, so slugs from the rewritten titles were mostly ID
+  and a cut at the cap left fragments like `g-260` that read as legacy IDs.
+  The date-form record G-260926-afe5w, whose filename cited a legacy ID, took
+  the same kind of name. The Constraints said `create.Slug(title)`; the
+  plan records the adjustment, and readability is acceptance 8.
+- The renames are committed alone before the rewrite: in one commit 3
+  records here (18 in nullsec) fell under Git's 50% rename similarity and
+  lost `git log --follow`. The record model says to do the same.
+- Nullsec's own record numbers in its cutover records (G-260921-905y3,
+  G-260922-r1dhw, G-260922-9d399, G-260925-dzxm6, G-260926-pgj43) are not
+  this repository's IDs and keep their text.
+- Outside `grove/`, citations were rewritten; examples (the shipped guides,
+  `CLAUDE.md`'s invocations, `docs/board.md` and `docs/commands.md` UI and
+  command examples, the README's invocations, `--help`, `metadata.go`'s
+  diagnostic, `renumber.go`'s own comment), fixtures and test string
+  literals keep theirs for G-260926-19gzg. Test comments that describe
+  fixtures were kept; the 36 test comment lines and 80 non-test Go comments
+  citing records were rewritten. The README's `show` demo, which runs
+  against this repository, was rewritten.
+- The command skips a running or orphaned attempt of date-form work (its
+  owner still appends) and refuses one of legacy work.
+- A stale link in G-260923-twv25 to a misspelt filename of G-260922-08wxx now
+  names the record's file.
+
+**Acceptance.**
+
+1. At `24a43fa`: `check` OK, 198 records; no `G-NNN-…` file under
+   `grove/`. A case-sensitive search for three-digit IDs outside test files
+   and the map page finds only examples and fixtures (list above), in
+   records only non-records (`G-000`, `G-300`, `G-999`, the never-created
+   `G-172`) and nullsec's numbers. Markdown links: no new broken link; the
+   two deleted `docs/prompts/*.txt` in G-260919-nddsf were broken on `main`
+   too, and links into `../skills` and `../bench` resolve only from the main
+   checkout. `versions` lists no legacy ID in a clone holding only this
+   branch; here the 193 legacy rows are all `main`'s until the merge. The
+   board opens (below).
+2. Every new ID's date is its `created` date; days are non-decreasing in
+   legacy order; `ef1cdfc`, `b3d6c92` change no `updated` or `created`
+   line; the longest filename is 42 characters.
+3. `grove attempts` lists 40: the 39 finished under their new IDs and this
+   running one. Through `internal/tui/testdata/terminal.py`'s `Session` on
+   the real repository, `A` then `o` on a finished attempt opened card
+   G-260925-5wrn8, renamed from a legacy ID.
+4. `internal/renumber/renumber_test.go` covers every listed case, plus an
+   escaped ID in the events and a cited ID in a title;
+   `TestRenumberThroughTheCLI` checks the JSON lines, the refused rerun
+   (exit 1) and the usage error (exit 2).
+5. All 194 renamed files keep their pre-rename commits under
+   `git log --follow`; on the board, `v` on G-260925-5wrn8 lists history
+   back to the shaping commit `214dd3d`.
+6. A clone of nullsec at `37548aa` under `/tmp`, with the binary from this
+   branch: the command completed, printed 127 map lines, wrote `created` on
+   the 126 records that lacked it (dates from 2026-09-15 UTC), `check` OK,
+   no legacy token left under `grove/`. Nullsec's legacy order is not date
+   order (10 inversions), so its map is not non-decreasing by day.
+7. `docs/record-model.md` (Renumbering, printed by `grove guide model`) and
+   `docs/commands.md` describe the command; their links resolve.
+8. The owner's.
+
+Verification at `502d4bf`, rerun unchanged since except one Markdown
+record: `go vet ./...` clean, `gofmt -l .` empty, `go run ./cmd/grove
+check` OK, `go test -count=1 -timeout 120s ./...` all ok (the terminal
+checks included).
+
+**Limits.**
+
+- The attempt store under the common directory was rewritten before the
+  merge: until integration, `main`'s board and `attempts` show attempts
+  under IDs its records do not have yet. A copy of the store before the run
+  is at `/tmp/vkv48-attempts-backup` and does not outlive `/tmp`. This
+  attempt's own log keeps legacy IDs.
+- The merged remote branches of G-260922-jtsed and G-260922-g6e7p were not
+  deleted: that is a push. `worktree-G-260926-pgj43` and its branch were
+  already gone when the step came.
+- The command reads local branches only, and does not look at detached
+  worktrees.
+
 ## Next
 
-Assign. The change is one commit of about 200 renamed files and touches
-`CLAUDE.md`, so under the standing policy it waits for the owner's approval
-in any case. After integration: `just install`, then in nullsec, following
-its own instructions, the owner cleans its 14 merged branches and 3 stale
-worktrees, runs the command, repairs the 372 comment references and 18
-instruction-file references from the map, commits, and only then assigns
+In review, candidate below. The change touches `CLAUDE.md`, `grove.yaml`
+and `.github/`, so under the standing policy it waits for the owner. Judge
+the names (acceptance 8) with the board and `ls grove` in this worktree,
+then:
+
+```sh
+cd /Users/mascah/GitHub/mascah/grove/.claude/worktrees/worktree-G-260926-vkv48
+go run ./cmd/grove approve G-260926-vkv48 "VERDICT"
+cd /Users/mascah/GitHub/mascah/grove
+go run ./cmd/grove integrate G-260926-vkv48 --cleanup
+just install
+git branch -r --merged origin/main   # the two merged worktree- branches, then git push origin --delete them
+```
+
+Then in nullsec, following its own instructions: clean its 14 merged
+branches and 3 stale worktrees, copy `.git/grove/attempts` if it has one,
+run `grove renumber > map.jsonl`, commit the renames alone with the old
+content and then the rewrite (the record model says how), repair the 372
+comment references and 18 instruction-file references from the map, and
+commit. Only then assign
 [G-260926-19gzg](G-260926-19gzg-retire-the-legacy-id-for.md).

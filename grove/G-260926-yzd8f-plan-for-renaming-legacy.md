@@ -62,20 +62,20 @@ mostly ID (`G-260919-q3mg5-g-260919-byjdx-g-260919.md`) and a cut at the
 cap left fragments like `g-260` that read as legacy IDs. The slug leaves
 out every ID a title cites, with a following `'s`: `card-lineage-plan`.
 For the same reason a date-form record whose filename cites a legacy ID
-(`…-review-of-g-195-coordina.md`) keeps its ID and takes that slug, since
+(G-260926-afe5w) keeps its ID and takes that slug, since
 records are never renamed by hand here. Readability is the owner's
 judgment (acceptance 8).
 
 ## Steps
 
-1. Package, CLI wiring, test (acceptance 4). Docs: commands reference and
+1. [x] Package, CLI wiring, test (acceptance 4). Docs: commands reference and
    record model (acceptance 7).
-2. Remove the merged `worktree-G-260926-pgj43` worktree and branch (found already
+2. [x] Remove the merged `worktree-G-260926-pgj43` worktree and branch (found already
    removed when this step came). The merged
    remote branches `worktree-G-260922-jtsed` and `worktree-G-260922-g6e7p` need a push to
    delete, which this headless attempt does not make; the command reads
    local branches only, so they do not block it. Left to the owner.
-3. Run the command here; restore nullsec mentions; repair references
+3. [x] Run the command here; restore nullsec mentions; repair references
    outside the record root; G-260921-czt8x's second table.
-4. Evidence: acceptance 1-3, 5; nullsec in a disposable clone (6).
-5. Independent review, then hand off.
+4. [x] Evidence: acceptance 1-3, 5; nullsec in a disposable clone (6).
+5. [x] Independent review, then hand off.
