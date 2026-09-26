@@ -70,7 +70,8 @@ Enter on a linked record opens its own detail, of any type, and Esc returns.
 A record already on the path is returned to instead of opened again, so A,
 then B from A's sidebar, then A from B's is A alone, one Esc from the board. From
 16 rows, a row at the top of the header shows the path, such as `board ›
-G-108 › G-115`, losing its start when too long; a record `o` opened from an attempt
+G-260924-2b8rc › G-260925-7k2qm`, losing its start when too long; a record
+`o` opened from an attempt
 has `attempts` before it, and one opened from the dependencies
 `dependencies`, and Esc from it returns there. Only the latest such return
 is kept: `o` from an attempt reached from such a record returns Esc to the
@@ -96,11 +97,12 @@ has merged a target commit since the target, and which checkout each action
 runs in), the content opens
 at its `## Evidence`, and the sidebar lists the candidate's changed files
 against the target with their added and removed line counts. Under each
-file a row names the other records that describe it, as `described by G-140
-link, G-121 code span`, or says `no record names it`: a record describes a
-file when a link in its body resolves to that project path or a code span
-names it, as search matches a path, over the records the board already
-holds, with no further Git read and nothing stored. Which of their claims the
+file a row names the other records that describe it, as `described by
+G-260924-2b8rc link, G-260925-8m3xd code span`, or says `no record names
+it`: a record describes a file when a link in its body resolves to that
+project path or a code span names it, as search matches a path, over the
+records the board already holds, with no further Git read and nothing
+stored. Which of their claims the
 change left true is the reader's judgment. Enter on a file
 shows its diff in the content pane, escaped like record text with added,
 removed and hunk lines coloured, and Esc returns to the content. `a` asks for
@@ -185,9 +187,10 @@ or `candidate 71a650e, superseded`.
 
 `R` launches one work; a selection of several is launched with `run ID...`
 ([G-260925-7c8g9](../grove/G-260925-7c8g9-execute-an-explicitly-se.md)). Its attempt is listed by
-its first ID as given and how many more, such as `G-030+2`, is among the
-attempts of each member's work, and stands for the members its worktree
-handed off in review, such as `candidate ready: G-030, G-031 in review`.
+its first ID as given and how many more, such as `G-260925-7k2qm+2`, is
+among the attempts of each member's work, and stands for the members its
+worktree handed off in review, such as `candidate ready: G-260925-7k2qm,
+G-260925-8m3xd in review`.
 
 Enter opens one attempt. At the top are the work's ID and title, a coloured
 state and the run's configuration: attempt, model and provider version,
@@ -378,8 +381,8 @@ such as `&#x1b;` or `&amp;` is never decoded, since Markdown would decode it
 after the escaping, and shows as typed in prose and code spans, with an extra
 `&amp;` in code blocks and link targets; and of what the renderer emits only
 its own styles reach the terminal. Links are shown as text, never as terminal
-hyperlinks, and a relative target is shown root-relative (`/G-093-….md`). The
-render is cached per record content and width.
+hyperlinks, and a relative target is shown root-relative
+(`/G-260925-7k2qm-….md`). The render is cached per record content and width.
 
 ## Keys
 

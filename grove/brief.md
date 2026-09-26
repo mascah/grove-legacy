@@ -34,9 +34,8 @@ scope, platforms and licensing remain later choices.
 
 - Go CLI, ordinary Markdown with YAML frontmatter, `grove.yaml`, configurable
   record storage, and Git. Core inspection needs no running service.
-- Stable sequential IDs in one neutral `G-` namespace, coordinated across
-  linked worktrees; revision-checked mutations; ordinary edits preserve
-  identity. Separate clones still require collision checks and reconciliation.
+- One neutral `G-` namespace of date-form IDs issued without coordination;
+  revision-checked mutations; ordinary edits preserve identity.
 - Humans and agents use the same records. Deterministic validation, retrieval,
   mutation and lifecycle mechanics belong in software; judgment belongs in
   instructions and attributable human or delegated decisions.

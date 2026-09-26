@@ -172,8 +172,8 @@ document when it helps, and say in your return what had no supported home.
 - **Acceptance:** observable and checkable, including human judgment where
   only a person can judge. No items that exist to be ticked.
 - **Next:** the concrete next action and who can take it, such as "assign",
-  "answer G-NNN", or "needs a plan covering X". A size or priority only when
-  the person gave one or the evidence supports it.
+  "answer G-YYMMDD-xxxxx", or "needs a plan covering X". A size or priority
+  only when the person gave one or the evidence supports it.
 
 Set `depends_on` only for work that must be delivered before this work can
 proceed, and say in the body why it needs each one, so the reason stays with
@@ -269,8 +269,8 @@ runner, `grove run`, starts only assigned work attempts.
 
 | Caller | Invocation |
 | --- | --- |
-| Claude, interactive | `/grove-shape a way to archive finished work` or `/grove-shape G-037` |
-| Claude, headless | `claude -p "/grove-shape G-037 --interaction headless"` |
+| Claude, interactive | `/grove-shape a way to archive finished work` or `/grove-shape G-260925-7k2qm` |
+| Claude, headless | `claude -p "/grove-shape G-260925-7k2qm --interaction headless"` |
 | Codex, interactive | `$grove-shape a way to archive finished work` |
 | Any agent without skills | "Read the repository's agent instructions and the output of `grove guide shape`, then follow that guide for: TOPIC." |
 

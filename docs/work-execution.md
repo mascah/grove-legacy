@@ -115,7 +115,7 @@ step, not a search.
 ## 1. Assemble context
 
 ```sh
-grove context G-030 G-031 --interaction interactive
+grove context G-260925-7k2qm G-260925-8m3xd --interaction interactive
 ```
 
 Pass the IDs and mode as separate arguments exactly as given; never build a
@@ -429,7 +429,8 @@ candidate to human judgment:
    target's), since the integrator runs them as given.
 2. Set the status with that commit as the candidate, and commit that change
    alone, so `git diff --stat CANDIDATE HEAD` shows one file:
-   `grove update G-030 --expect REVISION --set status=review --set candidate=COMMIT`.
+   `grove update G-260925-7k2qm --expect REVISION --set status=review
+   --set candidate=COMMIT`.
 
 Several selected units share one handoff. When every unit the assignment
 started is complete, the complete units enter review together with one
@@ -445,8 +446,8 @@ incomplete (failed, out of budget, stopped, or at the review cap) with
 changes outside the record root on the branch, nothing on that branch enters
 review, since integrating it would carry the unfinished code: the complete
 units stay `active` with a checkpoint such as "complete at commit X, review
-waits on G-031". Launching the same selection again resumes on that branch
-and does not redo units whose checkpoint the branch confirms.
+waits on G-260925-8m3xd". Launching the same selection again resumes on
+that branch and does not redo units whose checkpoint the branch confirms.
 
 If the attempt failed or was interrupted, or a review the record demands is
 still missing, the work stays `active` with a checkpoint: a terminal attempt
@@ -468,36 +469,36 @@ integrated are four different facts; report each separately. Return:
 ## Judging and integrating a candidate
 
 The owner, or a session asked to prepare their judgment, starts from
-`grove context G-030` in a checkout of the branch: the record in Review
-carries the handoff, and the listing names its reviews. Confirm that the
+`grove context G-260925-7k2qm` in a checkout of the branch: the record in
+Review carries the handoff, and the listing names its reviews. Confirm that the
 candidate is what the branch holds (`git diff --stat CANDIDATE TIP` touches
 only the record) and that each review's `examined` is the candidate, or an
 earlier commit whose difference the handoff explains. Then record one honest
 disposition:
 
-- **Feedback that needs implementation:** `grove feedback G-030 "TEXT"` in
-  the branch's clean checkout appends the feedback to the record, sets
-  `status=active`, keeps the candidate and drops any approval, and prints
-  where to continue. Earlier evidence and reviews stay; the next attempt
+- **Feedback that needs implementation:** `grove feedback G-260925-7k2qm
+  "TEXT"` in the branch's clean checkout appends the feedback to the
+  record, sets `status=active`, keeps the candidate and drops any approval,
+  and prints where to continue. Earlier evidence and reviews stay; the next attempt
   produces a new candidate.
-- **A conflict with the target:** `grove resolve G-030` from any checkout
-  (the board's `m`) records feedback naming the target commit and the
+- **A conflict with the target:** `grove resolve G-260925-7k2qm` from any
+  checkout (the board's `m`) records feedback naming the target commit and the
   conflicting files in the branch's checkout. It then starts one attempt
   there to merge that commit, resolve, verify and hand off, as
   [a target that moved](#5-implement-through-evidence) says. Refused, with
   nothing written, when there is no conflict or an attempt of the work
   runs. The owner then judges the resolution: the merge, the previous
   candidate and the files it resolved.
-- **Approval and integration:** `grove approve G-030 "VERDICT"` in the
-  branch's clean checkout binds the verdict to the candidate, then `grove
-  integrate G-030` in the target's clean checkout merges the branch (a plain
-  merge; a conflict is refused with the target unchanged, predicted before
-  merging with the files and the next action named where Git can),
-  writes `done` there and commits it alone, and with `--cleanup` removes the
+- **Approval and integration:** `grove approve G-260925-7k2qm "VERDICT"` in
+  the branch's clean checkout binds the verdict to the candidate, then `grove
+  integrate G-260925-7k2qm` in the target's clean checkout merges the branch
+  (a plain merge; a conflict is refused with the target unchanged,
+  predicted before merging with the files and the next action named where
+  Git can), writes `done` there and commits it alone, and with `--cleanup` removes the
   worktree and branch where Git agrees. It prints approval, merge, done and
   cleanup as separate facts. The board's detail of the record offers the
   same as `a`, `f` and `i`. A squash or rebase that lands another commit is a
-  manual merge followed by `grove update G-030 --set status=done --set
+  manual merge followed by `grove update G-260925-7k2qm --set status=done --set
   candidate=COMMIT --commit` on the target.
 - **Rejection:** `status=abandoned`, with the decision and its reasons in the
   record or a decision record it links.
@@ -535,12 +536,12 @@ an untracked background agent running as an implied continuation.
 
 | Caller | Invocation |
 | --- | --- |
-| Claude, interactive | `/grove-work G-030 G-031` |
-| Claude, headless | `claude -p "/grove-work G-030 --interaction headless"` |
-| Grove-owned attempt | `grove run G-030 --budget USD --permission-mode MODE` (either flag optional where `grove.yaml` sets it under `run:`), or `R` on the work's detail on the board: the headless row as a process that outlives the terminal, in the work's worktree; `grove run G-030 G-031 --dry-run` previews a selection, launched as one attempt; `grove attempts`, `attempt`, `stop`, or `A` and `x` on the board |
-| Codex, interactive | `$grove-work G-030 G-031` |
-| Any agent without skills | "Read the repository's agent instructions and the output of `grove guide work`, then follow that guide for `G-030 --interaction headless`." |
-| Inspect first, no agent | `grove context G-030` |
+| Claude, interactive | `/grove-work G-260925-7k2qm G-260925-8m3xd` |
+| Claude, headless | `claude -p "/grove-work G-260925-7k2qm --interaction headless"` |
+| Grove-owned attempt | `grove run G-260925-7k2qm --budget USD --permission-mode MODE` (either flag optional where `grove.yaml` sets it under `run:`), or `R` on the work's detail on the board: the headless row as a process that outlives the terminal, in the work's worktree; `grove run G-260925-7k2qm G-260925-8m3xd --dry-run` previews a selection, launched as one attempt; `grove attempts`, `attempt`, `stop`, or `A` and `x` on the board |
+| Codex, interactive | `$grove-work G-260925-7k2qm G-260925-8m3xd` |
+| Any agent without skills | "Read the repository's agent instructions and the output of `grove guide work`, then follow that guide for `G-260925-7k2qm --interaction headless`." |
+| Inspect first, no agent | `grove context G-260925-7k2qm` |
 
 Every row ends in this file and the same `context` command; the mode travels
 as the `--interaction` argument and is passed on to `context`, which records it

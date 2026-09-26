@@ -69,9 +69,10 @@ git add grove.yaml grove .claude .agents && git commit -m "chore: set up grove" 
 Commit what `init` wrote before the first attempt: an attempt's worktree
 holds only committed files, and `grove run` refuses one without the
 `grove-work` skill. Then `/grove-shape TOPIC` develops the brief and proposes
-work, and `/grove-work G-001` carries it out (`$grove-shape` and `$grove-work`
-in Codex), or `grove run G-001 --budget USD --permission-mode MODE` starts it
-as a headless attempt ([Attempts](docs/commands.md#attempts)).
+work, and `/grove-work G-260925-7k2qm` carries it out (`$grove-shape` and
+`$grove-work` in Codex), or `grove run G-260925-7k2qm --budget USD
+--permission-mode MODE` starts it as a headless attempt
+([Attempts](docs/commands.md#attempts)).
 [Init](docs/commands.md#init) says what `init` writes and how to point Codex
 at the right binary. To upgrade, install the new `grove`, then run
 `grove init --check`, `grove init` and commit what changed
