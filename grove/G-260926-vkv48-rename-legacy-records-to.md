@@ -2,9 +2,9 @@
 id: "G-260926-vkv48"
 type: work
 title: "Rename legacy records to the date form"
-status: review
+status: done
 created: "2026-09-26T16:09:19Z"
-updated: "2026-09-26T19:17:34Z"
+updated: "2026-09-26T19:19:40Z"
 kind: refactor
 size: large
 relates_to: ["G-260926-yvjy6", "G-260926-2da4n", "G-260926-pgj43", "G-260921-r491p", "G-260921-gtydy", "G-260921-czt8x", "G-260921-905y3"]
