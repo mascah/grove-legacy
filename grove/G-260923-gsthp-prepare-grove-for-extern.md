@@ -4,104 +4,119 @@ type: work
 title: "Prepare Grove for external distribution"
 status: proposed
 created: "2026-09-23T16:05:09Z"
-updated: "2026-09-25T19:08:16Z"
-relates_to: ["G-260921-5gz9a", "G-260922-jtsed", "G-260923-fwakw", "G-260923-p5pt6", "G-260923-895zb"]
+updated: "2026-09-26T20:02:47Z"
+relates_to: ["G-260921-5gz9a", "G-260922-jtsed", "G-260925-358a2"]
 depends_on: ["G-260925-3pj9a", "G-260925-ej1xh"]
+size: small
 ---
 
 ## Outcome
 
-Prepare reproducible Grove distribution and documentation that someone outside the
-owner's projects can install and exercise without the owner reconstructing
-the project's history or supplying unwritten setup knowledge.
+Anyone with Go installed, the owner first, installs Grove with one
+`go install` line, and `grove version` names a release rather than a
+pseudo-version or `(devel)`. Owner intent, shaping conversation 2026-09-26:
+Grove is a tool for the owner alone right now; do the bare minimum that
+leaves distribution in a clean state, and no Homebrew tap, release pipeline
+or site.
 
-Owner intent, shaping conversation 2026-09-23: prepare distribution, public
-documentation/GitHub Pages, release-please, and GitHub project configuration.
-The owner selected the assistant's option "Prepare for a small external preview"
-and then asked what "preview" meant. The assistant clarified that it meant
-initial use outside the owner's projects. It is not a selected release channel,
-launch commitment or support policy. Specific release scope, platform coverage,
-licensing and compatibility promises remain later choices.
+That narrows the intent of 2026-09-23 (distribution artifacts, GitHub Pages,
+release-please and GitHub configuration for a small external preview). The
+brief's preview audience stands; what this work delivers toward it is the
+install path, and the rest is listed below as not selected, not rejected.
 
 ## Constraints
 
-Observed at main `f27444e`: [G-260921-5gz9a](G-260921-5gz9a-bootstrap-projects-with.md) delivered
-`init`, versioned embedded guides and thin adapters; the documented distribution
-is a build or Go installation from a named commit.
-[CI](../.github/workflows/ci.yml) already checks Linux and macOS and
-[Dependabot](../.github/dependabot.yml) covers Go and actions. No release
-workflow, Pages source or LICENSE was found in the inspected tracked surfaces.
-[G-260922-jtsed](G-260922-jtsed-run-secure-ci-and-depend.md) records the owner's earlier choice to leave licensing
-open and keep CI advisory. Live GitHub settings were not rechecked here;
-historical settings in that record are not present-state evidence.
+Observed at `main` `2bd50b9`, 2026-09-26:
 
-Proposed scope:
+- [G-260925-358a2](G-260925-358a2-give-every-distributed-b.md) delivered build
+  identity, and [Version and guide](../docs/commands.md#version-and-guide) is
+  the contract: `version` prints the stamped release, else the module version
+  Go recorded. No tag exists (`git tag --list` is empty), so every build
+  prints `(devel)` or a pseudo-version.
+- In a disposable clone tagged `v0.1.0` at `2bd50b9`, an unstamped
+  `go build ./cmd/grove` printed `grove v0.1.0 (2bd50b9271ea…) guides
+  sha256:1828d72e34c0 content sha256:07bd3cf86419`; one commit later,
+  `grove v0.1.1-0.20260926200057-239604f76daf (239604f7…)`. Go 1.26.8
+  derives the module version from the tag, so a tag alone makes `version`
+  meaningful for `go build` and for `go install …@v0.1.0`, which the contract
+  says records no commit.
+- The README's install block says `go install
+  github.com/mascah/grove/cmd/grove@COMMIT`, "pushed commits only". With a
+  tag, `@v0.1.0` and `@latest` resolve through the Go module proxy, which
+  also verifies the module checksum; a Go user needs no artifact, checksum
+  file or platform matrix.
+- GitHub (`gh repo view`, 2026-09-26): public; description, homepage and
+  topics empty; no license, releases or tags; issues, wiki and projects on,
+  discussions off. The tree has no release workflow, Pages source or LICENSE.
+- The license stays as the owner chose on 2026-09-22
+  ([G-260922-jtsed](G-260922-jtsed-run-secure-ci-and-depend.md)): unlicensed,
+  an open item and not a question record. A public repository without a
+  license grants nobody else the right to use the code; that matters only
+  when someone else is meant to, and adding a LICENSE file is one commit then.
 
-- Reproducible versioned artifacts for a declared platform matrix, with
-  checksums, meaningful `grove version`/guide identity, and install, update and
-  recovery instructions exercised outside this development checkout.
-- Release-please configuration and a reviewed build/publication workflow.
-  [Release Please](https://github.com/googleapis/release-please) supplies release
-  PRs, version changes, changelogs and GitHub releases; artifact packaging needs
-  its own steps. Keep candidate-preserving local integration intact; release
-  tooling must not silently require a different product merge policy.
-- Public onboarding, a compact end-to-end example, TUI images, troubleshooting,
-  current limitations and a feedback route. Publish maintained documentation
-  through GitHub Pages without creating a second editable copy of the guides.
-- Reviewable GitHub description/topics/homepage and relevant repository settings,
-  based on a fresh inventory. Do not recreate existing CI or add team-oriented
-  automation without a concrete preview need.
+Both prerequisites are done and merged, and are why an installed `grove`
+works in a project without this checkout present:
+[G-260925-ej1xh](G-260925-ej1xh-strip-grove-repository-p.md) (the shipped
+documents point at nothing this repository holds) and
+[G-260925-3pj9a](G-260925-3pj9a-launch-attempts-only-whe.md) (`run` refuses
+uncommitted entrypoints instead of spending on them).
 
-[G-260923-fwakw](G-260923-fwakw-reconcile-current-docume.md) owns the existing-document reconciliation
-and information ownership. This work owns distribution-specific documentation,
-site delivery and the assembled newcomer experience; coordinate that boundary.
-[G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md) and [G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md) provide
-related quality evidence. Their completion is not automatically a prerequisite
-or sufficient evidence that a preview is ready; the owner selects release scope.
+In scope, proposed:
 
-This proposal prepares distribution artifacts and publication/configuration changes
-for review. It does not authorize publishing, changing live GitHub settings or
-installing into sibling projects. No broad launch, hosted service, automatic
-self-update or expansion to unsupported execution providers is selected.
+1. The README's install block says `go install
+   github.com/mascah/grove/cmd/grove@latest`, `@v0.1.0` to pin, and that
+   `grove version` prints `grove v0.1.0 …`; the command reference's "`go
+   install …@COMMIT` resolves only a pushed commit" sentence admits tags.
+   Upgrade is the same line again, then `init --check` and `init`, as the
+   README already says.
+2. Tag `v0.1.0` on `main` after that commit, and push the tag. This is the
+   owner's act: a tag on the public repository is publication. `v0.1.0` is
+   proposed because the build contract's example uses it and it promises
+   nothing about stability.
+3. A one-line GitHub description, set by the owner. Proposed: "Local project
+   workspace for humans and agents: work, decisions and knowledge as Markdown
+   in Git, with a CLI and terminal board." Topics and homepage optional.
 
-Owner intent, review conversation 2026-09-25: Grove is used in other
-projects as an installed CLI without this repository present. That review
-found the binary nearly self-contained, fixed the last path links on `main`
-(`001b271`), and shaped two prerequisites of this work's acceptance 2 and
-4: [G-260925-3pj9a](G-260925-3pj9a-launch-attempts-only-whe.md) (`run` and `R` depend
-silently on `init`'s files being committed) and
-[G-260925-ej1xh](G-260925-ej1xh-strip-grove-repository-p.md) (the shipped documents
-still name Grove's own records and unshipped documents).
+Not selected now, on the owner's direction of 2026-09-26, each with the
+condition that would bring it back: prebuilt binaries, checksums and a
+platform matrix (add when a non-Go user asks for a binary); release-please,
+GitHub Releases and a changelog (a tag is the release and `git log
+v0.1.0..` is the changelog); GitHub Pages, TUI images, troubleshooting and a
+feedback route (the README is the onboarding); a Homebrew tap; signing and
+notarization (`go install` builds locally, so nothing is signed). Live
+GitHub settings other than the description stay as they are.
 
 ## Acceptance
 
-1. A concrete release proposal identifies intended users, platform coverage,
-   versioning, license disposition and upgrade expectations, distinguishing
-   selected choices from recommendations and matters awaiting the owner. The
-   earlier pre-release policy is not silently converted into a support promise.
-2. A clean checkout of the intended release revision produces attributable
-   artifacts for the selected matrix; installation and `version`, `init`,
-   `check`, guide discovery and upgrade behavior are exercised in disposable
-   environments. State platform and signing/notarization limits honestly.
-3. Release-please, artifact production and site build have reviewable
-   configuration and validation evidence. Version, changelog, executable and
-   embedded-guide identity agree. Remote publication behavior that cannot be
-   rehearsed without publishing is documented as unverified.
-4. Using only preview documentation, a fresh user or fresh-session surrogate
-   can initialize a disposable repository, shape work, execute a bounded
-   assignment, inspect/review the result, and understand an interrupted attempt.
-   Distinguish surrogate evidence from a real external user's judgment. Any
-   live agent trial has explicit resource bounds. The owner judges readiness.
-5. A handoff identifies exact artifacts and revisions, documentation/site output,
-   proposed GitHub settings, observed limits, and concrete publication steps.
-   Nothing is presented as publicly released or configured before it is.
+1. The README's install block and `docs/commands.md` say the `go install`
+   line and what `version` prints, and nothing in either claims a binary,
+   checksum, release page or site exists.
+2. `v0.1.0` is on `main` and on `origin`, at a commit that holds 1.
+3. From a `GOBIN` outside this checkout, `go install
+   github.com/mascah/grove/cmd/grove@v0.1.0` installs, `grove version` prints
+   `grove v0.1.0` with the same `guides` and `content` digests as a `go build`
+   at the tag, and `grove init` then `grove check` work in a disposable Git
+   repository with that binary. Rehearsed so far only with a local tag in a
+   disposable clone; the install through the proxy is exercised after the
+   push.
+4. The GitHub description is set, or the owner declined it; either is
+   recorded here.
 
 ## Next
 
-The owner can review this proposal now. Prepare a concrete packaging/site plan
-and inspect current GitHub settings read-only. Propose the initial platform
-matrix, and surface owner choices when implementation or publication would
-commit to them. Release compatibility does not need deciding during this shaping
-session or before the documentation, eval and UI work. Commit the agreed proposal before
-assigning it through `$grove-work G-260923-gsthp`. Publication remains a later explicit
-action on the prepared candidate.
+Small enough for the owner to do by hand from the main checkout with a clean
+tree, in this order, or to assign with `/grove-work G-260923-gsthp` for step
+one and take the rest after review:
+
+```sh
+# 1. edit README.md and docs/commands.md (acceptance 1), commit
+# 2. publish the tag; the module proxy can lag a few minutes for @latest
+git tag -a v0.1.0 -m "v0.1.0" && git push origin v0.1.0
+# 3. exercise the install away from this checkout
+GOBIN="$(mktemp -d)" go install github.com/mascah/grove/cmd/grove@v0.1.0 && "$(go env GOBIN)"/grove version
+# 4. description
+gh repo edit mascah/grove --description "Local project workspace for humans and agents: work, decisions and knowledge as Markdown in Git, with a CLI and terminal board."
+```
+
+Record the observed `version` line and the description under Evidence, then
+`done` on `main`. Nothing here is published until the owner runs step 2.
