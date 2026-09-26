@@ -28,6 +28,11 @@ type Renamed struct{ From, FromPath, ID, Path string }
 var (
 	legacy = regexp.MustCompile(`^` + project.NeutralPrefix + `-[0-9]{3}$`)
 	token  = regexp.MustCompile(project.NeutralPrefix + `-[0-9]+`)
+	// cited is an ID a title cites, which a slug leaves out: a slug of IDs
+	// reads as nothing, and one cut at the cap leaves a fragment like g-260.
+	cited = regexp.MustCompile(project.IDForm + `(?:'s)?`)
+	// legacySlug finds a legacy ID in a date-form record's filename.
+	legacySlug = regexp.MustCompile(`(?:^|-)g-[0-9]{3}(?:-|\.md$)`)
 )
 
 // Run renames every legacy record in root's project to a date-form ID drawn
@@ -77,11 +82,16 @@ func Run(root string) ([]Renamed, error) {
 	// Plan every rename before writing anything.
 	var renames []Renamed
 	created := map[string]string{} // record path -> created to add
-	titles := map[string]string{}  // legacy ID -> title
+	titles := map[string]string{}  // old path -> title
 	issued := *p
 	issued.Records = slices.Clone(p.Records)
 	for _, r := range p.Records {
+		titles[r.Path] = r.Title
 		if !legacy.MatchString(r.ID) {
+			// A date-form record named after a legacy ID keeps its ID and loses the name.
+			if legacySlug.MatchString(strings.ToLower(strings.TrimPrefix(path.Base(r.Path), r.ID))) {
+				renames = append(renames, Renamed{From: r.ID, FromPath: r.Path, ID: r.ID})
+			}
 			continue
 		}
 		when, err := creation(p.Root, r)
@@ -97,19 +107,18 @@ func Run(root string) ([]Renamed, error) {
 			return refused(err)
 		}
 		issued.Records = append(issued.Records, &project.Record{ID: id})
-		titles[r.ID] = r.Title
 		renames = append(renames, Renamed{From: r.ID, FromPath: r.Path, ID: id})
 	}
 	slices.SortFunc(renames, func(a, b Renamed) int { return strings.Compare(a.From, b.From) })
 	ids := map[string]string{}
 	for _, m := range renames {
-		ids[m.From] = m.ID
+		if m.From != m.ID {
+			ids[m.From] = m.ID
+		}
 	}
-	// A title may cite a legacy ID; the slug comes from the title as it reads after.
 	names := map[string]string{}
 	for i, m := range renames {
-		title := string(Rewrite([]byte(titles[m.From]), nil, ids))
-		m.Path = path.Join(path.Dir(m.FromPath), m.ID+"-"+create.Slug(title)+".md")
+		m.Path = path.Join(path.Dir(m.FromPath), m.ID+"-"+create.Slug(cited.ReplaceAllString(titles[m.FromPath], ""))+".md")
 		if _, err := os.Lstat(filepath.Join(p.Root, filepath.FromSlash(m.Path))); !os.IsNotExist(err) {
 			return refused(fmt.Errorf("%s already exists", m.Path))
 		}
@@ -250,26 +259,29 @@ func rewriteTree(dir string, names, ids map[string]string, skip map[string]bool)
 // Rewrite replaces, in one pass, each old basename and then each old ID as
 // a whole token: an ID preceded or followed by a letter or digit is part of
 // another word, while a hyphen bounds one, so worktree-G-030 and G-030-G-031
-// are rewritten. names and ids map old to new; a basename starts with its ID.
+// are rewritten. names and ids map old to new; a basename starts with an ID.
 func Rewrite(data []byte, names, ids map[string]string) []byte {
-	base := map[string]string{} // old ID -> its old basename
+	bases := map[string][]string{} // the token a basename starts with -> basenames
 	for name := range names {
-		id, _, _ := strings.Cut(strings.TrimPrefix(name, project.NeutralPrefix+"-"), "-")
-		base[project.NeutralPrefix+"-"+id] = name
+		if m := token.FindString(name); m != "" {
+			bases[m] = append(bases[m], name)
+		}
 	}
 	var out []byte
 	last := 0
 	for _, m := range token.FindAllIndex(data, -1) {
 		id := string(data[m[0]:m[1]])
-		to, ok := ids[id]
-		if !ok {
-			continue
+		to, end := "", m[1]
+		for _, name := range bases[id] {
+			if bytes.HasPrefix(data[m[0]:], []byte(name)) {
+				to, end = names[name], m[0]+len(name)
+			}
 		}
-		end := m[1]
-		if name := base[id]; name != "" && bytes.HasPrefix(data[m[0]:], []byte(name)) {
-			to, end = names[name], m[0]+len(name)
-		} else if m[0] > 0 && alnum(data[m[0]-1]) || m[1] < len(data) && alnum(data[m[1]]) {
-			continue
+		if to == "" {
+			var ok bool
+			if to, ok = ids[id]; !ok || m[0] > 0 && alnum(data[m[0]-1]) || m[1] < len(data) && alnum(data[m[1]]) {
+				continue
+			}
 		}
 		out = append(append(out, data[last:m[0]]...), to...)
 		last = end

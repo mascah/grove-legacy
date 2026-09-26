@@ -48,7 +48,8 @@ const (
 	first = "---\nid: \"G-001\"\ntype: work\ntitle: \"First, with a title longer than the slug cap\"\nstatus: active\nrelates_to: [\"G-002\"]\ncreated: \"2026-09-20T10:00:00Z\"\nupdated: \"2026-09-21T11:00:00Z\"\n---\n\n" +
 		"See [second](G-002-converted.md) and branch `worktree-G-001-G-002`; not G-1000, AG-001 or G-0012.\n"
 	second = "---\nid: \"G-002\"\ntype: work\ntitle: Converted\nstatus: proposed\nformerly: \"docs/old.md\"\n---\n\nBack to [first](./G-001-first.md#outcome).\n"
-	plan   = "---\nid: \"G-003\"\ntype: plan\ntitle: Plan for G-001\nstatus: current\nwork: [\"G-001\"]\ncreated: \"2026-09-20T12:00:00Z\"\nupdated: \"2026-09-20T12:00:00Z\"\n---\n\nFor G-001.\n"
+	plan   = "---\nid: \"G-003\"\ntype: plan\ntitle: Plan for G-001\nstatus: current\nwork: [\"G-001\"]\ncreated: \"2026-09-20T12:00:00Z\"\nupdated: \"2026-09-20T12:00:00Z\"\n---\n\nFor G-001, reviewed in [a review](G-260921-abcde-review-of-g-001.md).\n"
+	review = "---\nid: \"G-260921-abcde\"\ntype: review\ntitle: \"Review of G-001's work\"\nstatus: current\nwork: [\"G-001\"]\n---\n"
 )
 
 func TestRenumber(t *testing.T) {
@@ -69,6 +70,7 @@ func TestRenumber(t *testing.T) {
 	write(t, root, "grove/G-001-first.md", first)
 	write(t, root, "grove/G-002-converted.md", second)
 	write(t, root, "grove/G-003-plan.md", plan)
+	write(t, root, "grove/G-260921-abcde-review-of-g-001.md", review)
 	git(t, root, nil, "add", "-A")
 	git(t, root, nil, "commit", "-q", "-m", "records")
 	attempts := filepath.Join(git(t, root, nil, "rev-parse", "--path-format=absolute", "--git-common-dir"), "grove", "attempts")
@@ -89,25 +91,23 @@ func TestRenumber(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(renames) != 3 {
+	if len(renames) != 4 {
 		t.Fatalf("map = %+v", renames)
 	}
-	one, two, three := renames[0], renames[1], renames[2]
+	one, two, three, four := renames[0], renames[1], renames[2], renames[3]
 	for i, want := range []struct{ from, fromPath, day, slug string }{
 		{"G-001", "grove/G-001-first.md", "G-260920-", "-first-with-a-title-longe.md"},
-		{"G-002", "grove/G-002-converted.md", "G-260914-", "-converted.md"}, // formerly's first commit
-		{"G-003", "grove/G-003-plan.md", "G-260920-", ""},                   // below
+		{"G-002", "grove/G-002-converted.md", "G-260914-", "-converted.md"},                                   // formerly's first commit
+		{"G-003", "grove/G-003-plan.md", "G-260920-", "-plan-for.md"},                                         // a slug leaves out the IDs a title cites
+		{"G-260921-abcde", "grove/G-260921-abcde-review-of-g-001.md", "G-260921-abcde", "-review-of-work.md"}, // a date-form record named after a legacy ID
 	} {
 		m := renames[i]
-		if m.From != want.from || m.FromPath != want.fromPath || !strings.HasPrefix(m.ID, want.day) || want.slug != "" && m.Path != "grove/"+m.ID+want.slug {
+		if m.From != want.from || m.FromPath != want.fromPath || !strings.HasPrefix(m.ID, want.day) || m.Path != "grove/"+m.ID+want.slug {
 			t.Fatalf("map line %d = %+v", i, m)
 		}
 		if _, err := os.Stat(filepath.Join(root, want.fromPath)); !os.IsNotExist(err) {
 			t.Fatalf("%s still exists", want.fromPath)
 		}
-	}
-	if three.Path != "grove/"+three.ID+"-plan-for-"+strings.ToLower(one.ID)+".md" {
-		t.Fatalf("the slug comes from the title as rewritten: %s", three.Path)
 	}
 	gotFirst := read(t, filepath.Join(root, one.Path))
 	wantFirst := strings.NewReplacer("G-002-converted.md", filepath.Base(two.Path), "worktree-G-001-G-002", "worktree-"+one.ID+"-"+two.ID,
@@ -118,7 +118,7 @@ func TestRenumber(t *testing.T) {
 	if got := read(t, filepath.Join(root, two.Path)); got != "---\nid: \""+two.ID+"\"\ntype: work\ntitle: Converted\nstatus: proposed\nformerly: \"docs/old.md\"\ncreated: \"2026-09-14T09:30:00Z\"\n---\n\nBack to [first](./"+filepath.Base(one.Path)+"#outcome).\n" {
 		t.Fatalf("second:\n%s", got)
 	}
-	if got := read(t, filepath.Join(root, three.Path)); !strings.Contains(got, `work: ["`+one.ID+`"]`) || !strings.Contains(got, "For "+one.ID+".") {
+	if got := read(t, filepath.Join(root, three.Path)); !strings.Contains(got, `work: ["`+one.ID+`"]`) || !strings.Contains(got, "For "+one.ID+", reviewed in [a review]("+filepath.Base(four.Path)+").") {
 		t.Fatalf("plan:\n%s", got)
 	}
 

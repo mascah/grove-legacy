@@ -52,15 +52,26 @@ rewrite, and say so in the docs; measured at the step.
 
 Outside the record root, the reference repair is by hand from the map, as
 the record's Constraints list; test string literals, guide examples and
-`CLAUDE.md`'s invocation examples stay. Mentions of nullsec's own numbers
-("nullsec G-016") are not this repository's IDs and are restored after the
-run.
+`CLAUDE.md`'s invocation examples stay. Mentions of nullsec's own numbers,
+as in the nullsec cutover plan and review, are not this repository's IDs
+and are restored after the run.
+
+**Adjusted at the rehearsal (bounded, technical).** 102 titles cite IDs
+("G-030 card lineage plan"), so a slug from the title as rewritten was
+mostly ID (`G-260919-q3mg5-g-260919-byjdx-g-260919.md`) and a cut at the
+cap left fragments like `g-260` that read as legacy IDs. The slug leaves
+out every ID a title cites, with a following `'s`: `card-lineage-plan`.
+For the same reason a date-form record whose filename cites a legacy ID
+(`…-review-of-g-195-coordina.md`) keeps its ID and takes that slug, since
+records are never renamed by hand here. Readability is the owner's
+judgment (acceptance 8).
 
 ## Steps
 
 1. Package, CLI wiring, test (acceptance 4). Docs: commands reference and
    record model (acceptance 7).
-2. Remove the merged `worktree-G-195` worktree and branch. The merged
+2. Remove the merged `worktree-G-195` worktree and branch (found already
+   removed when this step came). The merged
    remote branches `worktree-G-081` and `worktree-G-089` need a push to
    delete, which this headless attempt does not make; the command reads
    local branches only, so they do not block it. Left to the owner.

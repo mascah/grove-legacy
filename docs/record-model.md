@@ -99,8 +99,10 @@ date-form ID and a filename derived from it. It takes no arguments.
   `formerly` names, else of its own path's first commit, and a missing
   `created` is written with that time. The ID is drawn for that date as
   `new` draws one, and the slug is derived as `new` derives it, from the
-  title as it reads with the new IDs. The file is renamed; `updated` is
-  left alone, so the board's order holds.
+  title less the IDs it cites (and a following `'s`), since a slug of IDs
+  says nothing. The file is renamed; `updated` is left alone, so the
+  board's order holds. A date-form record whose filename cites a legacy ID
+  keeps its ID and takes the same slug.
 - Then every file beneath the record root is rewritten, each old filename
   first and then each old ID as a whole token: one not joined to a letter
   or digit, while a hyphen bounds it, so an ID inside a hyphenated branch

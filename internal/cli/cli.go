@@ -182,9 +182,10 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"  renumber   One-time, and leaving before the first release: rename every record with a\n" +
 	"             legacy G-NNN ID to a G-YYMMDD-xxxxx ID dated by its created (else the first\n" +
 	"             commit of its formerly path, else of its own, written as created), with a\n" +
-	"             slug from its title, and rewrite every old filename and ID under the record\n" +
-	"             root and in the attempt store. Prints {from, from_path, id, path} per\n" +
-	"             record. Refused, writing nothing, when check fails, when no record is\n" +
+	"             slug from its title less the IDs it cites (a date-form record whose filename\n" +
+	"             cites a legacy ID takes the same slug), and rewrite every old filename and ID\n" +
+	"             under the record root and in the attempt store. Prints {from, from_path, id,\n" +
+	"             path} per record. Refused, writing nothing, when check fails, when no record is\n" +
 	"             legacy, while a local branch other than this one and the target holds\n" +
 	"             records, or while an attempt of legacy work runs. References outside the\n" +
 	"             record root are the caller's to repair from the printed map.\n" +
