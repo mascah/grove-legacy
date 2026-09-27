@@ -2,9 +2,9 @@
 id: "G-260927-3n027"
 type: work
 title: "Shaping keeps the order a resolved question was holding"
-status: review
+status: done
 created: "2026-09-27T19:15:26Z"
-updated: "2026-09-27T20:11:16Z"
+updated: "2026-09-27T20:11:27Z"
 kind: fix
 size: small
 relates_to: ["G-260925-g39ga"]
