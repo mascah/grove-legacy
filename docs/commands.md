@@ -449,7 +449,8 @@ prints every reason, writes nothing, and exits 1. It never reads or writes
 `AGENTS.md` or `CLAUDE.md`: the entrypoints defer to them for how the CLI is
 invoked, and `init` ends with a note on stderr naming what they should say if
 the entrypoints' defaults are not wanted: how `grove` is invoked, and how
-work and proposal branches are named, and to commit what it wrote: an
+work and proposal branches are named; that `grove guide model` describes
+`grove.yaml`'s keys, such as `target`; and to commit what it wrote: an
 attempt's worktree holds only committed files, and `run` refuses one without
 the `grove-work` skill.
 

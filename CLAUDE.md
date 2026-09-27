@@ -19,7 +19,9 @@ Every other fact has one owner. Read it when the task needs it, not up front:
 
 - [`grove/brief.md`](grove/brief.md): purpose, constraints and selected
   direction, keeping selected, observed and proposed apart.
-- [`README.md`](README.md): what Grove is and where each subject is owned.
+- [`README.md`](README.md): what Grove is and how a project adopts it
+  (install, setup, the loop, each command's documentation), for a reader
+  who has never seen Grove, with developing Grove last, pointing here.
 - [`docs/commands.md`](docs/commands.md) and [`docs/board.md`](docs/board.md):
   command and board behaviour beyond `grove --help`.
 - [`docs/record-model.md`](docs/record-model.md): configuration, schema,

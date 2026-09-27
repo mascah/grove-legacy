@@ -92,6 +92,9 @@ func TestInitCreatesAProjectAndRerunsWithoutTouchingUserFiles(t *testing.T) {
 	if !strings.Contains(errOut, "Next: grove check, then commit what init wrote") {
 		t.Fatalf("init must say what the adopter's instructions may add: %q", errOut)
 	}
+	if !strings.Contains(errOut, "grove guide model describes grove.yaml's keys") {
+		t.Fatalf("init must say where grove.yaml's keys are described: %q", errOut)
+	}
 	var checkOut, checkErr bytes.Buffer
 	if code := Run([]string{"--project", root, "check"}, t.TempDir(), &checkOut, &checkErr); code != 0 || checkOut.String() != "OK: 0 records\n" {
 		t.Fatalf("the initialized project must validate: %d %s %s", code, checkOut.String(), checkErr.String())
