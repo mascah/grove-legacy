@@ -2,9 +2,10 @@
 id: "G-260927-y3pc2"
 type: decision
 title: "depends_on records every order worth stating"
-status: proposed
+status: accepted
 created: "2026-09-27T19:57:20Z"
-updated: "2026-09-27T19:57:20Z"
+updated: "2026-09-27T19:58:02Z"
+relates_to: ["G-260925-g39ga", "G-260927-k4xwq", "G-260927-3n027"]
 ---
 
 ## Decision
