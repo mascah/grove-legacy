@@ -44,8 +44,9 @@ brief: grove/brief.md
 target: main
 ```
 
-- `target` is that branch: the board marks work not yet on it, and `done` is
-  written only there.
+- `target` is that branch: `integrate` merges into it and writes `done`
+  there, `resolve` and `sweep` need it, and the board marks work not yet on
+  it.
 - `run:` sets `grove run`'s defaults (`budget`, `permission_mode`, `model`,
   `effort`); without it, every launch passes `--budget` and
   `--permission-mode`.
