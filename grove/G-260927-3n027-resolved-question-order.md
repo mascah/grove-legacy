@@ -2,12 +2,13 @@
 id: "G-260927-3n027"
 type: work
 title: "Shaping keeps the order a resolved question was holding"
-status: active
+status: review
 created: "2026-09-27T19:15:26Z"
-updated: "2026-09-27T19:16:07Z"
+updated: "2026-09-27T19:21:18Z"
 kind: fix
 size: small
 relates_to: ["G-260925-g39ga"]
+candidate: "58a7855687c5ec319b0e715ab12ddf701b5834a1"
 ---
 
 ## Outcome
