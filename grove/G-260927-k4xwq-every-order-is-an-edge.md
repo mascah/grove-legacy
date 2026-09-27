@@ -32,9 +32,12 @@ Observed, 2026-09-27, in two shaping sessions run with the installed `grove`
   "Proposed first in the brief's sequence because it unblocks every other
   slice; no record depends on it". G-260927-5zhf5's says "Can run in parallel
   with G-260927-2qw40; it touches none of the deleted files". The strip also
-  rewrites Bench-contract comments in about thirty files under `app/`,
-  including `settings.ts`, `passages.ts`, `lessons.ts` and the engine types,
-  which the other three proposals edit. The return said both "Unblocks
+  rewrites Bench-contract comments across `app/`. Among them are
+  `app/content/passages.ts`, which the corpus proposal G-260927-wqbaj
+  replaces, and the header of `app/lib/difficulty/identify.ts`, which
+  describes the thresholds the mastery proposal G-260927-5zhf5 replaces. The
+  focus-text proposal G-260927-yjz5k builds on `words.ts`, which the strip
+  does not edit. The return said both "Unblocks
   everything else" and "None depends on another, so they can run in
   parallel". It ran `grove check` and never `grove deps`.
 - The guide at `64202ba` tells a session to write a preferred sequence "in
@@ -53,7 +56,9 @@ G-260927-3n027 adds, and step 6. Out of scope: code, since `deps`, `run` and
 the board already treat every edge alike; the work guide, whose sessions act
 on edges rather than write them; the brief; and the owner's other checkouts,
 whose records are the owner's to change. The guides ship in the binary, so
-their text names no record and no repository.
+their text names no record and no repository. This repository's own brief
+still states a proposed order in its "Suggested sequence"; decision
+G-260927-y3pc2 leaves that section to the owner.
 
 ## Acceptance
 
@@ -61,17 +66,19 @@ their text names no record and no repository.
   first, because this work needs its result or building it first or alongside
   would redo or conflict with it. Member order is presentation and orders
   nothing.
-- `grove guide shape` says an order among work records is stated only as an
-  edge with its reason, never in Next, the brief or the return. It also says
-  what earns no edge: importance, grouping, and separable edits to the same
-  files.
+- `grove guide shape` says an order among work records is made only by an
+  edge with its reason. Prose in Next, the brief or the return may repeat an
+  order `grove deps` shows, never one it lacks, and claims parallel work only
+  with evidence named in a record. It also says what earns no edge:
+  importance, grouping, and separable edits to the same files.
 - Step 6 of `grove guide shape` runs `grove deps` over the work the session
   wrote. It checks every order the records and the return state against that
   output, allows no claim that work can proceed in parallel without evidence,
   and returns the order as `deps` shows it.
 - Applied by hand to the keyborg proposals, the guide yields the strip as a
-  prerequisite of the other three. Applied to ascah.dev, it yields the spike
-  before the redesign.
+  prerequisite of the corpus and the mastery proposals, and no edge for the
+  focus text, whose files the strip does not edit. Applied to ascah.dev, it
+  yields the spike before the redesign.
 - The shipped guides still link only within themselves or to `https://` and
   name no record or repository. `go test` passes.
 
