@@ -30,6 +30,14 @@ order only in prose, which `g` then showed as unrelated work. The owner said:
 triple checking whether the agent bothered to setup the records correctly." Of
 the three options put to them, they chose this one.
 
+After acceptance, review round 1 of G-260927-k4xwq led the session to reword
+the first paragraph, and the owner has not yet read the new text. The owner
+accepted "never a sentence in Next, the brief or a session's return". The
+session changed that to "may repeat an order the edges show, never one they
+lack", added that a parallel claim needs evidence, and added the sentence on
+unshaped outcomes in a brief. The owner's approval of G-260927-k4xwq's
+candidate confirms this wording.
+
 It replaces the stricter reading, in which `depends_on` held only work that
 "must be delivered before this work can proceed" and a preferred sequence
 went in Next. That reading came from G-260925-g39ga, whose acceptance item 7
