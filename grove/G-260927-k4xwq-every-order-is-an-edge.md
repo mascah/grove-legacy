@@ -4,12 +4,13 @@ type: work
 title: "Every order shaping states is a depends_on edge"
 status: review
 created: "2026-09-27T19:57:19Z"
-updated: "2026-09-27T20:07:24Z"
+updated: "2026-09-27T20:11:37Z"
 kind: fix
 size: small
 depends_on: ["G-260927-3n027"]
 relates_to: ["G-260927-y3pc2", "G-260925-g39ga"]
 candidate: "80c93fc1ba36a02dcaaa497f895c28eae2c646e4"
+approved: "80c93fc1ba36a02dcaaa497f895c28eae2c646e4"
 ---
 
 ## Outcome
@@ -141,3 +142,5 @@ go run ./cmd/grove integrate G-260927-k4xwq --cleanup
 ```
 
 Or `go run ./cmd/grove feedback G-260927-k4xwq "TEXT"` in the worktree.
+
+Verdict on candidate 80c93fc, 2026-09-27: approved
