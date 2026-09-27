@@ -145,7 +145,8 @@ CLI interprets and a freeform Markdown body for explanation.
 
 Relationship fields:
 
-- Work `depends_on`: prerequisite work IDs. Missing means no declared prerequisites.
+- Work `depends_on`: prerequisite work IDs, the work that should be delivered
+  before this work. Missing means no declared prerequisites.
 - Question `blocks`: work IDs whose outcome needs the answer. An unresolved
   question may be relevant without blocking work.
 - Any record `relates_to`: related record IDs, with no implied ordering or gate.
@@ -163,7 +164,7 @@ execution policy is implied. Their allowed values are under
 | `priority` | Importance for selection, independent of dependencies |
 | `size` | Coarse scope/effort estimate, without automatic time estimates or execution policy |
 | `members` | Child work included in this outcome; expandable groups and member completion counts |
-| `depends_on` | Prerequisite work that must be delivered before this work can proceed |
+| `depends_on` | Prerequisite work, which should be delivered before this work: this work needs its result, or building it first or alongside would redo that work or conflict with it |
 | `created`, `updated` | Creation and modification timestamps for chronology, allowed on every type |
 
 Keep these optional so quick capture remains useful. An absent size or priority
@@ -171,8 +172,8 @@ means unspecified; do not silently turn it into an estimate or urgency decision.
 
 These distinctions hold:
 
-- Membership describes decomposition. Member order can express presentation or
-  preferred sequence, but only dependencies impose prerequisite ordering.
+- Membership describes decomposition. Member order is presentation; only
+  dependencies order work.
 - Allow grouped work to retain its own outcome and acceptance. Completed children
   do not automatically establish parent completion or integration.
 - Incomplete members can prevent declaring a parent done without blocking work

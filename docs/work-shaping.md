@@ -96,7 +96,7 @@ Before proposing anything new, check, without writing:
 
 Then choose: **refine** an existing proposal that owns the outcome; **relate**
 a new record to neighbours that overlap only partly (`relates_to`, and
-`depends_on` only for a real prerequisite); or **create** when nothing owns the
+`depends_on` for work that should come first, step 5); or **create** when nothing owns the
 outcome. Never create a duplicate because the existing record is on another
 branch. Relationship fields resolve only within the checkout being written, so
 name a record that exists only elsewhere in prose, with its branch, until the
@@ -175,13 +175,22 @@ document when it helps, and say in your return what had no supported home.
   "answer G-YYMMDD-xxxxx", or "needs a plan covering X". A size or priority
   only when the person gave one or the evidence supports it.
 
-Set `depends_on` only for work that must be delivered before this work can
-proceed, and say in the body why it needs each one, so the reason stays with
-the edge in the dependent work's own record; there is no separate graph to
-edit. A preferred sequence, an importance, or a grouping is not a
-prerequisite: write it as that (in Next, in `priority`, or in a parent's
-`members`), never as an edge. `grove deps` shows the resulting structure of
-unfinished work, and `grove deps` with the IDs the person might assign
+Set `depends_on` for work that should be delivered before this work: this
+work needs its result, or building it first or alongside would redo that
+work or conflict with it, as a sweeping removal or rename does for work that
+edits the same code. Say in the body why it needs each one, so the reason
+stays with the edge in the dependent work's own record; there is no separate
+graph to edit. An order among work records is made only by such an edge,
+since the board and `grove deps` read nothing else. Prose in Next, the
+direction document or your return may repeat an order `grove deps` shows,
+but never states one it lacks: no "first", "after" or "unblocks" without the
+edge behind it. A missing edge is not evidence that two pieces of work can
+proceed in parallel; say they can only with the evidence named in a record,
+such as their editing different code. What is weaker than an edge is no
+order at all: an importance is `priority`, a grouping is a parent's
+`members`, and work that only touches the same files in separable places
+needs no edge. `grove deps` shows the resulting structure
+of unfinished work, and `grove deps` with the IDs the person might assign
 together previews their order and the prerequisites outside them.
 
 **Questions** are for real, unresolved human choices. Create one when the
@@ -204,7 +213,7 @@ deferral stays in the question, and a part left open that still blocks or
 shapes work becomes a new question.
 The resolved question's `blocks` no longer holds anything back. When the
 answer was also meant to wait for other work, such as a spike, and that work
-must still be delivered first, add it to the blocked work's `depends_on` and
+should still be delivered first, add it to the blocked work's `depends_on` and
 give the reason in that work's body, so the order does not survive only in
 prose.
 Recording an answer someone gave is not the session making the decision, so
@@ -225,10 +234,16 @@ record's acceptance has done its job.
 
 ## 6. Validate and return
 
-Run `grove check`, and confirm that every link you wrote resolves. Then return:
+Run `grove check`, and confirm that every link you wrote resolves. Then run
+`grove deps` with the IDs of the work you created or changed, and hold it
+against every order the records and your return state, as step 5 says: each
+work that should come first is in its dependent's `NEEDS`, and nothing
+claims an order the output lacks or a parallel start that no record gives
+evidence for. Then return:
 
 - Records created or changed, each with its path and revision, and which of
   the four kinds each substantive statement is where that is not obvious.
+- The order, as that `grove deps` output shows it.
 - Open questions and whom they wait for; decisions and whose authority.
 - **Where it is:** checkout, branch, and commit, or "uncommitted in PATH".
   Say where it can be seen today: `list` from that checkout, and the board or
