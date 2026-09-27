@@ -2,9 +2,9 @@
 id: "G-260927-k4xwq"
 type: work
 title: "Every order shaping states is a depends_on edge"
-status: review
+status: done
 created: "2026-09-27T19:57:19Z"
-updated: "2026-09-27T20:11:37Z"
+updated: "2026-09-27T20:11:39Z"
 kind: fix
 size: small
 depends_on: ["G-260927-3n027"]
