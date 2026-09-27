@@ -38,7 +38,11 @@ transcript and records:
   `depends_on`); its paragraph on answered questions says nothing about the
   lifted `blocks`. The session read "the spike first" as a sequence.
 - ascah.dev's records were repaired separately in that checkout; that repair
-  is not this work.
+  is not this work. It also made the redesign depend on the content refresh
+  G-260927-5gh2k, an order no question held: the session had written "Independent
+  of the redesign, so it can ship first" although the redesign restyles what
+  the refresh adds. That is a prerequisite missed while shaping, which the
+  guide's `depends_on` paragraph already covers; this work does not address it.
 
 In scope: the shaping guide's paragraph on answered questions. Out of scope:
 code (`blocks` still never orders, and `deps` and `g` are unchanged), the

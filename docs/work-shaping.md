@@ -202,11 +202,11 @@ question's `relates_to`, so the choice does not live only in a resolved
 question's body. Record only what the answer decides: a preference or a
 deferral stays in the question, and a part left open that still blocks or
 shapes work becomes a new question.
-The resolved question's `blocks` no longer holds anything back. When that
-gate also held its work behind other work, as a question meant to be
-answered after an investigation does, and the other work must still be
-delivered first, set `depends_on` on the work it blocked and give the reason
-in that work's body, so the order does not survive only in prose.
+The resolved question's `blocks` no longer holds anything back. When the
+answer was also meant to wait for other work, such as a spike, and that work
+must still be delivered first, add it to the blocked work's `depends_on` and
+give the reason in that work's body, so the order does not survive only in
+prose.
 Recording an answer someone gave is not the session making the decision, so
 a headless session may record it too.
 
