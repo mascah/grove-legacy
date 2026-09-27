@@ -93,10 +93,75 @@ content of `docs/`, a license, a release pipeline or site.
 - The owner, reading the README as someone who has never seen Grove, judges
   that it gets them from install to a first shaped record.
 
+## Evidence
+
+On `worktree-G-260927-ngkbz`, from base `main` `90e82d4` and record revision
+`sha256:57e1efe2d3d9`. No plan was written; the design above served as the
+plan. Implemented in `558bce8`, with the review fixes in `cc87c6b`. The
+candidate is the commit that records this Evidence.
+
+- **Order.** The README runs:
+  - an intro in outcome terms;
+  - Install: `go install …@latest` or `@v0.1.0`, then `grove version`;
+  - Set up a project: `init`, what it writes, the minimal `grove.yaml` with
+    `target: main`, one bullet each on `target`, `run:` and `policy:`,
+    `grove guide model`, then `check` and commit, then upgrading;
+  - The loop: brief, shape, work, judge, with `a`, `f` and `i`;
+  - Commands: the board paragraph and the table, with `grove guide model` or
+    `grove guide work` beside the rows those guides cover;
+  - Develop Grove.
+
+  `go run` and record IDs appear only in Develop Grove.
+- **`grove.yaml`.** I built the binary to a temp path and ran `git init -b
+  main` then `init` in a `mktemp -d` project. With the README's yaml block
+  written verbatim, `check` printed `OK: 0 records` (exit 0) and `list`
+  exited 0. The key descriptions agree with the record model's
+  "Configuration and discovery". The `target` bullet names what refuses
+  without it (`integrate`, `resolve`, `sweep`).
+- **Development-only rows.** "Where each subject lives" is gone, along with
+  its dogfooding-evidence records, legacy-ID row and adapter links. Develop
+  Grove keeps `grove/` and the brief, `go run`, `just install`, CLAUDE.md
+  and `evals/README.md`, which nothing else in the tree links. A script
+  resolved every relative link and anchor in README.md, CLAUDE.md and
+  docs/commands.md.
+- **`init` note.** `internal/cli/init.go` adds this sentence: "grove guide
+  model describes grove.yaml's keys under "Configuration and discovery",
+  such as target: BRANCH for the branch work merges into".
+  `internal/cli/init_test.go` asserts it, and docs/commands.md's Init
+  describes it. `grove guide model` prints that heading.
+- **CLAUDE.md.** The README line now says the README covers what Grove is
+  and how a project adopts it, with developing Grove last.
+- **G-260921-czt8x.** Its note on `W-001` examples no longer names the
+  README, which dropped that row.
+- **Final checks.** At `cc87c6b`:
+  - `go vet ./...` passed;
+  - `gofmt -l .` printed nothing;
+  - `go run ./cmd/grove check` printed `OK: 202 records`;
+  - `go test -count=1 -timeout 120s ./...` passed every package.
+
+  The same checks also passed at `558bce8`. There is no TUI change, so the
+  terminal checks were not run.
+- **Review.** [G-260927-917tb](G-260927-917tb-review-of-g-260927-ngkbz.md)
+  ran two `grove-reviewer` rounds. Round 1 found two minor issues: the
+  `target` bullet understated what depends on the key, and czt8x was stale.
+  Both were fixed in `cc87c6b`. Round 2 ended `Open findings: none`.
+- **Limits.**
+  - `@latest` resolves to `v0.1.0`, which predates the new `init` note, so
+    installed adopters see it only after the next tag. A release is out of
+    scope.
+  - The last acceptance item, the owner reading the README as a newcomer,
+    is not judged yet.
+
 ## Next
 
-No plan needed: the record's proposed design already orders the README's
-sections, and the rest is one note in `internal/cli/init.go`, its test, and
-two documentation lines. Implementing in `worktree-G-260927-ngkbz`
-(`.claude/worktrees/worktree-G-260927-ngkbz`), base `main` `90e82d4`, from
-record revision `sha256:57e1efe2d3d9`.
+In review. The owner reads `README.md` on `worktree-G-260927-ngkbz` as
+someone who has never seen Grove (the last acceptance item). Then:
+
+```sh
+# in .claude/worktrees/worktree-G-260927-ngkbz
+go run ./cmd/grove approve G-260927-ngkbz "VERDICT"
+# in the main checkout
+go run ./cmd/grove integrate G-260927-ngkbz --cleanup
+```
+
+Or `go run ./cmd/grove feedback G-260927-ngkbz "TEXT"` in the worktree.
