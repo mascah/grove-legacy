@@ -4,11 +4,12 @@ type: work
 title: "Shaping keeps the order a resolved question was holding"
 status: review
 created: "2026-09-27T19:15:26Z"
-updated: "2026-09-27T19:21:18Z"
+updated: "2026-09-27T20:11:16Z"
 kind: fix
 size: small
 relates_to: ["G-260925-g39ga"]
 candidate: "58a7855687c5ec319b0e715ab12ddf701b5834a1"
+approved: "58a7855687c5ec319b0e715ab12ddf701b5834a1"
 ---
 
 ## Outcome
@@ -107,3 +108,5 @@ go run ./cmd/grove integrate G-260927-3n027 --cleanup
 ```
 
 Or `go run ./cmd/grove feedback G-260927-3n027 "TEXT"` in the worktree.
+
+Verdict on candidate 58a7855, 2026-09-27: approved
