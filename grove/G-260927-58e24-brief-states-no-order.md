@@ -42,6 +42,33 @@ outcomes not yet shaped as work, never to state an order the edges lack.
 - The heading and every link in the brief still resolve, and `grove check`
   passes.
 
+## Evidence
+
+On `worktree-G-260927-58e24`, from `main` `013839c`. Implemented in `61fdaa5`;
+the candidate is the commit that records this Evidence.
+
+- **Section.** "Suggested sequence" now opens by saying the brief states no
+  order among work records, that the order is their `depends_on` edges shown
+  by `grove deps` and `g`, and links G-260927-y3pc2. The preview phase's three
+  pieces of work, the owner-judges-readiness line and the roadmap and
+  evaluation links remain. "Their order is proposed" is gone.
+- **Decision.** G-260927-y3pc2's sentence that left the section to the owner
+  now says the owner had it rewritten, naming this record.
+- **Checks.** At `61fdaa5`: `go run ./cmd/grove check` printed
+  `OK: 209 records`, and a script resolved all 17 relative links in
+  `grove/brief.md` with none broken. The heading stays, so G-260919-rt9h9's
+  `brief.md#suggested-sequence` still resolves. No code or embedded document
+  changed, so no Go test was run for it.
+- **Review.** Self-checked against the acceptance above, not independently
+  reviewed: a small documentation-only change, which the work guide allows.
+
 ## Next
 
-Active on `worktree-G-260927-58e24`.
+In review. Then:
+
+```sh
+# in .claude/worktrees/worktree-G-260927-58e24
+go run ./cmd/grove approve G-260927-58e24 "VERDICT"
+# in the main checkout
+go run ./cmd/grove integrate G-260927-58e24 --cleanup
+```
