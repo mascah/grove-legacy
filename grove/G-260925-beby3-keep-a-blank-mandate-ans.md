@@ -4,9 +4,10 @@ type: work
 title: "Keep a blank mandate answer from approving spend"
 status: review
 created: "2026-09-25T03:47:15Z"
-updated: "2026-09-26T20:49:11Z"
+updated: "2026-09-27T16:51:03Z"
 relates_to: ["G-260924-59f5k", "G-260924-7x7p7", "G-260925-04ccr", "G-260925-gymkr", "G-260925-02jsj", "G-260924-ecs9m"]
 candidate: "f9b38bb574e2e5a3af81ba43b96b01915768c103"
+approved: "f9b38bb574e2e5a3af81ba43b96b01915768c103"
 ---
 
 ## Outcome
@@ -124,3 +125,5 @@ passages against G-260925-04ccr. From this checkout
 `go run ./cmd/grove approve G-260925-beby3 "VERDICT"`, then in the main
 checkout `go run ./cmd/grove integrate G-260925-beby3 --cleanup`, or
 `go run ./cmd/grove feedback G-260925-beby3 "TEXT"` here.
+
+Verdict on candidate f9b38bb, 2026-09-27: approved
