@@ -2,9 +2,12 @@
 id: "G-260927-58e24"
 type: work
 title: "The brief states no order among work records"
-status: proposed
+status: active
 created: "2026-09-27T20:13:00Z"
-updated: "2026-09-27T20:13:00Z"
+updated: "2026-09-27T20:13:20Z"
+kind: fix
+size: small
+relates_to: ["G-260927-y3pc2", "G-260927-k4xwq"]
 ---
 
 ## Outcome
