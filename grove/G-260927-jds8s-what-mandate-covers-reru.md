@@ -2,9 +2,9 @@
 id: "G-260927-jds8s"
 type: question
 title: "What mandate covers rerunning the retrieval cases after the context framing trim?"
-status: open
+status: resolved
 created: "2026-09-27T22:13:37Z"
-updated: "2026-09-27T22:28:19Z"
+updated: "2026-09-27T22:33:27Z"
 blocks: ["G-260927-n4wvk"]
 relates_to: ["G-260923-659zw", "G-260925-pbx81"]
 ---
@@ -38,3 +38,6 @@ and reads the report into a review record.
 
 Waits for the owner. Answer here, set `status=resolved`, then assign
 G-260927-n4wvk.
+
+## Answer
+reuse the last config
