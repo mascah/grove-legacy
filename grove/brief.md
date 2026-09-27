@@ -190,16 +190,19 @@ credential, deployment or backlog authority over this project.
 
 ## Suggested sequence
 
-The preview phase has three proposals, each independently assignable and none
-a prerequisite of another: behavioral evaluations of context and workflows
-([G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md)), usable Attempts screens
-([G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md)), and distribution preparation
-([G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md)). Their order is proposed: the owner has
-not selected one. Completing them is not by itself evidence that a preview is
-ready; the owner judges that.
+The brief states no order among work records. That order is their
+`depends_on` edges, which `grove deps` and the board's `g` show
+([G-260927-y3pc2](G-260927-y3pc2-order-is-an-edge.md)). Change this section
+only to select direction for outcomes not yet shaped as work.
+
+The preview phase is three pieces of work: behavioral evaluations of context
+and workflows ([G-260923-p5pt6](G-260923-p5pt6-establish-behavioral-eva.md)),
+usable Attempts screens ([G-260923-895zb](G-260923-895zb-make-attempts-easy-to-sc.md)),
+and distribution preparation ([G-260923-gsthp](G-260923-gsthp-prepare-grove-for-extern.md)).
+Completing them is not by itself evidence that a preview is ready; the owner
+judges that.
 
 The brief does not track progress or a current next action. Each work
-record's Next owns that; change this section only when the selected sequence
-itself changes. The adoption [roadmap](G-260921-466b5-adoption-roadmap.md) and
+record's Next owns that. The adoption [roadmap](G-260921-466b5-adoption-roadmap.md) and
 [evaluation](G-260921-72chf-first-days-evaluation-an.md) are the closed milestone's
 history.

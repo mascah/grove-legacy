@@ -46,9 +46,9 @@ dependency edge still means only that the prerequisite is needed" now reads
 with this wider meaning of needed. Its point, that an edge authorizes no
 shared execution, stands.
 
-This repository's own brief, in its "Suggested sequence", still calls the
-order of three independent proposals "proposed". That section is the
-owner's to change.
+This repository's own brief called the order of three independent
+proposals "proposed" in its "Suggested sequence". The owner had that section
+rewritten to state no order among work records (G-260927-58e24).
 
 ## Alternatives
 
