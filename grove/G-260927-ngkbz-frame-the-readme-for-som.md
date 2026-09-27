@@ -2,9 +2,9 @@
 id: "G-260927-ngkbz"
 type: work
 title: "Frame the README for someone adopting Grove in their project"
-status: review
+status: done
 created: "2026-09-27T17:10:58Z"
-updated: "2026-09-27T17:35:34Z"
+updated: "2026-09-27T17:35:39Z"
 relates_to: ["G-260923-gsthp", "G-260921-5gz9a"]
 size: small
 candidate: "72b9f3ec5511c740d8e4a4469354948e78fb4bd8"
