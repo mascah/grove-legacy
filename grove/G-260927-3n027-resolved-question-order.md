@@ -61,6 +61,48 @@ binary, so its text names no record and no repository.
 - The guide still links only within itself or to `https://` and names no
   record or repository; `go test` passes.
 
+## Evidence
+
+On `worktree-G-260927-3n027`, from base `main` `64202ba` and record revision
+`sha256:73a27b541f62`. No plan: one passage of documentation. Implemented in
+`c36c5e0`, with the review fix in `8f9dfd0`. The candidate is the commit that
+records this Evidence.
+
+- **Text.** `grove guide shape` prints, at the end of the paragraph on
+  answered questions: "The resolved question's `blocks` no longer holds
+  anything back. When the answer was also meant to wait for other work, such
+  as a spike, and that work must still be delivered first, add it to the
+  blocked work's `depends_on` and give the reason in that work's body, so the
+  order does not survive only in prose." Applied to the ascah.dev case, it
+  yields the edge that session missed: the redesign depends on the spike.
+- **Same test.** "Must still be delivered first" is the `depends_on`
+  paragraph's test; a preferred sequence still fails it. `grove guide model`,
+  docs/commands.md and docs/board.md needed no change: `blocks` still never
+  orders.
+- **Shipped-document rule.** The passage adds no link, record ID or
+  repository name.
+- **Final checks.** At `8f9dfd0`: `go vet ./...` passed, `gofmt -l .`
+  printed nothing, `go run ./cmd/grove check` printed `OK: 204 records`, and
+  `go test -count=1 -timeout 120s ./...` passed every package. The same
+  checks passed at `c36c5e0`. No code or TUI change.
+- **Review.** [G-260927-e6p0r](G-260927-e6p0r-review-of-g-260927-3n027.md):
+  two rounds by one `grove-reviewer` agent, resumed for round 2 rather than
+  fresh. Round 1 found the example clause hard to parse, fixed in `8f9dfd0`;
+  round 2 ended `Open findings: none`.
+- **Limits.** A question the owner resolves from the board (`y`) involves no
+  guide, so the lifted order is caught only when a session next reconciles
+  the answer. The installed `grove` carries the old guide until `just
+  install` after the merge.
+
 ## Next
 
-Active on `worktree-G-260927-3n027`.
+In review. Then:
+
+```sh
+# in .claude/worktrees/worktree-G-260927-3n027
+go run ./cmd/grove approve G-260927-3n027 "VERDICT"
+# in the main checkout
+go run ./cmd/grove integrate G-260927-3n027 --cleanup
+```
+
+Or `go run ./cmd/grove feedback G-260927-3n027 "TEXT"` in the worktree.
