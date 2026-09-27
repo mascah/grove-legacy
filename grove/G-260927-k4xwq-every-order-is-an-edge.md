@@ -82,6 +82,61 @@ G-260927-y3pc2 leaves that section to the owner.
 - The shipped guides still link only within themselves or to `https://` and
   name no record or repository. `go test` passes.
 
+## Evidence
+
+On `worktree-G-260927-k4xwq`, from base `6c1b05a`, the tip of
+G-260927-3n027's branch, and record revision `sha256:9ad75cb72cc7` at `5293e4c`.
+Implemented in `76fa6dd`. The review fixes are in `4fe7155` and the
+decision disclosure in `91d5922`. The candidate is the commit that records
+this Evidence.
+
+- **Model.** `grove guide model` defines `depends_on` as "Prerequisite work,
+  which should be delivered before this work: this work needs its result,
+  or building it first or alongside would redo that work or conflict with
+  it". The relationship-fields list agrees. Member order "is presentation;
+  only dependencies order work."
+- **Shape rule.** Step 5 says only such an edge makes an order, with its
+  reason in the dependent's body. Prose in Next, the direction document or
+  the return may repeat an order `grove deps` shows, never one it lacks.
+  Parallel work needs named evidence. Importance, grouping and separable
+  edits to the same files earn no edge. Step 2 and G-260927-3n027's passage
+  now use "should".
+- **Step 6.** It runs `grove deps` with the written work's IDs and checks
+  each order against `NEEDS` and each parallel claim against its evidence.
+  The return carries the order as that output shows it.
+- **Hand application.** keyborg, uncommitted there: `grove deps` shows the
+  strip G-260927-2qw40 in `NEEDS` for G-260927-wqbaj and G-260927-5zhf5,
+  each with its file reason in the body, and no edge for G-260927-yjz5k.
+  ascah.dev at `f4ce9d4`: the spike precedes the redesign.
+- **Shipped-document rule.** No link other than anchors and `https://`, and
+  no record or repository name added.
+- **Final checks.** At `91d5922`: `go vet ./...` passed, `gofmt -l .`
+  printed nothing, `go run ./cmd/grove check` printed `OK: 207 records`, and
+  `go test -count=1 -timeout 120s ./...` passed every package. The same
+  checks passed at `76fa6dd`. There is no code change.
+- **Review.** [G-260927-4m4j6](G-260927-4m4j6-review-of-g-260927-k4xwq.md):
+  two rounds. Three findings from round 1 were resolved or left to the owner.
+  Round 2's disclosure finding was addressed in `91d5922` and not
+  re-reviewed.
+- **Limits.**
+  - The owner has not read the decision's reworded paragraph. Approving this
+    candidate confirms it.
+  - No behavioral evaluation was run, so the claim that sessions now
+    set these edges is unmeasured. A case in `evals/` would measure it, at
+    runs × budget dollars under a mandate.
+  - This repository's brief still states a proposed order.
+  - Sessions keep the old guide until `just install` runs after the merge.
+
 ## Next
 
-Active on `worktree-G-260927-k4xwq`, stacked on G-260927-3n027's branch.
+In review. G-260927-3n027 integrates first, since this branch holds it.
+Then:
+
+```sh
+# in .claude/worktrees/worktree-G-260927-k4xwq
+go run ./cmd/grove approve G-260927-k4xwq "VERDICT"
+# in the main checkout
+go run ./cmd/grove integrate G-260927-k4xwq --cleanup
+```
+
+Or `go run ./cmd/grove feedback G-260927-k4xwq "TEXT"` in the worktree.
