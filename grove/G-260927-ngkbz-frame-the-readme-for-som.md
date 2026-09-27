@@ -2,9 +2,9 @@
 id: "G-260927-ngkbz"
 type: work
 title: "Frame the README for someone adopting Grove in their project"
-status: proposed
+status: active
 created: "2026-09-27T17:10:58Z"
-updated: "2026-09-27T17:11:30Z"
+updated: "2026-09-27T17:15:58Z"
 relates_to: ["G-260923-gsthp", "G-260921-5gz9a"]
 size: small
 ---
@@ -95,4 +95,8 @@ content of `docs/`, a license, a release pipeline or site.
 
 ## Next
 
-Owner: assign with `/grove-work G-260927-ngkbz`.
+No plan needed: the record's proposed design already orders the README's
+sections, and the rest is one note in `internal/cli/init.go`, its test, and
+two documentation lines. Implementing in `worktree-G-260927-ngkbz`
+(`.claude/worktrees/worktree-G-260927-ngkbz`), base `main` `90e82d4`, from
+record revision `sha256:57e1efe2d3d9`.
