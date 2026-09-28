@@ -2,9 +2,9 @@
 id: "G-260928-r1hkh"
 type: work
 title: "Show approval and merge standing on review cards and bound the changes list"
-status: proposed
+status: active
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T19:34:01Z"
+updated: "2026-09-28T20:12:09Z"
 kind: feature
 size: small
 relates_to: ["G-260927-60ffq", "G-260925-h8rj5", "G-260925-dzxm6", "G-260921-jwk4e", "G-260920-svpbc", "G-260920-z8vfp"]
