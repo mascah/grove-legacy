@@ -2,11 +2,12 @@
 id: "G-260927-60ffq"
 type: work
 title: "Show whether an approval was delegated or the owner's wherever a record's standing is shown"
-status: active
+status: review
 created: "2026-09-27T22:13:37Z"
-updated: "2026-09-28T16:41:28Z"
+updated: "2026-09-28T16:49:29Z"
 size: small
 relates_to: ["G-260921-btyck", "G-260926-a8vyj", "G-260925-wh9ax", "G-260925-5wrn8", "G-260921-jwk4e"]
+candidate: "3af8383a1524aa97d9b0b35c468227aa2162eeb6"
 ---
 
 ## Outcome
