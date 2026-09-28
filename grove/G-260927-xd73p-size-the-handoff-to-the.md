@@ -4,11 +4,12 @@ type: work
 title: "Size the handoff to the record"
 status: review
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-28T16:28:31Z"
+updated: "2026-09-28T16:39:37Z"
 size: small
 depends_on: ["G-260927-cg6rt"]
 relates_to: ["G-260921-9wkjt", "G-260925-wh9ax", "G-260921-btyck", "G-260927-ngkbz"]
 candidate: "dc8149c9b5d2dfc7da8c3e93f19043896a2f49a9"
+approved: "dc8149c9b5d2dfc7da8c3e93f19043896a2f49a9"
 ---
 
 ## Outcome
@@ -113,3 +114,5 @@ In review. Judge from this checkout, then integrate from the target's:
 `go run ./cmd/grove integrate G-260927-xd73p`. After integration, judge
 acceptance 2 on the next `size: small` attempt against G-260927-ngkbz's 46
 turns, $2.99 and 10 minutes.
+
+Verdict on candidate dc8149c, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb: review G-260928-b4aat examined a75fa09 with no open finding; merged with main at 7459594, verification passed (go test -count=1 -timeout 120s ./...; go vet ./...; go run ./cmd/grove check); attempt G-260927-xd73p.20260928T162049Z produced it for 2.13 USD
