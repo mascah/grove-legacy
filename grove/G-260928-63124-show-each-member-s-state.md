@@ -2,12 +2,13 @@
 id: "G-260928-63124"
 type: work
 title: "Show each member's state of a selection on the board"
-status: active
+status: review
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T20:55:18Z"
+updated: "2026-09-28T21:03:00Z"
 kind: feature
 size: small
 relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260923-895zb", "G-260928-dbgbw"]
+candidate: "393eb56e7f21a91582a57358615d8d90a5fb029f"
 ---
 
 ## Outcome

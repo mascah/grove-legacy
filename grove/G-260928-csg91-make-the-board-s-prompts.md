@@ -2,12 +2,13 @@
 id: "G-260928-csg91"
 type: work
 title: "Make the board's prompts and refusals legible"
-status: active
+status: review
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T20:04:55Z"
+updated: "2026-09-28T21:02:59Z"
 kind: fix
 size: small
 relates_to: ["G-260924-ecs9m", "G-260921-jwk4e", "G-260921-7trd7", "G-260919-k7b8j"]
+candidate: "393eb56e7f21a91582a57358615d8d90a5fb029f"
 ---
 
 ## Outcome
