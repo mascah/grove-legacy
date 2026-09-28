@@ -205,6 +205,15 @@ func (t TypeInfo) Keys() []string {
 	return append(keys, t.Fields...)
 }
 
+// TypeNames is every type's name, in Types order.
+func TypeNames() []string {
+	names := make([]string, len(Types))
+	for i, t := range Types {
+		names[i] = t.Name
+	}
+	return names
+}
+
 // Choices renders values for a message: "a, b or c".
 func Choices(values []string) string {
 	if len(values) < 2 {
@@ -295,11 +304,7 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 	// The type field alone classifies a record, so an unknown or missing one
 	// is an error rather than a generic page.
 	if r.Type != "" && t == nil {
-		names := make([]string, len(Types))
-		for i, t := range Types {
-			names[i] = t.Name
-		}
-		m.problem("type", "unknown record type; expected "+Choices(names))
+		m.problem("type", "unknown record type; expected "+Choices(TypeNames()))
 	}
 	if !IDPattern.MatchString(r.ID) {
 		m.problem("id", "expected a canonical ID, e.g. G-260925-7k2qm")
@@ -348,7 +353,7 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 				} else {
 					m.problem("approved", "approval is of one commit and must name the candidate "+r.Candidate+"; a changed candidate needs its own approval")
 				}
-			case r.Status != "review" && r.Status != "done":
+			case r.Status != "review" && r.Status != "done" && slices.Contains(t.Statuses, r.Status): // an invalid status has its own refusal
 				m.problem("approved", "approval holds only while status is review or done, not "+r.Status+": unset approved, or set status review or done")
 			}
 		}

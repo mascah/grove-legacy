@@ -124,7 +124,7 @@ func source(p *project.Project, req ConvertRequest) ([]byte, error) {
 	case strings.HasPrefix(strings.ToLower(clean), strings.ToLower(root)) || strings.EqualFold(clean, p.Brief):
 		return nil, fmt.Errorf("%s is not a document to convert: it is inside the record root or is the brief", req.Source)
 	case t == nil || strings.TrimSpace(req.Title) == "":
-		return nil, fmt.Errorf("converting a document requires --type (work, question, decision, term, plan, review, or page) and a nonempty --title")
+		return nil, fmt.Errorf("converting a document requires --type (%s) and a nonempty --title", project.Choices(project.TypeNames()))
 	}
 	document, err := project.ReadConfined(p.Root, clean)
 	if err != nil {

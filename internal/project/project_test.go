@@ -577,6 +577,7 @@ func TestRefusalsNameTheirRule(t *testing.T) {
 		{"candidate in review", typed(id, "work", "review", ""), "candidate: required while status is review: set candidate=COMMIT"},
 		{"approved off review", typed(id, "work", "active", "candidate: \""+commit+"\"\napproved: \""+commit+"\"\n"), "approved: approval holds only while status is review or done, not active: unset approved, or set status review or done"},
 		{"approved another commit", typed(id, "work", "review", "candidate: \"abcdef0\"\napproved: \""+commit+"\"\n"), "approved: approval is of one commit and must name the candidate abcdef0"},
+		{"approved beside a bad status", typed(id, "work", "bogus", "candidate: \""+commit+"\"\napproved: \""+commit+"\"\n"), "status: expected " + Choices(Types[0].Statuses) + " for work"},
 		{"approved without candidate", typed(id, "work", "done", "approved: \""+commit+"\"\n"), "approved: approval is of the candidate, and there is none: set candidate"},
 	}
 	for _, ty := range Types {

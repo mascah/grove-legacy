@@ -76,7 +76,9 @@ see a feature branch's progress without switching or merging. Live rows say
 how the file compares with that checkout's HEAD (`unchanged`, `modified`,
 `renamed`, `added`, `deleted`). Every row ends with a selector that binds the
 repository, source, commit, configuration, record path, and content revision;
-identical bytes in two sources get two selectors. Sources are listed on
+identical bytes in two sources get two selectors. A committed source's
+`grove.yaml` is checked for the form of `brief` only, never that the file
+exists, since only a live checkout must hold the brief. Sources are listed on
 stderr with any diagnostics; an invalid or unreadable source makes the result
 incomplete and the exit code 1 while valid sources still print. A live
 project must be inside its registered checkout: a project location reached
@@ -146,7 +148,8 @@ of content that it keeps apart:
   `grove.yaml`, the selected work records, and every `--include PATH`. That is
   the whole default. An include is a required project-relative file of any
   type; one file reached by several names (letter case, a hard link) is
-  included and charged once.
+  included and charged once. A page cannot be selected; a related page is
+  listed with status `-` and read only through `--include PATH`.
 - **Observations, listed and not read**: the transitive `depends_on`
   prerequisites, questions blocking the selected work or a prerequisite
   (resolved ones too), plans and reviews whose `work` names a selected ID, and

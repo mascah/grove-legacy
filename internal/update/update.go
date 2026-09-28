@@ -270,7 +270,7 @@ func plan(r *project.Record, req Request) ([]change, error) {
 		case "relates_to", "members", "depends_on", "blocks", "work":
 			var ids []string
 			if !strings.HasPrefix(strings.TrimSpace(f.Value), "[") || json.Unmarshal([]byte(f.Value), &ids) != nil {
-				return nil, fmt.Errorf("%s must be a JSON array of record ID strings, such as [\"W-001\"]", f.Name)
+				return nil, fmt.Errorf("%s must be a JSON array of record ID strings, such as [\"G-260925-7k2qm\"]", f.Name)
 			}
 			if ids == nil {
 				ids = []string{}

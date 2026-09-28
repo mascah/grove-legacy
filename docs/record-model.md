@@ -115,7 +115,7 @@ REVISION` refuses other content.
 
 Every record may carry `id`, `type`, `title`, `status` (never a page),
 `relates_to`, `created`, `updated` and `formerly`, then its type's own
-fields. A `superseded` decision names its replacement in `relates_to`.
+fields.
 
 | Field | Form | Meaning |
 | --- | --- | --- |
@@ -167,8 +167,9 @@ verification it relied on, and is shown apart from the owner's own.
 
 Not enforced, and left to the guides: the order of transitions, so a done
 record can be reopened; that Abandoned needs a human decision; that a review
-record exists before Review; where done is written without a `target`; and
-that a reopened record's candidate moves to its new commits.
+record exists before Review; where done is written without a `target`;
+that a reopened record's candidate moves to its new commits; and that a
+`superseded` decision names its replacement in `relates_to`.
 
 ## Reading and writing records
 
@@ -179,14 +180,15 @@ success, 1 for failure and 2 for usage.
 
 `update ID` edits only the named frontmatter entries and `updated`. It
 accepts `type`, `title`, `status`, `relates_to` and the type's own fields,
-never `id`, `created`, `updated` or `formerly`; `type`, `title` and `status`
-cannot be unset. Lists are JSON arrays: `--set 'work=["G-260925-7k2qm"]'`. `--set type=TYPE` reclassifies in
+never `id`, `created`, `updated` or `formerly`; `type` and `title` cannot
+be unset, nor `status` but toward a page. Lists are JSON arrays: `--set 'work=["G-260925-7k2qm"]'`. `--set type=TYPE` reclassifies in
 place when the same update meets the new type's whole contract, such as
 `--set type=page --unset status`. The project must validate with the
 change, or nothing is written.
 
 `convert PATH --type TYPE --title TITLE` makes a record of a Markdown
-document outside the record root: its bytes as the body, the type's first
+document outside the record root: its bytes, less a leading BOM, as the
+body, the type's first
 status, `formerly: "PATH"`. The brief, a missing source, and one that a
 record's `formerly` already names (without case) are refused.
 

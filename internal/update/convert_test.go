@@ -77,7 +77,7 @@ func TestConvertRefusals(t *testing.T) {
 		{ConvertRequest{Source: "grove/whatever.md", Type: "page", Title: "T"}, "inside the record root"},
 		{ConvertRequest{Source: "docs/plans/old-plan.md"}, "already converted"},
 		{ConvertRequest{Source: "grove.yaml", Type: "page", Title: "T"}, "clean path"},
-		{ConvertRequest{Source: "docs/other.md", Type: "note", Title: "T"}, "requires --type"},
+		{ConvertRequest{Source: "docs/other.md", Type: "note", Title: "T"}, "requires --type (work, question, decision, term, plan, review or page)"},
 	} {
 		if _, err := Convert(root, tc.req); err == nil || !strings.Contains(err.Error(), tc.want) {
 			t.Fatalf("%+v: err = %v, want %q", tc.req, err, tc.want)

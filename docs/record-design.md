@@ -34,10 +34,8 @@ their dates.
 Only `type` classifies. A missing or unknown type is an error rather than a
 page, so a damaged operational record never degrades into valid general
 knowledge, and the six operational types keep all their rules wherever they
-sit. A page gains nothing from its folder or prose: it is never a work card,
-`context` cannot select it, and no gate can target it; `context` lists a
-related page (its status shown as `-`) and reads it only through
-`--include PATH`.
+sit. A page gains nothing from its folder or prose: it is never a work card
+and no gate can target it.
 
 Reclassifying grants nothing: an `accepted` decision stays a claim in a
 file, as it always was. Because the whole project must validate, work that a
@@ -115,7 +113,8 @@ A term's body gives meaning, relationships and boundaries, not execution
 instructions or implementation state; the shaping guide says where those
 belong. A question keeps its identity when resolved, the answer in its body
 or a linked decision. A superseded decision is an accepted one a later one
-replaced; the body says why, and prior versions remain in Git.
+replaced, naming its replacement in `relates_to` rather than a dedicated
+field; the body says why, and prior versions remain in Git.
 
 Work does not name its plans or reviews: that side is derived, so one plan
 can serve several items and nothing has to be kept in step. A review record
@@ -125,9 +124,7 @@ review is a comparison a reader makes between `examined` and the work's
 `candidate`, not stored state.
 
 The brief is one file rather than a record because it is the direction, not
-an item of work. Committed sources in `versions` and the board check only the
-form of `brief`, never that the file exists: only a live checkout is
-required to hold it.
+an item of work.
 
 ## The work lifecycle
 
