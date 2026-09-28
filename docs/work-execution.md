@@ -1,12 +1,11 @@
 # Executing assigned Grove work
 
-This is Grove's one work workflow: how to interpret an assignment, retrieve
-context, prepare, execute, review, checkpoint, handle blockers, and hand off.
-The `grove-work` skill adapters for
-Claude and Codex, which `grove init` writes, only load it, and `grove guide
-work` prints the copy the binary carries; an interactive session, a headless
-`claude -p` call, and a person reading this file follow the same steps. There
-is no second work prompt to keep in step with it.
+This is Grove's one work workflow, from an assignment to its handoff. The
+`grove-work` skill adapters for Claude and Codex, which `grove init` writes,
+only load it, and `grove guide work` prints the binary's copy: this head, then
+[the rest](#the-rest-of-this-guide) in parts. An interactive session, a
+headless `claude -p` call, and a person reading this file follow the same
+steps. There is no second work prompt to keep in step with it.
 
 The caller's assignment supplies authorization and scope. Reading this guide,
 or assembling context, does not start work or authorize a launch, merge, or push.
@@ -88,11 +87,12 @@ everything an assignment could touch, and do not skip what a step requires.
 
 | When | Read in full |
 | --- | --- |
-| Starting | This guide, the repository's agent instructions, and `grove context IDs`: the selected records, complete, plus listings. |
+| Starting | This guide's head (`grove guide work`), the repository's agent instructions, and `grove context IDs`: the selected records, complete, plus listings. |
 | Deciding what can start | Any open blocking question or undelivered prerequisite the listing shows (`grove show ID`). |
 | Preparing or implementing a unit | Its current plan: the document the record itself names as its plan, or the `current` plan record that `context` lists as `plan for` it. |
 | Before implementing a unit | Every question blocking it, open or resolved, and every prerequisite it builds on, with the plan or review of a prerequisite whose interface it uses, and the terms and decisions it links. |
 | When the activity needs it | A related record, decision, review, or the direction document; the record model (`grove guide model` prints it) when a field's meaning or allowed values matter or the CLI refuses a change. A status change through `grove update` needs none of these. |
+| Reaching a later step | Its [part](#the-rest-of-this-guide) of this guide. |
 | Not by default | Every related record, historical reviews, spent handoff prompts. |
 
 `context` draws the same line. Sources are read in full with exact revisions:
@@ -202,6 +202,23 @@ checkout.
 
 If no correct checkout can be established, nothing has been written: return
 the exact obstacle as the limit.
+
+## The rest of this guide
+
+`grove guide work` stops here. Print each later part with
+`grove guide work --part NAME` once, when you reach it, and follow it as if it
+were here; a link to a heading not above leads into one.
+`--part all` prints the whole guide.
+
+| Part | Holds | Print it |
+| --- | --- | --- |
+| `prepare` | Step 4 | After step 3 |
+| `implement` | Step 5 | Before implementing |
+| `review` | Step 6 | At the first review gate |
+| `checkpoint` | Step 7; When a human decision is missing | Before a wait or handoff, on resume, or when a decision is missing |
+| `handoff` | Step 8 | Before handing off |
+| `judge` | Judging and integrating a candidate | To judge or integrate |
+| `invocation` | Invocation | To launch work |
 
 ## 4. Prepare
 

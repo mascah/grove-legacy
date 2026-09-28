@@ -576,7 +576,15 @@ same line again, and nothing self-updates.
 `guide work`, `guide shape` and `guide review` print the
 [work](work-execution.md), [shaping](work-shaping.md) and
 [review](work-review.md) guides the binary carries, so the workflow version
-is the executable version and no copy is edited elsewhere. `--entrypoint N`
+is the executable version and no copy is edited elsewhere. `guide work`
+prints the work guide's head: everything through step 3, ending with a table
+of the parts after it and the step at which each is read. `--part NAME`
+prints one part alone (`prepare`, `implement`, `review`, `checkpoint`,
+`handoff`, `judge` or `invocation`), `--part all` the whole guide, and any
+other name is a usage error that lists them. The head and the parts, in
+order, are the file byte for byte, so the file stays the one owner and a
+session reads a step when it reaches it rather than carrying all of it from
+the start. `--entrypoint N`
 is how an entrypoint `init` wrote asks for one
 ([Entrypoint revisions](#entrypoint-revisions)). `guide model`
 prints the [record model](record-model.md) the guides cite, the contract that

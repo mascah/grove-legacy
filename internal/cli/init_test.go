@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -77,7 +78,7 @@ func TestInitCreatesAProjectAndRerunsWithoutTouchingUserFiles(t *testing.T) {
 	}
 	for _, name := range []string{"work", "shape", "review", "model"} {
 		var guide, guideErr bytes.Buffer
-		if code := Run([]string{"guide", name}, t.TempDir(), &guide, &guideErr); code != 0 {
+		if code := Run(wholeGuide(name), t.TempDir(), &guide, &guideErr); code != 0 {
 			t.Fatal(guideErr.String())
 		}
 		portable["guide "+name] = guide.String()
@@ -267,7 +268,7 @@ func TestGuideAndVersionNeedNoProject(t *testing.T) {
 	examples := map[string][]string{"work": {"G-260925-7k2qm", "G-260925-8m3xd"}, "shape": {"G-260925-7k2qm"}, "review": nil, "model": {"G-260924-2b8rc", "G-1234", "G-260925-7k2qm"}}
 	for name := range examples {
 		var out, errOut bytes.Buffer
-		Run([]string{"guide", name}, t.TempDir(), &out, &errOut)
+		Run(wholeGuide(name), t.TempDir(), &out, &errOut)
 		shipped[name] = out.String()
 	}
 	for name, text := range shipped {
@@ -294,6 +295,62 @@ func TestGuideAndVersionNeedNoProject(t *testing.T) {
 		if code := Run(args, t.TempDir(), &out, &errOut); code != 2 || out.Len() != 0 {
 			t.Fatalf("%v: code=%d stdout=%q", args, code, out.String())
 		}
+	}
+}
+
+// wholeGuide asks for all of a guide: guide work alone prints only the head.
+func wholeGuide(name string) []string {
+	if name == "work" {
+		return []string{"guide", "work", "--part", "all"}
+	}
+	return []string{"guide", name}
+}
+
+// guide work prints the head, which ends with the table naming the parts, and
+// each part alone; the head and the parts, in order, are the file.
+func TestGuideWorkParts(t *testing.T) {
+	t.Parallel()
+	guide := func(args ...string) (string, int) {
+		var out, errOut bytes.Buffer
+		code := Run(append([]string{"guide", "work"}, args...), t.TempDir(), &out, &errOut)
+		return out.String(), code
+	}
+	head, code := guide("--entrypoint", "2")
+	if code != 0 || len(head) > 13000 || !strings.HasPrefix(head, "# Executing assigned Grove work\n") {
+		t.Fatalf("head: code=%d, %d bytes", code, len(head))
+	}
+	table := head[strings.LastIndex(head, "\n## ")+1:]
+	if !strings.HasPrefix(table, "## The rest of this guide\n") {
+		t.Fatalf("the head must end with the table of parts: %.80q", table)
+	}
+	whole := head
+	for _, p := range grove.WorkParts {
+		if !strings.Contains(table, "| `"+p.Name+"` |") {
+			t.Errorf("the table does not name %s", p.Name)
+		}
+		part, code := guide("--part", p.Name)
+		if code != 0 || !strings.HasPrefix(part, p.Heading+"\n") {
+			t.Fatalf("%s: code=%d %.80q", p.Name, code, part)
+		}
+		whole += part
+	}
+	source, err := fs.ReadFile(grove.Guides, grove.GuideFiles["work"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if all, _ := guide("--part", "all"); whole != string(source) || all != string(source) {
+		t.Fatal("the head and the parts, in order, must be the work guide byte for byte, and --part all the whole of it")
+	}
+	for _, args := range [][]string{{"guide", "work", "--part", "nope"}, {"guide", "shape", "--part", "all"}, {"version", "--part", "all"}, {"guide", "work", "--part", "review", "--part", "judge"}} {
+		var out, errOut bytes.Buffer
+		if code := Run(args, t.TempDir(), &out, &errOut); code != 2 || out.Len() != 0 {
+			t.Fatalf("%v: code=%d stdout=%q", args, code, out.String())
+		}
+	}
+	var out, errOut bytes.Buffer
+	Run([]string{"guide", "work", "--part", "nope"}, t.TempDir(), &out, &errOut)
+	if !strings.Contains(errOut.String(), "--part must be one of prepare, implement, review, checkpoint, handoff, judge, invocation, or all") {
+		t.Fatalf("an unknown part must name the parts: %q", errOut.String())
 	}
 }
 

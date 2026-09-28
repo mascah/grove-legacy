@@ -30,7 +30,7 @@ import (
 const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"       grove [--project DIR] list [--status VALUE]... | show ID [--json] | brief [--json] | check\n" +
 	"       grove [--project DIR] init [--check]\n" +
-	"       grove guide work|shape|review|model [--entrypoint N] | version\n" +
+	"       grove guide work|shape|review|model [--entrypoint N] [--part NAME] | version\n" +
 	"       grove [--project DIR] new TYPE TITLE [--slug SLUG]\n" +
 	"       grove [--project DIR] update ID [--expect REVISION] (--set FIELD=VALUE | --unset FIELD)... [--commit]\n" +
 	"       grove [--project DIR] approve ID VERDICT | feedback ID TEXT | integrate ID [--cleanup]\n" +
@@ -74,7 +74,10 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             that this binary carries; the generated entrypoints read the guides from\n" +
 	"             here, so the workflow version is the binary's. --entrypoint N is how an\n" +
 	"             entrypoint of revision N asks; a revision this binary does not serve is\n" +
-	"             refused.\n" +
+	"             refused. guide work prints the work guide's head, through step 3, ending\n" +
+	"             with the parts after it; --part NAME prints one of them (prepare,\n" +
+	"             implement, review, checkpoint, handoff, judge, invocation), and --part all\n" +
+	"             the whole guide.\n" +
 	"  version    Print this binary's version and commit, and digests of the guides and\n" +
 	"             record model and of all the content it ships.\n" +
 	"  new        Create a work, question, decision, term, plan, review, or page record with\n" +
@@ -232,6 +235,9 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 				"Rerun `grove init` with this grove to rewrite the entrypoints it manages (`grove init --check` lists them),\n"+
 				"commit them, and start a new session; or run the grove that wrote them.", visible(a.entrypoint), grove.ServedEntrypoints()))
 			return 1
+		}
+		if a.id == "work" {
+			return writeResult(out, errOut, grove.WorkGuide(a.part))
 		}
 		source, err := fs.ReadFile(grove.Guides, grove.GuideFiles[a.id])
 		if err != nil {
@@ -480,7 +486,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 
 type invocation struct {
 	project, command, id, kind, title, slug, source string
-	entrypoint                                      string // guide
+	entrypoint, part                                string // guide
 	help, json, cleanup, check, dryRun              bool
 	request                                         update.Request
 	convert                                         update.ConvertRequest
@@ -543,6 +549,7 @@ func parseArgs(args []string) (a invocation, err error) {
 		{"--source", "selector", once(&a.source)},
 		{"--expect", "revision", once(&a.request.Expect)},
 		{"--entrypoint", "revision", once(&a.entrypoint)},
+		{"--part", "part", once(&a.part)},
 		{"--interaction", "mode", func(value string) error {
 			if value != "interactive" && value != "headless" {
 				return errors.New("must be interactive or headless")
@@ -719,6 +726,9 @@ func parseArgs(args []string) (a invocation, err error) {
 	if a.check && a.command != "init" {
 		return a, fmt.Errorf("--check applies only to init")
 	}
+	if a.part != "" && a.command != "guide" {
+		return a, fmt.Errorf("--part applies only to guide work")
+	}
 	if a.entrypoint != "" && a.command != "guide" {
 		return a, fmt.Errorf("--entrypoint applies only to guide")
 	}
@@ -733,6 +743,16 @@ func parseArgs(args []string) (a invocation, err error) {
 			err = fmt.Errorf("guide requires one argument, work, shape, review or model")
 		} else {
 			a.id = positional[1]
+		}
+		names := []string{}
+		for _, p := range grove.WorkParts {
+			names = append(names, p.Name)
+		}
+		switch {
+		case a.part != "" && a.id != "work":
+			err = fmt.Errorf("--part applies only to guide work")
+		case a.part != "" && a.part != "all" && !slices.Contains(names, a.part):
+			err = fmt.Errorf("--part must be one of %s, or all", strings.Join(names, ", "))
 		}
 	case "show", "integrate", "resolve":
 		if len(positional) != 2 {
