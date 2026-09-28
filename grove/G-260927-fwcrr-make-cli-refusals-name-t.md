@@ -88,6 +88,85 @@ has two homes. Both documents are reconciled with `README.md`,
 5. Shipped-document checks and the Go suite pass; `README.md`,
    `docs/commands.md` and the `init` text name the right headings.
 
+## Evidence
+
+Branch `worktree-G-260927-fwcrr`, base main `bb39668`; implementation
+`5f9c204` (refusals), `e420055` (model split), `c0fb447` (review fixes).
+Started from this record at `sha256:c18793e5…` and plan
+[G-260928-rv8z2](G-260928-rv8z2-refusals-and-model-plan.md) at
+`sha256:5cbddbd4…` (commit `40844ab`).
+
+**Correction to Constraints.** The CLI enforces no transition order: `--set
+status=active` on a done record succeeds unless it carries `approved`. The
+third refusal on G-260927-ngkbz came from the approval rule alone, so its
+message names that rule. A "done stays done" rule would be new behaviour
+this record does not select; if the owner wants one, it is a new record.
+
+1. **Refusals.** The record types carry their own fields, and `Kinds`,
+   `Sizes`, `ConfigKeys`, `RunKeys` and the policy keys are tables that
+   validation, its messages and `update` read alike
+   (`internal/project/metadata.go`, `project.go`, `policy.go`,
+   `internal/update/update.go`). `TestRefusalsNameTheirRule`
+   (`internal/project`) builds each expected message from those tables for
+   every type's status and fields, kind, size, type, configuration, `run:`
+   and `policy:` keys, and each lifecycle rule; `TestUpdateRefusalsNameTheirRule`
+   (`internal/update`) checks the text end to end and that the correction a
+   lifecycle refusal names succeeds. The three refusals, rerun with a binary
+   built at `c0fb447` in a disposable clone:
+
+   ```text
+   $ grove update G-260919-rt9h9 --set status=bogus
+   …:5: status: expected proposed, active, review, done or abandoned for work
+   $ grove update G-260919-rt9h9 --set size=huge
+   …:8: size: expected small, medium or large
+   $ grove update G-260927-n4wvk --set status=active     # done, approved
+   …:11: approved: approval holds only while status is review or done, not active: unset approved, or set status review or done
+   $ grove update G-260927-n4wvk --set status=active --unset approved
+   {"changed":true,…}
+   $ grove update G-260919-rt9h9 --set zzz=1
+   grove: zzz is not a field that update accepts on work records; it accepts type, title, status, relates_to, kind, size, priority, members, depends_on, candidate or approved
+   ```
+
+   `list --status bogus`, `new note` and `convert --type note` list the
+   statuses and types the same way.
+2. **Model.** `grove guide model` is 11,484 bytes (was 33,844): the
+   configuration keys, files and identity under "On-disk contract" (its
+   three linked headings kept), one table of types, statuses and own fields,
+   one of every field's form, values and meaning, the enforced lifecycle and
+   what is not enforced, and what `check`, `update` and `convert` refuse.
+   `model_test.go` fails if it exceeds 12 KB or if its statuses, fields,
+   envelope, kinds, sizes or configuration keys differ from the code's
+   tables (checked by deleting a status: it failed).
+3. **Design.** The reasoning moved to the unshipped
+   [`docs/record-design.md`](../docs/record-design.md), named in
+   `CLAUDE.md`'s owner list; command behaviour the old model held beyond
+   `grove --help` moved to `docs/commands.md` ("Records", "Judging and
+   integrating"). A sentence-level comparison finds nothing shared between
+   the model, the design document and the command reference.
+4. Owner judgment: the three refusals above.
+5. `README.md`'s command table points at the new command sections;
+   `README.md` and `init`'s text name "Configuration and discovery", which
+   the model keeps; every `record-model.md#…` anchor in the repository,
+   records included, resolves. The work and shaping guides now send an agent
+   to the model when "a refusal leaves the fix unclear". The
+   [Shipped document](G-260925-khfe7-shipped-document.md) term lists the
+   record design as not shipped.
+
+Verification at `c0fb447`: `go vet ./...` clean, `gofmt -l .` empty,
+`go run ./cmd/grove check` `OK: 220 records`, `go test -count=1 -timeout
+120s ./...` all packages ok. No TUI change, so the terminal script was not
+run; no concurrency change, so no `-race`.
+
+Review: [G-260928-a372k](G-260928-a372k-fwcrr-review.md), two rounds by
+fresh `grove-reviewer` agents; round 1 found six, all fixed in `c0fb447`;
+round 2 `Open findings: none`.
+
+Limits: `model_test.go` checks the policy subkeys by substring and does not
+tie priority's range to code; `grove --help`'s text was not changed.
+
 ## Next
 
-Assign: `/grove-work G-260927-fwcrr`.
+In review. Judge the three refusals in Evidence (acceptance 4) and read
+`grove guide model` against acceptance 2. Then, in this checkout:
+`grove approve G-260927-fwcrr "VERDICT"`, and in the target's checkout:
+`grove integrate G-260927-fwcrr --cleanup`.

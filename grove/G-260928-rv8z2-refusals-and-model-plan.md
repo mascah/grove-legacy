@@ -121,3 +121,19 @@ refuses a change" becomes "when a refusal does not say how to correct it".
 3. Evidence: the three refusals rerun in a disposable clone; size of
    `guide model`; shipped-document test; full verification per `CLAUDE.md`.
 4. Independent review, then handoff.
+
+## Implementation notes
+
+Bounded adjustments made during implementation, each for the reason given:
+
+- `list --status` and the `new` and `convert` type refusals are enumerated
+  refusals too, so they list their values from the same tables
+  (`project.TypeNames()`).
+- The command behaviour the old model held beyond `grove --help` (list order,
+  `show`, `new`, `update` output and failure reporting, `convert` output and
+  reruns, verdict and feedback lines, `integrate`'s merge details) moved to
+  new "Records" and "Judging and integrating" sections of
+  `docs/commands.md`, which owns command behaviour; the model keeps the
+  contract and the design document the reasons.
+- The approval-status rule applies only to a valid status, so an invalid one
+  gets its own refusal alone (review round 1).
