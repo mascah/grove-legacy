@@ -2,7 +2,7 @@
 id: "G-260927-60ffq"
 type: work
 title: "Show whether an approval was delegated or the owner's wherever a record's standing is shown"
-status: review
+status: done
 created: "2026-09-27T22:13:37Z"
 updated: "2026-09-28T16:50:19Z"
 size: small
@@ -98,3 +98,5 @@ Judge the candidate: open the board on a record with each verdict, then
 integrate G-260927-60ffq` in main's checkout.
 
 Verdict on candidate 3af8383, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb: review G-260928-fav7h examined 80ef0f7 with no open finding; merged with main at 4f8f070, verification passed (go test -count=1 -timeout 120s ./...; go vet ./...; go run ./cmd/grove check); attempt G-260927-60ffq.20260928T164039Z produced it for 2.65 USD
+
+Integrated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb as merge f800f02f29d55b56261ec0d7b4b5f321afd0be6f on main (was 4f8f07066ea4d45ee691ae262df959930af6ac5a); to reverse it: git revert -m 1 f800f02f29d55b56261ec0d7b4b5f321afd0be6f
