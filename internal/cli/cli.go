@@ -391,7 +391,11 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 			report(errOut, err)
 			return 1
 		}
-		return writeResult(out, errOut, attemptsTable(views))
+		table := attemptsTable(views)
+		if a.id != "" {
+			table = fmt.Appendln(table, attempt.Sum(views))
+		}
+		return writeResult(out, errOut, table)
 	case "attempt":
 		v, err := attempt.Show(p.Root, a.id)
 		if err != nil {

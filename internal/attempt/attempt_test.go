@@ -255,6 +255,14 @@ func TestRunToResult(t *testing.T) {
 	if ev.Lines != 4 || ev.Unknown != 1 || ev.Types["assistant"] != 1 || ev.ResultText != len("the text") || ev.Partial {
 		t.Fatalf("events %+v", ev)
 	}
+	// G-260927-dx0yn: what the commits changed is recorded at finish, and the
+	// shape is read with the attempt: nothing was committed or called here.
+	if c := r.Changed; c == nil || c.Error != "" || c.RecordRoot != "grove" || len(c.Records)+len(c.Other) != 0 || ev.Turns != 3 {
+		t.Fatalf("changed %+v, turns %d", c, ev.Turns)
+	}
+	if v.Shape == nil || v.ShapeError != "" || v.Shape.Tools != 0 || v.Shape.FirstEdit != nil {
+		t.Fatalf("shape %+v %q", v.Shape, v.ShapeError)
+	}
 	env, err := os.ReadFile(filepath.Join(l.Worktree, "env.txt"))
 	if err != nil || strings.TrimSpace(string(env)) != "CLAUDE_CONFIG_DIR=/kept" {
 		t.Fatalf("the provider saw %q (%v); only CLAUDE_CONFIG_DIR may reach it of the CLAUDE*, GROVE_ATTEMPT_OWNER and GIT_* variables", env, err)

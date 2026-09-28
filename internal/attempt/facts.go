@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"fmt"
 	"maps"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -98,6 +99,14 @@ func Facts(v *View, visible func(string) string) []string {
 			dirty = "uncommitted or untracked changes"
 		}
 		line("Worktree after: HEAD %s, %s", short(r.Head), dirty)
+		switch c := r.Changed; {
+		case c == nil:
+			line("Changed: unknown: not recorded when it finished")
+		case c.Error != "":
+			line("Changed: unknown: %s", visible(c.Error))
+		default:
+			line("Changed: %d outside %s/%s, %d under it%s", len(c.Other), visible(c.RecordRoot), visible(some(c.Other)), len(c.Records), visible(some(c.Records)))
+		}
 		if len(members) > 1 {
 			for _, m := range r.Members {
 				line("Member %s on the branch: %s", m.ID, visible(MemberStanding(l, m)))
@@ -115,8 +124,67 @@ func Facts(v *View, visible func(string) string) []string {
 			line("Record on the branch: unreadable: %s", visible(r.RecordError))
 		}
 	}
+	if v.Shape != nil {
+		line("Shape: %s", visible(shapeText(v)))
+	} else if v.ShapeError != "" {
+		line("Shape: unknown: %s", visible(v.ShapeError))
+	}
 	line("Files: %s", visible(v.Dir))
 	return lines
+}
+
+// shapeText is v's Shape as one line: counts are lower bounds (≥) where a
+// line was skipped, and so far while the attempt has not finished.
+func shapeText(v *View) string {
+	s, text := v.Shape, ""
+	if v.Status != Finished {
+		text = "so far, "
+	}
+	at := ""
+	if s.Skipped != 0 {
+		at = "≥"
+	}
+	share := 0
+	if s.Tools != 0 {
+		share = (s.Process*100 + s.Tools/2) / s.Tools
+	}
+	text += fmt.Sprintf("%s%d tool calls, %s%d process (%d%%); guides printed: ", at, s.Tools, at, s.Process, share)
+	if len(s.Guides) == 0 {
+		text += "none"
+	}
+	for i, name := range slices.Sorted(maps.Keys(s.Guides)) {
+		text += fmt.Sprintf("%s%s %d", map[bool]string{true: ", "}[i > 0], name, s.Guides[name])
+	}
+	e := s.FirstEdit
+	if e == nil {
+		text += "; no edit outside the record root"
+	} else {
+		after := "at an unknown time"
+		if !e.At.IsZero() {
+			after = e.At.Sub(v.Launch.Started).Round(time.Second).String() + " after the start"
+		}
+		file := e.Path
+		if rel, err := filepath.Rel(v.Launch.Worktree, file); err == nil && !strings.HasPrefix(rel, "..") {
+			file = rel
+		}
+		text += fmt.Sprintf("; first edit outside the record root: tool %d, %s, %s", e.Tool, after, file)
+	}
+	if s.Skipped != 0 {
+		text += fmt.Sprintf("; %d oversized lines not read", s.Skipped)
+	}
+	return text
+}
+
+// some lists up to ten paths in parentheses, and how many more there are.
+func some(paths []string) string {
+	if len(paths) == 0 {
+		return ""
+	}
+	more := ""
+	if len(paths) > 10 {
+		paths, more = paths[:10], fmt.Sprintf(" and %d more", len(paths)-10)
+	}
+	return " (" + strings.Join(paths, ", ") + more + ")"
 }
 
 // MemberStanding says where one selected work stood when the attempt ended,
