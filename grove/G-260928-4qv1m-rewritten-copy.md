@@ -2,9 +2,9 @@
 id: "G-260928-4qv1m"
 type: work
 title: "Say when a diverging state is a rewritten copy already on the target, and how to clear it"
-status: review
+status: done
 created: "2026-09-28T16:36:30Z"
-updated: "2026-09-28T17:49:47Z"
+updated: "2026-09-28T17:49:50Z"
 kind: feature
 size: medium
 relates_to: ["G-260921-ms6ev", "G-260921-jwk4e", "G-260925-h8rj5", "G-260925-dz10z", "G-260920-svpbc"]
