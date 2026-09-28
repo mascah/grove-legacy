@@ -68,12 +68,18 @@ it. For a running attempt the window's facts are lower bounds, labelled as
 `Metrics` labels its own. A `grove` run through a wrapper or `$(…)` is
 missed, as the evals runner already states of its own reader.
 
+The owner's feedback on `8cf2e4c` (Next) dropped the process share and the
+first edit as noise, since most edits and record reads go through Bash, and
+added the time to the first commit outside the record root, from Git at
+finish.
+
 ## Acceptance
 
-1. `grove attempt` shows for a finished attempt: process tool calls and
-   share, guide prints by name, the first edit outside the record root
-   (elapsed, tool index, or none), and the files changed inside and outside
-   the record root; an unknown fact is labelled unknown, never filled.
+1. `grove attempt` shows for a finished attempt: tool calls, calls running
+   `grove`, guide prints by name, the files changed inside and outside the
+   record root, and the time to the first commit outside it; an unknown
+   fact is labelled unknown, never filled. (Revised by the owner's feedback
+   on `8cf2e4c`, in Next: it dropped the process share and first edit.)
 2. `grove attempts ID` and the board show the total cost and count over the
    work's attempts.
 3. A test on a recorded `events.jsonl` fixture asserts each derived fact and
@@ -85,95 +91,124 @@ missed, as the evals runner already states of its own reader.
 
 ## Evidence
 
-Headless session of 2026-09-28 on branch `worktree-G-260927-dx0yn`, from
-`main` at `38511c1`. It started from this record at `sha256:ac01fd5a…` and
-wrote plan [G-260928-j8sc0](G-260928-j8sc0-attempt-shape-facts-and.md), at
-`sha256:06e6087b…` when implementation began. Commits: `6959b93` (plan),
-`133afcb` (active), `6fbc8ff` (implementation), `e096c33` (review fixes).
+The first headless session (2026-09-28) branched `worktree-G-260927-dx0yn`
+from `main` at `38511c1`. It started from this record at `sha256:ac01fd5a…`
+and wrote plan [G-260928-j8sc0](G-260928-j8sc0-attempt-shape-facts-and.md).
+Its commits were `6959b93` (plan), `133afcb` (active), `6fbc8ff`
+(implementation) and `e096c33` (review fixes). The candidate was `8cf2e4c`,
+reviewed in [G-260928-4ae1r](G-260928-4ae1r-review-of-g-260927-dx0yn.md).
+
+The owner's feedback on `8cf2e4c` (in Next) set the second attempt, a
+headless session of 2026-09-28 on the same branch. It started from this
+record at `sha256:3afc3841…` and plan `sha256:e68bf1d1…`. Its commits:
+
+- `1779bdc`: drop the process share and the first edit; add the first
+  commit outside the record root.
+- `655fc05`: review fixes.
+- `992017f`: `G-260927-cg6rt`'s Next.
+- `01c856b`: the plan revised.
+
+Acceptance 1 and the proposed design now say what the feedback kept.
 
 What changed:
 
-- **`Shape:`** (`internal/attempt/shape.go`, `ReadShape`). It is derived
-  when `grove attempt` reads the attempt, from all of `events.jsonl`,
-  bounded per line by the loop `ReadEvents` now shares (`eachLine`). The
-  record root comes from `grove.yaml` at the attempt's base commit. The
-  line shows the tool calls, the process calls and their share, guide
-  prints by name, and the first edit outside the record root: its tool
-  index, the time from the start, and the path. A running attempt's facts
-  are "so far"; a skipped line makes the counts `≥`; an unknown record
-  root reads `Shape: unknown: …`. The board does not read it, and keeps its
-  bounded window.
-- **`Changed:`** is recorded in `result.json` at finish: `git diff
-  --name-only BASE HEAD`, split under and outside the record root, with up
-  to ten names each. An older attempt reads `Changed: unknown: not recorded
-  when it finished`, and a Git failure says why.
-- **Totals.** `attempt.Sum`. `grove attempts ID` ends with, for example,
-  `Total: 4 attempts, $13.79, ≥124 turns, 80m`, and the board's attempts
-  list for one work opens with the same line. `events.turns` sums
-  `num_turns` over a run's result events. Each counts one query, and the
-  cost is cumulative: this repository's `G-260923-895zb.20260923T200725Z`
-  has 95 and 14 turns at $9.75 in both. The `≥` marks attempts that only
-  hold their last result's turns. An unfinished attempt, or one without a
+- **`Shape:`** (`internal/attempt/shape.go`, `ReadShape(events)`). It is
+  derived when `grove attempt` reads the attempt, from all of
+  `events.jsonl`, bounded per line by the loop `ReadEvents` shares
+  (`eachLine`). It counts the tool calls, the Bash calls with a segment
+  running `grove`, and guide prints by name. A running attempt's facts are
+  "so far", and a skipped line makes the counts `≥`. The board does not
+  read it and keeps its bounded window. The process share, the first edit,
+  and the record-root classification of reads and edits are gone.
+- **`Changed:`** is recorded in `result.json` at finish. It is `git diff
+  --name-only BASE HEAD`, split under and outside the record root that
+  `grove.yaml` at the base names, with up to ten names each. It also holds
+  the committer time of the first commit that touched a file outside the
+  root, following first parents, so a resolution's merge counts and the
+  target's older commits do not. That time prints as "first commit outside
+  it D after the start", or "before the start" when the clock says so. An
+  older attempt reads `Changed: unknown: not recorded when it finished`,
+  and a Git failure says why.
+- **Totals.** `attempt.Sum`. `grove attempts ID` ends with the total line,
+  and the board's attempts list for one work opens with it. `events.turns`
+  sums `num_turns` over a run's result events. `≥` marks attempts that hold
+  only their last result's turns. An unfinished attempt, or one without a
   result event, is said beside the total, not summed.
-- `attempt --json` carries `shape`, `shape_error`, `result.changed` and
-  `result.events.turns`.
+- `attempt --json` carries `shape` (`tool_calls`, `grove_calls`,
+  `guide_prints`, `skipped_lines`), `shape_error`, `result.changed`
+  (`first_other_commit` included) and `result.events.turns`.
 
 Against the acceptance:
 
-1. Real output, `grove attempt G-260927-n4wvk.20260928T004357Z`:
-   `Shape: 36 tool calls, 10 process (28%); guides printed: work 1; first
-   edit outside the record root: tool 23, 3m59s after the start,
-   docs/commands.md` and `Changed: unknown: not recorded when it finished`.
-   The second is right, because the attempt predates this. Every existing
-   attempt finished before `Changed` was recorded, so only tests show it
-   filled: `TestChangedAndShapeFacts`, and `TestRunToResult` through a
-   fake provider.
+1. Real output of `grove attempt G-260927-n4wvk.20260928T004357Z`:
+   - `Shape: 36 tool calls, 8 running grove; guides printed: work 1`
+   - `Changed: unknown: not recorded when it finished`. This is right: the
+     attempt predates the fact.
+
+   No existing attempt has `Changed` recorded, so only tests show it filled
+   in. `TestChangedAndShapeFacts` covers a commit only under the root and
+   then two outside it, a resolution's merge of older target commits (it
+   fails without `--first-parent`), a time before the start, and a base Git
+   cannot read. `TestRunToResult` covers it through a fake provider.
 2. `grove attempts G-260923-fwakw` ends `Total: 2 attempts, $11.79, ≥22
    turns, 26m`. `TestAttemptScreensReconnectAndStop` asserts the board's
-   row for one work, and asserts that the list of all attempts has none.
+   total for one work, and that the list of all attempts has none.
    `TestAttemptCommandsUsage` asserts the CLI line.
 3. `TestReadShape` runs on the recorded fixture
-   `internal/attempt/testdata/shape-events.jsonl`: 19 calls, 10 of them
-   process. It checks guide prints, the first edit (a subagent's) and each
-   documented limit: `env grove`, `$(grove …)`, `FOO=1 grove`, `sed -i`,
-   the `/private` spelling and the heredoc false positive. It also checks
-   an oversized line, a running attempt, and no edit. `TestSum` covers the
-   totals and their labels. `TestReadEventsBounded` and the board's
+   `internal/attempt/testdata/shape-events.jsonl`: 19 calls, 5 of them
+   running `grove`, and guide prints `work 1, model 1`. It checks each
+   documented limit: `env grove`, `$(grove …)` and `FOO=1 grove` are
+   missed, and the heredoc line is a false positive. It also checks an
+   oversized line, a running attempt and an empty shape. `TestSum` covers
+   the totals. `TestReadEventsBounded` and the board's
    `TestAttemptActivityIsBounded` pass unchanged.
 4. `docs/commands.md` "Attempts" states the facts, how they are derived,
    and the known misses. `docs/board.md` names the board's total.
 5. This is for the owner, in a terminal.
 
-Verification at `e096c33`, all passing: `go vet ./...`, `gofmt -l .`,
-`go run ./cmd/grove check` (OK: 217 records), `go test -count=1 -timeout
-120s ./...`, and `go test -short ./internal/attempt` (2.8 s).
-`python3 internal/tui/testdata/terminal.py` passed at `6fbc8ff` (12
-scenarios). `e096c33` changes no TUI code.
+Verification at `01c856b`, all passing:
 
-Review: [G-260928-4ae1r](G-260928-4ae1r-review-of-g-260927-dx0yn.md), by an
-independent `grove-reviewer` subagent in two rounds. Round 1 on `6fbc8ff`
-found four low findings, all fixed in `e096c33`. Round 2 closed with `Open
-findings: none`.
+- `go vet ./...`
+- `gofmt -l .` (empty)
+- `go run ./cmd/grove check` (OK: 218 records)
+- `go test -count=1 -timeout 120s ./...`
+- `go test -short ./internal/attempt` (2.8 to 4.2 s)
+
+At `1779bdc`, `TestOwnerLost` failed once. It found no init event in an
+attempt whose provider the test kills right after it starts. This work does
+not touch that path. It passed three isolated reruns and the package
+rerun. `terminal.py` was not rerun: nothing since `6fbc8ff`, where it
+passed, changed TUI code.
+
+Review: [G-260928-av630](G-260928-av630-review-of-g-260927-dx0yn.md),
+independent `grove-reviewer` subagents in three rounds. Round 1 found one
+medium and two low findings, round 2 one low finding. All were fixed.
+Round 3 closed with `Open findings: none`.
 
 Limits:
 
-- The classification misses some things, as `docs/commands.md` states.
-  Edits made through Bash and guides read as files are the large ones:
-  earlier attempts here read `docs/work-execution.md` with `cat` and wrote
-  records with scripts. So these shares are lower than the hand count's
-  quarter, for example 16% on `G-260923-fwakw.20260923T182316Z`.
-- `Result event:` still prints the last result event's turns, as before.
+- `Shape` misses what `docs/commands.md` names: `grove` through a wrapper
+  or `$(…)`, and a guide read as a file.
+- `Changed`'s file lists come from the whole diff, so a resolution attempt
+  counts the merged target's files as outside the record root. The first
+  commit follows first parents; the lists do not. This was already so at
+  `8cf2e4c`.
+- `Result event:` still prints the last result event's turns.
 - `attempts` without an ID prints no total, and `attempts` has no `--json`.
 
 ## Next
 
-In review: the candidate (the `candidate` field) is on branch
-`worktree-G-260927-dx0yn`, from `main` at `38511c1`. The owner judges one
-real attempt in a terminal (acceptance 5). Run `go run ./cmd/grove attempt
-ATTEMPT` on any attempt listed by `go run ./cmd/grove attempts`. After
-merging, attempts launched from that point also show `Changed:`. Also run
-`go run ./cmd/grove attempts G-260925-pbx81`, and on the board `A` on a
-work's detail. Then, in this worktree:
+In review: the `candidate` field names the candidate, on branch
+`worktree-G-260927-dx0yn` from `main` at `38511c1`. The owner judges one
+real attempt in a terminal (acceptance 5):
+
+- Run `go run ./cmd/grove attempt ATTEMPT` on any attempt that `go run
+  ./cmd/grove attempts` lists. Attempts launched after the merge also show
+  the filled `Changed:` line.
+- Run `go run ./cmd/grove attempts G-260925-pbx81`.
+- On the board, press `A` on a work's detail.
+
+Then, in this worktree:
 
 ```sh
 go run ./cmd/grove approve G-260927-dx0yn "VERDICT"   # or: go run ./cmd/grove feedback G-260927-dx0yn "TEXT"
@@ -185,4 +220,5 @@ and in the `main` checkout:
 go run ./cmd/grove integrate G-260927-dx0yn
 ```
 
-Feedback on candidate 8cf2e4c, 2026-09-28: Process share and first edit are noise: across 46 attempts 91% of tool calls are Bash, ~800 file writes go through Bash vs 110 Edit/Write, record reads 337 via cat vs 31 via Read; first edit reads 'none' in 17/46 and is late or missing in 34/46. Drop both; keep Changed, totals, grove/guide counts. Optionally add time to first commit touching files outside the record root, from git at finish.
+Feedback on candidate 8cf2e4c, 2026-09-28: Process share and first edit are noise: across 46 attempts 91% of tool calls are Bash, ~800 file writes go through Bash vs 110 Edit/Write, record reads 337 via cat vs 31 via Read; first edit reads 'none' in 17/46 and is late or missing in 34/46. Drop both; keep Changed, totals, grove/guide counts. Optionally add time to first commit touching files outside the record root, from git at finish. Addressed in `1779bdc`, `655fc05` and `01c856b`, including the
+optional first commit (see Evidence).

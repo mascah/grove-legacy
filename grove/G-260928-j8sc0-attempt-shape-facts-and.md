@@ -34,7 +34,7 @@ design, from `main` at `38511c1`.
   names, and the committer time of the first commit, along first parents,
   that touched a file outside it. An attempt finished before this prints it
   as not recorded.
-- **Totals.** `attempt.Total(views)` sums attempts, the result events' USD
+- **Totals.** `attempt.Sum(views)` totals attempts, the result events' USD
   and turns, and minutes from start to finish, and counts what it could not
   sum (no result event, still running). `grove attempts ID` prints it after
   the table; the board's attempts screen for one work prints it under the
