@@ -2,12 +2,12 @@
 id: "G-260927-fwcrr"
 type: work
 title: "Make CLI refusals name the rule they enforce, and shrink the record model to its contract"
-status: active
+status: review
 created: "2026-09-27T22:13:35Z"
-updated: "2026-09-28T16:50:19Z"
+updated: "2026-09-28T16:57:15Z"
 size: medium
 relates_to: ["G-260919-shnj5", "G-260921-ebsby", "G-260925-khfe7"]
-candidate: "16af7ee06da5d58aaf15c4e9377333ef704310f5"
+candidate: "ecca7cf4754f0996e885593fd38545d0125bfbd0"
 ---
 
 ## Outcome
