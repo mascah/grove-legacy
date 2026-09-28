@@ -336,7 +336,7 @@ question; and whether each member's record on the target changed.
 when the attempt finishes, since its worktree and branch may be gone when it
 is read, split into the files under the record root, which `grove.yaml` at
 the base names, and the rest; an attempt finished before this says it was not
-recorded. `Shape:` is derived from all of `events.jsonl` each time the
+recorded, and one whose HEAD or `grove.yaml` Git could not read says why. `Shape:` is derived from all of `events.jsonl` each time the
 attempt is read, a line over 1 MiB skipped and counted, which makes its counts
 lower bounds (`≥`); the board does not read it. It counts every tool call,
 subagents' included, and those that are process, serving the workflow rather
@@ -351,8 +351,10 @@ not under it, with its index among the tool calls and the time from the
 start to its event's timestamp. Known misses: `grove` through a wrapper,
 `$(…)`, `env` or a leading variable assignment is not seen; a heredoc's line
 that starts with `grove` is; an edit made through Bash, such as `sed -i` or a
-script, is not an edit; a path that reaches the record root through a
-symbolic link is outside it. While the attempt runs these are so far.
+script, is not an edit; a guide or instructions file read as a file (a Read,
+`cat`) is neither process nor a guide print; a path that reaches the record
+root through a symbolic link is outside it. After a skipped line, the first
+edit is the first among the lines read. While the attempt runs these are so far.
 Liveness is the owner's file lock, never a pid: `running` while it is held,
 `finished` once `result.json` exists, `orphaned` when the owner is gone but
 the provider's process group lives, `interrupted` when nothing is left and no

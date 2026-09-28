@@ -60,7 +60,7 @@ func TestReadShape(t *testing.T) {
 	}
 	s.FirstEdit.At = time.Time{}
 	v = &View{Status: Running, Launch: Launch{Worktree: "/elsewhere", Started: now}, Shape: &s}
-	if got := shapeText(v); got != "so far, ≥19 tool calls, ≥10 process (53%); guides printed: model 1, work 1; first edit outside the record root: tool 12, at an unknown time, /w/p/internal/y.go; 1 oversized lines not read" {
+	if got := shapeText(v); got != "so far, ≥19 tool calls, ≥10 process (53%); guides printed: model 1, work 1; first edit outside the record root: tool 12, at an unknown time, /w/p/internal/y.go; 1 oversized lines not read: the counts are lower bounds, and the first edit is the first in the lines read" {
 		t.Fatal(got)
 	}
 	v.Shape = &Shape{}

@@ -159,7 +159,7 @@ type Result struct {
 	Events       Events    `json:"events"`
 	Head         string    `json:"head"`              // the worktree's HEAD after the exit
 	Dirty        bool      `json:"dirty"`             // uncommitted or untracked changes
-	Changed      *Changed  `json:"changed,omitempty"` // nil when HEAD was unreadable, or before this was recorded
+	Changed      *Changed  `json:"changed,omitempty"` // nil before this was recorded
 	// RecordUncommitted: the record's file differs from the worktree's HEAD,
 	// so what Record says is not yet on the branch.
 	RecordUncommitted bool   `json:"record_uncommitted,omitempty"`
@@ -927,6 +927,7 @@ func reconcile(dir string, l *Launch, res *Result, logf func(string, ...any)) {
 	for _, m := range l.Members() {
 		ids = append(ids, m.ID)
 	}
+	res.Changed = &Changed{Error: "HEAD was unreadable when it finished"}
 	if res.Head != "" {
 		res.Changed = changedFiles(l.Worktree, l.Prefix, l.Base, res.Head)
 	}

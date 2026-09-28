@@ -170,7 +170,7 @@ func shapeText(v *View) string {
 		text += fmt.Sprintf("; first edit outside the record root: tool %d, %s, %s", e.Tool, after, file)
 	}
 	if s.Skipped != 0 {
-		text += fmt.Sprintf("; %d oversized lines not read", s.Skipped)
+		text += fmt.Sprintf("; %d oversized lines not read: the counts are lower bounds, and the first edit is the first in the lines read", s.Skipped)
 	}
 	return text
 }
