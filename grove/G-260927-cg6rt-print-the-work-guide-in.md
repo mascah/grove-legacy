@@ -4,10 +4,11 @@ type: work
 title: "Print the work guide in stages: a head at start, later steps on demand"
 status: review
 created: "2026-09-27T22:13:35Z"
-updated: "2026-09-28T00:54:36Z"
+updated: "2026-09-28T01:08:03Z"
 size: medium
 relates_to: ["G-260925-khfe7", "G-260925-m9jcr", "G-260925-p2k54", "G-260923-p5pt6", "G-260927-dx0yn"]
 candidate: "28e1e3fe4abd628c2f73e60366b41ae8ba632e2d"
+approved: "28e1e3fe4abd628c2f73e60366b41ae8ba632e2d"
 ---
 
 ## Outcome
@@ -168,3 +169,5 @@ G-260927-ngkbz's: 46 turns, $2.99, 10 minutes, with the guide printed whole.
    proposed work item, then read its events for each `guide` command and
    the turn it ran at, and record them here with the attempt's cost, turns
    and duration.
+
+Verdict on candidate 28e1e3f, 2026-09-28: approved
