@@ -2,12 +2,13 @@
 id: "G-260927-xd73p"
 type: work
 title: "Size the handoff to the record"
-status: active
+status: review
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-28T16:22:01Z"
+updated: "2026-09-28T16:28:31Z"
 size: small
 depends_on: ["G-260927-cg6rt"]
 relates_to: ["G-260921-9wkjt", "G-260925-wh9ax", "G-260921-btyck", "G-260927-ngkbz"]
+candidate: "dc8149c9b5d2dfc7da8c3e93f19043896a2f49a9"
 ---
 
 ## Outcome
