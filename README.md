@@ -105,10 +105,10 @@ and start and stop attempts ([The board](docs/board.md)).
 | Command | What it does | Details |
 | --- | --- | --- |
 | (none) | Opens the terminal board | [Board](docs/board.md) |
-| `list`, `show`, `brief`, `check` | List, print and validate records and the brief, reading only | [Record model](docs/record-model.md#reading-and-writing-records), `grove guide model` |
-| `new`, `update` | Create a record with a new date-form ID; change its frontmatter | [Record model](docs/record-model.md#identity-and-dates), `grove guide model` |
-| `convert` | Make a record from a Markdown document outside the record root | [Record model](docs/record-model.md#identity-and-placement-apart-from-classification), `grove guide model` |
-| `approve`, `feedback`, `integrate` | Judge a candidate in review; merge an approved one and mark it done | [Work lifecycle](docs/record-model.md#work-lifecycle), `grove guide model` |
+| `list`, `show`, `brief`, `check` | List, print and validate records and the brief, reading only | [Records](docs/commands.md#records), `grove guide model` |
+| `new`, `update` | Create a record with a new date-form ID; change its frontmatter | [Records](docs/commands.md#records), `grove guide model` |
+| `convert` | Make a record from a Markdown document outside the record root | [Records](docs/commands.md#records), `grove guide model` |
+| `approve`, `feedback`, `integrate` | Judge a candidate in review; merge an approved one and mark it done | [Judging and integrating](docs/commands.md#judging-and-integrating), `grove guide model` |
 | `resolve` | Give a candidate that conflicts with the target to one attempt that merges the target and resolves it | [Resolving a conflict](docs/commands.md#resolving-a-conflict) |
 | `sweep` | Resolve, approve and integrate candidates in review under the owner's standing `policy:`, each act attributed to it | [Sweep](docs/commands.md#sweep) |
 | `run`, `attempts`, `attempt`, `stop` | Start one headless agent attempt of a work item that outlives the terminal; list, inspect and stop attempts | [Attempts](docs/commands.md#attempts) |

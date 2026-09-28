@@ -26,6 +26,8 @@ Every other fact has one owner. Read it when the task needs it, not up front:
   command and board behaviour beyond `grove --help`.
 - [`docs/record-model.md`](docs/record-model.md): configuration, schema,
   validation and lifecycle (`grove guide model`).
+- [`docs/record-design.md`](docs/record-design.md): why the record model
+  is as it is; the model states each rule once, this its reasons.
 - [`docs/work-execution.md`](docs/work-execution.md) and
   [`docs/work-shaping.md`](docs/work-shaping.md): the two workflows
   (`grove guide work` prints the head, `--part NAME` each later step;
