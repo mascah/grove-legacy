@@ -12,14 +12,6 @@ relates_to: ["G-260927-60ffq", "G-260925-h8rj5", "G-260925-dzxm6", "G-260921-jwk
 
 ## Outcome
 
-## Constraints
-
-## Acceptance
-
-## Next
-
-## Outcome
-
 In the Review column the owner sees on each card whether its candidate is
 approved, and by whom, and whether it currently merges cleanly into the
 target; and the changes list under a candidate stays one line per file.
@@ -86,3 +78,5 @@ separable from [G-260928-csg91](G-260928-csg91-make-the-board-s-prompts.md),
 [G-260928-y50a4](G-260928-y50a4-edit-any-record-in-your.md) and
 [G-260928-63124](G-260928-63124-show-each-member-s-state.md), which needs no
 edge.
+
+No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (card tags, one after-load prediction read per Review card, the changes list); implementation follows it.

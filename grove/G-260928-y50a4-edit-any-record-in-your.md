@@ -12,14 +12,6 @@ relates_to: ["G-260924-wp2pe", "G-260923-895zb", "G-260924-nqkkh"]
 
 ## Outcome
 
-## Constraints
-
-## Acceptance
-
-## Next
-
-## Outcome
-
 From the board the owner can open any record's file in their own editor, in
 the checkout that holds it; move through long content with vim's paging
 keys; and select an attempt's final report without the activity beside it.
@@ -84,3 +76,5 @@ separable from [G-260928-csg91](G-260928-csg91-make-the-board-s-prompts.md),
 [G-260928-r1hkh](G-260928-r1hkh-show-approval-and-merge.md) and
 [G-260928-63124](G-260928-63124-show-each-member-s-state.md), which needs no
 edge.
+
+No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (`answer.go`'s editor launch, `scrollKey` and `moved`, `attemptRows`); implementation follows it.

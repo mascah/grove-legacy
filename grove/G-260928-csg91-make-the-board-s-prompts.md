@@ -12,14 +12,6 @@ relates_to: ["G-260924-ecs9m", "G-260921-jwk4e", "G-260921-7trd7", "G-260919-k7b
 
 ## Outcome
 
-## Constraints
-
-## Acceptance
-
-## Next
-
-## Outcome
-
 When the owner types on a board prompt they see everything they typed, and a
 refused launch or action is unmistakable and stays on screen until they
 dismiss it, so a launch is never repeated in the belief that it succeeded.
@@ -90,3 +82,5 @@ separable from [G-260928-r1hkh](G-260928-r1hkh-show-approval-and-merge.md),
 [G-260928-y50a4](G-260928-y50a4-edit-any-record-in-your.md) and
 [G-260928-63124](G-260928-63124-show-each-member-s-state.md), which needs no
 edge; the owner chooses whether to select them together.
+
+No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (`promptRow`, `line`, `m.notice`, `resultRows`); implementation follows it.

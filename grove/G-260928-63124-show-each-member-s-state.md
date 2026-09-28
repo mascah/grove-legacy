@@ -12,14 +12,6 @@ relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260923-895zb"]
 
 ## Outcome
 
-## Constraints
-
-## Acceptance
-
-## Next
-
-## Outcome
-
 When a selection of several work items runs or ends, the owner sees on each
 member's card and in its detail what that member's state is and what the
 next launch would do, without opening the attempt.
@@ -82,3 +74,7 @@ separable from [G-260928-csg91](G-260928-csg91-make-the-board-s-prompts.md),
 [G-260928-r1hkh](G-260928-r1hkh-show-approval-and-merge.md) and
 [G-260928-y50a4](G-260928-y50a4-edit-any-record-in-your.md), which needs no
 edge. G-260928-369c1 names this record in its `depends_on`.
+
+No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (card tags from `standingOf`'s rules per member, the attempts row, the detail's attempt row and the attempt's Next).
+
+Decided by the owner, 2026-09-28, in the session implementing this: `R` on a member of an ended selection whose state still stands on the selection's branch relaunches that selection, the same IDs on the same branch and worktree, as `grove run` with those IDs would, rather than the one member alone, which would hand that member off while another member's unfinished code sits on the branch. It is refused while a started member still waits on an open question.
