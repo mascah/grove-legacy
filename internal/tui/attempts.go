@@ -388,6 +388,11 @@ func (m *Model) standingOf(v *attempt.View) standing {
 		default:
 			s.short, s.next = "ended, no handoff", "o opens "+work+"; the report says why"
 		}
+		// A selection's next launch is the selection again (G-260928-63124).
+		if kind != "candidate" && kind != "plan" && m.memberStates(v) != nil && m.backend.Launch != nil {
+			text, _ := m.resumeText(v)
+			s.next = text + "; o opens " + work
+		}
 	}
 	return s
 }
@@ -511,6 +516,109 @@ func (m *Model) answeredSince(work string, ended time.Time) string {
 	return ""
 }
 
+// memberStates says where each member of an ended selection stands
+// (G-260928-63124), from what its worktree held at the end and the
+// questions the board reads now, by the rules the attempt's own outcome
+// follows; nil for a live attempt, one without a result or a selection of
+// one. A started member left waiting on a question holds every other active
+// member out of review (G-260925-wc2pz).
+func (m *Model) memberStates(v *attempt.View) map[string]string {
+	if live(v) || v.Result == nil || len(v.Launch.Members()) < 2 {
+		return nil
+	}
+	r := v.Result
+	var holders []string
+	for _, ms := range r.Members {
+		if len(ms.Questions) != 0 && !slices.ContainsFunc(v.Launch.Members(), func(mb attempt.Member) bool { return mb.ID == ms.ID && mb.Wait != "" }) {
+			holders = append(holders, ms.ID)
+		}
+	}
+	out := map[string]string{}
+	for _, ms := range r.Members {
+		rec := ms.Record
+		switch {
+		case rec == nil:
+			out[ms.ID] = "unreadable"
+		case rec.Status == "review" && rec.Candidate != "" && !ms.Uncommitted:
+			out[ms.ID] = "candidate ready"
+		case len(ms.Questions) != 0:
+			q, _, _ := strings.Cut(m.blockingQuestion(ms.ID), " (")
+			switch {
+			case q != "":
+				out[ms.ID] = "waiting on " + q
+			case m.answeredSince(ms.ID, r.Finished) != "":
+				out[ms.ID] = "question answered: R again"
+			default:
+				first, _, _ := strings.Cut(ms.Questions[0], " (")
+				out[ms.ID] = "waited on " + first
+			}
+		case v.Launch.Until == "plan" && !r.Dirty && !ms.Uncommitted:
+			out[ms.ID] = "plan ready"
+		case rec.Status == "active" && len(holders) != 0:
+			out[ms.ID] = "held by " + strings.Join(holders, ", ")
+		case rec.Status == "proposed":
+			out[ms.ID] = "not started"
+		default:
+			out[ms.ID] = rec.Status
+		}
+	}
+	return out
+}
+
+// memberTag is a card's state in the latest attempt of its work when that is
+// an ended selection and the state needs the owner, naming the selection
+// where the card is not its first ID; "" otherwise.
+func (m *Model) memberTag(work, status string) string {
+	mine := m.attemptsOf(work)
+	if len(mine) == 0 || status != "proposed" && status != "active" && status != "review" {
+		return ""
+	}
+	state := m.memberStates(&mine[0])[work]
+	for _, needs := range []string{"candidate ready", "waiting on ", "question answered", "plan ready", "held by "} {
+		if strings.HasPrefix(state, needs) {
+			if work != mine[0].Launch.Work {
+				state += " · in " + selected(&mine[0])
+			}
+			return state
+		}
+	}
+	return ""
+}
+
+// resumable is the ended selection R on work resumes: the latest attempt of
+// work, a selection of several, whose branch work's current state v stands
+// on. Relaunching it whole keeps its members one group, as a relaunch of
+// the same IDs does, rather than handing one off while another's
+// unfinished code is on the branch (G-260928-63124).
+func (m *Model) resumable(work string, v *versions.Version) *attempt.View {
+	mine := m.attemptsOf(work)
+	if len(mine) == 0 || live(&mine[0]) || mine[0].Launch.Selection == nil || len(mine[0].Launch.Members()) < 2 || branchOf(v) != mine[0].Launch.Branch {
+		return nil
+	}
+	return &mine[0]
+}
+
+// resumeText says what R does for work on an ended selection: which
+// question it waits for, or where it resumes and which member it starts.
+func (m *Model) resumeText(sel *attempt.View) (text string, ok bool) {
+	states := m.memberStates(sel)
+	var starts []string
+	for _, mb := range sel.Launch.Members() {
+		state := states[mb.ID]
+		if strings.HasPrefix(state, "waiting on ") && mb.Wait == "" { // started, so it holds the rest
+			return mb.ID + " is " + state + ": answer it, then R resumes " + selected(sel), false
+		}
+		if strings.HasPrefix(state, "question answered") || strings.HasPrefix(state, "waited on ") || state == "not started" {
+			starts = append(starts, mb.ID)
+		}
+	}
+	text = "R resumes " + selected(sel) + " on " + sel.Launch.Branch + ", not redoing the members whose checkpoint the branch confirms"
+	if len(starts) != 0 {
+		text += ", and starts " + starts[0]
+	}
+	return text, true
+}
+
 // attemptTag marks a card whose work has an attempt that may be running.
 func (m *Model) attemptTag(work string) string {
 	for _, v := range m.attempts {
@@ -528,9 +636,18 @@ func (m *Model) attemptRow(work, status string) string {
 	if len(mine) == 0 {
 		parts = append(parts, "Attempts: none")
 	} else {
-		parts = append(parts, fmt.Sprintf("Attempts %d · latest: %s, %s", len(mine), m.standingOf(&mine[0]).short, m.when(&mine[0])), "A lists them")
+		latest := m.standingOf(&mine[0]).short
+		if state := m.memberStates(&mine[0])[work]; state != "" {
+			latest = selected(&mine[0]) + ", " + work + " " + state
+		}
+		parts = append(parts, fmt.Sprintf("Attempts %d · latest: %s, %s", len(mine), latest, m.when(&mine[0])), "A lists them")
 	}
-	if m.backend.Launch != nil && (status == "proposed" || status == "active") {
+	switch g := m.groupOf(work); {
+	case m.backend.Launch == nil || status != "proposed" && status != "active":
+	case g != nil && m.resumable(work, m.shown(g)) != nil:
+		text, _ := m.resumeText(m.resumable(work, m.shown(g)))
+		parts = append(parts, text)
+	default:
 		parts = append(parts, "R launches one")
 	}
 	return strings.Join(parts, " · ")
@@ -696,6 +813,22 @@ func (m *Model) launch() {
 		m.alert = g.ID + " is not in this checkout (" + m.root + "); open Grove in a checkout that holds it to launch"
 		return
 	}
+	if sel := m.resumable(g.ID, v); sel != nil {
+		// The selection again, on its branch and in its worktree: its
+		// digest, not one record's revision, is what Start checks.
+		if why, ok := m.resumeText(sel); !ok {
+			m.alert = why
+			return
+		}
+		req := attempt.Request{Root: m.root, IDs: sel.Launch.Selection.Selected, Branch: sel.Launch.Branch}
+		for _, s := range m.res.Sources {
+			if s.Kind == "live" && s.Ref == "refs/heads/"+sel.Launch.Branch {
+				req.Worktree = s.Worktree
+			}
+		}
+		m.prompt = &prompt{kind: "launch", id: strings.Join(req.IDs, " "), root: m.root, req: &req, run: here.Source.Run}
+		return
+	}
 	req := attempt.Request{Root: m.root, IDs: []string{g.ID}, Expect: here.Revision}
 	// Work whose current state the base does not hold continues on that
 	// state's branch. The base is the target, or without one this checkout;
@@ -804,12 +937,21 @@ func (m *Model) attemptsBody(w, n int) []string {
 		rows = append(rows, line("  none yet; R on a proposed or active work record launches one", w))
 	}
 	const tw = 11 // "14m so far"
-	idw, sw := 0, 0
+	idw, sw, most := 0, 0, 32
+	shorts := make([]string, len(list))
 	for i, v := range list {
+		// An ended selection names each member's state after its own.
+		shorts[i] = st[i].short
+		if states := m.memberStates(&v); states != nil {
+			for _, mb := range v.Launch.Members() {
+				shorts[i] += " · " + mb.ID + " " + states[mb.ID]
+			}
+			most = max(most, w-2-12-2-tw-2-26) // room for a 24-cell title beside it
+		}
 		idw = max(idw, ansi.StringWidth(safe(selected(&v))))
-		sw = max(sw, ansi.StringWidth(safe(st[i].short)))
+		sw = max(sw, ansi.StringWidth(safe(shorts[i])))
 	}
-	idw, sw = min(idw, 12), min(sw, 32)
+	idw, sw = min(idw, 12), min(sw, most)
 	titleW := min(w-2-idw-2-sw-2-tw-2, 48) // wider than that, the rest is margin
 	if w < 60 || titleW < 10 {
 		titleW, sw = 0, max(w-2-idw-2-tw-2, 1)
@@ -825,7 +967,7 @@ func (m *Model) attemptsBody(w, n int) []string {
 			text += line(m.titleOf(v.Launch.Work), titleW) + "  "
 		}
 		when := m.when(&v)
-		text += line(st[i].short, sw) + "  " + line(strings.Repeat(" ", max(tw-len(when), 0))+when, tw)
+		text += line(shorts[i], sw) + "  " + line(strings.Repeat(" ", max(tw-len(when), 0))+when, tw)
 		if i == cursor {
 			at = len(rows)
 			rows = append(rows, hot(clip("> "+text, w)))

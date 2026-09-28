@@ -1120,20 +1120,24 @@ func (m *Model) visible() []int {
 // never lands on a cut card; search still reaches it.
 func (m *Model) bounded() (columns [len(statuses)][]card, shelf []card, older int) {
 	columns, shelf = m.cards()
-	// Review and Done lead with a predicted conflict, then who approved
-	// (G-260928-r1hkh): what a narrow card cuts last.
-	for _, i := range []int{reviewColumn, doneColumn} {
+	// A card leads with its state in an ended selection that needs the
+	// owner (G-260928-63124); Review and Done with a predicted conflict, then
+	// who approved (G-260928-r1hkh): what a narrow card cuts last.
+	for i := range columns {
 		for j := range columns[i] {
 			c := &columns[i][j]
 			if c.rec == nil {
 				continue
 			}
-			conflict := ""
+			conflict, approved := "", ""
 			if i == reviewColumn {
 				conflict = m.conflictNote(c.rec)
 			}
+			if i == reviewColumn || i == doneColumn {
+				approved = approval(c.rec)
+			}
 			var tags []string
-			for _, t := range []string{conflict, approval(c.rec), c.tag} {
+			for _, t := range []string{m.memberTag(c.id, c.rec.Status), conflict, approved, c.tag} {
 				if t != "" {
 					tags = append(tags, t)
 				}

@@ -20,6 +20,12 @@ func fits(t *testing.T, m *Model, w int, where string) {
 	}
 }
 
+// flat is the screen's words in order, box sides and separators dropped, so
+// a check holds however the text wraps.
+func flat(m *Model) string {
+	return strings.Join(strings.Fields(strings.NewReplacer("┃", " ", "│", " ", " · ", " ").Replace(plain(m))), " ")
+}
+
 // typedOnScreen joins the prompt's rows from the one starting with lead to
 // the one holding the cursor: what the owner sees of the typed text.
 func typedOnScreen(m *Model, lead string) string {

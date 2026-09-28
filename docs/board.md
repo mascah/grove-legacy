@@ -39,9 +39,10 @@ in objects only, as `deps` predicts it, one card at a time, and a card that
 would conflict is marked `conflicts main@abc1234`, naming the target commit
 it read; no prediction is part of a load, any key that starts another read
 and every re-read cancel it, a re-read forgets what it found, and where one
-cannot run the card says nothing. Tags are joined by `·`, a conflict first
-and then the approval; where they do not fit beside the ID they lead the
-metadata row, and a narrow card cuts them last. Work whose current state
+cannot run the card says nothing. Tags are joined by `·`, a selection
+member's state first, then a conflict and then the approval; where they do
+not fit beside the ID they lead the metadata row, which takes the row a
+one-row title leaves when it needs two, and a narrow card cuts them last. Work whose current state
 removes its record is listed under Deleted. Done shows the most recently written cards that fit the
 column, newest first, and counts the rest (`+ 23 older · / to search`).
 Abandoned is hidden until `a` shows its column, and the shelf row counts it
@@ -210,6 +211,24 @@ its first ID as given and how many more, such as `G-260925-7k2qm+2`, is
 among the attempts of each member's work, and stands for the members its
 worktree handed off in review, such as `candidate ready: G-260925-7k2qm,
 G-260925-8m3xd in review`.
+
+After a selection's attempt ends, each member's card carries its own state
+in that attempt while it needs the owner: `candidate ready`, `waiting on
+G-…` for a member a question stops, `question answered: R again` once it is
+resolved, `plan ready`, or `held by G-…` for a member that waits on another
+member's question, since a started member left incomplete holds the whole
+branch out of review. Where the card's ID is not the selection's first, the
+tag adds the selection, such as `· in G-260925-7k2qm+1`. Its row in `A`
+names every member's state where the width allows, cut last
+([G-260928-63124](../grove/G-260928-63124-show-each-member-s-state.md)). The
+work's detail gives the latest attempt as `G-260925-7k2qm+1, G-260925-8m3xd
+held by G-260925-7k2qm`, and `R` on any member whose current state stands on
+the selection's branch relaunches the selection, the same IDs on the same
+branch in its worktree: the detail says `R resumes G-260925-7k2qm+1 on
+BRANCH, not redoing the members whose checkpoint the branch confirms, and
+starts ID`, and the attempt's Next says the same. While a started member
+still waits on an open question, `R` is refused and says which question to
+answer first.
 
 Enter opens one attempt. At the top are the work's ID and title, a coloured
 state and the run's configuration: attempt, model and provider version,

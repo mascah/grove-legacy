@@ -71,12 +71,30 @@ func cardBox(c card, focused bool, accent lipgloss.Style, rows, w int) []string 
 	} else if len(title) > 2 {
 		title[1] = line(strings.TrimRight(title[1], " ")+"…", iw-1)
 	}
+	// A meta row too wide for the card takes the row a one-row title leaves.
+	metas := []string{meta}
+	if rows >= cardHeight && len(title) == 1 && ansi.StringWidth(safe(meta)) > iw-1 {
+		metas = []string{""}
+		for _, part := range strings.Split(meta, " · ") {
+			last := &metas[len(metas)-1]
+			switch {
+			case *last == "":
+				*last = part
+			case ansi.StringWidth(safe(*last+" · "+part)) <= iw-1 || len(metas) == 2:
+				*last += " · " + part
+			default:
+				metas = append(metas, part)
+			}
+		}
+	}
 	inner := []string{first}
-	for _, t := range fit(title, min(rows-3, 2), iw-1) {
+	for _, t := range fit(title, min(rows-3, 3-len(metas)), iw-1) {
 		inner = append(inner, " "+t)
 	}
 	if rows >= cardHeight {
-		inner = append(inner, " "+line(meta, iw-1))
+		for _, r := range metas {
+			inner = append(inner, " "+line(r, iw-1))
+		}
 	}
 	out := []string{edge(b.TopLeft, b.Top, b.TopRight)}
 	for _, r := range inner {

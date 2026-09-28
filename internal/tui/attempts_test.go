@@ -961,3 +961,94 @@ func TestSelectionAttempt(t *testing.T) {
 		t.Fatalf("tag %q, earlier latest %v", m.attemptTag("W-003"), m.latest(&earlier))
 	}
 }
+
+// A two-member selection stopped on one member's question: each card says
+// where its member stands, the list row names both, and R is refused until
+// the answer; after it the blocked member asks for R again and the held one
+// says what R does, which is the selection again on its branch
+// (G-260928-63124).
+func TestSelectionMembersOnTheBoard(t *testing.T) {
+	t.Parallel()
+	fx := newFixture()
+	const branch = "worktree-W-001-W-002"
+	cSel, sel := source("committed", "", branch), source("live", "sel", branch)
+	fx.main.Run = project.RunDefaults{BudgetUSD: "3", PermissionMode: "auto"}
+	ended := time.Date(2026, 9, 23, 2, 0, 0, 0, time.UTC)
+	build := func(answered bool) *versions.Result {
+		var vs []versions.Version
+		for _, s := range []*versions.Source{fx.cMain, fx.main} {
+			for _, id := range []string{"W-001", "W-002"} {
+				v := version(s, id, "Member "+id, "proposed")
+				v.Older = "branch " + branch + " changed it since"
+				vs = append(vs, v)
+			}
+		}
+		for _, s := range []*versions.Source{cSel, sel} {
+			vs = append(vs, version(s, "W-001", "Member W-001", "active"), version(s, "W-002", "Member W-002", "active"))
+			q := version(s, "Q-002", "Red or blue?", "open")
+			q.Record.Blocks, q.Record.Created = []string{"W-002"}, &ended
+			if answered {
+				later := ended.Add(time.Hour)
+				q.Record.Status, q.Record.Updated = "resolved", &later
+			}
+			vs = append(vs, q)
+		}
+		return result(fx.main, []*versions.Source{fx.cMain, cSel, fx.main, sel}, vs...)
+	}
+	f := &fake{res: build(false)}
+	r := &runs{}
+	ok := &attempt.Final{Subtype: "success"}
+	v := view("W-001", "20260923T010000Z", attempt.Finished, &attempt.Result{Finished: ended, Events: attempt.Events{Result: ok}, Record: &attempt.State{Status: "active"},
+		Members: []attempt.MemberState{{ID: "W-001", Record: &attempt.State{Status: "active"}}, {ID: "W-002", Record: &attempt.State{Status: "active"}, Questions: []string{"Q-002 (Red or blue?)"}}}})
+	v.Launch.Branch, v.Launch.Worktree = branch, sel.Worktree
+	v.Launch.Selection = &attempt.Selection{Selected: []string{"W-001", "W-002"}, Order: []string{"W-001", "W-002"}, Members: []attempt.Member{{ID: "W-001"}, {ID: "W-002"}}}
+	r.set(v)
+	m := openRuns(t, f, r, 160, 40)
+	s := plain(m)
+	if !onRow(s, "W-001", "held by W-002") || !onRow(s, "W-002", "waiting on Q-002 · in W-001+1") {
+		t.Fatalf("each card says where its member stands:\n%s", s)
+	}
+	if rows := ansi.Strip(strings.Join(m.attemptsBody(160, 30), "\n")); !strings.Contains(rows, "W-001 held by W-002 · W-002 waiting on Q-002") {
+		t.Fatalf("the list row names every member's state:\n%s", rows)
+	}
+	m.openDetail("W-001")
+	want := "latest: W-001+1, W-001 held by W-002"
+	if s := plain(m); !strings.Contains(s, want) || !strings.Contains(s, "W-002 is waiting on Q-002: answer it, then R resumes W-001+1") {
+		t.Fatalf("the detail says what R waits for:\n%s", s)
+	}
+	if press(m, "R"); m.prompt != nil || !strings.Contains(m.alert, "W-002 is waiting on Q-002") {
+		t.Fatalf("R waits for the answer: %q", m.alert)
+	}
+
+	// The answer.
+	press(m, "esc")
+	f.mu.Lock()
+	f.res = build(true)
+	f.mu.Unlock()
+	settle(m, press(m, "r"))
+	resumes := "R resumes W-001+1 on " + branch + ", not redoing the members whose checkpoint the branch confirms, and starts W-002"
+	if s := flat(m); !strings.Contains(s, resumes) {
+		t.Fatalf("the held member says what R does:\n%s", s)
+	}
+	m.openAttempt(v.Launch.Attempt)
+	settle(m, m.wantAttempts())
+	if s := flat(m); !strings.Contains(s, resumes) {
+		t.Fatalf("the attempt's Next says it too:\n%s", s)
+	}
+	press(m, "esc", "esc")
+	if s := plain(m); !strings.Contains(flat(m), "W-002 Member W-002 question answered: R again in W-001+1") || !onRow(s, "W-001", "held by W-002") {
+		t.Fatalf("after the answer:\n%s", s)
+	}
+	m.openDetail("W-001")
+	press(m, "R")
+	if m.prompt == nil || !strings.Contains(plain(m), "Launch W-001 W-002 ▏") {
+		t.Fatalf("R opens the selection's line:\n%s", plain(m))
+	}
+	settle(m, press(m, "enter"))
+	if len(r.launches) != 1 {
+		t.Fatalf("launches: %+v", r.launches)
+	}
+	if got := r.launches[0]; strings.Join(got.IDs, " ") != "W-001 W-002" || got.Branch != branch || got.Worktree != sel.Worktree || got.Expect != "" {
+		t.Fatalf("R relaunches the selection on its branch: %+v", got)
+	}
+}

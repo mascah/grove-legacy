@@ -751,7 +751,7 @@ func TestReviewCardsShowApprovalAndConflicts(t *testing.T) {
 		}
 		close(block)
 		deliverAll(m, deliver(m, refresh))
-		if s := plain(m); !strings.Contains(s, "conflicts main@ccccccc · approved") || strings.Join(predicted, ";") != "refs/heads/main abcdef1;refs/heads/main abcdef1" {
+		if s := flat(m); !strings.Contains(s, "conflicts main@ccccccc "+approved+" not on main") || strings.Join(predicted, ";") != "refs/heads/main abcdef1;refs/heads/main abcdef1" {
 			t.Fatalf("after the re-read the prediction runs again and shows: %v\n%s", predicted, s)
 		}
 	}
