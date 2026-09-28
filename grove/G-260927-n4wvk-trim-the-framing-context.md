@@ -81,37 +81,69 @@ alone exceed it, and every fact stays).
 No plan needed: the record's proposed design is the plan, and the change is
 one renderer (`internal/handoff/render.go`), its tests and one doc paragraph.
 
-**Checkpoint 2026-09-28, headless.** Waits on
-[G-260928-351t8](G-260928-351t8-which-gives-in-g-260927.md): acceptance 1's
-1.5 KB bound cannot hold with every fact printed (the facts alone are 1,568
-bytes for that call), so the owner chooses which gives.
+**Handoff 2026-09-28, headless: in review.** Branch
+`worktree-G-260927-n4wvk` in `.claude/worktrees/worktree-G-260927-n4wvk`,
+base main `38511c1` (main has since moved to `3ec0f68`, touching neither
+`internal/handoff` nor the Context paragraph of `docs/commands.md`). Started
+from record revision `sha256:ed2eef20…`, resumed at `sha256:9cd82422…` after
+[G-260928-351t8](G-260928-351t8-which-gives-in-g-260927.md) was answered
+("increase the bound to 2.5KB for now", its option 1) and
+[G-260927-jds8s](G-260927-jds8s-what-mandate-covers-reru.md) ("reuse the last
+config", its option 1). The candidate is the commit that adds this
+handoff; the code is `da457a6` and `9e2cae7`.
 
-- Selected: G-260927-n4wvk. Branch `worktree-G-260927-n4wvk` in
-  `.claude/worktrees/worktree-G-260927-n4wvk`, base main `38511c1`, record
-  revision `sha256:ed2eef20…` at start; G-260927-jds8s answered "reuse the
-  last config" (its option 1).
-- Done at `da457a6`: format 3 as the proposed design says. Records header
-  one line; an included record's path and revision printed only on its
-  source line; `Source: PATH  REVISION  (REASONS)` on one line; links
-  grouped under `in FROM:`, each `TARGET = PATH  WORD` with one legend line;
-  the scope notice two sentences in the text (`scopeText`), the JSON
-  `scope_notice` and link `reason` untouched; both guard sentences kept.
-  `docs/commands.md` "Context" describes format 3. The work guide's
-  mention of `context` output names no format and stays accurate, so it is
-  unchanged. `evals/run.py` scores the commands an agent invoked, never
-  `context` output (checked, lines 325-373), so it needs no change.
-- Evidence at `da457a6`: `grove context G-260927-ngkbz --project` main
-  printed 13,556 bytes in format 2 and 11,980 in format 3, source 9,514:
-  framing 4,042 → 2,466. `--json` diff old/new for G-260927-ngkbz and
-  G-260927-n4wvk: only `format_version` 2 → 3. New test
-  `TestTextPrintsEveryFact` asserts every format-2 fact and both guard
-  sentences. `go vet ./...`, `gofmt -l .` (empty), `grove check` (OK: 216
-  records) and `go test -count=1 -timeout 120s ./...` all passed.
-- Pending: acceptance 1 (the answer to G-260928-351t8; option 1 needs no
-  code change), acceptance 4 (the G-260925-pbx81 `with` rerun under
-  G-260927-jds8s, not started because the format it measures depends on the
-  answer), independent review, handoff, and acceptance 5 (owner).
-- Commands owned: none.
+Against acceptance:
 
-Resume: once G-260928-351t8 is resolved, assign
-`/grove-work G-260927-n4wvk --interaction headless`.
+1. Met. `grove context G-260927-ngkbz --project` the main checkout (at
+   `3ec0f68`) prints 13,556 bytes in format 2 and 11,980 in format 3, 9,514
+   of them source: framing 4,042 → 2,466, under 2.5 KB (2,560). Acceptance
+   1 was edited to the owner's bound (`751c49d`). `TestTextPrintsEveryFact`
+   asserts every format-2 fact the record names: Root and Git lines, the
+   selection, order and source budget, each record's identity, state,
+   roles, title, path and revision, requirements, blocking questions, each
+   link's source, target, path and a fixed expected word, and each source
+   line.
+2. Met. Both guard sentences print once, one sentence each. `--json`
+   diffed old/new for G-260927-ngkbz and G-260927-n4wvk: only
+   `format_version` 2 → 3.
+3. Met. `docs/commands.md` "Context" describes format 3, including the
+   other-spelling cases. The work guide's mention of `context` output
+   names no format and stays accurate, so it is unchanged. `evals/run.py`
+   scores the commands an agent ran and never reads `context` output
+   (checked, lines 325-373, and by the reviewer), so it needs no change.
+4. Met: [G-260928-rvg20](G-260928-rvg20-g-260927-n4wvk-with-row.md), the
+   `with` row at `751c49d` under G-260927-jds8s's mandate, $3.58 of the
+   $50 cap. The constraint was found and applied in 10 of 10 runs, as in the
+   `without` row; `holding read` and `distractors read` are equal to it in
+   both cases. Limits: the guides digest moved too (`41324c3655a1` →
+   `4110723aac9f`), and only three runs ran `context` at all, so the row
+   shows format 3 costing no retrieval, not helping it.
+5. Open: the owner's judgment on one real call.
+
+Decisions: the text drops format 2's longer prose (what `done` with a
+candidate means, "nothing summarized or truncated", "not fetched/followed"
+on non-path links) as the design's two-sentence Scope intends; the work
+guide and `docs/commands.md` still say the first. No term or decision
+record: the bound is this record's acceptance, and the owner's answer is in
+G-260928-351t8.
+
+Verification at `9e2cae7`: `go vet ./...` passed, `gofmt -l .` empty,
+`grove check` OK (218 records), `go test -count=1 -timeout 120s ./...`
+passed (every package ok). A mutation swapping `absolute` and `outside` in
+`linkWord` fails `TestTextPrintsEveryFact`.
+
+Independent review (`grove-reviewer`, not a record: the `with` row is the
+review record): round 1 at `5570654` met acceptance 1 to 4 and found three
+minor findings, fixed in `9e2cae7`: the test did not assert the Git lines
+and Root; its expected link words came from `linkWord` itself; the doc
+omitted the other-spelling cases. Round 2 at `9e2cae7` confirmed all three resolved, by mutation for the
+first two, and nothing new. Open findings: none
+
+Next action:
+
+1. Owner, acceptance 5: in this checkout,
+   `go run ./cmd/grove context G-260927-ngkbz --project /Users/mascah/GitHub/mascah/grove`
+   and judge the rendered text (optionally score G-260928-rvg20's owner
+   column).
+2. `grove approve G-260927-n4wvk "VERDICT"` in this checkout, then
+   `grove integrate G-260927-n4wvk` in main's checkout.
