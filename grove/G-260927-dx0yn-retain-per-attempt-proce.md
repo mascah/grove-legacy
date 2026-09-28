@@ -4,10 +4,11 @@ type: work
 title: "Retain per-attempt process facts and show cost per work record"
 status: review
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-28T01:32:42Z"
+updated: "2026-09-28T16:18:52Z"
 size: medium
 relates_to: ["G-260921-sth8q", "G-260923-tnn5e", "G-260923-895zb", "G-260921-h46pb", "G-260923-p5pt6"]
 candidate: "24fc77a927c53bba2f0e912098d1a1c242d43211"
+approved: "24fc77a927c53bba2f0e912098d1a1c242d43211"
 ---
 
 ## Outcome
@@ -222,3 +223,5 @@ go run ./cmd/grove integrate G-260927-dx0yn
 
 Feedback on candidate 8cf2e4c, 2026-09-28: Process share and first edit are noise: across 46 attempts 91% of tool calls are Bash, ~800 file writes go through Bash vs 110 Edit/Write, record reads 337 via cat vs 31 via Read; first edit reads 'none' in 17/46 and is late or missing in 34/46. Drop both; keep Changed, totals, grove/guide counts. Optionally add time to first commit touching files outside the record root, from git at finish. Addressed in `1779bdc`, `655fc05` and `01c856b`, including the
 optional first commit (see Evidence).
+
+Verdict on candidate 24fc77a, 2026-09-28: approved
