@@ -15,25 +15,14 @@ import (
 
 // Shape is what an attempt's tool calls went to, derived from the whole of
 // events.jsonl when it is read, never stored. Tools counts every tool call,
-// subagents' included, as Metrics does. A call is process when it serves
-// the workflow rather than the task: a Bash command one of whose segments
-// runs grove, git worktree, or git branch, checkout or switch naming a
-// worktree- branch; an edit or Read under the record root. The first edit
-// is the first Edit, Write, MultiEdit or NotebookEdit outside the record
-// root. What it misses is documented under Attempts in docs/commands.md.
+// subagents' included, as Metrics does; Grove counts the Bash calls one of
+// whose segments runs grove. What it misses is documented under Attempts in
+// docs/commands.md.
 type Shape struct {
-	Tools     int            `json:"tool_calls"`
-	Process   int            `json:"process_calls"`
-	Guides    map[string]int `json:"guide_prints,omitempty"` // grove guide NAME runs, by NAME
-	FirstEdit *FirstEdit     `json:"first_edit,omitempty"`   // nil when there was none
-	Skipped   int            `json:"skipped_lines"`          // lines over MaxLine, not read: the counts are lower bounds
-}
-
-// FirstEdit is the first edit outside the record root.
-type FirstEdit struct {
-	Tool int       `json:"tool"`        // its index among the tool calls, from 1
-	At   time.Time `json:"at,omitzero"` // its event's timestamp; zero when the event had none
-	Path string    `json:"path"`
+	Tools   int            `json:"tool_calls"`
+	Grove   int            `json:"grove_calls"`
+	Guides  map[string]int `json:"guide_prints,omitempty"` // grove guide NAME runs, by NAME
+	Skipped int            `json:"skipped_lines"`          // lines over MaxLine, not read: the counts are lower bounds
 }
 
 // Changed is what the attempt's commits changed, base to HEAD, split at the
@@ -43,7 +32,10 @@ type Changed struct {
 	RecordRoot string   `json:"record_root"`
 	Records    []string `json:"records"` // under the record root
 	Other      []string `json:"other"`
-	Error      string   `json:"error,omitempty"` // Git could not say; the lists are empty
+	// FirstOther is the committer time of the first commit, base to HEAD,
+	// that touched a file outside the record root; zero when none did.
+	FirstOther time.Time `json:"first_other_commit,omitzero"`
+	Error      string    `json:"error,omitempty"` // Git could not say; the lists are empty
 }
 
 // recordRoot is the record folder, repository-relative, as grove.yaml at
@@ -80,6 +72,15 @@ func changedFiles(worktree, prefix, base, head string) *Changed {
 				}
 			}
 		}
+		if err == nil && len(c.Other) != 0 {
+			// Oldest last: --reverse applies after -n, so it cannot pick it.
+			if out, err = repo.Git(worktree, "log", "--format=%cI", base+".."+head, "--", ":(top)", ":(top,exclude)"+root); err == nil {
+				lines := strings.Fields(out)
+				if len(lines) != 0 {
+					c.FirstOther, err = time.Parse(time.RFC3339, lines[len(lines)-1])
+				}
+			}
+		}
 	}
 	if err != nil {
 		c.Error = err.Error()
@@ -88,9 +89,8 @@ func changedFiles(worktree, prefix, base, head string) *Changed {
 }
 
 // ReadShape reads all of an attempt's events, bounded per line as
-// ReadEvents is. cwd is the directory the provider ran in, against which a
-// relative path resolves, and root the record root, both absolute.
-func ReadShape(events, cwd, root string) (Shape, error) {
+// ReadEvents is.
+func ReadShape(events string) (Shape, error) {
 	s := Shape{}
 	err := eachLine(events, func(line []byte, _ int, over, _ bool) {
 		if over {
@@ -98,16 +98,13 @@ func ReadShape(events, cwd, root string) (Shape, error) {
 			return
 		}
 		var ev struct {
-			Type      string `json:"type"`
-			Timestamp string `json:"timestamp"`
-			Message   struct {
+			Type    string `json:"type"`
+			Message struct {
 				Content []struct {
 					Type  string `json:"type"`
 					Name  string `json:"name"`
 					Input struct {
-						Command  string `json:"command"`
-						File     string `json:"file_path"`
-						Notebook string `json:"notebook_path"`
+						Command string `json:"command"`
 					} `json:"input"`
 				} `json:"content"`
 			} `json:"message"`
@@ -120,34 +117,25 @@ func ReadShape(events, cwd, root string) (Shape, error) {
 				continue
 			}
 			s.Tools++
-			process := false
-			switch b.Name {
-			case "Bash":
-				for _, seg := range segments(b.Input.Command) {
-					if args, ok := groveArgs(seg); ok {
-						process = true
-						if len(args) > 1 && args[0] == "guide" && !strings.HasPrefix(args[1], "-") {
-							if s.Guides == nil {
-								s.Guides = map[string]int{}
-							}
-							s.Guides[args[1]]++
-						}
-					} else if gitSetup(seg) {
-						process = true
-					}
+			if b.Name != "Bash" {
+				continue
+			}
+			grove := false
+			for _, seg := range segments(b.Input.Command) {
+				args, ok := groveArgs(seg)
+				if !ok {
+					continue
 				}
-			case "Read":
-				process = under(cwd, root, b.Input.File)
-			case "Edit", "Write", "MultiEdit", "NotebookEdit":
-				file := b.Input.File + b.Input.Notebook // a tool has one or the other
-				process = under(cwd, root, file)
-				if !process && s.FirstEdit == nil {
-					at, _ := time.Parse(time.RFC3339Nano, ev.Timestamp)
-					s.FirstEdit = &FirstEdit{Tool: s.Tools, At: at, Path: file}
+				grove = true
+				if len(args) > 1 && args[0] == "guide" && !strings.HasPrefix(args[1], "-") {
+					if s.Guides == nil {
+						s.Guides = map[string]int{}
+					}
+					s.Guides[args[1]]++
 				}
 			}
-			if process {
-				s.Process++
+			if grove {
+				s.Grove++
 			}
 		}
 	})
@@ -178,46 +166,6 @@ func groveArgs(segment string) ([]string, bool) {
 		}
 	}
 	return nil, false
-}
-
-// gitSetup is a segment that sets up the work's checkout: git worktree, or
-// git branch, checkout or switch naming a worktree- branch.
-func gitSetup(segment string) bool {
-	f := strings.Fields(strings.TrimLeft(strings.TrimSpace(segment), "({"))
-	if len(f) < 2 || f[0] != "git" {
-		return false
-	}
-	for i := 1; i < len(f); i++ {
-		switch a := f[i]; {
-		case a == "-C" || a == "-c":
-			i++
-		case strings.HasPrefix(a, "-"):
-		case a == "worktree":
-			return true
-		case a == "branch" || a == "checkout" || a == "switch":
-			for _, b := range f[i+1:] {
-				if strings.HasPrefix(b, "worktree-") {
-					return true
-				}
-			}
-			return false
-		default:
-			return false
-		}
-	}
-	return false
-}
-
-// under reports whether file, relative to cwd unless absolute, is in root.
-func under(cwd, root, file string) bool {
-	if file == "" {
-		return false
-	}
-	if !filepath.IsAbs(file) {
-		file = filepath.Join(cwd, file)
-	}
-	rel, err := filepath.Rel(root, filepath.Clean(file))
-	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
 
 // Total is what a set of attempts, such as one work's, cost together. An

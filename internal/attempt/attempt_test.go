@@ -210,9 +210,8 @@ func TestRunToResult(t *testing.T) {
 	// The skill init writes, committed: its launch matches this grove's template.
 	write(t, root, SkillPath, grove.Entrypoints()[SkillPath])
 	git(t, root, "commit", "-qam", "the managed skill")
-	// One message reads the record and edits a file beside it, where the
-	// provider runs, which ShowContext's paths must classify.
-	tools := `echo '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"'"$PWD"'/grove/G-260101-00001-first.md"}},{"type":"tool_use","name":"Edit","input":{"file_path":"'"$PWD"'/x.go"}}]}}'`
+	// One message prints a guide and reads a file, which the shape counts.
+	tools := `echo '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"grove guide work"}},{"type":"tool_use","name":"Read","input":{"file_path":"x.go"}}]}}'`
 	fake(t, initLine+"\n"+tools+"\necho '{\"type\":\"weird\"}'\n"+resultLine("success", false))
 	l, facts := start(t, root, now)
 	if len(facts) != 2 || !strings.Contains(facts[0], "worktree-G-260101-00001 created at") || facts[1] != "warning: "+ReviewerPath+" is not in "+filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00001")+", so the attempt has no independent reviewer and work whose record requires one stays active; commit the files grove init wrote to give it one" {
@@ -263,7 +262,7 @@ func TestRunToResult(t *testing.T) {
 	if c := r.Changed; c == nil || c.Error != "" || c.RecordRoot != "grove" || len(c.Records)+len(c.Other) != 0 || ev.Turns != 3 {
 		t.Fatalf("changed %+v, turns %d", c, ev.Turns)
 	}
-	if v.Shape == nil || v.ShapeError != "" || v.Shape.Tools != 2 || v.Shape.Process != 1 || v.Shape.FirstEdit == nil || v.Shape.FirstEdit.Path != filepath.Join(l.Worktree, "x.go") {
+	if v.Shape == nil || v.ShapeError != "" || v.Shape.Tools != 2 || v.Shape.Grove != 1 || v.Shape.Guides["work"] != 1 {
 		t.Fatalf("shape %+v %q", v.Shape, v.ShapeError)
 	}
 	env, err := os.ReadFile(filepath.Join(l.Worktree, "env.txt"))

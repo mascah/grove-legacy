@@ -1,50 +1,42 @@
 package attempt
 
 import (
+	"context"
 	"maps"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/mascah/grove/internal/repo"
 )
 
 // G-260927-dx0yn: each fact the shape derives, and each limit docs/commands.md
-// states, from a recorded stream (testdata/shape-events.jsonl): the
-// provider ran in /w/p, whose record root is /w/p/grove.
+// states, from a recorded stream (testdata/shape-events.jsonl).
 func TestReadShape(t *testing.T) {
 	t.Parallel()
-	s, err := ReadShape(filepath.Join("testdata", "shape-events.jsonl"), "/w/p", "/w/p/grove")
+	s, err := ReadShape(filepath.Join("testdata", "shape-events.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Process: go run ./cmd/grove guide, cd && grove context, the Read and
-	// the relative Write and MultiEdit under the root, git worktree, a
-	// checkout -b of a worktree- branch, grove by path, grove guide without
-	// a name, and a heredoc line starting with grove (a known false
-	// positive). Not process: a Read outside the root, git checkout main,
-	// sed -i, env grove, $(grove …), FOO=1 grove, and an Edit of the root
-	// spelled through /private.
-	if s.Tools != 19 || s.Process != 10 || s.Skipped != 0 {
+	// Running grove: go run ./cmd/grove guide, cd && grove context, grove by
+	// path, grove guide without a name, and a heredoc line starting with
+	// grove (a known false positive). Not seen: env grove, $(grove …) and
+	// FOO=1 grove. The rest are git, edits, reads and sed.
+	if s.Tools != 19 || s.Grove != 5 || s.Skipped != 0 {
 		t.Fatalf("%+v", s)
 	}
 	if !maps.Equal(s.Guides, map[string]int{"work": 1, "model": 1}) {
 		t.Fatalf("guides %v", s.Guides)
 	}
-	// The first edit is a subagent's Edit, the 12th call: sed -i earlier is
-	// not an edit, the Write under the root is process.
-	want := FirstEdit{Tool: 12, At: time.Date(2026, 9, 22, 18, 34, 10, 0, time.UTC), Path: "/w/p/internal/y.go"}
-	if s.FirstEdit == nil || *s.FirstEdit != want {
-		t.Fatalf("first edit %+v", s.FirstEdit)
-	}
-	v := &View{Status: Finished, Launch: Launch{Worktree: "/w", Started: now}, Shape: &s}
-	if got := shapeText(v); got != "19 tool calls, 10 process (53%); guides printed: model 1, work 1; first edit outside the record root: tool 12, 4m10s after the start, p/internal/y.go" {
+	v := &View{Status: Finished, Shape: &s}
+	if got := shapeText(v); got != "19 tool calls, 5 running grove; guides printed: model 1, work 1" {
 		t.Fatal(got)
 	}
 
 	// A line over MaxLine is skipped and counted, so the counts are lower
-	// bounds; a running attempt's are so far; no edit and no timestamp are
-	// said, never filled.
+	// bounds; a running attempt's are so far.
 	data, err := os.ReadFile(filepath.Join("testdata", "shape-events.jsonl"))
 	if err != nil {
 		t.Fatal(err)
@@ -54,20 +46,19 @@ func TestReadShape(t *testing.T) {
 	if err := os.WriteFile(path, append(data, huge...), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	s, err = ReadShape(path, "/w/p", "/w/p/grove")
+	s, err = ReadShape(path)
 	if err != nil || s.Skipped != 1 || s.Tools != 19 {
 		t.Fatalf("%+v %v", s, err)
 	}
-	s.FirstEdit.At = time.Time{}
-	v = &View{Status: Running, Launch: Launch{Worktree: "/elsewhere", Started: now}, Shape: &s}
-	if got := shapeText(v); got != "so far, ≥19 tool calls, ≥10 process (53%); guides printed: model 1, work 1; first edit outside the record root: tool 12, at an unknown time, /w/p/internal/y.go; 1 oversized lines not read: the counts are lower bounds, and the first edit is the first in the lines read" {
+	v = &View{Status: Running, Shape: &s}
+	if got := shapeText(v); got != "so far, ≥19 tool calls, ≥5 running grove; guides printed: model 1, work 1; 1 oversized lines not read: the counts are lower bounds" {
 		t.Fatal(got)
 	}
 	v.Shape = &Shape{}
-	if got := shapeText(v); got != "so far, 0 tool calls, 0 process (0%); guides printed: none; no edit outside the record root" {
+	if got := shapeText(v); got != "so far, 0 tool calls, 0 running grove; guides printed: none" {
 		t.Fatal(got)
 	}
-	if s, err := ReadShape(filepath.Join(t.TempDir(), "missing.jsonl"), "/w/p", "/w/p/grove"); err != nil || s.Tools != 0 {
+	if s, err := ReadShape(filepath.Join(t.TempDir(), "missing.jsonl")); err != nil || s.Tools != 0 {
 		t.Fatalf("%+v %v", s, err)
 	}
 }
@@ -78,14 +69,28 @@ func TestChangedAndShapeFacts(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
 	base := git(t, root, "rev-parse", "HEAD")
-	write(t, root, "grove/G-260101-00003-plan.md", "plan")
-	write(t, root, "internal/a b.go", "package a")
-	write(t, root, "grovey.txt", "not under grove/")
-	git(t, root, "add", "-A")
-	git(t, root, "commit", "-qm", "work")
+	// A plan under the record root, then two commits outside it: the first
+	// of those is the first commit outside it.
+	commit := func(at time.Time, files ...string) {
+		for _, f := range files {
+			write(t, root, f, f)
+		}
+		git(t, root, "add", "-A")
+		cmd := repo.Command(context.Background(), root, "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", "commit", "-qm", "work")
+		cmd.Env = append(cmd.Env, "GIT_COMMITTER_DATE="+at.Format(time.RFC3339))
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("%v\n%s", err, out)
+		}
+	}
+	commit(now.Add(time.Minute), "grove/G-260101-00003-plan.md")
+	commit(now.Add(5*time.Minute), "internal/a b.go")
+	commit(now.Add(9*time.Minute), "grovey.txt")
 	c := changedFiles(root, "", base, git(t, root, "rev-parse", "HEAD"))
-	if c.Error != "" || c.RecordRoot != "grove" || strings.Join(c.Records, ",") != "grove/G-260101-00003-plan.md" || strings.Join(c.Other, ",") != "grovey.txt,internal/a b.go" {
+	if c.Error != "" || c.RecordRoot != "grove" || strings.Join(c.Records, ",") != "grove/G-260101-00003-plan.md" || strings.Join(c.Other, ",") != "grovey.txt,internal/a b.go" || !c.FirstOther.Equal(now.Add(5*time.Minute)) {
 		t.Fatalf("%+v", c)
+	}
+	if f := strings.Join(Facts(&View{Status: Finished, Launch: Launch{Started: now}, Result: &Result{Changed: c}}, func(s string) string { return s }), "\n"); !strings.Contains(f, "\nChanged: 2 outside grove/ (grovey.txt, internal/a b.go), 1 under it (grove/G-260101-00003-plan.md); first commit outside it 5m0s after the start\n") {
+		t.Fatal(f)
 	}
 	unknown := changedFiles(root, "", strings.Repeat("0", 40), base)
 	if unknown.Error == "" || len(unknown.Other) != 0 {

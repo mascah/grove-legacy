@@ -335,26 +335,19 @@ question; and whether each member's record on the target changed.
 `Changed:` is `git diff --name-only BASE HEAD`, recorded in `result.json`
 when the attempt finishes, since its worktree and branch may be gone when it
 is read, split into the files under the record root, which `grove.yaml` at
-the base names, and the rest; an attempt finished before this says it was not
-recorded, and one whose HEAD or `grove.yaml` Git could not read says why. `Shape:` is derived from all of `events.jsonl` each time the
-attempt is read, a line over 1 MiB skipped and counted, which makes its counts
-lower bounds (`≥`); the board does not read it. It counts every tool call,
-subagents' included, and those that are process, serving the workflow rather
-than the task: a Bash command one of whose segments, split at `;`, `&`, `|`
-and newlines without parsing quotes, runs `grove` (a program of that name
-by any path, or `go run` of a `cmd/grove` package), `git worktree`, or `git
-branch`, `checkout` or `switch` naming a `worktree-` branch; and an Edit,
-Write, MultiEdit, NotebookEdit or Read of a file under the record root.
-`grove guide NAME` runs are also counted by NAME. The first edit outside the
-record root is the first Edit, Write, MultiEdit or NotebookEdit of a file
-not under it, with its index among the tool calls and the time from the
-start to its event's timestamp. Known misses: `grove` through a wrapper,
-`$(…)`, `env` or a leading variable assignment is not seen; a heredoc's line
-that starts with `grove` is; an edit made through Bash, such as `sed -i` or a
-script, is not an edit; a guide or instructions file read as a file (a Read,
-`cat`) is neither process nor a guide print; a path that reaches the record
-root through a symbolic link is outside it. After a skipped line, the first
-edit is the first among the lines read. While the attempt runs these are so far.
+the base names, and the rest, with the time from the start to the committer
+time of the first commit that touched a file outside it; an attempt finished
+before this says it was not recorded, and one whose HEAD or `grove.yaml` Git
+could not read says why. `Shape:` is derived from all of `events.jsonl` each
+time the attempt is read, a line over 1 MiB skipped and counted, which makes
+its counts lower bounds (`≥`); the board does not read it. It counts every
+tool call, subagents' included, the Bash calls one of whose segments, split
+at `;`, `&`, `|` and newlines without parsing quotes, runs `grove` (a program
+of that name by any path, or `go run` of a `cmd/grove` package), and `grove
+guide NAME` runs by NAME. Known misses: `grove` through a wrapper, `$(…)`,
+`env` or a leading variable assignment is not seen; a heredoc's line that
+starts with `grove` is; a guide read as a file is not a guide print. While
+the attempt runs these are so far.
 Liveness is the owner's file lock, never a pid: `running` while it is held,
 `finished` once `result.json` exists, `orphaned` when the owner is gone but
 the provider's process group lives, `interrupted` when nothing is left and no

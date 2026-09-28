@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"fmt"
 	"maps"
-	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -105,7 +104,11 @@ func Facts(v *View, visible func(string) string) []string {
 		case c.Error != "":
 			line("Changed: unknown: %s", visible(c.Error))
 		default:
-			line("Changed: %d outside %s/%s, %d under it%s", len(c.Other), visible(c.RecordRoot), visible(some(c.Other)), len(c.Records), visible(some(c.Records)))
+			first := ""
+			if !c.FirstOther.IsZero() {
+				first = fmt.Sprintf("; first commit outside it %s after the start", max(c.FirstOther.Sub(l.Started), 0).Round(time.Second))
+			}
+			line("Changed: %d outside %s/%s, %d under it%s%s", len(c.Other), visible(c.RecordRoot), visible(some(c.Other)), len(c.Records), visible(some(c.Records)), first)
 		}
 		if len(members) > 1 {
 			for _, m := range r.Members {
@@ -144,33 +147,15 @@ func shapeText(v *View) string {
 	if s.Skipped != 0 {
 		at = "≥"
 	}
-	share := 0
-	if s.Tools != 0 {
-		share = (s.Process*100 + s.Tools/2) / s.Tools
-	}
-	text += fmt.Sprintf("%s%d tool calls, %s%d process (%d%%); guides printed: ", at, s.Tools, at, s.Process, share)
+	text += fmt.Sprintf("%s%d tool calls, %s%d running grove; guides printed: ", at, s.Tools, at, s.Grove)
 	if len(s.Guides) == 0 {
 		text += "none"
 	}
 	for i, name := range slices.Sorted(maps.Keys(s.Guides)) {
 		text += fmt.Sprintf("%s%s %d", map[bool]string{true: ", "}[i > 0], name, s.Guides[name])
 	}
-	e := s.FirstEdit
-	if e == nil {
-		text += "; no edit outside the record root"
-	} else {
-		after := "at an unknown time"
-		if !e.At.IsZero() {
-			after = e.At.Sub(v.Launch.Started).Round(time.Second).String() + " after the start"
-		}
-		file := e.Path
-		if rel, err := filepath.Rel(v.Launch.Worktree, file); err == nil && !strings.HasPrefix(rel, "..") {
-			file = rel
-		}
-		text += fmt.Sprintf("; first edit outside the record root: tool %d, %s, %s", e.Tool, after, file)
-	}
 	if s.Skipped != 0 {
-		text += fmt.Sprintf("; %d oversized lines not read: the counts are lower bounds, and the first edit is the first in the lines read", s.Skipped)
+		text += fmt.Sprintf("; %d oversized lines not read: the counts are lower bounds", s.Skipped)
 	}
 	return text
 }

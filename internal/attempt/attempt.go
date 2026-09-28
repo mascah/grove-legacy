@@ -1188,18 +1188,9 @@ func ShowContext(ctx context.Context, root, attempt string, events bool) (*View,
 		v.InputsChanged = strings.Join(changed, "; ")
 	}
 	if events {
-		l := &v.Launch
-		rel, err := recordRoot(ctx, root, l.Base, l.Prefix)
-		if ctx.Err() != nil {
-			return nil, ctx.Err()
-		}
-		if err == nil {
-			var s Shape
-			if s, err = ReadShape(v.EventsPath, filepath.Join(l.Worktree, l.Prefix), filepath.Join(l.Worktree, filepath.FromSlash(rel))); err == nil {
-				v.Shape = &s
-			}
-		}
-		if err != nil {
+		if s, err := ReadShape(v.EventsPath); err == nil {
+			v.Shape = &s
+		} else {
 			v.ShapeError = err.Error()
 		}
 	}
