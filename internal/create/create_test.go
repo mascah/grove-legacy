@@ -226,6 +226,9 @@ func TestNewRequiresGit(t *testing.T) {
 
 func TestNewCreatesValidRecords(t *testing.T) {
 	root := gitProject(t)
+	if _, err := New(load(t, root), "note", "T", "", now); err == nil || err.Error() != "record type must be work, question, decision, term, plan, review or page" {
+		t.Fatalf("an unknown type must be refused with the types: %v", err)
+	}
 	draws(t, "7k2qm", "0000z", "zzzzz")
 	path, err := New(load(t, root), "work", `Title: with "quotes" & more`, "", now)
 	if err != nil || path != "grove/G-260925-7k2qm-title-with-quotes-more.md" {

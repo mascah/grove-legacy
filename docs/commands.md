@@ -1,18 +1,72 @@
 # Command reference
 
 `grove --help` gives every command's usage. This document owns what it does
-not say about the commands below. The commands over records (`list`, `show`,
-`brief`, `check`, `new`, `update`, `convert`), project discovery and exit
-codes belong to the record model: its
-[reading and writing](record-model.md#reading-and-writing-records),
-[configuration and discovery](record-model.md#configuration-and-discovery),
-[conversion](record-model.md#identity-and-placement-apart-from-classification)
-and [brief](record-model.md#knowledge-records-and-the-brief) sections. `approve`,
-`feedback` and `integrate` belong to its
-[work lifecycle](record-model.md#work-lifecycle); `resolve` is under
-[attempts](#resolving-a-conflict). [The board](board.md) has
-its own document. Each command's acceptance, evidence and limits belong to
-the work record that delivered it.
+not say about the commands below. The contract they read and write, the
+configuration, types, fields, statuses and what `check` and `update` refuse,
+is [the record model](record-model.md) (`grove guide model`), and why it is
+so is [the record design](record-design.md). [The board](board.md) has its
+own document. Each command's acceptance, evidence and limits belong to the
+work record that delivered it.
+
+## Records
+
+`list`, `show`, `brief` and `check` read the selected checkout's live files,
+uncommitted records included, name the project on stderr, and change
+nothing. They load the whole record set before resolving relationships; a
+concurrent direct edit can invalidate a read, since the reader promises no
+transactional snapshot. `--project DIR` can come before or after the
+command, and `--help` needs no project.
+
+- `list` prints ID, type, status and title, ordered by `created` with
+  undated records last, then by ID; the order implies no urgency. One-line
+  output escapes control characters, so a multiline title cannot break the
+  table. `--status VALUE`, repeatable, keeps records whose status equals any
+  given value; a value that is no type's status, or an empty one, is a usage
+  error that lists the statuses, and a status no record holds prints the
+  header alone.
+- `show ID` writes the file's original bytes to stdout and the project and
+  file to stderr; `--json` prints `{id, path, revision, source}`, plus
+  `approved_by` while `approved` is set, derived from the latest verdict on
+  the candidate ([Judging and integrating](#judging-and-integrating)).
+- `new TYPE TITLE [--slug SLUG]` refuses an unknown type before anything
+  else, writes the record with a body skeleton, prints the root-relative
+  path, and fails without deleting the file if the project no longer
+  validates.
+- `update` prints `{id, path, revision, changed}`. A failure before the file
+  is replaced (a refused request, a stale revision, an invalid result)
+  leaves its bytes unchanged; once it is replaced, a later failure
+  (directory sync, final validation, output) is reported as an applied
+  update. `--commit`, after a change, commits the record's file alone with a
+  generated message and adds `commit` (`null` when nothing changed); a
+  commit Git refuses is reported as an applied, uncommitted update.
+- `convert` prints one JSON line, `{from, from_path, id, path}`, the caller's
+  durable old-to-new mapping. A rerun neither duplicates a record nor remaps
+  an identity, since a converted or missing source is refused before any ID
+  is drawn, and an existing target file refuses the run. It never rewrites
+  body prose, Markdown links (the moved file's own included), `examined`, or
+  anything outside the record root, and never modifies or removes the
+  original; set `work`, `status` or `examined` afterwards with `update`.
+
+## Judging and integrating
+
+`approve ID VERDICT` appends `Verdict on candidate X, DATE: VERDICT` as the
+body's last paragraph. `feedback ID TEXT` appends `Feedback on candidate X,
+DATE: TEXT`, and each other member of the group it reopens gets `Reopened
+with ID's feedback on candidate X, DATE`; nothing earlier is removed.
+`resolve ID` is that feedback, generated, naming the target commit and the
+conflicting files.
+
+`integrate ID` merges with a plain `git merge`, the commit its checks read,
+so a branch that moves meanwhile is not merged. A conflict is predicted with
+`git merge-tree` in objects only and refused before anything changes, naming
+the files and the next action; before Git 2.38, which cannot predict it, the
+merge's own conflict is aborted and refused instead. It refuses a merge that
+would carry the candidate of other unfinished, unapproved work on the
+branch, such as a member reopened by feedback and not handed off again.
+`--cleanup` removes the worktree and branch only where Git agrees and the
+worktree holds no ignored files. A squash or rebase that lands a different
+commit is a manual merge, followed by an `update` that names the landed
+commit as the candidate as it sets `done`.
 
 ## Versions
 
@@ -24,7 +78,9 @@ see a feature branch's progress without switching or merging. Live rows say
 how the file compares with that checkout's HEAD (`unchanged`, `modified`,
 `renamed`, `added`, `deleted`). Every row ends with a selector that binds the
 repository, source, commit, configuration, record path, and content revision;
-identical bytes in two sources get two selectors. Sources are listed on
+identical bytes in two sources get two selectors. A committed source's
+`grove.yaml` is checked for the form of `brief` only, never that the file
+exists, since only a live checkout must hold the brief. Sources are listed on
 stderr with any diagnostics; an invalid or unreadable source makes the result
 incomplete and the exit code 1 while valid sources still print. A live
 project must be inside its registered checkout: a project location reached
@@ -94,7 +150,8 @@ of content that it keeps apart:
   `grove.yaml`, the selected work records, and every `--include PATH`. That is
   the whole default. An include is a required project-relative file of any
   type; one file reached by several names (letter case, a hard link) is
-  included and charged once.
+  included and charged once. A page cannot be selected; a related page is
+  listed with status `-` and read only through `--include PATH`.
 - **Observations, listed and not read**: the transitive `depends_on`
   prerequisites, questions blocking the selected work or a prerequisite
   (resolved ones too), plans and reviews whose `work` names a selected ID, and

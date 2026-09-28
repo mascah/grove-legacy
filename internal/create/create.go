@@ -43,7 +43,7 @@ var (
 func New(p *project.Project, kindName, title, slug string, now time.Time) (string, error) {
 	k := project.Type(kindName)
 	if k == nil {
-		return "", fmt.Errorf("record type must be work, question, decision, term, plan, review, or page")
+		return "", fmt.Errorf("record type must be %s", project.Choices(project.TypeNames()))
 	}
 	title = strings.TrimSpace(title)
 	if title == "" {

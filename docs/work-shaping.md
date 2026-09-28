@@ -63,7 +63,7 @@ output is facts, not permission.
 | Starting | This guide, the repository's agent instructions, the direction document (`grove brief` prints it when `grove.yaml` names one), and `grove list`. |
 | The topic touches existing records | Those records in full (`grove show ID`), and `grove versions ID`. For existing work being refined, `grove context IDs`, adding `--include PATH` for a plan or document the record names. |
 | A claim depends on how something behaves | The actual code, configuration, or command output. |
-| A field's meaning or allowed value matters, or the CLI refuses a change | The record model, which `grove guide model` prints. |
+| A field's meaning matters, or a refusal leaves the fix unclear | The record model, which `grove guide model` prints. |
 | Not by default | Every record, historical reviews, the whole code base, other repositories. |
 
 A title and a status in a listing say nothing about a record's constraints.

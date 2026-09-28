@@ -723,7 +723,7 @@ func TestUpdateDoneMeansAnIntegratedCandidate(t *testing.T) {
 	if src := read(t, root, "grove/work/G-260101-00002-second.md"); !strings.Contains(src, "candidate: \"abcdefa\"\n") {
 		t.Fatalf("candidate must be quoted:\n%s", src)
 	}
-	refuse("G-260101-00001", "candidate: required while status is review", Field{"status", "review"})
+	refuse("G-260101-00001", "candidate: required while status is review: set candidate=COMMIT", Field{"status", "review"})
 	refuse("G-260101-00001", "set candidate=COMMIT", Field{"status", "done"})
 	refuse("G-260101-00001", "could not be checked against this checkout's HEAD", Field{"status", "done"}, Field{"candidate", strings.Repeat("a", 40)})
 	// A candidate on an unmerged branch is refused on main until it is merged.
@@ -871,15 +871,15 @@ func TestUpdateApprovedBindsToTheCandidate(t *testing.T) {
 		}
 	}
 	apply(t, root, "G-260101-00001", []Field{{"candidate", head}}) // allowed on every status; approval is not
-	refuse("approved: applies only while status is review or done", []Field{{"approved", head}})
+	refuse("approved: approval holds only while status is review or done", []Field{{"approved", head}})
 	apply(t, root, "G-260101-00001", []Field{{"status", "review"}})
-	refuse("approved: must name the candidate", []Field{{"approved", "abcdef0"}})
+	refuse("approved: approval is of one commit and must name the candidate", []Field{{"approved", "abcdef0"}})
 	apply(t, root, "G-260101-00001", []Field{{"approved", head}})
 	if r := record(t, root, "G-260101-00001"); r.Approved != head || !strings.Contains(string(r.Source), "approved: \""+head+"\"\n") {
 		t.Fatalf("approved must be written quoted: %+v", r)
 	}
-	refuse("approved: must name the candidate", []Field{{"candidate", "abcdef0"}})
-	refuse("approved: applies only while status is review or done", []Field{{"status", "active"}})
+	refuse("approved: approval is of one commit and must name the candidate", []Field{{"candidate", "abcdef0"}})
+	refuse("approved: approval holds only while status is review or done", []Field{{"status", "active"}})
 	apply(t, root, "G-260101-00001", []Field{{"status", "active"}}, "approved")
 	if r := record(t, root, "G-260101-00001"); r.Approved != "" || r.Candidate != head || r.Status != "active" {
 		t.Fatalf("reopening with the approval unset: %+v", r)
@@ -918,5 +918,34 @@ func TestUpdateDoneStaysOnTheTarget(t *testing.T) {
 	apply(t, root, "G-260101-00001", []Field{{"status", "done"}, {"candidate", candidate}})
 	if r := record(t, root, "G-260101-00001"); r.Status != "done" {
 		t.Fatalf("done on the target: %+v", r)
+	}
+}
+
+// TestUpdateRefusalsNameTheirRule is each refusal as a command's author reads
+// it: the accepted values or fields are listed, and a lifecycle refusal says
+// its rule and the correction, which then succeeds.
+func TestUpdateRefusalsNameTheirRule(t *testing.T) {
+	t.Parallel()
+	root := gitProject(t)
+	write(t, root, "grove/work/G-260101-00005-done.md", "---\nid: \"G-260101-00005\"\ntype: work\ntitle: Done\nstatus: done\ncandidate: \"abcdef0\"\napproved: \"abcdef0\"\n---\nBody.\n")
+	for _, tc := range []struct {
+		id   string
+		set  Field
+		want string
+	}{
+		{"G-260101-00001", Field{"status", "bogus"}, "status: expected proposed, active, review, done or abandoned for work"},
+		{"G-260101-00001", Field{"size", "huge"}, "size: expected small, medium or large"},
+		{"G-260101-00001", Field{"kind", "chore"}, "kind: expected feature, fix, refactor, investigation, tooling or release"},
+		{"G-260101-00001", Field{"zzz", "1"}, "zzz is not a field that update accepts on work records; it accepts type, title, status, relates_to, kind, size, priority, members, depends_on, candidate or approved"},
+		{"G-260101-00003", Field{"work", "[]"}, "work is not a field that update accepts on question records; it accepts type, title, status, relates_to or blocks"},
+		{"G-260101-00004", Field{"status", "open"}, "status: expected proposed, accepted, rejected or superseded for decision"},
+		{"G-260101-00005", Field{"status", "active"}, "approved: approval holds only while status is review or done, not active: unset approved, or set status review or done"},
+	} {
+		if _, err := Apply(root, Request{ID: tc.id, Set: []Field{tc.set}}, now, nil); err == nil || !strings.Contains(err.Error(), tc.want) {
+			t.Errorf("%s %s=%s: wanted %q, got %v", tc.id, tc.set.Name, tc.set.Value, tc.want, err)
+		}
+	}
+	if _, err := Apply(root, Request{ID: "G-260101-00005", Set: []Field{{"status", "active"}}, Unset: []string{"approved"}}, now, nil); err != nil {
+		t.Fatalf("the correction the refusal names was refused: %v", err)
 	}
 }

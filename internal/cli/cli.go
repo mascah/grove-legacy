@@ -578,8 +578,16 @@ func parseArgs(args []string) (a invocation, err error) {
 			return nil
 		}},
 		{"--status", "status", func(value string) error {
-			if !slices.ContainsFunc(project.Types, func(t project.TypeInfo) bool { return slices.Contains(t.Statuses, value) }) {
-				return fmt.Errorf("is not a status of any record type: %s", visible(value))
+			var statuses []string
+			for _, t := range project.Types {
+				for _, s := range t.Statuses {
+					if !slices.Contains(statuses, s) {
+						statuses = append(statuses, s)
+					}
+				}
+			}
+			if !slices.Contains(statuses, value) {
+				return fmt.Errorf("is not a status of any record type, which are %s: %s", project.Choices(statuses), visible(value))
 			}
 			a.statuses = append(a.statuses, value)
 			return nil

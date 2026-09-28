@@ -21,7 +21,8 @@ version` names that copy: its guides digest covers the three guides and the
 model, and its content digest covers every shipped document together with
 the adapters `init` generates ([G-260925-358a2](G-260925-358a2-give-every-distributed-b.md)).
 
-Not shipped: the brief, the command reference, the board guide, AGENTS.md,
+Not shipped: the brief, the command reference, the board guide, the record
+design (the reasons behind the model), AGENTS.md,
 this repository's records, and its own `.claude/skills/`,
 `.agents/skills/` and `.claude/agents/` adapters, which read the documents
 as files. The adapters `init` writes, the `grove-reviewer` agent definition

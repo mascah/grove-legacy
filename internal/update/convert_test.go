@@ -77,7 +77,7 @@ func TestConvertRefusals(t *testing.T) {
 		{ConvertRequest{Source: "grove/whatever.md", Type: "page", Title: "T"}, "inside the record root"},
 		{ConvertRequest{Source: "docs/plans/old-plan.md"}, "already converted"},
 		{ConvertRequest{Source: "grove.yaml", Type: "page", Title: "T"}, "clean path"},
-		{ConvertRequest{Source: "docs/other.md", Type: "note", Title: "T"}, "requires --type"},
+		{ConvertRequest{Source: "docs/other.md", Type: "note", Title: "T"}, "requires --type (work, question, decision, term, plan, review or page)"},
 	} {
 		if _, err := Convert(root, tc.req); err == nil || !strings.Contains(err.Error(), tc.want) {
 			t.Fatalf("%+v: err = %v, want %q", tc.req, err, tc.want)
@@ -122,7 +122,7 @@ func TestReclassifyKeepsIdentityAndPath(t *testing.T) {
 	if err != nil || res.Path != "grove/notes/G-260101-00050-idea.md" || res.ID != "G-260101-00050" {
 		t.Fatalf("res=%+v err=%v", res, err)
 	}
-	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status"}}, now, nil); err == nil || !strings.Contains(err.Error(), "priority: unknown field") {
+	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status"}}, now, nil); err == nil || !strings.Contains(err.Error(), "priority: not a field of page records") {
 		t.Fatalf("work fields survived on a page: %v", err)
 	}
 	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status", "priority"}}, now, nil); err != nil {
