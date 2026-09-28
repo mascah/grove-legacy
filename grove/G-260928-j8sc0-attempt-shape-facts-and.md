@@ -13,40 +13,37 @@ work: ["G-260927-dx0yn"]
 Implements [G-260927-dx0yn](G-260927-dx0yn-retain-per-attempt-proce.md)'s proposed
 design, from `main` at `38511c1`.
 
-- **Record root.** Both new facts need it, and `attempt.json` does not hold
+- **Record root.** Files changed needs it, and `attempt.json` does not hold
   it. It is read from `grove.yaml` at the attempt's base commit
-  (`git show BASE:PREFIX/grove.yaml`, `project.RecordRoot`), which outlives
-  the worktree. Unreadable, the facts that need it are unknown.
-- **Shape, at read time.** `ReadShape(events, root)` scans all of
+  (`git show BASE:PREFIX/grove.yaml`, `project.RecordRoot`). Unreadable,
+  files changed is unknown.
+- **Shape, at read time.** `ReadShape(events)` scans all of
   `events.jsonl` line by line, bounded per line as `ReadEvents` is (the
-  same loop, factored out), and classifies each `tool_use`, subagents'
-  included, so its index matches `Metrics`' tool count:
-  - process: a Bash command one of whose `;`, `&&`, `||`, `|` or newline
-    segments runs `grove` (a program named `grove`, or `go run …/cmd/grove`)
-    or `git worktree`, or makes a `worktree-` branch with `git branch`,
-    `checkout -b` or `switch -c`; an Edit, Write, MultiEdit or NotebookEdit
-    under the record root; a Read under it. A guide is read by `grove guide
-    NAME`, so it is a grove command; guide prints are also counted by NAME.
-  - the first edit outside the record root: the first Edit, Write, MultiEdit
-    or NotebookEdit whose path is not under it, with its tool index and its
-    event's timestamp; elapsed is from the launch's `started`.
-  - limits, documented: `grove` through a wrapper, `$(…)`, `env` or a
-    variable assignment is missed; an edit made through Bash (`sed -i`, a
-    script) is not an edit; a path spelled through a symlink of the root
-    is outside it.
-  Only `grove attempt` reads it (`ShowContext` with events). The board
-  keeps its bounded window and does not show it. For a running attempt it
-  is labelled "so far", and `≥` where an oversized line was skipped.
+  same loop, factored out), and counts each `tool_use`, subagents'
+  included, as `Metrics` does; the Bash calls one of whose `;`, `&&`, `||`,
+  `|` or newline segments runs `grove` (a program named `grove`, or `go run
+  …/cmd/grove`); and `grove guide NAME` runs by NAME. Limits, documented:
+  `grove` through a wrapper, `$(…)`, `env` or a variable assignment is
+  missed; a heredoc line starting with `grove` counts. Only `grove attempt`
+  reads it (`ShowContext` with events). The board keeps its bounded window
+  and does not show it. For a running attempt it is labelled "so far", and
+  `≥` where an oversized line was skipped.
 - **Files changed, at finish.** `reconcile` adds `changed` to
   `result.json`: `git diff --name-only BASE HEAD` in the worktree, split
-  into inside and outside the record root. An attempt finished before this
-  prints it as not recorded.
+  into inside and outside the record root, which `grove.yaml` at the base
+  names, and the committer time of the first commit, along first parents,
+  that touched a file outside it. An attempt finished before this prints it
+  as not recorded.
 - **Totals.** `attempt.Total(views)` sums attempts, the result events' USD
   and turns, and minutes from start to finish, and counts what it could not
   sum (no result event, still running). `grove attempts ID` prints it after
   the table; the board's attempts screen for one work prints it under the
   header. An attempt of a selection counts in full for each member.
 - `attempt --json` carries `shape`, `shape_error` and `result.changed`.
+
+Revised after the owner's feedback on `8cf2e4c` (in the work record's
+Next): the process share and the first edit outside the record root were
+dropped, and the time to the first commit outside it added.
 
 ## Steps
 
@@ -58,7 +55,8 @@ design, from `main` at `38511c1`.
 4. `docs/commands.md` "Attempts".
 5. Verification as `CLAUDE.md` says, an independent review, handoff.
 
-All five steps done at `e096c33`; the evidence is in
+All five steps done at `e096c33`, and redone for the feedback in `1779bdc`
+and `655fc05`; the evidence is in
 [G-260927-dx0yn](G-260927-dx0yn-retain-per-attempt-proce.md). Built as designed,
 with two additions: `result.json`'s events gain `turns`, `num_turns` summed
 over a run's result events, since each counts one query of a resumed session

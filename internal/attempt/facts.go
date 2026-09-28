@@ -108,7 +108,7 @@ func Facts(v *View, visible func(string) string) []string {
 			if !c.FirstOther.IsZero() {
 				d := c.FirstOther.Sub(l.Started).Round(time.Second)
 				first = fmt.Sprintf("; first commit outside it %s after the start", d)
-				if d < 0 { // a skewed clock, said rather than hidden
+				if d < 0 { // a skewed clock, or a target fast-forwarded in: said, not hidden
 					first = fmt.Sprintf("; first commit outside it %s before the start", -d)
 				}
 			}
