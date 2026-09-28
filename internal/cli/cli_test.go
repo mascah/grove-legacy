@@ -232,5 +232,8 @@ func TestListFiltersByStatus(t *testing.T) {
 		if code := Run(args, t.TempDir(), &out, &errOut); code != 2 || out.Len() != 0 || !strings.Contains(errOut.String(), "--status") {
 			t.Fatalf("%v: code=%d stderr=%s", args, code, errOut.String())
 		}
+		if args[len(args)-1] == "settledd" && !strings.Contains(errOut.String(), "which are proposed, active, review, done, abandoned, open, resolved, accepted, rejected, superseded, settled or current: settledd") {
+			t.Fatalf("an unknown status must list the statuses: %s", errOut.String())
+		}
 	}
 }

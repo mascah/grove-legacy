@@ -257,9 +257,9 @@ func TestKnowledgeRecordProblemsNameFileAndField(t *testing.T) {
 		{"work names a term", "grove/reviews/G-260101-00002.md", typed("G-260101-00002", "review", "current", "work: [\"G-260101-00001\"]\n"), "grove/reviews/G-260101-00002.md: work: target G-260101-00001 must be work"},
 		{"unquoted numeric commit", "grove/reviews/G-260101-00002.md", typed("G-260101-00002", "review", "current", "examined: 1234567\n"), "examined: expected a nonempty string"},
 		{"not a commit", "grove/reviews/G-260101-00002.md", typed("G-260101-00002", "review", "current", "examined: \"main\"\n"), "examined: expected a quoted Git commit"},
-		{"examined on a plan", "grove/plans/G-260101-00002.md", typed("G-260101-00002", "plan", "current", "examined: \"42c077d\"\n"), "examined: unknown field"},
-		{"work on a term", "grove/terms/G-260101-00003.md", typed("G-260101-00003", "term", "proposed", "work: [\"G-260101-00001\"]\n"), "work: unknown field"},
-		{"bad status", "grove/terms/G-260101-00003.md", typed("G-260101-00003", "term", "done", ""), "status: unsupported lifecycle value for term"},
+		{"examined on a plan", "grove/plans/G-260101-00002.md", typed("G-260101-00002", "plan", "current", "examined: \"42c077d\"\n"), "examined: not a field of plan records, which take"},
+		{"work on a term", "grove/terms/G-260101-00003.md", typed("G-260101-00003", "term", "proposed", "work: [\"G-260101-00001\"]\n"), "work: not a field of term records, which take id, type, title, status, relates_to, created, updated or formerly"},
+		{"bad status", "grove/terms/G-260101-00003.md", typed("G-260101-00003", "term", "done", ""), "status: expected proposed or settled for term"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -451,12 +451,12 @@ func TestDiscoversByIdentityNotLocation(t *testing.T) {
 func TestRecordProblems(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct{ name, path, source, want string }{
-		{"page with a lifecycle", "grove/a.md", "---\nid: G-260101-00002\ntype: page\ntitle: T\nstatus: proposed\n---\n", "status: unknown field"},
-		{"page with a work field", "grove/a.md", "---\nid: G-260101-00002\ntype: page\ntitle: T\npriority: 1\n---\n", "priority: unknown field"},
+		{"page with a lifecycle", "grove/a.md", "---\nid: G-260101-00002\ntype: page\ntitle: T\nstatus: proposed\n---\n", "status: not a field of page records"},
+		{"page with a work field", "grove/a.md", "---\nid: G-260101-00002\ntype: page\ntitle: T\npriority: 1\n---\n", "priority: not a field of page records"},
 		{"no type is not a page", "grove/a.md", "---\nid: G-260101-00002\ntitle: T\n---\n", "type: required field is missing"},
 		{"unknown type", "grove/a.md", typed("G-260101-00002", "note", "open", ""), "type: unknown record type"},
 		{"work record missing status", "grove/a.md", "---\nid: G-260101-00002\ntype: work\ntitle: T\n---\n", "status: required field is missing"},
-		{"work with a bad status", "grove/a.md", typed("G-260101-00002", "work", "settled", ""), "status: unsupported lifecycle value for work"},
+		{"work with a bad status", "grove/a.md", typed("G-260101-00002", "work", "settled", ""), "status: expected proposed, active, review, done or abandoned for work"},
 		{"plain Markdown", "grove/a.md", "# Just prose\n", "frontmatter: expected an opening --- line"},
 		{"uncanonical ID", "grove/a.md", typed("G-02", "work", "proposed", ""), "id: expected a canonical ID, e.g. G-260925-7k2qm"},
 		{"unknown prefix", "grove/a.md", typed("X-002", "work", "proposed", ""), "id: expected a canonical ID"},
@@ -491,15 +491,15 @@ func TestReviewLifecycleAndCandidate(t *testing.T) {
 		{"done with one", typed("G-260101-00002", "work", "done", commit), ""},
 		{"not a commit", typed("G-260101-00002", "work", "active", "candidate: \"main\"\n"), "candidate: expected a quoted Git commit"},
 		{"unquoted", typed("G-260101-00002", "work", "active", "candidate: 1234567\n"), "candidate: expected a nonempty string"},
-		{"only on work", typed("G-260101-00002", "plan", "current", commit), "candidate: unknown field"},
-		{"review is a work status only", typed("G-260101-00002", "plan", "review", ""), "status: unsupported lifecycle value for plan"},
+		{"only on work", typed("G-260101-00002", "plan", "current", commit), "candidate: not a field of plan records"},
+		{"review is a work status only", typed("G-260101-00002", "plan", "review", ""), "status: expected current or superseded for plan"},
 		{"approved in review", typed("G-260101-00002", "work", "review", commit+approved), ""},
 		{"approved in done", typed("G-260101-00002", "work", "done", commit+approved), ""},
-		{"approved must name the candidate", typed("G-260101-00002", "work", "review", "candidate: \"abcdef0\"\n"+approved), "approved: must name the candidate"},
-		{"approved needs a candidate", typed("G-260101-00002", "work", "done", approved), "approved: must name the candidate"},
-		{"approved before review", typed("G-260101-00002", "work", "active", commit+approved), "approved: applies only while status is review or done"},
+		{"approved must name the candidate", typed("G-260101-00002", "work", "review", "candidate: \"abcdef0\"\n"+approved), "approved: approval is of one commit and must name the candidate abcdef0"},
+		{"approved needs a candidate", typed("G-260101-00002", "work", "done", approved), "approved: approval is of the candidate, and there is none"},
+		{"approved before review", typed("G-260101-00002", "work", "active", commit+approved), "approved: approval holds only while status is review or done, not active: unset approved"},
 		{"approved not a commit", typed("G-260101-00002", "work", "review", commit+"approved: \"HEAD\"\n"), "approved: expected a quoted Git commit"},
-		{"approved only on work", typed("G-260101-00002", "review", "current", approved), "approved: unknown field"},
+		{"approved only on work", typed("G-260101-00002", "review", "current", approved), "approved: not a field of review records"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -557,6 +557,56 @@ func TestPolicy(t *testing.T) {
 	for file, want := range map[string]string{"grove.yaml": "grove.yaml", ".github/w/x.yml": ".github/**", "go.sum": "*.sum", "a/go.sum": "", ".github": "", "x/grove.yaml": ""} {
 		if got, _ := p.Matches(file); got != want {
 			t.Errorf("Matches(%q) = %q, want %q", file, got, want)
+		}
+	}
+}
+
+// TestRefusalsNameTheirRule holds every refusal of an enumerated value or an
+// unknown key to listing what is accepted, from the same tables validation
+// checks, and each lifecycle refusal to stating its rule and the correction,
+// so a refused command can be corrected without the record model.
+func TestRefusalsNameTheirRule(t *testing.T) {
+	t.Parallel()
+	const id, commit = "G-260101-00002", "0123456789abcdef0123456789abcdef01234567"
+	var names []string
+	type refusal struct{ name, source, want string }
+	cases := []refusal{
+		{"kind", typed(id, "work", "proposed", "kind: chore\n"), "kind: expected " + Choices(Kinds)},
+		{"size", typed(id, "work", "proposed", "size: huge\n"), "size: expected " + Choices(Sizes)},
+		{"priority", typed(id, "work", "proposed", "priority: 9\n"), "priority: expected 1 (highest) through 5 (lowest)"},
+		{"candidate in review", typed(id, "work", "review", ""), "candidate: required while status is review: set candidate=COMMIT"},
+		{"approved off review", typed(id, "work", "active", "candidate: \""+commit+"\"\napproved: \""+commit+"\"\n"), "approved: approval holds only while status is review or done, not active: unset approved, or set status review or done"},
+		{"approved another commit", typed(id, "work", "review", "candidate: \"abcdef0\"\napproved: \""+commit+"\"\n"), "approved: approval is of one commit and must name the candidate abcdef0"},
+		{"approved without candidate", typed(id, "work", "done", "approved: \""+commit+"\"\n"), "approved: approval is of the candidate, and there is none: set candidate"},
+	}
+	for _, ty := range Types {
+		names = append(names, ty.Name)
+		status := "status: bogus\n"
+		if len(ty.Statuses) == 0 {
+			status = ""
+		} else {
+			cases = append(cases, refusal{ty.Name + " status", "---\nid: " + id + "\ntype: " + ty.Name + "\ntitle: T\n" + status + "---\n", "status: expected " + Choices(ty.Statuses) + " for " + ty.Name})
+			status = "status: " + ty.Statuses[0] + "\n"
+		}
+		cases = append(cases, refusal{ty.Name + " field", "---\nid: " + id + "\ntype: " + ty.Name + "\ntitle: T\n" + status + "zzz: x\n---\n", "zzz: not a field of " + ty.Name + " records, which take " + Choices(ty.Keys())})
+	}
+	cases = append(cases, refusal{"type", typed(id, "note", "open", ""), "type: unknown record type; expected " + Choices(names)})
+	for _, tc := range cases {
+		_, ds := ParseRecord("grove/a.md", []byte(tc.source))
+		if got := diagnostics(ds); !strings.Contains(got, tc.want) || strings.Count(got, "\n") != 0 {
+			t.Errorf("%s: wanted one line holding %q; got %q", tc.name, tc.want, got)
+		}
+	}
+	for _, tc := range []struct{ config, want string }{
+		{"extra: 1\n", "extra: unknown configuration key; grove.yaml takes " + Choices(ConfigKeys)},
+		{"run:\n  bound: 1\n", "run.bound: unknown key; run: takes " + Choices(RunKeys)},
+		{"policy:\n  x: 1\n", "policy.x: unknown key; policy: takes " + Choices(PolicyKeys)},
+		{"policy:\n  budget: 1\n  resolve:\n    x: 1\n", "policy.resolve.x: unknown key; policy.resolve takes " + Choices(PolicyResolveKeys)},
+		{"policy:\n  approve:\n    verify: [true]\n    x: 1\n", "policy.approve.x: unknown key; policy.approve takes " + Choices(PolicyApproveKeys)},
+	} {
+		_, _, ds := ParseConfig([]byte("schema_version: 3\nrecords: grove\n" + tc.config))
+		if got := diagnostics(ds); !strings.Contains(got, tc.want) {
+			t.Errorf("%q: wanted %q; got %q", tc.config, tc.want, got)
 		}
 	}
 }

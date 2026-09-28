@@ -168,21 +168,49 @@ func (m *metadata) listField(key string) []string {
 }
 
 // TypeInfo is one record type. Statuses[0] is what new writes; a type without
-// statuses has no lifecycle.
+// statuses has no lifecycle. Fields are the type's own, beyond Envelope.
 type TypeInfo struct {
 	Name     string
 	Statuses []string
+	Fields   []string
 }
 
-// Types is the whole record vocabulary, in ID display order.
+// Types is the whole record vocabulary, in ID display order. These tables,
+// Envelope, Kinds and Sizes are what validation checks, what its messages
+// list, and what grove guide model must print (model_test.go).
 var Types = []TypeInfo{
-	{"work", []string{"proposed", "active", "review", "done", "abandoned"}},
-	{"question", []string{"open", "resolved"}},
-	{"decision", []string{"proposed", "accepted", "rejected", "superseded"}},
-	{"term", []string{"proposed", "settled"}},
-	{"plan", []string{"current", "superseded"}},
-	{"review", []string{"current", "superseded"}},
-	{"page", nil},
+	{"work", []string{"proposed", "active", "review", "done", "abandoned"}, []string{"kind", "size", "priority", "members", "depends_on", "candidate", "approved"}},
+	{"question", []string{"open", "resolved"}, []string{"blocks"}},
+	{"decision", []string{"proposed", "accepted", "rejected", "superseded"}, nil},
+	{"term", []string{"proposed", "settled"}, nil},
+	{"plan", []string{"current", "superseded"}, []string{"work"}},
+	{"review", []string{"current", "superseded"}, []string{"work", "examined"}},
+	{"page", nil, nil},
+}
+
+// Envelope is the fields every record may carry; a type without statuses
+// carries no status.
+var Envelope = []string{"id", "type", "title", "status", "relates_to", "created", "updated", "formerly"}
+
+// Kinds and Sizes are the values of work's kind and size.
+var Kinds = []string{"feature", "fix", "refactor", "investigation", "tooling", "release"}
+var Sizes = []string{"small", "medium", "large"}
+
+// Keys is every frontmatter field a record of this type may carry.
+func (t TypeInfo) Keys() []string {
+	keys := slices.Clone(Envelope)
+	if len(t.Statuses) == 0 {
+		keys = slices.DeleteFunc(keys, func(key string) bool { return key == "status" })
+	}
+	return append(keys, t.Fields...)
+}
+
+// Choices renders values for a message: "a, b or c".
+func Choices(values []string) string {
+	if len(values) < 2 {
+		return strings.Join(values, "")
+	}
+	return strings.Join(values[:len(values)-1], ", ") + " or " + values[len(values)-1]
 }
 
 // NeutralPrefix starts every ID Grove issues, whatever the type.
@@ -260,29 +288,35 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 	r.Type = m.stringField("type", true)
 	r.Title = m.stringField("title", true)
 	t := Type(r.Type)
-	allowed := []string{"id", "type", "title", "status", "relates_to", "created", "updated", "formerly"}
+	allowed := Envelope
+	if t != nil {
+		allowed = t.Keys()
+	}
 	// The type field alone classifies a record, so an unknown or missing one
 	// is an error rather than a generic page.
 	if r.Type != "" && t == nil {
-		m.problem("type", "unknown record type; expected work, question, decision, term, plan, review, or page")
+		names := make([]string, len(Types))
+		for i, t := range Types {
+			names[i] = t.Name
+		}
+		m.problem("type", "unknown record type; expected "+Choices(names))
 	}
 	if !IDPattern.MatchString(r.ID) {
 		m.problem("id", "expected a canonical ID, e.g. G-260925-7k2qm")
 	}
 	r.Formerly = m.stringField("formerly", false)
-	if t != nil && len(t.Statuses) == 0 { // a page has no lifecycle, so status is an unknown field on it
-		allowed = slices.DeleteFunc(allowed, func(key string) bool { return key == "status" })
-	} else if r.Status = m.stringField("status", true); t == nil || !slices.Contains(t.Statuses, r.Status) {
-		m.problem("status", "unsupported lifecycle value for "+r.Type)
+	if t == nil || len(t.Statuses) != 0 { // a page has no lifecycle, so status is an unknown field on it
+		if r.Status = m.stringField("status", true); t != nil && r.Status != "" && !slices.Contains(t.Statuses, r.Status) {
+			m.problem("status", "expected "+Choices(t.Statuses)+" for "+r.Type)
+		}
 	}
 	if r.Type == "work" {
-		allowed = append(allowed, "kind", "size", "priority", "members", "depends_on")
 		r.Kind, r.Size = m.stringField("kind", false), m.stringField("size", false)
-		if r.Kind != "" && !slices.Contains([]string{"feature", "fix", "refactor", "investigation", "tooling", "release"}, r.Kind) {
-			m.problem("kind", "unsupported work kind")
+		if r.Kind != "" && !slices.Contains(Kinds, r.Kind) {
+			m.problem("kind", "expected "+Choices(Kinds))
 		}
-		if r.Size != "" && !slices.Contains([]string{"small", "medium", "large"}, r.Size) {
-			m.problem("size", "expected small, medium, or large")
+		if r.Size != "" && !slices.Contains(Sizes, r.Size) {
+			m.problem("size", "expected "+Choices(Sizes))
 		}
 		if priority, ok := m.integerField("priority", false); ok {
 			r.Priority = &priority
@@ -295,45 +329,48 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 		// integrated can be compared to it. Its absence on a done record means
 		// the record predates the review lifecycle and claims only branch-local
 		// completion; the reader never rewrites that.
-		allowed = append(allowed, "candidate")
 		if r.Candidate = m.stringField("candidate", false); r.Candidate != "" && !commitPattern.MatchString(r.Candidate) {
 			m.problem("candidate", "expected a quoted Git commit of 7 to 40 lowercase hex digits")
 		} else if r.Candidate == "" && r.Status == "review" {
-			m.problem("candidate", "required while status is review: the commit offered for judgment")
+			m.problem("candidate", "required while status is review: set candidate=COMMIT, the commit offered for judgment, in the same update")
 		}
 		// Approval is of one commit (G-260921-btyck): the field must name the candidate,
 		// so a changed candidate cannot inherit it, and it belongs only to a
 		// candidate awaiting integration or integrated. Feedback that reopens
 		// the work removes it in the same update.
-		allowed = append(allowed, "approved")
 		if r.Approved = m.stringField("approved", false); r.Approved != "" {
 			switch {
 			case !commitPattern.MatchString(r.Approved):
 				m.problem("approved", "expected a quoted Git commit of 7 to 40 lowercase hex digits")
 			case r.Approved != r.Candidate:
-				m.problem("approved", "must name the candidate: approval is of one commit, and a changed candidate needs its own")
+				if r.Candidate == "" {
+					m.problem("approved", "approval is of the candidate, and there is none: set candidate to the approved commit, or unset approved")
+				} else {
+					m.problem("approved", "approval is of one commit and must name the candidate "+r.Candidate+"; a changed candidate needs its own approval")
+				}
 			case r.Status != "review" && r.Status != "done":
-				m.problem("approved", "applies only while status is review or done; unset it when reopening the work")
+				m.problem("approved", "approval holds only while status is review or done, not "+r.Status+": unset approved, or set status review or done")
 			}
 		}
 	}
 	if r.Type == "question" {
-		allowed = append(allowed, "blocks")
 		r.Blocks = m.listField("blocks")
 	}
 	if r.Type == "plan" || r.Type == "review" {
-		allowed = append(allowed, "work")
 		r.Work = m.listField("work")
 	}
 	if r.Type == "review" {
-		allowed = append(allowed, "examined")
 		if r.Examined = m.stringField("examined", false); r.Examined != "" && !commitPattern.MatchString(r.Examined) {
 			m.problem("examined", "expected a quoted Git commit of 7 to 40 lowercase hex digits")
 		}
 	}
 	for key := range m.fields {
 		if !slices.Contains(allowed, key) {
-			m.problem(key, "unknown field or not allowed on this record type")
+			if t == nil {
+				m.problem(key, "unknown field")
+			} else {
+				m.problem(key, "not a field of "+r.Type+" records, which take "+Choices(allowed))
+			}
 		}
 	}
 	r.RelatesTo = m.listField("relates_to")

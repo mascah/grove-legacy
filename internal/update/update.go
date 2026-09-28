@@ -211,36 +211,38 @@ func message(id string, req Request) string {
 // plan validates the request against the record's type and drops fields whose
 // parsed meaning already matches, so a no-op never rewrites the file.
 func plan(r *project.Record, req Request) ([]change, error) {
-	fields := map[string][]string{
-		"work":     {"title", "status", "relates_to", "kind", "priority", "size", "members", "depends_on", "candidate", "approved"},
-		"question": {"title", "status", "relates_to", "blocks"},
-		"decision": {"title", "status", "relates_to"},
-		"term":     {"title", "status", "relates_to"},
-		"plan":     {"title", "status", "relates_to", "work"},
-		"review":   {"title", "status", "relates_to", "work", "examined"},
-		"page":     {"title", "relates_to"},
+	// type is free to change; formerly is fixed, since only convert writes it.
+	fixed := []string{"id", "created", "updated", "formerly"}
+	fields := func(name string) []string {
+		t := project.Type(name)
+		if t == nil {
+			return nil
+		}
+		return slices.DeleteFunc(t.Keys(), func(key string) bool { return slices.Contains(fixed, key) })
 	}
 	// Classification can change while ID and path stay. The request may then
 	// name the new type's fields too, and whatever the old type leaves behind;
 	// the candidate must still satisfy the new type's whole contract.
-	allowed := append(slices.Clone(fields[r.Type]), "type")
+	allowed := fields(r.Type)
 	retype := false
 	for _, f := range req.Set {
 		if f.Name == "type" {
 			retype = true
-			allowed = append(allowed, fields[f.Value]...)
+			for _, key := range fields(f.Value) {
+				if !slices.Contains(allowed, key) {
+					allowed = append(allowed, key)
+				}
+			}
 		}
 	}
 	lists := map[string][]string{"relates_to": r.RelatesTo, "members": r.Members, "depends_on": r.DependsOn, "blocks": r.Blocks, "work": r.Work}
 	strs := map[string]string{"title": r.Title, "status": r.Status, "kind": r.Kind, "size": r.Size, "examined": r.Examined, "candidate": r.Candidate, "approved": r.Approved, "type": r.Type}
-	// type is free to change; formerly is fixed, since only convert writes it.
-	fixed := []string{"id", "created", "updated", "formerly"}
 	check := func(name string) error {
 		if slices.Contains(fixed, name) {
 			return fmt.Errorf("%s cannot be changed by update", name)
 		}
 		if !slices.Contains(allowed, name) {
-			return fmt.Errorf("%s is not a field that update accepts on %s records", name, r.Type)
+			return fmt.Errorf("%s is not a field that update accepts on %s records; it accepts %s", name, r.Type, project.Choices(allowed))
 		}
 		return nil
 	}

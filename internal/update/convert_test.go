@@ -122,7 +122,7 @@ func TestReclassifyKeepsIdentityAndPath(t *testing.T) {
 	if err != nil || res.Path != "grove/notes/G-260101-00050-idea.md" || res.ID != "G-260101-00050" {
 		t.Fatalf("res=%+v err=%v", res, err)
 	}
-	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status"}}, now, nil); err == nil || !strings.Contains(err.Error(), "priority: unknown field") {
+	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status"}}, now, nil); err == nil || !strings.Contains(err.Error(), "priority: not a field of page records") {
 		t.Fatalf("work fields survived on a page: %v", err)
 	}
 	if _, err := Apply(root, Request{ID: "G-260101-00050", Expect: rev("G-260101-00050"), Set: []Field{{"type", "page"}}, Unset: []string{"status", "priority"}}, now, nil); err != nil {

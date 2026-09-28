@@ -129,6 +129,16 @@ func ParseConfig(source []byte) (recordDir, brief string, ds []Diagnostic) {
 	return recordDir, brief, sortedDiagnostics(config.errors)
 }
 
+// ConfigKeys are grove.yaml's keys, RunKeys those under run:, and the
+// Policy*Keys those under policy: and its sections.
+var (
+	ConfigKeys        = []string{"schema_version", "records", "brief", "target", "run", "policy"}
+	RunKeys           = []string{"budget", "permission_mode", "model", "effort"}
+	PolicyKeys        = []string{"budget", "resolve", "approve", "integrate"}
+	PolicyResolveKeys = []string{"budget"}
+	PolicyApproveKeys = []string{"verify", "max_lines", "never"}
+)
+
 // parseConfig is the configuration half of LoadFS; checkRoot, when given,
 // inspects the record folder in the order LoadFS always has. The target is
 // only compared with branch names, never passed to Git, so only likely
@@ -141,8 +151,8 @@ func parseConfig(source []byte, checkRoot func(string) error) (config *metadata,
 	}
 	recordDir = config.stringField("records", true)
 	for key := range config.fields {
-		if key != "schema_version" && key != "records" && key != "brief" && key != "target" && key != "run" && key != "policy" {
-			config.problem(key, "unknown configuration key")
+		if !slices.Contains(ConfigKeys, key) {
+			config.problem(key, "unknown configuration key; grove.yaml takes "+Choices(ConfigKeys))
 		}
 	}
 	run = config.runField()
@@ -183,7 +193,7 @@ func (m *metadata) runField() RunDefaults {
 		return RunDefaults{}
 	}
 	if n.Kind != yaml.MappingNode || n.Tag != "!!map" {
-		m.problem("run", "expected a mapping of budget, permission_mode, model and effort")
+		m.problem("run", "expected a mapping of "+Choices(RunKeys))
 		return RunDefaults{}
 	}
 	sub := &metadata{path: m.path, offset: m.offset, fields: map[string]*yaml.Node{}}
@@ -196,8 +206,8 @@ func (m *metadata) runField() RunDefaults {
 			run.BudgetUSD = v.Value
 		case key == "budget":
 			sub.problem(key, "expected a positive decimal dollar amount")
-		case words[key] == nil:
-			sub.problem(key, "unknown key; run: takes budget, permission_mode, model and effort")
+		case !slices.Contains(RunKeys, key):
+			sub.problem(key, "unknown key; run: takes "+Choices(RunKeys))
 		default:
 			if value := sub.stringField(key, false); strings.ContainsFunc(value, unicode.IsSpace) {
 				sub.problem(key, "expected one word, without whitespace")

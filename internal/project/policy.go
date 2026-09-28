@@ -2,6 +2,7 @@ package project
 
 import (
 	"path"
+	"slices"
 	"strings"
 
 	"go.yaml.in/yaml/v3"
@@ -41,23 +42,23 @@ func (p *Policy) Matches(file string) (string, bool) {
 // policy.KEY or policy.SECTION.KEY, and any problem is a diagnostic, so a
 // malformed policy stops every command rather than half applying.
 func (m *metadata) policyField() *Policy {
-	top := m.section("policy", "a mapping of budget, resolve, approve and integrate")
+	top := m.section("policy", "a mapping of "+Choices(PolicyKeys))
 	if top == nil {
 		return nil
 	}
 	defer top.report(m, "policy")
 	var p Policy
 	for key := range top.fields {
-		if key != "budget" && key != "resolve" && key != "approve" && key != "integrate" {
-			top.problem(key, "unknown key; policy: takes budget, resolve, approve and integrate")
+		if !slices.Contains(PolicyKeys, key) {
+			top.problem(key, "unknown key; policy: takes "+Choices(PolicyKeys))
 		}
 	}
 	p.BudgetUSD = top.budgetField("budget")
 	if resolve := top.section("resolve", "a mapping, {} for the run: defaults"); resolve != nil {
 		p.Resolve = true
 		for key := range resolve.fields {
-			if key != "budget" {
-				resolve.problem(key, "unknown key; policy.resolve takes budget")
+			if !slices.Contains(PolicyResolveKeys, key) {
+				resolve.problem(key, "unknown key; policy.resolve takes "+Choices(PolicyResolveKeys))
 			}
 		}
 		p.ResolveBudgetUSD = resolve.budgetField("budget")
@@ -66,11 +67,11 @@ func (m *metadata) policyField() *Policy {
 		}
 		resolve.report(top, "resolve")
 	}
-	if approve := top.section("approve", "a mapping of verify, max_lines and never"); approve != nil {
+	if approve := top.section("approve", "a mapping of "+Choices(PolicyApproveKeys)); approve != nil {
 		p.Approve = true
 		for key := range approve.fields {
-			if key != "verify" && key != "max_lines" && key != "never" {
-				approve.problem(key, "unknown key; policy.approve takes verify, max_lines and never")
+			if !slices.Contains(PolicyApproveKeys, key) {
+				approve.problem(key, "unknown key; policy.approve takes "+Choices(PolicyApproveKeys))
 			}
 		}
 		p.Verify = approve.strings("verify", "a command")
