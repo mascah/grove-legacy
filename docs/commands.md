@@ -128,9 +128,11 @@ it is the caller's declaration, passed through for the guide to act on. The
 command writes nothing and starts nothing, and needs Git only inside a
 repository. Text output (format 3) escapes terminal controls, fences each
 source under one line with its path, revision and why it is included, prints
-an included record's path and revision only there, shortens each link's
-reason to a word (`listed`, `included`, `external`, `fragment`, `absolute`,
-`outside`, `Git metadata`) and the scope notice to two sentences; `--json`
+an included record's path and revision only there unless it was included
+under another spelling, shortens each link's reason to a word (`listed`,
+`included`, `included as SOURCE` for a file included under another
+spelling, `external`, `fragment`, `absolute`, `outside`, `Git metadata`)
+and the scope notice to two sentences; `--json`
 has the exact source strings, the full reasons and notice (`format_version`
 3, whose JSON is version 2's; version 1 read prerequisites, related records,
 and linked documents in full):
