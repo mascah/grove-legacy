@@ -749,9 +749,10 @@ func parseArgs(args []string) (a invocation, err error) {
 			names = append(names, p.Name)
 		}
 		switch {
-		case a.part != "" && a.id != "work":
+		case err != nil || a.part == "":
+		case a.id != "work":
 			err = fmt.Errorf("--part applies only to guide work")
-		case a.part != "" && a.part != "all" && !slices.Contains(names, a.part):
+		case a.part != "all" && !slices.Contains(names, a.part):
 			err = fmt.Errorf("--part must be one of %s, or all", strings.Join(names, ", "))
 		}
 	case "show", "integrate", "resolve":

@@ -347,10 +347,16 @@ func TestGuideWorkParts(t *testing.T) {
 			t.Fatalf("%v: code=%d stdout=%q", args, code, out.String())
 		}
 	}
-	var out, errOut bytes.Buffer
-	Run([]string{"guide", "work", "--part", "nope"}, t.TempDir(), &out, &errOut)
-	if !strings.Contains(errOut.String(), "--part must be one of prepare, implement, review, checkpoint, handoff, judge, invocation, or all") {
-		t.Fatalf("an unknown part must name the parts: %q", errOut.String())
+	for args, want := range map[string]string{
+		"work --part nope":   "--part must be one of prepare, implement, review, checkpoint, handoff, judge, invocation, or all",
+		"shape --part all":   "--part applies only to guide work",
+		"wrok --part review": "guide requires one argument",
+	} {
+		var out, errOut bytes.Buffer
+		Run(append([]string{"guide"}, strings.Fields(args)...), t.TempDir(), &out, &errOut)
+		if !strings.Contains(errOut.String(), want) {
+			t.Fatalf("guide %s: %q", args, errOut.String())
+		}
 	}
 }
 

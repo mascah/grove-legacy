@@ -585,7 +585,7 @@ other name is a usage error that lists them. The head and the parts, in
 order, are the file byte for byte, so the file stays the one owner and a
 session reads a step when it reaches it rather than carrying all of it from
 the start. `--entrypoint N`
-is how an entrypoint `init` wrote asks for one
+is how an entrypoint `init` wrote asks for a guide
 ([Entrypoint revisions](#entrypoint-revisions)). `guide model`
 prints the [record model](record-model.md) the guides cite, the contract that
 binary validates, so a session in any project reads it without Grove's
