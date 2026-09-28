@@ -155,14 +155,14 @@ Relationship fields:
 ## Work planning metadata
 
 Optional work fields for filtering, grouping and presentation; no automatic
-execution policy is implied. Their allowed values are under
+execution policy is implied, beyond the handoff shape `size` selects. Their allowed values are under
 [Planning values](#planning-values).
 
 | Field | Meaning and use |
 | --- | --- |
 | `kind` | What sort of work this is, for filtering and distinct presentation |
 | `priority` | Importance for selection, independent of dependencies |
-| `size` | Coarse scope/effort estimate, without automatic time estimates or execution policy |
+| `size` | Coarse scope/effort estimate, without automatic time estimates or execution policy; `small` selects the compact handoff |
 | `members` | Child work included in this outcome; expandable groups and member completion counts |
 | `depends_on` | Prerequisite work, which should be delivered before this work: this work needs its result, or building it first or alongside would redo that work or conflict with it |
 | `created`, `updated` | Creation and modification timestamps for chronology, allowed on every type |
@@ -182,7 +182,8 @@ These distinctions hold:
   selected branch context. Do not store parallel progress percentages or an
   independently editable `blocked` flag.
 - A spike/investigation is a kind, not a size. A size sets no preparation
-  depth or execution rule.
+  depth or execution rule; `small` only selects the compact handoff the work
+  guide (`grove guide work`) describes.
 - Member targets and membership cycles are validated as well as dependency
   cycles. Nesting and shared membership follow the rules below; relationships
   resolve within one checkout.
@@ -568,7 +569,8 @@ Candidate, review, approval and integration name the facts:
   editable; `update` never writes a new one. Delivery of such a prerequisite
   is established by Git ancestry or observed behavior, as before.
 - Not enforced by software: the order of transitions; that Abandoned needs a
-  human decision; that a review record exists before Review; that done is
+  human decision; that a review record exists before Review where the work
+  guide's handoff calls for one; that done is
   written on the target where `grove.yaml` names none; and that a reopened
   record's candidate is moved to its new commits before it is closed again,
   which the guide's `git diff --stat CANDIDATE TIP` check and `approve`'s
