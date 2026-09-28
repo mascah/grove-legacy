@@ -146,6 +146,7 @@ type Events struct {
 	Init       *Init          `json:"init"`
 	Result     *Final         `json:"result"`
 	ResultText int            `json:"result_text_bytes"` // length of the result's text, never printed
+	Turns      int            `json:"turns,omitempty"`   // num_turns summed over the result events, one per query of a resumed session; 0 before this was recorded
 }
 
 // Result is what the owner writes once the process is gone.
@@ -156,8 +157,9 @@ type Result struct {
 	Stopped      bool      `json:"stopped"`                 // a Stop was requested
 	ReconciledBy string    `json:"reconciled_by,omitempty"` // "stop" when written for a lost owner
 	Events       Events    `json:"events"`
-	Head         string    `json:"head"`  // the worktree's HEAD after the exit
-	Dirty        bool      `json:"dirty"` // uncommitted or untracked changes
+	Head         string    `json:"head"`              // the worktree's HEAD after the exit
+	Dirty        bool      `json:"dirty"`             // uncommitted or untracked changes
+	Changed      *Changed  `json:"changed,omitempty"` // nil before this was recorded
 	// RecordUncommitted: the record's file differs from the worktree's HEAD,
 	// so what Record says is not yet on the branch.
 	RecordUncommitted bool   `json:"record_uncommitted,omitempty"`
@@ -205,6 +207,8 @@ type View struct {
 	Result        *Result `json:"result,omitempty"`
 	Events        *Events `json:"events,omitempty"`         // while there is no result: a bounded read so far
 	InputsChanged string  `json:"inputs_changed,omitempty"` // the record on the target no longer hashes to the launch revision
+	Shape         *Shape  `json:"shape,omitempty"`          // with events: derived from all of events.jsonl
+	ShapeError    string  `json:"shape_error,omitempty"`    // why Shape could not be derived
 	EventsPath    string  `json:"events_path"`
 	StderrPath    string  `json:"stderr_path"`
 }
@@ -923,6 +927,10 @@ func reconcile(dir string, l *Launch, res *Result, logf func(string, ...any)) {
 	for _, m := range l.Members() {
 		ids = append(ids, m.ID)
 	}
+	res.Changed = &Changed{Error: "HEAD was unreadable when it finished"}
+	if res.Head != "" {
+		res.Changed = changedFiles(l.Worktree, l.Prefix, l.Base, res.Head)
+	}
 	res.Members = memberStates(filepath.Join(l.Worktree, l.Prefix), ids, logf)
 	for _, m := range res.Members {
 		if m.ID == l.Work {
@@ -982,12 +990,29 @@ func memberStates(root string, ids []string, logf func(string, ...any)) []Member
 // MaxLine skipped and counted, keeping only the init and result fields.
 func ReadEvents(path string) (Events, error) {
 	ev := Events{Types: map[string]int{}}
+	err := eachLine(path, func(line []byte, size int, over, partial bool) {
+		ev.Bytes += int64(size)
+		ev.Lines++
+		ev.Partial = ev.Partial || partial
+		if over {
+			ev.Oversized++
+		} else {
+			ev.note(line)
+		}
+	})
+	return ev, err
+}
+
+// eachLine calls fn with each line of path, trimmed, and its size; a line
+// over MaxLine is passed as over and not read into memory, and partial is a
+// last line the file ended before its newline. A missing file has none.
+func eachLine(path string, fn func(line []byte, size int, over, partial bool)) error {
 	f, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return ev, nil
+			return nil
 		}
-		return ev, err
+		return err
 	}
 	defer f.Close()
 	r := bufio.NewReaderSize(f, 64<<10)
@@ -1006,24 +1031,14 @@ func ReadEvents(path string) (Events, error) {
 				break
 			}
 		}
-		ev.Bytes += int64(size)
 		if size == 0 {
-			break
+			return nil
 		}
-		ev.Lines++
-		if err != nil { // the file ended before this line's newline
-			ev.Partial = true
-		}
-		if over {
-			ev.Oversized++
-		} else {
-			ev.note(bytes.TrimSpace(line))
-		}
+		fn(bytes.TrimSpace(line), size, over, err != nil)
 		if err != nil {
-			break
+			return nil
 		}
 	}
-	return ev, nil
 }
 
 func (ev *Events) note(line []byte) {
@@ -1076,6 +1091,7 @@ func (ev *Events) note(line []byte) {
 		if json.Unmarshal(line, &final) == nil {
 			ev.Result = &Final{Subtype: final.Subtype, IsError: final.IsError, SessionID: final.SessionID, CostUSD: final.CostUSD, Turns: final.Turns, DurationMS: final.DurationMS, PermissionDenials: len(final.Denials)}
 			ev.ResultText = len(final.Result)
+			ev.Turns += final.Turns
 			for name, u := range final.Models {
 				if ev.Result.ModelCostUSD == nil {
 					ev.Result.ModelCostUSD = map[string]float64{}
@@ -1170,6 +1186,13 @@ func ShowContext(ctx context.Context, root, attempt string, events bool) (*View,
 			}
 		}
 		v.InputsChanged = strings.Join(changed, "; ")
+	}
+	if events {
+		if s, err := ReadShape(v.EventsPath); err == nil {
+			v.Shape = &s
+		} else {
+			v.ShapeError = err.Error()
+		}
 	}
 	return v, nil
 }

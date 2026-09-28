@@ -93,7 +93,7 @@ than dropped, so nothing silently falls out of the project.
 The planning fields are optional so that quick capture stays useful, and an
 absent size or priority is not silently turned into an estimate or an
 urgency decision. They drive filtering, grouping and presentation, never an
-automatic execution policy.
+automatic execution policy beyond the handoff shape `size` selects.
 
 - Membership describes decomposition and dependencies order work; the two
   edge types are checked for cycles separately and never combined into one
@@ -105,7 +105,8 @@ automatic execution policy.
 - Member counts and blocker explanations derive from relationships in the
   selected branch context, never a stored percentage or `blocked` flag.
 - An investigation is a kind with an independent size; there is no `spike`
-  value, and a size sets no preparation depth.
+  value, and a size sets no preparation depth; `small` only selects the
+  compact handoff the work guide (`grove guide work`) describes.
 
 ## Knowledge records and the brief
 

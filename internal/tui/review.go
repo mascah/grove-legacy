@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"path/filepath"
@@ -301,18 +302,25 @@ func (m *Model) targetTip() string {
 	return ""
 }
 
+// approval is who approved r's candidate, as the header shows it, or ""
+// when it is not approved: a delegated verdict is told apart from the
+// owner's (G-260925-wh9ax).
+func approval(r *project.Record) string {
+	switch {
+	case r.Approved == "":
+		return ""
+	case update.Delegated(r):
+		return "approved under policy"
+	}
+	return "approved"
+}
+
 // reviewRows are the header's Review block: the candidate's standing and
 // where each action would run. Facts only; every action is a key away.
 func (m *Model) reviewRows(g *versions.Group, v *versions.Version) []string {
 	r := v.Record
 	parts := []string{"Review: candidate " + short7(r.Candidate)}
-	if r.Approved != "" && update.Delegated(r) {
-		parts = append(parts, "approved under policy")
-	} else if r.Approved != "" {
-		parts = append(parts, "approved")
-	} else {
-		parts = append(parts, "not yet approved")
-	}
+	parts = append(parts, cmp.Or(approval(r), "not yet approved"))
 	switch read, held := m.changes[m.changesKey(v)]; {
 	case m.backend.Changes == nil:
 	case !held:

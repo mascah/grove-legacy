@@ -125,7 +125,10 @@ State the checkout, branch, and HEAD that will hold the records.
 - **Interactive:** the checkout the session is in is the default, because that
   is where the person is looking. Do not use it when it is another assignment's
   execution checkout or holds someone else's uncommitted record edits; ask
-  instead. Commit only when the person agrees, and only shaping's own files.
+  instead. Commit shaping's own files once they are written, without asking,
+  unless the person is plainly still giving input they wait on, such as an
+  answer the session asked for or a draft they want to see first; a commit is
+  theirs to reset or revert.
 - **Headless:** always an isolated new proposal branch and worktree, named as
   the repository's instructions say. Base it on the repository's default base
   when that holds the records being refined. When `versions` shows them only

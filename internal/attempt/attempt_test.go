@@ -210,7 +210,9 @@ func TestRunToResult(t *testing.T) {
 	// The skill init writes, committed: its launch matches this grove's template.
 	write(t, root, SkillPath, grove.Entrypoints()[SkillPath])
 	git(t, root, "commit", "-qam", "the managed skill")
-	fake(t, initLine+"\necho '{\"type\":\"assistant\"}'\necho '{\"type\":\"weird\"}'\n"+resultLine("success", false))
+	// One message prints a guide and reads a file, which the shape counts.
+	tools := `echo '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"grove guide work"}},{"type":"tool_use","name":"Read","input":{"file_path":"x.go"}}]}}'`
+	fake(t, initLine+"\n"+tools+"\necho '{\"type\":\"weird\"}'\n"+resultLine("success", false))
 	l, facts := start(t, root, now)
 	if len(facts) != 2 || !strings.Contains(facts[0], "worktree-G-260101-00001 created at") || facts[1] != "warning: "+ReviewerPath+" is not in "+filepath.Join(root, ".claude", "worktrees", "worktree-G-260101-00001")+", so the attempt has no independent reviewer and work whose record requires one stays active; commit the files grove init wrote to give it one" {
 		t.Fatalf("facts %q", facts)
@@ -254,6 +256,14 @@ func TestRunToResult(t *testing.T) {
 	}
 	if ev.Lines != 4 || ev.Unknown != 1 || ev.Types["assistant"] != 1 || ev.ResultText != len("the text") || ev.Partial {
 		t.Fatalf("events %+v", ev)
+	}
+	// G-260927-dx0yn: what the commits changed is recorded at finish, and the
+	// shape is read with the attempt: nothing was committed here.
+	if c := r.Changed; c == nil || c.Error != "" || c.RecordRoot != "grove" || len(c.Records)+len(c.Other) != 0 || ev.Turns != 3 {
+		t.Fatalf("changed %+v, turns %d", c, ev.Turns)
+	}
+	if v.Shape == nil || v.ShapeError != "" || v.Shape.Tools != 2 || v.Shape.Grove != 1 || v.Shape.Guides["work"] != 1 {
+		t.Fatalf("shape %+v %q", v.Shape, v.ShapeError)
 	}
 	env, err := os.ReadFile(filepath.Join(l.Worktree, "env.txt"))
 	if err != nil || strings.TrimSpace(string(env)) != "CLAUDE_CONFIG_DIR=/kept" {

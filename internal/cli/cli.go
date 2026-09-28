@@ -55,7 +55,8 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"  list       List records in the selected checkout; --status VALUE, repeatable, keeps\n" +
 	"             only records in any given status (a value outside the vocabulary is refused)\n" +
 	"  show ID    Print the complete Markdown source for a record;\n" +
-	"             --json prints {id, path, revision, source} instead\n" +
+	"             --json prints {id, path, revision, source} instead, with approved_by\n" +
+	"             (owner or policy, from the verdict) when approved is set\n" +
 	"  brief      Print the project brief that grove.yaml names with brief: PATH;\n" +
 	"             --json prints {path, revision, source}. context never adds it by itself.\n" +
 	"  check      Validate configuration, records, and relationships\n" +
@@ -397,7 +398,11 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 			report(errOut, err)
 			return 1
 		}
-		return writeResult(out, errOut, attemptsTable(views))
+		table := attemptsTable(views)
+		if a.id != "" {
+			table = fmt.Appendln(table, attempt.Sum(views))
+		}
+		return writeResult(out, errOut, table)
 	case "attempt":
 		v, err := attempt.Show(p.Root, a.id)
 		if err != nil {
@@ -455,9 +460,14 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 					return 1
 				}
 				if a.json {
-					return writeResult(out, errOut, marshal(map[string]any{
-						"id": r.ID, "path": r.Path, "revision": project.Revision(r.Source), "source": string(r.Source),
-					}))
+					result := map[string]any{"id": r.ID, "path": r.Path, "revision": project.Revision(r.Source), "source": string(r.Source)}
+					if r.Approved != "" { // who gave it, told apart as the board does (G-260925-wh9ax)
+						result["approved_by"] = "owner"
+						if update.Delegated(r) {
+							result["approved_by"] = "policy"
+						}
+					}
+					return writeResult(out, errOut, marshal(result))
 				}
 				return writeResult(out, errOut, r.Source)
 			}

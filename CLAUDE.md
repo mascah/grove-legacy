@@ -91,6 +91,9 @@ applies whatever that record's status; a rule naming none is this file's own.
 
 - Focused Conventional Commits; preserve unrelated work; isolate concurrent
   implementation in separate worktrees.
+- Commit finished work without asking, unless the owner is plainly still
+  giving input it waits on; the owner resets or reverts what they do not
+  want.
 - Verify claims against actual results; a documentation-only change needs
   link and consistency checks.
 - Iterate with `go test -short ./<package>`, then run `go vet ./...`,

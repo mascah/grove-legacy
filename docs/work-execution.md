@@ -357,7 +357,9 @@ every review through it, a fresh one per gate, and pass it: the checkout's
 path; the exact commit, or base and tip, under review; the record's path with
 its acceptance and constraints; the plan's path; the commands it may run;
 and, for a re-review, the findings and what was done about each. It returns
-findings with evidence and never edits. If the
+findings with evidence and never edits; its closing line goes into a review
+record, or, in a compact handoff that writes none (step 8), into the record's
+Evidence with the commit it examined. If the
 harness cannot supply an independent reviewer, say so; a self-review is never
 labelled independent. A small documentation-only change may be self-checked
 against its acceptance, reported as exactly that. When no independent reviewer
@@ -434,26 +436,45 @@ what a paid step spends: model, effort, runs, budget or cap.
 Reconcile each assigned record's evidence and Next, its plan, the
 documentation that owns any contract the work changed, and the repository's
 direction document when the work changed the direction it records; progress
-and next actions stay in the record. Record review evidence where the
-repository keeps it: a review record with its `work` and the `examined`
-commit where the schema has them, otherwise prose and links, ending with
-the last round's closing line (`Open findings: none`, or their number) as
-the reviewer gave it. A review record holds evidence; it is not approval,
-and there is no run schema.
+and next actions stay in the record.
+
+The handoff is sized to the record. It is **compact** when the record's
+`size` is `small` or its own Next asks for the compact handoff, and **full**
+otherwise, a record without `size` included. Neither shape shrinks the
+review step 6 requires, the candidate discipline of item 2 below, or the
+rule that an implementation session never writes `done`.
+
+Record review evidence where the repository keeps it: a review record with
+its `work` and the `examined` commit where the schema has them, otherwise
+prose and links, ending with the last round's closing line (`Open findings:
+none`, or their number) as the reviewer gave it. A compact handoff writes a
+review record only where the record or its plan asks for one, or where the
+project's standing `policy:` delegates approval, which reads the closing line
+from a review record; otherwise the closing line, the commit the review
+examined and each finding's disposition go into the record's Evidence. A review record holds evidence; it
+is not approval, and there is no run schema.
 
 An implementation session never writes `done`. When the evidence meets the
 acceptance and the review the record or plan requires has happened, hand the
 candidate to human judgment:
 
 1. Commit the evidence. The handoff lives in the record, so a new session can
-   judge it without this chat: in Evidence and Next, the branch, base and
-   candidate commit; the plan and record revisions it started from; the
-   changed behavior against each acceptance item; the decisions taken and
-   why; the verification commands, their results and the commit they ran at;
-   each review record with its findings and their dispositions; unresolved
-   issues and limits; and the integrator's next action as runnable commands
-   (`grove approve` in this checkout, then `grove integrate` in the
-   target's), since the integrator runs them as given.
+   judge it without this chat. In Evidence and Next:
+   - **Full:** the branch, base and candidate commit; the plan and record
+     revisions it started from; the changed behavior against each acceptance
+     item; the decisions taken and why; the verification commands, their
+     results and the commit they ran at; each review record with its
+     findings and their dispositions; unresolved issues and limits; and the
+     integrator's next action as runnable commands (`grove approve` in this
+     checkout, then `grove integrate` in the target's), since the integrator
+     runs them as given.
+   - **Compact:** the branch, base and candidate commit; one line of
+     evidence per acceptance item; the verification commands, their results
+     and the commit they ran at; the review's closing line with the commit
+     it examined and each finding's disposition, or the review record that
+     holds them; a line for
+     each limit the judge must know; and the same two integrator commands.
+     Evidence and Next together stay under 40 lines.
 2. Set the status with that commit as the candidate, and commit that change
    alone, so `git diff --stat CANDIDATE HEAD` shows one file:
    `grove update G-260925-7k2qm --expect REVISION --set status=review
@@ -497,7 +518,9 @@ integrated are four different facts; report each separately. Return:
 
 The owner, or a session asked to prepare their judgment, starts from
 `grove context G-260925-7k2qm` in a checkout of the branch: the record in
-Review carries the handoff, and the listing names its reviews. Confirm that the
+Review carries the handoff, and the listing names its reviews; a compact
+handoff without a review record names its review and examined commit in
+Evidence. Confirm that the
 candidate is what the branch holds (`git diff --stat CANDIDATE TIP` touches
 only the record) and that each review's `examined` is the candidate, or an
 earlier commit whose difference the handoff explains. Then record one honest

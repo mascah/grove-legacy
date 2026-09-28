@@ -127,7 +127,7 @@ fields.
 | `created`, `updated` | quoted UTC timestamps | Chronology |
 | `formerly` | string that only `convert` writes | The ID or document path a record replaced; unique without case, and never a live record's ID |
 | `kind` | `feature`, `fix`, `refactor`, `investigation`, `tooling`, `release` | What sort of work |
-| `size` | `small`, `medium`, `large` | Coarse scope, with no execution rule |
+| `size` | `small`, `medium`, `large` | Coarse scope; `small` selects the compact handoff (`grove guide work`), and no size sets another execution rule |
 | `priority` | integer 1 (highest) through 5 (lowest) | Importance, independent of dependencies |
 | `members` | list of work IDs | Child work in this outcome; order is presentation |
 | `depends_on` | list of work IDs | Prerequisites delivered before this work: it needs their result, or building it first or alongside would redo or conflict with them |
@@ -167,9 +167,10 @@ verification it relied on, and is shown apart from the owner's own.
 
 Not enforced, and left to the guides: the order of transitions, so a done
 record can be reopened; that Abandoned needs a human decision; that a review
-record exists before Review; where done is written without a `target`;
-that a reopened record's candidate moves to its new commits; and that a
-`superseded` decision names its replacement in `relates_to`.
+record exists before Review where the work guide's handoff calls for one;
+where done is written without a `target`; that a reopened record's
+candidate moves to its new commits; and that a `superseded` decision names
+its replacement in `relates_to`.
 
 ## Reading and writing records
 

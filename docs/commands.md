@@ -25,7 +25,9 @@ command, and `--help` needs no project.
   error that lists the statuses, and a status no record holds prints the
   header alone.
 - `show ID` writes the file's original bytes to stdout and the project and
-  file to stderr; `--json` prints `{id, path, revision, source}`.
+  file to stderr; `--json` prints `{id, path, revision, source}`, plus
+  `approved_by` while `approved` is set, derived from the latest verdict on
+  the candidate ([Judging and integrating](#judging-and-integrating)).
 - `new TYPE TITLE [--slug SLUG]` refuses an unknown type before anything
   else, writes the record with a body skeleton, prints the root-relative
   path, and fails without deleting the file if the project no longer
@@ -373,19 +375,45 @@ that what an existing branch holds is checked in its checkout, so a branch
 that had no worktree keeps the one `run` made.
 
 `attempts [ID]` lists attempts newest first, or those whose selection
-includes ID, with every member in the WORK column. `attempt ATTEMPT [--json]`
+includes ID, with every member in the WORK column. With ID it ends with
+their total ([G-260927-dx0yn](../grove/G-260927-dx0yn-retain-per-attempt-proce.md)):
+the attempts, the cost and turns of their result events, and the minutes
+from start to finish. A selection's attempt counts in full for each member;
+an unfinished attempt is in none of the sums, and one without a result
+event is not in the cost or turns, each said beside the total. Turns sum
+`num_turns` over a run's result events, one per query of a resumed session;
+an attempt that finished before Grove summed them holds only its last
+result's, and the total's turns show `≥`. `attempt ATTEMPT [--json]`
 prints one attempt's launch, what it requested, event counts (parsed bounded:
 a line over 1 MiB is counted, not read), the provider's init fields with the
 model that actually ran, the result event's fields with its cost split by
 model where the provider reports one (a subagent on another model shows
 apart), the result
 (exit, the worktree's HEAD and whether it holds uncommitted or untracked
-changes), the record as the branch holds it, whether the record on the target
+changes), what its commits changed, the record as the branch holds it, whether the record on the target
 changed since launch, and the file paths; no provider text is printed. For a
 selection it prints each member at launch and, once ended, one line per member
 as the branch holds it: awaiting judgment (review, with the candidate),
 active with its checkpoint in its Next, not started and why, or waiting on a
 question; and whether each member's record on the target changed.
+`Changed:` is `git diff --name-only BASE HEAD`, recorded in `result.json`
+when the attempt finishes, since its worktree and branch may be gone when it
+is read, split into the files under the record root, which `grove.yaml` at
+the base names, and the rest, with the time from the start to the committer
+time of the first commit that touched a file outside it, following first
+parents so that the commits a merge brings in are not the attempt's own;
+an attempt finished
+before this says it was not recorded, and one whose HEAD or `grove.yaml` Git
+could not read says why. `Shape:` is derived from all of `events.jsonl` each
+time the attempt is read, a line over 1 MiB skipped and counted, which makes
+its counts lower bounds (`≥`); the board does not read it. It counts every
+tool call, subagents' included, the Bash calls one of whose segments, split
+at `;`, `&`, `|` and newlines without parsing quotes, runs `grove` (a program
+of that name by any path, or `go run` of a `cmd/grove` package), and `grove
+guide NAME` runs by NAME. Known misses: `grove` through a wrapper, `$(…)`,
+`env` or a leading variable assignment is not seen; a heredoc's line that
+starts with `grove` is; a guide read as a file is not a guide print. While
+the attempt runs these are so far.
 Liveness is the owner's file lock, never a pid: `running` while it is held,
 `finished` once `result.json` exists, `orphaned` when the owner is gone but
 the provider's process group lives, `interrupted` when nothing is left and no
@@ -484,8 +512,11 @@ before merging if the target moved from the verified commit. The done
 update appends `Integrated under policy … as merge M on TARGET (was B); to
 reverse it: git revert -m 1 M` (or the range a fast-forward moved). An
 integration refused after a delegated approval leaves the record approved,
-waiting for the owner's `integrate`. The board's Review block reads
-`approved under policy` for such a verdict.
+waiting for the owner's `integrate`. Such a verdict is told apart from the
+owner's wherever the record's standing is shown: the board's Review block
+and the detail's standing line read `approved under policy`, in review and
+in done, where the owner's read `approved`, and `show --json` gives
+`approved_by` as `policy`, or `owner`.
 
 ## Init
 

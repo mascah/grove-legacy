@@ -54,8 +54,10 @@ checkout's files shows only after a re-read.
 ## Record detail
 
 Enter on a card opens the record's detail: a boxed header with the ID,
-status, title, planning fields, candidate, standing against the target, the
-places holding its current state and when it was last written; then its body
+status, title, planning fields, candidate and, once it is approved, who
+approved it (`approved`, or `approved under policy` for a verdict `grove
+sweep` gave), standing against the target, the places holding its current
+state and when it was last written; then its body
 rendered from Markdown (headings, emphasis, lists, code, tables) beside a
 sidebar of the records linked to it, the timeline of commits that changed
 it, and one line per current state. Linked records are listed by role,
@@ -183,7 +185,8 @@ approval of that plan. An
 orphan always needs you, since its process runs unowned. A stopped attempt,
 an earlier attempt of the same work and any attempt of work now done or
 abandoned are settled, and each says why, such as `done: candidate 1614e89`
-or `candidate 71a650e, superseded`.
+or `candidate 71a650e, superseded`. The list of one work's attempts opens
+with their total, as [`attempts ID`](commands.md#attempts) prints it.
 
 `R` launches one work; a selection of several is launched with `run ID...`
 ([G-260925-7c8g9](../grove/G-260925-7c8g9-execute-an-explicitly-se.md)). Its attempt is listed by
