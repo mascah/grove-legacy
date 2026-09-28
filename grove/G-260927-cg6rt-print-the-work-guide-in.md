@@ -92,9 +92,78 @@ record the reasoning either way.
    prints now; the evals README's wording on the `grove guide shape`
    retrieval fact is untouched.
 
+## Evidence
+
+On `worktree-G-260927-cg6rt`, from base `main` `38511c1` and record revision
+`sha256:72d8fe53923a`. No plan was written: the proposed design above served
+as one. Implemented in `e50b955`, with the review fixes in `75675e7`. The
+candidate is the commit that records this Evidence.
+
+- **Acceptance 1.** `docs/work-execution.md` gains "The rest of this guide"
+  after step 3: `grove guide work` stops there, each later part is printed
+  once when reached, and a table names each part, the step it holds and when
+  to print it. `grove.WorkParts` (`guides.go`) is the fixed table: each part
+  starts at its `##` heading and runs to the next; `grove.WorkGuide` cuts the
+  file. `grove guide work [--entrypoint N]` prints the head, 12,995 bytes;
+  `--part NAME` one part; `--part all` the file. An unknown part is a usage
+  error, exit 2, listing the parts; `--part` on another guide or command is
+  exit 2 too. `TestGuideWorkParts` (`internal/cli/init_test.go`) asserts
+  the head is at most 13,000 bytes and ends with the table naming every
+  part, each part starts at its heading, the head and the parts in order
+  and `--part all` equal the embedded file byte for byte, and the errors.
+- **Acceptance 2.** Every `##` section is in exactly one part (the
+  byte-for-byte test); "When a human decision is missing" travels with step
+  7 in `checkpoint`. The table only says when to print each part, and the
+  Read in stages table gains one row, "Reaching a later step", pointing at
+  it rather than a row per part, so the part list has one owner.
+- **Acceptance 3.** The shipped-document checks pass with their assertions
+  unchanged; their invocation for `work` is now `guide work --part all`
+  (`wholeGuide`), since bare `guide work` would give them only the head.
+  **Entrypoint revision stays 2.** G-260925-p2k54 and the Entrypoint
+  revision term change it only when an entrypoint needs something of the
+  binary an older one lacks, or a newer one stops serving what it asks. The
+  entrypoints still ask only for `grove guide work --entrypoint 2` and follow
+  what it prints. An older binary prints the whole guide, which mentions no
+  `--part`; a newer one prints a head whose `--part` the same `grove` serves.
+  So nothing new is needed of the binary, and the skills' wording ("follow
+  the guide it prints") stays true.
+- **Acceptance 5.** `docs/commands.md` "Version and guide", README.md's
+  workflow paragraph and command table, and CLAUDE.md's line on the two
+  workflows say what `guide work` prints now. `docs/work-review.md` names
+  step 6 by `grove guide work --part review`. `evals/README.md` is
+  untouched.
+- **Head size.** Intro through step 3 was 12,184 bytes; with the table it
+  was 13,282, so the intro's list of what the workflow covers became "from
+  an assignment to its handoff", and the table's cells were shortened. No
+  instruction was dropped.
+- **Final checks.** At `75675e7`: `go vet ./...` passed; `gofmt -l .`
+  printed nothing; `go run ./cmd/grove check` printed `OK: 216 records`;
+  `go test -count=1 -timeout 120s ./...` passed every package. A script
+  resolved every relative link and anchor in README.md, CLAUDE.md,
+  docs/commands.md, docs/work-execution.md and docs/work-review.md. There is
+  no TUI change, so the terminal checks were not run.
+- **Review.** [G-260928-f0ayt](G-260928-f0ayt-review-of-g-260927-cg6rt.md):
+  two `grove-reviewer` rounds. Round 1 (`e50b955`) found two minor issues,
+  a `--part` error hiding an unknown guide name and a sentence in
+  docs/commands.md that lost its referent, both fixed in `75675e7`. Round 2
+  ended `Open findings: none`.
+- **Limits.** Acceptance 4 is not met: this headless session did not
+  launch a `grove run` attempt, which is a paid session it may not start.
+  It needs the change where an attempt's session runs its `grove`: after
+  integration, or an attempt in a worktree holding this branch.
+
 ## Next
 
-Assign: `/grove-work G-260927-cg6rt`. The attempt facts
-[G-260927-dx0yn](G-260927-dx0yn-retain-per-attempt-proce.md) proposes (process
-share, first edit outside the record root) are how this change's effect on
-a session will be read; this record does not need them to be built.
+In review at the candidate named in the frontmatter. The owner judges
+acceptance 1 to 3 and 5 from the Evidence and decides acceptance 4, a real
+attempt, before or after integration. The attempt to compare against is
+G-260927-ngkbz's: 46 turns, $2.99, 10 minutes, with the guide printed whole.
+
+1. Approve in this checkout:
+   `grove approve G-260927-cg6rt "VERDICT"`.
+2. Integrate in the target's checkout:
+   `grove integrate G-260927-cg6rt --cleanup`.
+3. For acceptance 4, after integration: `grove run WORK_ID` on a small
+   proposed work item, then read its events for each `guide` command and
+   the turn it ran at, and record them here with the attempt's cost, turns
+   and duration.
