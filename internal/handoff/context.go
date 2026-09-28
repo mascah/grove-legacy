@@ -213,7 +213,7 @@ func assemble(ctx context.Context, dir *os.Root, root string, ids []string, opts
 		return nil, err
 	}
 	b := &Bundle{
-		FormatVersion: 2, Root: root, Interaction: opts.Interaction, Selected: ids, Order: order, Git: git,
+		FormatVersion: 3, Root: root, Interaction: opts.Interaction, Selected: ids, Order: order, Git: git,
 		Requirements: []Requirement{}, Questions: []Question{}, References: []Reference{},
 		ScopeNotice: scopeNotice, MaxBytes: opts.MaxBytes,
 	}
