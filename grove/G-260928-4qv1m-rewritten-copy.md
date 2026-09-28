@@ -58,9 +58,20 @@ going forward".
   `internal/tui/view.go:708`) says the card stays put "until one side takes
   the other's change, by a merge or an edit". Neither applies here; the fix
   is deleting the branch.
-- Side effect, not in scope: `main`'s `done` record still names
-  `candidate: d799309cf137`, a pre-rebase hash that no branch holds once
-  the stale branch goes.
+- `main`'s `done` record still named `candidate: d799309cf137`, the
+  pre-rebase hash. After the branch was deleted, launching
+  G-260927-kkgke (which `depends_on` it) refused: "G-260927-kkgke needs
+  G-260927-5gh2k, whose candidate d799309 the base lacks; resolve that
+  before another attempt" (`internal/attempt/selection.go:115`). Neither
+  the refusal nor `grove deps` says why the base lacks it or how to repair
+  it. The record model's existing rule applies: "A squash or rebase that
+  lands a different commit is a manual merge that names that commit as the
+  candidate" (`docs/record-model.md`). It was repaired by hand in ascah.dev
+  `5120f11`: `43b74ac` has the same `git patch-id --stable` as `d799309`,
+  so `grove update G-260927-5gh2k --set candidate=43b74acd29b5 --set
+  approved=43b74acd29b5 --commit` with a note under the verdict. After
+  that, `grove run G-260927-kkgke --dry-run` reported "delivered" and
+  "can start".
 
 **Owner decision, 2026-09-28 (this conversation).** Keep the divergence:
 the current view stays Git ancestry, as the brief and G-260921-ms6ev
@@ -100,9 +111,17 @@ does not mark it older.
 - `integrate` and `resolve`, before predicting a conflict, refuse a branch
   whose every commit already has a copy on the target, with the same
   explanation and commands. Nothing is written.
+- Where a done prerequisite's candidate is missing from the base (launch,
+  `grove run --dry-run`, `grove deps`), look for the candidate's
+  patch-equivalent copy in the base. When exactly one exists, say the base
+  holds it as *Y*, a rewritten copy, and give the repair:
+  `grove update ID --set candidate=Y --set approved=Y --commit` in the
+  target's checkout, with a note under the verdict. It still waits: a copy
+  counts as delivered only once the record names it, so the record stays
+  the fact.
 - Out of scope: marking such a copy older or placing the card by it; a
   board key that deletes branches or worktrees (Grove prints the commands,
-  the owner runs them); repairing a done record's pre-rewrite candidate;
+  the owner runs them); rewriting a done record's candidate automatically;
   a `grove versions` note, which would cost a read per diverging branch
   on every listing.
 
@@ -117,16 +136,20 @@ does not mark it older.
      explanation and write nothing, and `git status` is unchanged.
 2. After running the printed commands, the card has one state, Done, with
    no `⑂` tag.
-3. A branch with one commit that has no copy on the target gets the partial
+3. In the same repository, after the branch is deleted, launching work
+   that `depends_on` the record waits with a message naming the rewritten
+   copy and the exact `update` command. After that command, the launch
+   reports the prerequisite delivered.
+4. A branch with one commit that has no copy on the target gets the partial
    message and no delete command, and `integrate` behaves as it does today.
-4. The equivalence read never runs during the board load, and a key press
+5. The equivalence read never runs during the board load, and a key press
    cancels it. A test proves both, as the history tests do.
-5. `docs/board.md` (the divergence text and the actions),
-   `docs/commands.md` (`integrate`, `resolve`) and the version detail's
-   divergence text describe the rewritten case and how to clear it.
+6. `docs/board.md` (the divergence text and the actions),
+   `docs/commands.md` (`integrate`, `resolve`, `run`, `deps`) and the
+   version detail's divergence text describe the rewritten case and how to clear it.
    `docs/work-execution.md` says that rewriting the target after an
    integration leaves the integrated branch diverging, and what to do.
-6. The owner judges the detail wording in a real terminal against the
+7. The owner judges the detail wording in a real terminal against the
    ascah.dev shape.
 
 ## Next
