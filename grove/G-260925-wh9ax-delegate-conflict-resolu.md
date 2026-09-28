@@ -4,8 +4,8 @@ type: decision
 title: "Delegate conflict resolution, approval and integration to a standing owner policy"
 status: accepted
 created: "2026-09-25T21:55:20Z"
-updated: "2026-09-25T21:56:43Z"
-relates_to: ["G-260925-w33j7", "G-260925-5wrn8", "G-260925-dz10z", "G-260925-h8rj5", "G-260921-jatts", "G-260921-rz7bn", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e", "G-260925-beby3", "G-260925-80w3a"]
+updated: "2026-09-28T19:34:03Z"
+relates_to: ["G-260925-w33j7", "G-260925-5wrn8", "G-260925-dz10z", "G-260925-h8rj5", "G-260921-jatts", "G-260921-rz7bn", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e", "G-260925-beby3", "G-260925-80w3a", "G-260928-d8py6"]
 ---
 
 ## Decision

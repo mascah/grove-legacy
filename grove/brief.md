@@ -112,7 +112,10 @@ changed candidates require reconsideration. Feedback that starts another
 implementation attempt returns work to Active and preserves prior reviews.
 A standing policy in `grove.yaml` may delegate one bounded conflict
 resolution, and the approval and integration of a candidate that meets its
-written conditions after independent review, each act attributed to the
+written conditions after independent review, which may include a bounded
+delegated judgment of the candidate against its record
+([G-260928-d8py6](G-260928-d8py6-a-standing-policy-may-de.md), owner,
+2026-09-28), each act attributed to the
 policy and its evidence ([G-260925-wh9ax](G-260925-wh9ax-delegate-conflict-resolu.md),
 owner, 2026-09-25); everything it does not name awaits human judgment.
 
@@ -158,10 +161,13 @@ preserves identity, knowledge and evidence with one editable authority for
 each fact.
 
 One bounded implementation runs independently of the TUI as a Grove-owned
-`claude -p` process that continues after the terminal closes, reconnects
-without duplication and stops explicitly
-([G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md) records the choice and when to
-reconsider it). No machine-reboot guarantee is selected. Roles start with
+provider process, Claude Code today and Codex once
+[G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) lands, that
+continues after the terminal closes, reconnects without duplication and
+stops explicitly ([G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md)
+records the process choice and when to reconsider it;
+[G-260928-vdhf0](G-260928-vdhf0-run-attempts-on-codex-as.md) the second
+provider, the owner on 2026-09-28). No machine-reboot guarantee is selected. Roles start with
 shaping/preparation, implementation and independent review; route model
 strength by uncertainty and consequence and retain actual configuration per
 attempt. Bound batches and fan-out before adding schedules.

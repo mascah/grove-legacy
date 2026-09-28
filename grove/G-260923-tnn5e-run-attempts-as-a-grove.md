@@ -4,7 +4,8 @@ type: decision
 title: "Run attempts as a Grove-owned claude -p process"
 status: accepted
 created: "2026-09-23T02:33:53Z"
-updated: "2026-09-23T02:34:39Z"
+updated: "2026-09-28T19:34:02Z"
+relates_to: ["G-260928-vdhf0"]
 ---
 
 ## Decision
