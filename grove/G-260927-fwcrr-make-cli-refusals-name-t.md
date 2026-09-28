@@ -4,10 +4,11 @@ type: work
 title: "Make CLI refusals name the rule they enforce, and shrink the record model to its contract"
 status: review
 created: "2026-09-27T22:13:35Z"
-updated: "2026-09-28T16:57:28Z"
+updated: "2026-09-28T17:01:58Z"
 size: medium
 relates_to: ["G-260919-shnj5", "G-260921-ebsby", "G-260925-khfe7"]
 candidate: "f2d9894"
+approved: "f2d9894"
 ---
 
 ## Outcome
@@ -201,3 +202,5 @@ against acceptance 2. Then, in this checkout:
 `grove integrate G-260927-fwcrr --cleanup`.
 
 Feedback on candidate 16af7ee, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb, budget 10 USD: conflicts with main at 2633d8d in docs/record-model.md. Resolve only that (grove resolve): in this branch, git merge 2633d8dd4cfb7591a3089649ed6d7b3762bfc997, that commit of main even if main has moved since, never a rebase; resolve those files keeping both sides' intent; rerun the repository's verification; and hand off the merge as the new candidate, with the previous candidate 16af7ee, the merged commit and the resolved files in Evidence. Change nothing else. If a resolution needs a choice this record does not settle, stop with a checkpoint naming it. Done at `ecca7cf`; see Evidence.
+
+Verdict on candidate f2d9894, 2026-09-28: approved
