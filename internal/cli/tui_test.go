@@ -356,7 +356,7 @@ func TestBoardReviewWorkflow(t *testing.T) {
 
 	// Approval is written on feature, and the board re-read shows it.
 	s.press("a")
-	s.want("Approve G-260101-00001 on branch feature · verdict")
+	s.want("Verdict on G-260101-00001: ▏", "Enter approves G-260101-00001 on branch feature with it; Esc cancels")
 	for _, c := range "Ship it" {
 		s.press(string(c))
 	}
