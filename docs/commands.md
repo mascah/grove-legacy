@@ -455,8 +455,11 @@ before merging if the target moved from the verified commit. The done
 update appends `Integrated under policy … as merge M on TARGET (was B); to
 reverse it: git revert -m 1 M` (or the range a fast-forward moved). An
 integration refused after a delegated approval leaves the record approved,
-waiting for the owner's `integrate`. The board's Review block reads
-`approved under policy` for such a verdict.
+waiting for the owner's `integrate`. Such a verdict is told apart from the
+owner's wherever the record's standing is shown: the board's Review block
+and the detail's standing line read `approved under policy`, in review and
+in done, where the owner's read `approved`, and `show --json` gives
+`approved_by` as `policy`, or `owner`.
 
 ## Init
 
