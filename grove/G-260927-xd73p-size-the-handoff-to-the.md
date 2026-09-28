@@ -2,7 +2,7 @@
 id: "G-260927-xd73p"
 type: work
 title: "Size the handoff to the record"
-status: review
+status: done
 created: "2026-09-27T22:13:36Z"
 updated: "2026-09-28T16:39:37Z"
 size: small
@@ -116,3 +116,5 @@ acceptance 2 on the next `size: small` attempt against G-260927-ngkbz's 46
 turns, $2.99 and 10 minutes.
 
 Verdict on candidate dc8149c, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb: review G-260928-b4aat examined a75fa09 with no open finding; merged with main at 7459594, verification passed (go test -count=1 -timeout 120s ./...; go vet ./...; go run ./cmd/grove check); attempt G-260927-xd73p.20260928T162049Z produced it for 2.13 USD
+
+Integrated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb as merge 6a657a034ae2160a37fa80097497d8f3fece27ce on main (was 74595944efb4b9a3381ea9763c49767666cb7f93); to reverse it: git revert -m 1 6a657a034ae2160a37fa80097497d8f3fece27ce
