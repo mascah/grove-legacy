@@ -2,6 +2,7 @@ package tui
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -978,7 +979,7 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 	fx.main.Run = project.RunDefaults{BudgetUSD: "3", PermissionMode: "auto"}
 	fx.main.Worktree = t.TempDir() // the members' files, which R checks on Enter
 	ended := time.Date(2026, 9, 23, 2, 0, 0, 0, time.UTC)
-	build := func(answered bool, status string) *versions.Result {
+	build := func(answered bool, status string, w1 ...string) *versions.Result {
 		var vs []versions.Version
 		for _, s := range []*versions.Source{fx.cMain, fx.main} {
 			for _, id := range []string{"W-001", "W-002"} {
@@ -992,7 +993,7 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 			}
 		}
 		for _, s := range []*versions.Source{cSel, sel} {
-			vs = append(vs, version(s, "W-001", "Member W-001", status), version(s, "W-002", "Member W-002", status))
+			vs = append(vs, version(s, "W-001", "Member W-001", cmp.Or(append(w1, status)...)), version(s, "W-002", "Member W-002", status))
 			q := version(s, "Q-002", "Red or blue?", "open")
 			q.Record.Blocks, q.Record.Created = []string{"W-002"}, &ended
 			if answered {
@@ -1091,4 +1092,49 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 		t.Fatalf("members that moved on keep the attempt's states:\n%s", s)
 	}
 
+	// One moved on, the other still waiting: the list row says so of each.
+	f.mu.Lock()
+	f.res = build(false, "active", "review")
+	f.mu.Unlock()
+	settle(m, press(m, "r"))
+	if rows := ansi.Strip(strings.Join(m.attemptsBody(160, 30), "\n")); !strings.Contains(rows, "W-001 moved on · W-002 waiting on Q-002") {
+		t.Fatalf("a member that moved on is named so:\n%s", rows)
+	}
+
+	// A selected ID the board did not read is left to Start, not a panic.
+	v.Launch.Selection.Selected = append(v.Launch.Selection.Selected, "W-009")
+	r.set(v)
+	f.mu.Lock()
+	f.res = build(true, "active")
+	f.mu.Unlock()
+	settle(m, press(m, "r"))
+	m.openDetail("W-001")
+	if press(m, "R"); m.prompt == nil || !strings.Contains(m.prompt.id, "W-009") {
+		t.Fatalf("R opens the selection's line with every ID: %+v %q", m.prompt, m.alert)
+	}
+
+}
+
+// Where the work's state no longer stands on the selection's branch, R
+// launches the work alone, and the attempt's Next does not say it resumes the
+// selection (G-260928-63124).
+func TestSelectionNextOnlyWhereRResumes(t *testing.T) {
+	t.Parallel()
+	fx := newFixture()
+	f := &fake{res: result(fx.main, []*versions.Source{fx.cMain, fx.main},
+		version(fx.cMain, "W-001", "One", "proposed"), version(fx.main, "W-001", "One", "proposed"),
+		version(fx.cMain, "W-002", "Two", "proposed"), version(fx.main, "W-002", "Two", "proposed"))}
+	r := &runs{}
+	v := view("W-001", "20260923T010000Z", attempt.Finished, &attempt.Result{Finished: time.Date(2026, 9, 23, 2, 0, 0, 0, time.UTC), Events: attempt.Events{Result: &attempt.Final{Subtype: "success"}},
+		Members: []attempt.MemberState{{ID: "W-001", Record: &attempt.State{Status: "active"}}, {ID: "W-002", Record: &attempt.State{Status: "proposed"}}}})
+	v.Launch.Branch = "worktree-W-001-W-002"
+	v.Launch.Selection = &attempt.Selection{Selected: []string{"W-001", "W-002"}, Order: []string{"W-001", "W-002"}, Members: []attempt.Member{{ID: "W-001"}, {ID: "W-002"}}}
+	r.set(v)
+	m := openRuns(t, f, r, 160, 40)
+	if m.memberStates(&v) == nil {
+		t.Fatal("W-002 still stands as the attempt left it")
+	}
+	if next := m.standingOf(&v).next; strings.Contains(next, "R resumes") {
+		t.Fatalf("the branch is gone, so R launches W-001 alone: %q", next)
+	}
 }

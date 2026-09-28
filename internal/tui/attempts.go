@@ -391,7 +391,7 @@ func (m *Model) standingOf(v *attempt.View) standing {
 			s.short, s.next = "ended, no handoff", "o opens "+work+"; the report says why"
 		}
 		// A selection's next launch is the selection again (G-260928-63124).
-		if kind != "candidate" && kind != "plan" && m.memberStates(v) != nil && m.backend.Launch != nil {
+		if g := m.groupOf(work); kind != "candidate" && kind != "plan" && m.memberStates(v) != nil && m.backend.Launch != nil && g != nil && m.resumable(work, m.shown(g)) != nil {
 			next, _ := m.resumeText(v)
 			switch {
 			case m.waits(v):
@@ -851,7 +851,11 @@ func (m *Model) launch() {
 		req := attempt.Request{Root: m.root, IDs: sel.Launch.Selection.Selected, Branch: sel.Launch.Branch}
 		var read []readFile
 		for _, id := range req.IDs {
-			for _, h := range m.groupOf(id).Versions {
+			g := m.groupOf(id)
+			if g == nil {
+				continue // not read here, so Start, which reads it, refuses it
+			}
+			for _, h := range g.Versions {
 				if h.Source.Kind == "live" && h.Source.GitDir == m.res.GitDir && h.Record != nil {
 					read = append(read, readFile{id, filepath.Join(m.projectDir(h.Source), filepath.FromSlash(h.Path)), h.Revision})
 				}
@@ -996,7 +1000,7 @@ func (m *Model) attemptsBody(w, n int) []string {
 		shorts[i] = st[i].short
 		if states := m.memberStates(&v); states != nil {
 			for _, mb := range v.Launch.Members() {
-				shorts[i] += " · " + mb.ID + " " + states[mb.ID]
+				shorts[i] += " · " + mb.ID + " " + cmp.Or(states[mb.ID], "moved on")
 			}
 			most = max(most, w-2-12-2-tw-2-26) // room for a 24-cell title beside it
 		}
