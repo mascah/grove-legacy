@@ -57,6 +57,9 @@ func TestApproveAndFeedbackCommands(t *testing.T) {
 	if src := showJSON(t, root, "G-260101-00001")["source"].(string); !strings.Contains(src, "approved: \""+candidate+"\"\n") || !strings.HasSuffix(src, "Verdict on candidate "+candidate[:7]+", "+today()+": Good enough to ship.\n") {
 		t.Fatalf("approved record:\n%s", src)
 	}
+	if by := showJSON(t, root, "G-260101-00001")["approved_by"]; by != "owner" {
+		t.Fatalf("approved_by after the owner's verdict: %v", by)
+	}
 	code, result, stderr = run("feedback", "G-260101-00001", "Add the empty case.")
 	if code != 0 || result["changed"] != true || result["commit"] != gitIn(t, root, "rev-parse", "HEAD") {
 		t.Fatalf("feedback: code=%d result=%v stderr=%s", code, result, stderr)
@@ -70,6 +73,17 @@ func TestApproveAndFeedbackCommands(t *testing.T) {
 	code, result, stderr = run("approve", "G-260101-00001", "again")
 	if code != 1 || result != nil || !strings.Contains(stderr, "grove: G-260101-00001 is active, not in review") {
 		t.Fatalf("approve on active work: code=%d stderr=%s", code, stderr)
+	}
+	if got, held := showJSON(t, root, "G-260101-00001")["approved_by"]; held {
+		t.Fatalf("approved_by without an approval: %v", got)
+	}
+	// A verdict the sweep gives under the standing policy is told apart.
+	run("update", "G-260101-00001", "--set", "status=review", "--commit")
+	if code, _, stderr := run("approve", "G-260101-00001", "delegated under policy grove.yaml sha256:x: review G-260101-00009 examined it."); code != 0 {
+		t.Fatal(stderr)
+	}
+	if by := showJSON(t, root, "G-260101-00001")["approved_by"]; by != "policy" {
+		t.Fatalf("approved_by after a delegated verdict: %v", by)
 	}
 }
 

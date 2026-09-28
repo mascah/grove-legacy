@@ -453,6 +453,9 @@ func (m *Model) detailMeta(g *versions.Group, v *versions.Version) string {
 	if r.Candidate != "" {
 		parts = append(parts, "candidate "+r.Candidate[:min(len(r.Candidate), 7)])
 	}
+	if a := approval(r); a != "" {
+		parts = append(parts, a)
+	}
 	if len(r.Work) != 0 {
 		parts = append(parts, "for "+strings.Join(r.Work, " "))
 	}

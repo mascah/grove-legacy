@@ -382,6 +382,6 @@ func TestBoardReviewWorkflow(t *testing.T) {
 		t.Fatal("n should keep the worktree")
 	}
 	s.press("esc")
-	s.want("G-260101-00001 · done", "candidate "+short+" · on main")
+	s.want("G-260101-00001 · done", "candidate "+short+" · approved · on main")
 	s.lacks("a approve")
 }

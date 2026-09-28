@@ -418,7 +418,9 @@ writes `<id>-<slug>.md` with a body skeleton and equal `created`/`updated`
 timestamps, prints the root-relative path, and fails without deleting the file
 if the project no longer validates. It requires Git and never overwrites.
 `show <id> --json` prints one object with `id`, `path`, `revision`, and
-`source`. `update <id> [--expect REVISION] [--commit]` with `--set FIELD=VALUE` and
+`source`, plus `approved_by`, `owner` or `policy`, while `approved` is set,
+derived from the latest verdict on the candidate (see
+[Work lifecycle](#work-lifecycle)). `update <id> [--expect REVISION] [--commit]` with `--set FIELD=VALUE` and
 `--unset FIELD` changes `title`, `status`, `relates_to`, work planning fields,
 `candidate` and `approved`, question `blocks`, plan and review `work`, or review `examined` by editing only those frontmatter entries plus `updated`,
 and prints `{id, path, revision, changed}`. Any failure before the file is

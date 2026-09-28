@@ -54,8 +54,10 @@ checkout's files shows only after a re-read.
 ## Record detail
 
 Enter on a card opens the record's detail: a boxed header with the ID,
-status, title, planning fields, candidate, standing against the target, the
-places holding its current state and when it was last written; then its body
+status, title, planning fields, candidate and, once it is approved, who
+approved it (`approved`, or `approved under policy` for a verdict `grove
+sweep` gave), standing against the target, the places holding its current
+state and when it was last written; then its body
 rendered from Markdown (headings, emphasis, lists, code, tables) beside a
 sidebar of the records linked to it, the timeline of commits that changed
 it, and one line per current state. Linked records are listed by role,

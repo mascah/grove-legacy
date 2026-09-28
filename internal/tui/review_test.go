@@ -536,3 +536,33 @@ func TestReviewNamesADelegatedApproval(t *testing.T) {
 		t.Fatalf("review detail:\n%s", s)
 	}
 }
+
+// The card's standing line says who approved, owner or policy, in review
+// and in done alike (G-260927-60ffq).
+func TestStandingLineNamesWhoApproved(t *testing.T) {
+	t.Parallel()
+	for _, delegated := range []bool{false, true} {
+		want := "candidate abcdef1 · approved · not on main"
+		f := reviewFixture(newFixture(), true)
+		if delegated {
+			want = "candidate abcdef1 · approved under policy · not on main"
+			for _, g := range f.res.Groups {
+				for _, v := range g.Versions {
+					if v.Record.Approved != "" {
+						v.Record.Source = append(v.Record.Source, "\nVerdict on candidate abcdef1, 2026-09-25: delegated under policy grove.yaml sha256:x: review W-006.\n"...)
+					}
+				}
+			}
+		}
+		m := openReview(t, f, 200, 36)
+		if s := plain(m); !strings.Contains(s, want) {
+			t.Fatalf("review detail lacks %q:\n%s", want, s)
+		}
+		g := m.group()
+		v := m.shown(g)
+		v.Record.Status = "done"
+		if got := m.detailMeta(g, v); !strings.Contains(got, want) {
+			t.Fatalf("done standing line lacks %q: %s", want, got)
+		}
+	}
+}
