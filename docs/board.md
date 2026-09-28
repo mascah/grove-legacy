@@ -301,8 +301,8 @@ changed since their merge base, so the card diverges and sits in Review,
 while its detail shows the target's `done`
 ([G-260928-4qv1m](../grove/G-260928-4qv1m-rewritten-copy.md)). The current
 view keeps that divergence, since Git ancestry decides it, and explains it:
-opening such a card in the current view, where one state is on the target and
-another on a branch, compares each such branch with the target by patch
+opening such a card in the current view, where one state is done on the
+target and another on a branch, compares each such branch with the target by patch
 (`git log --cherry-mark`), one read at a time, never while the board loads,
 and any key that starts another read, Esc, `r` and `q` cancel it. The
 sidebar's sources and the versions' divergence text then say either that the

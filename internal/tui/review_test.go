@@ -633,6 +633,16 @@ func TestRewrittenCopyExplainedOnOpen(t *testing.T) {
 		!strings.Contains(text, "this one has not: ddddddd") || strings.Contains(text, "branch -D") || !strings.Contains(plain(m), "2 of the 3 commits") {
 		t.Fatalf("partial: %s\n%s", text, plain(m))
 	}
+
+	// Work the target does not hold as done has no branch to clear: nothing is compared.
+	for i := range f.res.Groups[0].Versions[:2] {
+		f.res.Groups[0].Versions[i].Record.Status = "active"
+	}
+	reads := len(f.reads)
+	deliverAll(m, press(m, "r"))
+	if len(f.reads) != reads || m.copiesText(m.group(), " ") != "" {
+		t.Fatalf("compared a branch of work not done on main: %v", f.reads[reads:])
+	}
 }
 
 // Like history, the comparison never makes a key wait.

@@ -415,3 +415,21 @@ func TestIntegrateRefusesARewrittenCopy(t *testing.T) {
 	git(t, wt, "commit", "-qam", "docs: a change main lacks")
 	refused(t, root, false, "Next: grove resolve G-260101-00001")
 }
+
+// A branch whose commits main holds as copies but whose work main does not
+// hold as done, as when it was cherry-picked by hand, is integrated as
+// before: the merge marks it done (G-260928-4qv1m).
+func TestIntegrateMergesACopyNotYetDone(t *testing.T) {
+	t.Parallel()
+	root, _, _ := fixture(t, true)
+	write(t, root, "other.txt", "main moved\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "main moved")
+	git(t, root, "cherry-pick", "main..feature")
+	if record(t, root).Status != "review" {
+		t.Fatal("the cherry-pick should carry the record in review")
+	}
+	if facts, err := run(t, root, root, false); err != nil || record(t, root).Status != "done" {
+		t.Fatalf("%v %q", err, facts)
+	}
+}

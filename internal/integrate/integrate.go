@@ -128,11 +128,14 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if req.Expect != "" && before != req.Expect {
 		return fmt.Errorf("%s moved from %s, where the merge was verified, to %s; nothing was merged and %s stays in review", p.Target, short(req.Expect), short(before), req.ID)
 	}
-	// A branch the target already holds as rewritten copies, as after a
-	// rebase of the target (G-260928-4qv1m), has nothing to merge, and its
-	// conflict, if any, is not one to resolve. A read that fails leaves it to
-	// the checks below.
-	if c, err := versions.CopiesContext(context.Background(), root, before, from.Commit); err == nil && c.Rewritten() {
+	// Work already done here whose branch the target holds as rewritten
+	// copies, as after a rebase of the target (G-260928-4qv1m), has nothing
+	// to merge, and its conflict, if any, is not one to resolve. Work not
+	// yet done here, such as a branch cherry-picked by hand, is merged as
+	// before, which marks it done. A read that fails leaves it to the checks
+	// below.
+	done := slices.ContainsFunc(p.Records, func(o *project.Record) bool { return o.ID == req.ID && o.Status == "done" })
+	if c, err := versions.CopiesContext(context.Background(), root, before, from.Commit); done && err == nil && c.Rewritten() {
 		return fmt.Errorf("merge of %s into %s refused: %s; nothing was merged, %s is unchanged at %s", name, p.Target, c.Text(name, p.Target, worktreeOf(res, from.Ref)), p.Target, short(before))
 	}
 	// A conflict is refused before the merge starts (G-260925-h8rj5): merge-tree

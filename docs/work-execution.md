@@ -561,8 +561,9 @@ disposition:
   Grove never runs. The done record still names the old candidate, so work
   that depends on it waits; the wait names the copy and the repair, `grove
   update G-260925-7k2qm --set candidate=COPY --commit` in the target's
-  checkout (with `--set approved=COPY` where it is approved) and a note
-  under the verdict, after which it is delivered.
+  checkout (with `--unset approved` where it is approved, since an approval
+  is of one commit) and a note under the verdict, after which it is
+  delivered.
 - **Rejection:** `status=abandoned`, with the decision and its reasons in the
   record or a decision record it links.
 - **Under a standing policy:** where the configuration holds a `policy:`,

@@ -68,15 +68,17 @@ worktree holds no ignored files. A squash or rebase that lands a different
 commit is a manual merge, followed by an `update` that names the landed
 commit as the candidate as it sets `done`.
 
-Before predicting a conflict, `integrate` compares the branch with the
-target by patch (`git log --cherry-mark`), and refuses a branch every commit
-of which the target lacks has a copy there with the same patch: a rewritten
-copy, as a rebase of the target after the branch was integrated leaves
+Before predicting a conflict, for work the target already holds as done,
+`integrate` compares the branch with the target by patch (`git log
+--cherry-mark`), and refuses a branch every commit of which the target lacks
+has a copy there with the same patch: a rewritten copy, as a rebase of the
+target after the branch was integrated leaves
 ([G-260928-4qv1m](../grove/G-260928-4qv1m-rewritten-copy.md)). Nothing needs merging,
 and the refusal gives the commands that clear the branch, `git worktree
 remove PATH` where a checkout is on it, which also deletes that checkout's
 ignored files, then `git branch -D BRANCH`, since `-d` checks ancestry and
-refuses. A branch with a commit that has no copy, a merge included, is
+refuses. A branch with a commit that has no copy, a merge included, and work
+not yet done on the target, such as a branch cherry-picked by hand, are
 integrated as before. The board explains the same case on the card
 ([Rewritten copies](board.md#rewritten-copies)).
 
@@ -251,8 +253,8 @@ that still needs it. Done work whose candidate HEAD lacks, where HEAD holds
 exactly one commit with the same patch, a rewritten copy as after a rebase,
 names that copy in its delivery, and a note gives the repair: in the
 target's checkout, `grove update ID --set candidate=COPY --commit`, with
-`--set approved=COPY` where the record is approved, then a note under its
-verdict. The copy counts as delivered only once the record names it. A candidate in review also says what merging it into
+`--unset approved` where the record is approved, since an approval is of
+one commit, then a note under its verdict. The copy counts as delivered only once the record names it. A candidate in review also says what merging it into
 the target's current tip would do, performed with `git merge-tree` in
 objects only: `integrated`, a fast-forward, a clean merge although the
 target moved since the branch left it, or a conflict in named files, with
@@ -461,9 +463,10 @@ Every refusal comes before the feedback is written:
 
 - the target is not named;
 - no branch, or several, hold the record in review;
+- the target holds the work as done and every commit of the branch that it
+  lacks has a copy there with the same patch, a rewritten copy, which it
+  explains as `integrate` does, whether or not a checkout is on the branch;
 - no checkout is on that branch;
-- every commit of the branch that the target lacks has a copy there with
-  the same patch, a rewritten copy, which it explains as `integrate` does;
 - the candidate merges without a conflict;
 - an attempt of any member is running or orphaned;
 - no budget or permission mode is supplied;

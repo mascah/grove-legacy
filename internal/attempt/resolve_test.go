@@ -303,8 +303,9 @@ func TestResolveStopped(t *testing.T) {
 	}
 }
 
-// A branch whose every commit main holds as a copy, as after a rebase of
-// main (G-260928-4qv1m), has nothing to resolve, whatever it conflicts with.
+// Work done on main whose branch's every commit main holds as a copy, as
+// after a rebase of main (G-260928-4qv1m), has nothing to resolve, whatever it
+// conflicts with; before it is done there, it resolves as before.
 func TestResolveRefusesARewrittenCopy(t *testing.T) {
 	root, wt, _, _ := conflicted(t)
 	git(t, root, "reset", "-q", "--hard", "HEAD~1")
@@ -312,6 +313,12 @@ func TestResolveRefusesARewrittenCopy(t *testing.T) {
 	git(t, root, "add", "other.txt")
 	git(t, root, "commit", "-qm", "upstream")
 	git(t, root, "cherry-pick", "HEAD..worktree-G-260101-00001")
+	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "there is no conflict to resolve") {
+		t.Fatalf("not done on main: %v", err)
+	}
+	// Integrated before the rewrite: main holds it done, naming the old candidate.
+	write(t, root, "grove/G-260101-00001-first.md", strings.Replace(readFile(t, root, "grove/G-260101-00001-first.md"), "status: review", "status: done", 1))
+	git(t, root, "commit", "-qam", "done")
 	before := git(t, root, "for-each-ref")
 	_, _, err := resolve(root, nil, now)
 	if err == nil || !strings.Contains(err.Error(), "branch worktree-G-260101-00001 is a rewritten copy of work already on main") ||
@@ -320,5 +327,11 @@ func TestResolveRefusesARewrittenCopy(t *testing.T) {
 	}
 	if git(t, root, "for-each-ref") != before || git(t, wt, "status", "--porcelain") != "" {
 		t.Fatal("a refusal wrote something")
+	}
+	// Once its checkout is removed, the explanation stands, with only the
+	// branch left to delete.
+	git(t, root, "worktree", "remove", wt)
+	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "To clear it: git branch -D worktree-G-260101-00001") {
+		t.Fatalf("without a checkout: %v", err)
 	}
 }

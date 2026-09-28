@@ -390,12 +390,13 @@ func copyOf(copies func(commit, ref string) ([]string, error), commit, ref strin
 
 // Rewrite is the repair of done work whose candidate the target holds only
 // as the rewritten copy y (G-260928-4qv1m): the record names the landed commit, as
-// for any squash or rebase, and approved follows candidate where the record
-// carries one.
+// for any squash or rebase. An approval is of one commit and does not carry
+// over to another (G-260921-btyck), so one the record carries is unset; its
+// verdict stays in the body.
 func Rewrite(id, y string, approved bool) string {
 	set := "--set candidate=" + short12(y)
 	if approved {
-		set += " --set approved=" + short12(y)
+		set += " --unset approved"
 	}
 	return "in the target's checkout, grove update " + id + " " + set + " --commit names it as delivered; then note the rewrite under the record's verdict"
 }

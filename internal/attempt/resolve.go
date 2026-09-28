@@ -54,13 +54,21 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 			checkout = s
 		}
 	}
+	// Work done on the target whose branch the target holds as rewritten
+	// copies (G-260928-4qv1m) has nothing to resolve, checkout or not.
+	if doneOn(res, id, p.Target) {
+		if c, err := versions.CopiesContext(context.Background(), p.Root, "refs/heads/"+p.Target, from.Commit); err == nil && c.Rewritten() {
+			worktree := ""
+			if checkout != nil {
+				worktree = checkout.Worktree
+			}
+			return nil, fmt.Errorf("%s; there is nothing to resolve", c.Text(branch, p.Target, worktree))
+		}
+	}
 	if checkout == nil {
 		return nil, fmt.Errorf("no checkout is on branch %s, where the feedback is committed and the attempt runs; git worktree add one", branch)
 	}
 	dir := filepath.Join(checkout.Worktree, filepath.FromSlash(res.Prefix))
-	if c, err := versions.CopiesContext(context.Background(), p.Root, "refs/heads/"+p.Target, from.Commit); err == nil && c.Rewritten() {
-		return nil, fmt.Errorf("%s; there is nothing to resolve", c.Text(branch, p.Target, checkout.Worktree))
-	}
 
 	ms, err := versions.PredictContext(context.Background(), p.Root, "refs/heads/"+p.Target, []string{r.Candidate})
 	if err != nil {
@@ -185,6 +193,18 @@ func inReview(res *versions.Result, id, target string) (*versions.Source, *proje
 		names = append(names, strings.TrimPrefix(v.Source.Ref, "refs/heads/"))
 	}
 	return nil, nil, fmt.Errorf("%s is in review on several branches (%s); resolve needs one", id, strings.Join(names, ", "))
+}
+
+// doneOn reports that the target branch's tip holds work id as done.
+func doneOn(res *versions.Result, id, target string) bool {
+	for _, g := range res.Groups {
+		for _, v := range g.Versions {
+			if g.ID == id && v.Source.Kind == "committed" && v.Source.Ref == "refs/heads/"+target && v.Record != nil && v.Record.Status == "done" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // branchRecords is every record the committed source holds.

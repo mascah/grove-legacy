@@ -377,19 +377,19 @@ func TestSelectionNamesARewrittenPrerequisite(t *testing.T) {
 	landed := git(t, root, "rev-parse", "HEAD")
 	git(t, root, "branch", "-q", "-D", "gone") // the copy's original survives only as an object
 	member(t, root, "G-260101-00006", "done")
-	write(t, root, "grove/G-260101-00006.md", strings.Replace(readFile(t, root, "grove/G-260101-00006.md"), "status: done\n", "status: done\ncandidate: \""+old+"\"\n", 1))
+	write(t, root, "grove/G-260101-00006.md", strings.Replace(readFile(t, root, "grove/G-260101-00006.md"), "status: done\n", "status: done\ncandidate: \""+old+"\"\napproved: \""+old+"\"\n", 1))
 	member(t, root, "G-260101-00007", "proposed", "G-260101-00006")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-qm", "records")
 	l := preview(t, root, "G-260101-00001", "G-260101-00007")
-	want := "needs G-260101-00006, whose candidate " + old[:7] + " the base lacks; the base holds " + landed[:7] + ", a rewritten copy with the same patch, as after a rebase: in the target's checkout, grove update G-260101-00006 --set candidate=" + landed[:12] + " --commit names it as delivered; then note the rewrite under the record's verdict"
+	want := "needs G-260101-00006, whose candidate " + old[:7] + " the base lacks; the base holds " + landed[:7] + ", a rewritten copy with the same patch, as after a rebase: in the target's checkout, grove update G-260101-00006 --set candidate=" + landed[:12] + " --unset approved --commit names it as delivered; then note the rewrite under the record's verdict"
 	if w := waits(l)["G-260101-00007"]; w != want {
 		t.Fatalf("wait\n got %q\nwant %q", w, want)
 	}
 	if d := l.Selection.Outside[0].Delivery; d != "done, but candidate "+old[:7]+" is not in the base, which holds "+landed[:7]+", a rewritten copy" {
 		t.Fatalf("delivery %q", d)
 	}
-	if _, err := update.Apply(root, update.Request{ID: "G-260101-00006", Set: []update.Field{{Name: "candidate", Value: landed[:12]}}, Commit: true}, now, nil); err != nil {
+	if _, err := update.Apply(root, update.Request{ID: "G-260101-00006", Set: []update.Field{{Name: "candidate", Value: landed[:12]}}, Unset: []string{"approved"}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
 	}
 	l = preview(t, root, "G-260101-00001", "G-260101-00007")

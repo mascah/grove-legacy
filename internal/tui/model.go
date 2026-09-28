@@ -447,14 +447,17 @@ type rewrite struct{ branch, worktree, target, commit string }
 func (r rewrite) key() string { return r.target + "\x00" + r.commit }
 
 // rewrites lists, for a card open in the current view whose states diverge,
-// one on the target, each committed branch other than the target holding
-// another state.
+// one done on the target, each committed branch other than the target
+// holding another state: as integrate and resolve, only work the target
+// already holds as done can have a branch that is only a copy of it.
 func (m *Model) rewrites(g *versions.Group) []rewrite {
 	if g == nil || !m.current() || m.res.Target == "" {
 		return nil
 	}
 	states := currentStates(*g)
-	if len(states) < 2 || !slices.ContainsFunc(states, func(state []*versions.Version) bool { return state[0].OnTarget }) {
+	if len(states) < 2 || !slices.ContainsFunc(states, func(state []*versions.Version) bool {
+		return state[0].OnTarget && state[0].Record != nil && state[0].Record.Status == "done"
+	}) {
 		return nil
 	}
 	ref, tip := "refs/heads/"+m.res.Target, ""

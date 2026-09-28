@@ -170,7 +170,7 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("delivery\n got %v\nwant %v", got, want)
 	}
-	if note := "S-22's candidate 2222222 is not in HEAD, which holds abcdefa, a rewritten copy with the same patch, as after a rebase: in the target's checkout, grove update S-22 --set candidate=abcdefabcdef --set approved=abcdefabcdef --commit names it as delivered; then note the rewrite under the record's verdict"; !slices.Contains(v.Notes, note) {
+	if note := "S-22's candidate 2222222 is not in HEAD, which holds abcdefa, a rewritten copy with the same patch, as after a rebase: in the target's checkout, grove update S-22 --set candidate=abcdefabcdef --unset approved --commit names it as delivered; then note the rewrite under the record's verdict"; !slices.Contains(v.Notes, note) {
 		t.Errorf("notes %q", v.Notes)
 	}
 	v, _ = Preview([]*project.Record{work("H", "done"), work("W", "proposed", "H")}, []string{"W"})
