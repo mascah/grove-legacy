@@ -51,7 +51,7 @@ func (m *Model) edit() tea.Cmd {
 	v := m.shown(g)
 	switch {
 	case m.asOf != "" || m.diff != "":
-		m.alert = "e edits " + g.ID + " as it is now, not a commit's copy or a diff; Esc returns to it; nothing was written"
+		m.alert = "e edits " + g.ID + " as it is now, not a commit's copy or a diff, so return to it first; nothing was written"
 		return nil
 	case v == nil || v.Record == nil:
 		m.alert = g.ID + " is deleted in its current state, so there is no file to edit; nothing was written"
@@ -85,6 +85,7 @@ func (m *Model) edit() tea.Cmd {
 			given = before // the editor still opens; the answer finds its own place
 		}
 	}
+	m.alert = ""
 	m.editing = &editing{g.ID, root, branch, path, before, given, lv.Change != "unchanged", question}
 	return m.backend.Edit(path, func(err error) tea.Msg { return editedMsg{err} })
 }

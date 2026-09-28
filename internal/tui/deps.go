@@ -165,7 +165,7 @@ func (m *Model) depsKey(k string) tea.Cmd {
 		}
 	case "p":
 		if len(m.depsPicked) == 0 {
-			m.notice = "Space selects the work to preview"
+			m.alert = "Space selects the work to preview"
 			return nil
 		}
 		m.previewing, m.preview, m.previewErr, m.previewRev, m.scroll = true, nil, "", nil, 0

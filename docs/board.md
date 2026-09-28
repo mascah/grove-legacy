@@ -485,7 +485,9 @@ and `A`; refused on Enter, with its line left open beneath; or refused by
 the operation it ran, whose result screen leads with `NOT DONE` and the
 reason in the same style, before whatever it reported. It stays through
 other keys until Esc dismisses it, which then does nothing else, or until
-an action goes ahead. Other messages, such as a cancelled prompt, show in
+an action goes ahead: a prompt, another screen or a preview opens, or the
+editor starts. It takes the rows it needs, up to half the screen, ending in
+`…` past that, and what scrolls above it still reaches its last row. Other messages, such as a cancelled prompt, show in
 the row under the header until the next key.
 
 ## Keys

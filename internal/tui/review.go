@@ -898,7 +898,8 @@ func (m *Model) promptRows(w, n int) []string {
 }
 
 // footer is the rows under the body: a refusal, then the open prompt or the
-// key hints, in at most half the screen.
+// key hints, in at most half the screen; a refusal longer than that ends in
+// "…".
 func (m *Model) footer(w int, hints string) []string {
 	n := max((m.height-2)/2, 1)
 	var rows []string
@@ -908,7 +909,10 @@ func (m *Model) footer(w int, hints string) []string {
 			text += " · Esc dismisses"
 		}
 		lines := wrap(text, w)
-		for _, r := range lines[:min(len(lines), 3)] {
+		if limit := max(n-1, 1); len(lines) > limit {
+			lines = append(lines[:limit-1], line("…", w))
+		}
+		for _, r := range lines {
 			rows = append(rows, attention.Render(r))
 		}
 	}

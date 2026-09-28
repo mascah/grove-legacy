@@ -306,9 +306,10 @@ func TestEditAnyRecord(t *testing.T) {
 		e := &editor{write: "More.\n"}
 		m := openQuestion(t, f, e)
 		m.openDetail(id)
+		m.alert = "an earlier refusal" // settled once the edit goes ahead
 		read := f.inspects
 		deliverAll(m, press(m, "e"))
-		if len(e.edits) != 1 || e.edits[0] != path || m.prompt != nil || len(e.answers) != 0 || f.inspects != read+1 {
+		if len(e.edits) != 1 || e.edits[0] != path || m.prompt != nil || len(e.answers) != 0 || f.inspects != read+1 || m.alert != "" {
 			t.Fatalf("%s: edits %v prompt %v answers %v reads %d", id, e.edits, m.prompt != nil, e.answers, f.inspects-read)
 		}
 		fileIs(t, path, text+"More.\n")

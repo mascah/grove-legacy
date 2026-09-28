@@ -529,10 +529,11 @@ func (m *Model) stop() {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	asked := m.prompt != nil
+	asked, screen, previewing, alert := m.prompt != nil, m.screen, m.previewing, m.alert
 	cmd := m.update(msg)
-	// A prompt opening is the refused action going ahead after all.
-	if !asked && m.prompt != nil {
+	// A prompt, another screen or a preview opening is an action going
+	// ahead, which settles the refusal before it.
+	if m.alert == alert && (!asked && m.prompt != nil || m.screen != screen || m.previewing != previewing) {
 		m.alert = ""
 	}
 	// One read at a time, in this order: a detail's history, then how its

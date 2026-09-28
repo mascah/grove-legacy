@@ -2,6 +2,7 @@ package tui
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -147,5 +148,32 @@ func TestRefusalsStayUntilDismissed(t *testing.T) {
 	}
 	if press(m, "esc"); m.screen != detailScreen || strings.Contains(plain(m), "NOT DONE") {
 		t.Fatalf("Esc leaves the refusal: screen %d", m.screen)
+	}
+}
+
+// A refusal takes the rows it needs, up to half the screen, and the body
+// gives them up: G still reaches the last row of the content under it, and
+// another screen opening settles it (G-260928-csg91, G-260928-y50a4).
+func TestRefusalRowsAndTheBody(t *testing.T) {
+	t.Parallel()
+	m := openRuns(t, reviewFixture(newFixture(), false), &runs{}, 80, 30)
+	m.openDetail("W-001")
+	long := strings.Repeat("the reason goes on ", 20) + "and the next action ends it"
+	m.alert = long
+	press(m, "G")
+	fits(t, m, 80, "long refusal")
+	if !strings.Contains(flat(m), strings.Join(strings.Fields(long), " ")+" Esc dismisses") {
+		t.Fatalf("the whole refusal is drawn:\n%s", plain(m))
+	}
+	at := regexp.MustCompile(`Content  \d+-(\d+) of (\d+)`).FindStringSubmatch(plain(m))
+	if at == nil || at[1] != at[2] {
+		t.Fatalf("G reaches the last row under the refusal: %q\n%s", at, plain(m))
+	}
+	m.alert = strings.Repeat(long+" ", 10)
+	if fits(t, m, 80, "longer refusal"); !strings.Contains(plain(m), "\n…") {
+		t.Fatalf("a refusal past half the screen ends in …:\n%s", plain(m))
+	}
+	if press(m, "A"); m.screen != attemptsScreen || m.alert != "" {
+		t.Fatalf("another screen settles the refusal: screen %d alert %q", m.screen, m.alert)
 	}
 }

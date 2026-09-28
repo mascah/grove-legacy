@@ -848,6 +848,7 @@ func (m *Model) scrolled(rows []string, n, w int) []string {
 // clampScroll keeps the scroll offset inside what the current pane shows.
 func (m *Model) clampScroll() {
 	var rows, n int
+	tall := len(m.footer(m.width, "")) - 1 // a refusal or a prompt over the hint row's one
 	switch {
 	case m.res == nil:
 	case m.screen == sourcesScreen:
@@ -873,11 +874,11 @@ func (m *Model) clampScroll() {
 		if m.split() {
 			w = w * 11 / 20
 		}
-		rows, n = len(m.contentRows(v, w)), m.height-3-len(m.detailHead(v, m.width))-1
+		rows, n = len(m.contentRows(v, w)), m.height-3-len(m.detailHead(v, m.width))-1-tall
 		m.dscroll = max(min(m.dscroll, rows-n), 0)
 		return
 	}
-	m.scroll = max(min(m.scroll, rows-n), 0)
+	m.scroll = max(min(m.scroll, rows-n+tall), 0)
 }
 
 func (m *Model) contextProblem(s *versions.Source) string {
