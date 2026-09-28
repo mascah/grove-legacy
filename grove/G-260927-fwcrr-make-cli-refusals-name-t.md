@@ -165,11 +165,39 @@ round 2 `Open findings: none`.
 Limits: `model_test.go` checks the policy subkeys by substring and does not
 tie priority's range to code; `grove --help`'s text was not changed.
 
+**Merge of main at `2633d8d`** (the delegated feedback, 2026-09-28, that
+candidate `16af7ee` conflicted with main in `docs/record-model.md`): merge
+`ecca7cf` joins the previous candidate's branch tip `7e10a56` and main
+`2633d8d`, no rebase, so `16af7ee` and review G-260928-a372k's `c0fb447`
+stay ancestors. The one conflicting file, `docs/record-model.md`, was
+settled by keeping this branch's contract-only model and carrying each of
+main's three sentence changes to where this branch had moved that sentence;
+nothing of main's was dropped:
+
+- `size: small` selects the compact handoff: the model's `size` row, and
+  the planning reasoning in `docs/record-design.md`.
+- A review record before Review is unenforced only "where the work guide's
+  handoff calls for one": the model's "Not enforced" paragraph.
+- `show --json` adds `approved_by` while `approved` is set: the `show ID`
+  bullet in `docs/commands.md` (main's own policy paragraph there merged
+  cleanly).
+
+Every other file merged without conflict and is main's. The model is 11,604
+bytes; every `record-model.md#` anchor resolves. Verification at `ecca7cf`:
+`go vet ./...` clean, `gofmt -l .` empty, `go run ./cmd/grove check` `OK:
+228 records`, `go test -count=1 -timeout 120s ./...` all packages ok.
+Review: [G-260928-wp37y](G-260928-wp37y-fwcrr-merge-review.md), scoped to
+the resolution, two rounds by fresh `grove-reviewer` agents; round 1 found
+the missing `approved_by` clause, fixed in the merge; round 2 `Open
+findings: none`. Main has since moved to `fc5a095` (one record commit);
+`git merge-tree` of `ecca7cf` with it is clean.
+
 ## Next
 
-In review. Judge the three refusals in Evidence (acceptance 4) and read
-`grove guide model` against acceptance 2. Then, in this checkout:
+In review at candidate `ecca7cf`, the merge of main `2633d8d`. Judge the
+three refusals in Evidence (acceptance 4) and read `grove guide model`
+against acceptance 2. Then, in this checkout:
 `grove approve G-260927-fwcrr "VERDICT"`, and in the target's checkout:
 `grove integrate G-260927-fwcrr --cleanup`.
 
-Feedback on candidate 16af7ee, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb, budget 10 USD: conflicts with main at 2633d8d in docs/record-model.md. Resolve only that (grove resolve): in this branch, git merge 2633d8dd4cfb7591a3089649ed6d7b3762bfc997, that commit of main even if main has moved since, never a rebase; resolve those files keeping both sides' intent; rerun the repository's verification; and hand off the merge as the new candidate, with the previous candidate 16af7ee, the merged commit and the resolved files in Evidence. Change nothing else. If a resolution needs a choice this record does not settle, stop with a checkpoint naming it.
+Feedback on candidate 16af7ee, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb, budget 10 USD: conflicts with main at 2633d8d in docs/record-model.md. Resolve only that (grove resolve): in this branch, git merge 2633d8dd4cfb7591a3089649ed6d7b3762bfc997, that commit of main even if main has moved since, never a rebase; resolve those files keeping both sides' intent; rerun the repository's verification; and hand off the merge as the new candidate, with the previous candidate 16af7ee, the merged commit and the resolved files in Evidence. Change nothing else. If a resolution needs a choice this record does not settle, stop with a checkpoint naming it. Done at `ecca7cf`; see Evidence.
