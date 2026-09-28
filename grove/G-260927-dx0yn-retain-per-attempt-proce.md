@@ -2,11 +2,12 @@
 id: "G-260927-dx0yn"
 type: work
 title: "Retain per-attempt process facts and show cost per work record"
-status: active
+status: review
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-28T00:46:25Z"
+updated: "2026-09-28T01:00:36Z"
 size: medium
 relates_to: ["G-260921-sth8q", "G-260923-tnn5e", "G-260923-895zb", "G-260921-h46pb", "G-260923-p5pt6"]
+candidate: "8cf2e4c5e19f4bcac1141e13c1879e5e5d8950de"
 ---
 
 ## Outcome
