@@ -4,10 +4,10 @@ type: work
 title: "Show each member's state of a selection on the board"
 status: active
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T20:23:41Z"
+updated: "2026-09-28T20:55:18Z"
 kind: feature
 size: small
-relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260923-895zb"]
+relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260923-895zb", "G-260928-dbgbw"]
 ---
 
 ## Outcome
@@ -77,4 +77,4 @@ edge. G-260928-369c1 names this record in its `depends_on`.
 
 No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (card tags from `standingOf`'s rules per member, the attempts row, the detail's attempt row and the attempt's Next).
 
-Decided by the owner, 2026-09-28, in the session implementing this: `R` on a member of an ended selection whose state still stands on the selection's branch relaunches that selection, the same IDs on the same branch and worktree, as `grove run` with those IDs would, rather than the one member alone, which would hand that member off while another member's unfinished code sits on the branch. It is refused while a started member still waits on an open question.
+What `R` does on a member was decided by the owner during implementation and is recorded as [G-260928-dbgbw](G-260928-dbgbw-r-on-a-member-of-an-ende.md).

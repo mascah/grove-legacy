@@ -225,7 +225,8 @@ names every member's state where the width allows, cut last
 ([G-260928-63124](../grove/G-260928-63124-show-each-member-s-state.md)). The
 work's detail gives the latest attempt as `G-260925-7k2qm+1, G-260925-8m3xd
 held by G-260925-7k2qm`, and `R` on any member whose current state stands on
-the selection's branch relaunches the selection, the same IDs on the same
+the selection's branch relaunches the selection
+([G-260928-dbgbw](../grove/G-260928-dbgbw-r-on-a-member-of-an-ende.md)), the same IDs on the same
 branch in its worktree: the detail says `R resumes G-260925-7k2qm+1 on
 BRANCH, not redoing the members whose checkpoint the branch confirms, and
 starts ID`, and the attempt's Next says the same, where `e` answers the
