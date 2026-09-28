@@ -302,3 +302,23 @@ func TestResolveStopped(t *testing.T) {
 		t.Fatalf("result %+v %+v", v.Result, r)
 	}
 }
+
+// A branch whose every commit main holds as a copy, as after a rebase of
+// main (G-260928-4qv1m), has nothing to resolve, whatever it conflicts with.
+func TestResolveRefusesARewrittenCopy(t *testing.T) {
+	root, wt, _, _ := conflicted(t)
+	git(t, root, "reset", "-q", "--hard", "HEAD~1")
+	write(t, root, "other.txt", "upstream\n")
+	git(t, root, "add", "other.txt")
+	git(t, root, "commit", "-qm", "upstream")
+	git(t, root, "cherry-pick", "HEAD..worktree-G-260101-00001")
+	before := git(t, root, "for-each-ref")
+	_, _, err := resolve(root, nil, now)
+	if err == nil || !strings.Contains(err.Error(), "branch worktree-G-260101-00001 is a rewritten copy of work already on main") ||
+		!strings.Contains(err.Error(), "git worktree remove "+wt) || !strings.HasSuffix(err.Error(), "; there is nothing to resolve") {
+		t.Fatalf("got %v", err)
+	}
+	if git(t, root, "for-each-ref") != before || git(t, wt, "status", "--porcelain") != "" {
+		t.Fatal("a refusal wrote something")
+	}
+}

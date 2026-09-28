@@ -58,6 +58,9 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 		return nil, fmt.Errorf("no checkout is on branch %s, where the feedback is committed and the attempt runs; git worktree add one", branch)
 	}
 	dir := filepath.Join(checkout.Worktree, filepath.FromSlash(res.Prefix))
+	if c, err := versions.CopiesContext(context.Background(), p.Root, "refs/heads/"+p.Target, from.Commit); err == nil && c.Rewritten() {
+		return nil, fmt.Errorf("%s; there is nothing to resolve", c.Text(branch, p.Target, checkout.Worktree))
+	}
 
 	ms, err := versions.PredictContext(context.Background(), p.Root, "refs/heads/"+p.Target, []string{r.Candidate})
 	if err != nil {

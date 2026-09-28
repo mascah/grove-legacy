@@ -384,3 +384,34 @@ func TestIntegrateUnderAPolicy(t *testing.T) {
 		t.Fatalf("record on main:\n%s", r.Source)
 	}
 }
+
+// TestIntegrateRefusesARewrittenCopy is G-260928-4qv1m's incident: integrated
+// by fast-forward, the branch kept, and main rebased onto a commit it
+// lacked, so the branch's record diverges from main's done. Every branch
+// commit has a copy on main: nothing to merge, and the refusal says how to
+// clear the branch. One commit without a copy leaves today's path.
+func TestIntegrateRefusesARewrittenCopy(t *testing.T) {
+	t.Parallel()
+	root, wt, _ := fixture(t, true)
+	if _, err := run(t, root, root, false); err != nil {
+		t.Fatal(err)
+	}
+	git(t, root, "branch", "upstream", "main~5") // init, before the branch's four commits and done
+	git(t, root, "worktree", "add", "-q", filepath.Join(filepath.Dir(root), "up"), "upstream")
+	write(t, filepath.Join(filepath.Dir(root), "up"), "other.txt", "from upstream\n")
+	git(t, filepath.Join(filepath.Dir(root), "up"), "add", "-A")
+	git(t, filepath.Join(filepath.Dir(root), "up"), "commit", "-qm", "upstream")
+	git(t, root, "rebase", "-q", "upstream")
+	if record(t, root).Status != "done" {
+		t.Fatal("the rebase lost done")
+	}
+	refs := git(t, root, "for-each-ref")
+	refused(t, root, false, "merge of feature into main refused: branch feature is a rewritten copy of work already on main: each of its 4 commits main lacks has a copy there with the same patch, as after a rebase of main, so nothing needs merging. To clear it: git worktree remove "+wt+", which also deletes that checkout's ignored files such as build output, then git branch -D feature (-D, since Git checks ancestry, not patches, and -d would refuse); nothing was merged, main is unchanged at")
+	if git(t, root, "for-each-ref") != refs || git(t, wt, "status", "--porcelain") != "" {
+		t.Fatal("a refused integration changed a ref or the branch's checkout")
+	}
+
+	write(t, wt, "grove/G-260101-00001-first.md", string(record(t, wt).Source)+"\nAfter the rebase.\n")
+	git(t, wt, "commit", "-qam", "docs: a change main lacks")
+	refused(t, root, false, "Next: grove resolve G-260101-00001")
+}
