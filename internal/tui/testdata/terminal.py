@@ -102,6 +102,16 @@ class Session:
             self.pump()
         return len(self.screen)
 
+    def whole(self, text, since=0, rows=30, cols=120):
+        """Expect text after a repaint of every cell. Typed input may reach the
+        board over several frames, each redrawing only the cells it changed,
+        so a row's final text is otherwise never drawn in one piece; a size
+        change draws everything, and the size is then put back."""
+        self.resize(rows, cols + 1)
+        mark = self.expect(text, since)
+        self.resize(rows, cols)
+        return mark
+
     def send(self, data):
         os.write(self.master, data)
 
@@ -579,7 +589,7 @@ def attempt_lifecycle(root, wt, base):
     s.send(b"--frob" + ENTER)
     mark = s.expect("unknown option --frob", mark)
     s.send(b"\x7f" * len("--frob") + b"--budget 1 --permission-mode auto")
-    mark = s.expect("$1, mode auto, to the handoff", mark)
+    mark = s.whole("$1, mode auto, to the handoff", mark)
     # Uncommitted, the skill refuses the launch before the provider starts;
     # committed, the same launch starts and warns that no reviewer is there.
     s.send(ENTER)
@@ -699,7 +709,7 @@ def attempt_lifecycle(root, wt, base):
     s.send(b"R")
     mark = s.expect("$1, mode auto", mark)
     s.send(b"--effort xhigh")  # a typed flag overrides for this launch only
-    mark = s.expect("--effort xhigh▏", mark)  # only changed cells are redrawn; attempt.json below holds what it resolved to
+    mark = s.whole("--effort xhigh▏", mark)  # attempt.json below holds what it resolved to
     s.send(ENTER)
     s.expect("worktree: reusing", mark)
     s.expect("started; owner pid", mark)
