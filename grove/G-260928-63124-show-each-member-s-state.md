@@ -2,9 +2,9 @@
 id: "G-260928-63124"
 type: work
 title: "Show each member's state of a selection on the board"
-status: proposed
+status: active
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T19:34:01Z"
+updated: "2026-09-28T20:23:41Z"
 kind: feature
 size: small
 relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260923-895zb"]
