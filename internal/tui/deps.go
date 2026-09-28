@@ -149,7 +149,7 @@ func (m *Model) depsKey(k string) tea.Cmd {
 		case len(rows) == 0:
 		case m.depsTree: // the trees have focus: scroll them
 			all := m.treeRows(rows[at], place(rows[at], size), byID, openBlocks(byID), true, treeWidth(m.width))
-			m.scroll = min(max(m.moved(m.scroll, k), 0), max(len(all)-m.treeArea(v, rows, size, m.width, m.height-3), 0))
+			m.scroll = min(max(m.moved(m.scroll, k), 0), max(len(all)-m.treeArea(v, rows, size, m.width, m.height-2-len(m.footer(m.width, ""))), 0))
 		default:
 			m.depsAt, m.scroll = rows[min(max(m.moved(at, k), 0), len(rows)-1)].ID, 0
 		}

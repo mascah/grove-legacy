@@ -386,6 +386,14 @@ func TestDepsReviewRegressions(t *testing.T) {
 		if screen := plain(m); !strings.Contains(screen, "above") || !strings.Contains(screen, "W-13 proposed") || strings.Contains(screen, "more rows") {
 			t.Fatalf("the end of the trees is out of reach:\n%s", screen)
 		}
+		// A refusal's rows come out of the trees, whose end stays in reach.
+		m.alert = "Space selects the work to preview"
+		press(m, "G")
+		if screen := plain(m); !strings.Contains(screen, "W-13 proposed") || strings.Contains(screen, "more rows") {
+			t.Fatalf("the end of the trees is out of reach under a refusal:\n%s", screen)
+		}
+		m.alert = ""
+		press(m, "g", "g", "G")
 		press(m, "tab", "down")
 		if m.depsAt != "W-07" || m.scroll != 0 {
 			t.Fatalf("Tab back should move the list: %s %d", m.depsAt, m.scroll)

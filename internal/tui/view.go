@@ -878,6 +878,9 @@ func (m *Model) clampScroll() {
 		m.dscroll = max(min(m.dscroll, rows-n), 0)
 		return
 	}
+	if n == 0 {
+		tall = 0 // no pane of its own scrolls here
+	}
 	m.scroll = max(min(m.scroll, rows-n+tall), 0)
 }
 
