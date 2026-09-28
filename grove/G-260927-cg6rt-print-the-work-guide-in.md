@@ -95,6 +95,8 @@ record the reasoning either way.
 ## Next
 
 Assign: `/grove-work G-260927-cg6rt`. The attempt facts
-[G-260927-dx0yn](G-260927-dx0yn-retain-per-attempt-proce.md) proposes (process
-share, first edit outside the record root) are how this change's effect on
-a session will be read; this record does not need them to be built.
+[G-260927-dx0yn](G-260927-dx0yn-retain-per-attempt-proce.md) builds (guide
+prints and `grove` calls, time to the first commit outside the record root)
+are how this change's effect on a session will be read; its owner dropped
+the process share and first edit it first proposed. This record does not
+need them to be built.
