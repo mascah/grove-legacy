@@ -455,7 +455,7 @@ func prepare(req Request) (*prepared, error) {
 // onBranch rereads the members as the attempt's checkout at dir holds them,
 // keeping the launching checkout's revisions and waits: a member judged
 // there, or waiting in either place, is what the attempt would meet.
-func onBranch(s *Selection, dir, branch, worktree, until string, contains func(string) (bool, error)) error {
+func onBranch(s *Selection, dir, branch, worktree, until string, contains func(string) (bool, []string, error)) error {
 	wp, wds := project.Load(dir, dir)
 	if wp == nil {
 		return fmt.Errorf("the project on %s at %s does not load: %s", branch, worktree, wds[0].String())

@@ -595,7 +595,7 @@ func (m *Model) sidebar(v *versions.Version, w, n int) []string {
 	}
 	heading("Sources")
 	if g := m.group(); g != nil {
-		rows = append(rows, wrapAll(sourcesText(g, m.res.Target)+"\n  v lists every version and place, and selects a workspace", w)...)
+		rows = append(rows, wrapAll(sourcesText(g, m.res.Target)+m.copiesText(g, "\n  ")+"\n  v lists every version and place, and selects a workspace", w)...)
 	}
 	// Scroll the pane so the cursor's row is visible.
 	off := 0
@@ -603,6 +603,28 @@ func (m *Model) sidebar(v *versions.Version, w, n int) []string {
 		off = at - n + 1
 	}
 	return fit(rows[min(off, len(rows)):], n, w)
+}
+
+// copiesText says, for each branch of a diverging card that the target may
+// hold as rewritten copies, what the comparison found, each line after sep;
+// "" when there is nothing to say.
+func (m *Model) copiesText(g *versions.Group, sep string) string {
+	var b strings.Builder
+	for _, r := range m.rewrites(g) {
+		read, held := m.copies[r.key()]
+		switch {
+		case m.backend.Copies == nil:
+		case !held:
+			b.WriteString(sep + "Checking whether branch " + r.branch + " is a rewritten copy of work on " + m.res.Target + "…")
+		case read.err != nil:
+			b.WriteString(sep + "Whether branch " + r.branch + " is a rewritten copy of work on " + m.res.Target + " could not be read (r retries): " + read.err.Error())
+		default:
+			if text := read.c.Text(r.branch, m.res.Target, r.worktree); text != "" {
+				b.WriteString(sep + strings.ToUpper(text[:1]) + text[1:] + ".")
+			}
+		}
+	}
+	return b.String()
 }
 
 // sourcesText names each current state and counts the older places.

@@ -30,6 +30,7 @@ type Item struct {
 	Status    string   `json:"status"`
 	Revision  string   `json:"revision"`
 	Candidate string   `json:"candidate,omitempty"`
+	approved  bool     // the record carries approved, which a repair keeps equal to candidate
 	Outside   bool     `json:"outside"`   // a prerequisite listed, never added
 	Layer     int      `json:"layer"`     // rows: the longest chain of rows beneath it
 	Group     int      `json:"group"`     // rows: rows connected through dependencies share one, from 1
@@ -163,7 +164,7 @@ func build(records []*project.Record, rows, selected []string) *View {
 	v := &View{Selected: selected, Order: rows, Items: []Item{}, Questions: []Question{}, Notes: []string{}}
 	item := func(r *project.Record) Item {
 		it := Item{
-			ID: r.ID, Title: r.Title, Status: r.Status, Revision: project.Revision(r.Source), Candidate: r.Candidate,
+			ID: r.ID, Title: r.Title, Status: r.Status, Revision: project.Revision(r.Source), Candidate: r.Candidate, approved: r.Approved != "",
 			Needs: append([]string{}, r.DependsOn...), Unlocks: []string{}, NeededBy: []string{},
 		}
 		for _, o := range records {
@@ -259,12 +260,14 @@ func build(records []*project.Record, rows, selected []string) *View {
 // Deliver describes each item's delivery from its status and, for a
 // candidate, Git ancestry: whether HEAD of the checkout, the base, contains
 // it and, when target names a branch, whether the target does. contains
-// answers one such question; Ancestry is the real one. predict, when not nil,
+// answers one such question; Ancestry is the real one. copies, when not nil,
+// finds a done candidate's rewritten copy in a HEAD that lacks it (G-260928-4qv1m);
+// Copies is the real one. predict, when not nil,
 // merges candidates into the target in the order given, as
 // versions.PredictContext does: each candidate in review gets its own
 // prediction, and a selection with two or more not yet on the target is also
 // merged in its Order, which Grove states but never chooses.
-func (v *View) Deliver(target string, contains func(commit, ref string) (bool, error), predict func(commits []string) ([]versions.Merge, error)) {
+func (v *View) Deliver(target string, contains func(commit, ref string) (bool, error), copies func(commit, ref string) ([]string, error), predict func(commits []string) ([]versions.Merge, error)) {
 	for i := range v.Items {
 		it := &v.Items[i]
 		c := it.Candidate
@@ -274,6 +277,12 @@ func (v *View) Deliver(target string, contains func(commit, ref string) (bool, e
 				return "candidate " + short(c) + " cannot be read here"
 			}
 			text := "candidate " + short(c) + map[bool]string{true: " in HEAD", false: " not in HEAD"}[in]
+			if !in && it.Status == "done" {
+				if y := copyOf(copies, c, "HEAD"); y != "" {
+					text += " (HEAD holds " + short(y) + ", a rewritten copy)"
+					v.Notes = append(v.Notes, fmt.Sprintf("%s's candidate %s is not in HEAD, which holds %s, a rewritten copy with the same patch, as after a rebase: %s", it.ID, short(c), short(y), Rewrite(it.ID, y, it.approved)))
+				}
+			}
 			if target != "" {
 				on, err := contains(c, "refs/heads/"+target)
 				switch {
@@ -360,6 +369,38 @@ func Ancestry(ctx context.Context, root string) func(commit, ref string) (bool, 
 		return err == nil, err
 	}
 }
+
+// Copies answers Deliver's copies question with versions.CopyOfContext in
+// root's repository.
+func Copies(ctx context.Context, root string) func(commit, ref string) ([]string, error) {
+	return func(commit, ref string) ([]string, error) { return versions.CopyOfContext(ctx, root, commit, ref) }
+}
+
+// copyOf is ref's one rewritten copy of commit, or "" when copies is nil,
+// fails, or finds none or several, which name no single repair.
+func copyOf(copies func(commit, ref string) ([]string, error), commit, ref string) string {
+	if copies == nil {
+		return ""
+	}
+	if ys, err := copies(commit, ref); err == nil && len(ys) == 1 {
+		return ys[0]
+	}
+	return ""
+}
+
+// Rewrite is the repair of done work whose candidate the target holds only
+// as the rewritten copy y (G-260928-4qv1m): the record names the landed commit, as
+// for any squash or rebase, and approved follows candidate where the record
+// carries one.
+func Rewrite(id, y string, approved bool) string {
+	set := "--set candidate=" + short12(y)
+	if approved {
+		set += " --set approved=" + short12(y)
+	}
+	return "in the target's checkout, grove update " + id + " " + set + " --commit names it as delivered; then note the rewrite under the record's verdict"
+}
+
+func short12(commit string) string { return commit[:min(len(commit), 12)] }
 
 // sameSet compares prerequisite lists, whose order means nothing.
 func sameSet(a, b []string) bool {

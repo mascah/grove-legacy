@@ -243,7 +243,7 @@ func (m *Model) wantPreview() tea.Cmd {
 	}
 	view.Compare(m.res, src)
 	m.previewOn = fmt.Sprintf("%s at %s", label(src), src.Commit[:min(len(src.Commit), 7)])
-	target, ancestry, predict, root := m.res.Target, m.backend.Ancestry, m.backend.Predict, src.Worktree
+	target, ancestry, copyOf, predict, root := m.res.Target, m.backend.Ancestry, m.backend.CopyOf, m.backend.Predict, src.Worktree
 	return m.read("preview", func(ctx context.Context, gen int) tea.Msg {
 		if ancestry != nil {
 			var merge func([]string) ([]versions.Merge, error)
@@ -252,7 +252,11 @@ func (m *Model) wantPreview() tea.Cmd {
 					return predict(ctx, root, "refs/heads/"+target, commits)
 				}
 			}
-			view.Deliver(target, ancestry(ctx, root), merge)
+			var copies func(commit, ref string) ([]string, error)
+			if copyOf != nil {
+				copies = copyOf(ctx, root)
+			}
+			view.Deliver(target, ancestry(ctx, root), copies, merge)
 		}
 		return previewMsg{gen, view}
 	})

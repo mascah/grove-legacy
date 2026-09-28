@@ -70,8 +70,9 @@ func (l *Launch) Includes(id string) bool {
 // an outside prerequisite base does not hold, or on a selected prerequisite
 // that waits. Bounded at plans, only questions stop a member: a plan needs
 // its prerequisites named, not delivered. contains answers whether base
-// holds a commit; a candidate Git cannot read here is not in it.
-func selectionOf(p *project.Project, ids []string, until string, contains func(commit string) (bool, error)) (*Selection, error) {
+// holds a commit and, when it does not, its rewritten copies there; a
+// candidate Git cannot read here is not in it.
+func selectionOf(p *project.Project, ids []string, until string, contains func(commit string) (bool, []string, error)) (*Selection, error) {
 	byID := map[string]*project.Record{}
 	for _, r := range p.Records {
 		byID[r.ID] = r
@@ -103,13 +104,18 @@ func selectionOf(p *project.Project, ids []string, until string, contains func(c
 		case it.Status == "done" && it.Candidate == "":
 			o.Delivery = "done without a candidate: delivery unrecorded"
 		case it.Status == "done":
-			in, err := contains(it.Candidate)
+			in, copies, err := contains(it.Candidate)
 			switch {
 			case err != nil:
 				o.Delivery = "done, but candidate " + short(it.Candidate) + " cannot be read here"
 				wait = "needs " + it.ID + ", whose candidate " + short(it.Candidate) + " cannot be read here"
 			case in:
 				o.Delivery = "delivered: candidate " + short(it.Candidate) + " is in the base"
+			case len(copies) == 1:
+				// A copy counts only once the record names it (G-260928-4qv1m).
+				o.Delivery = "done, but candidate " + short(it.Candidate) + " is not in the base, which holds " + short(copies[0]) + ", a rewritten copy"
+				wait = "needs " + it.ID + ", whose candidate " + short(it.Candidate) + " the base lacks; the base holds " + short(copies[0]) +
+					", a rewritten copy with the same patch, as after a rebase: " + deps.Rewrite(it.ID, copies[0], byID[it.ID].Approved != "")
 			default:
 				o.Delivery = "done, but candidate " + short(it.Candidate) + " is not in the base"
 				wait = "needs " + it.ID + ", whose candidate " + short(it.Candidate) + " the base lacks"
@@ -203,8 +209,16 @@ func Explain(l *Launch, visible func(string) string) []string {
 	return lines
 }
 
-// contains answers whether base holds a commit, in root's repository.
-func containsIn(root, base string) func(string) (bool, error) {
-	ancestry := deps.Ancestry(context.Background(), root)
-	return func(commit string) (bool, error) { return ancestry(commit, base) }
+// containsIn answers whether base holds a commit, in root's repository, and
+// when it does not, lists its rewritten copies there.
+func containsIn(root, base string) func(string) (bool, []string, error) {
+	ancestry, copies := deps.Ancestry(context.Background(), root), deps.Copies(context.Background(), root)
+	return func(commit string) (bool, []string, error) {
+		in, err := ancestry(commit, base)
+		if in || err != nil {
+			return in, nil, err
+		}
+		ys, _ := copies(commit, base) // failing, it finds none: the wait stands as it was
+		return false, ys, nil
+	}
 }

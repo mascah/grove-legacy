@@ -533,7 +533,7 @@ func (m *Model) action(k string) {
 	v := m.shown(g)
 	if !m.reviewable() {
 		if v != nil && v.Record != nil {
-			m.notice = g.ID + " is not in review: nothing to approve, give feedback on, or integrate"
+			m.notice = m.notInReview(g, v, "nothing to approve, give feedback on, or integrate")
 		}
 		return
 	}
@@ -568,6 +568,28 @@ func (m *Model) action(k string) {
 	}
 }
 
+// notInReview says why the shown version v offers no review action: its
+// record is not in review, or, on a card whose states diverge, another
+// current state is, and the notice names where (G-260928-4qv1m).
+func (m *Model) notInReview(g *versions.Group, v *versions.Version, what string) string {
+	for _, state := range currentStates(*g) {
+		if r := state[0].Record; !m.current() || r == nil || r.Status != "review" || slices.Contains(state, v) {
+			continue
+		}
+		var places []string
+		for _, o := range state {
+			if o.Source.Kind == "committed" {
+				places = append(places, label(o.Source))
+			}
+		}
+		if places == nil {
+			places = []string{label(state[0].Source)}
+		}
+		return g.ID + " is " + v.Record.Status + " on " + label(v.Source) + " and in review on " + strings.Join(places, ", ") + ": its states diverge, and v shows both and how to settle them"
+	}
+	return g.ID + " is not in review: " + what
+}
+
 // conflicted is the shown candidate's conflict with the target, when its
 // changes are read and predict one.
 func (m *Model) conflicted(v *versions.Version) *versions.Merge {
@@ -589,7 +611,7 @@ func (m *Model) resolveConflict() {
 	v := m.shown(g)
 	if !m.reviewable() || m.backend.Conflict == nil {
 		if v != nil && v.Record != nil {
-			m.notice = g.ID + " is not in review: there is no candidate to resolve"
+			m.notice = m.notInReview(g, v, "there is no candidate to resolve")
 		}
 		return
 	}

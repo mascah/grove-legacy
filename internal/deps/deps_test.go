@@ -126,9 +126,10 @@ func TestOnlyDependenciesOrder(t *testing.T) {
 }
 
 func TestDeliverExplainsEachStatus(t *testing.T) {
-	rs := append(backlog(), work("S-20", "done"), work("S-21", "done"), work("S-30", "proposed", "S-20", "S-21", "S-07"))
-	rs[len(rs)-3].Candidate = "2020202" // in HEAD, not on main
-	rs[len(rs)-2].Candidate = "2121212" // unreadable
+	rs := append(backlog(), work("S-20", "done"), work("S-21", "done"), work("S-22", "done"), work("S-30", "proposed", "S-20", "S-21", "S-22", "S-07"))
+	rs[len(rs)-4].Candidate = "2020202"                                    // in HEAD, not on main
+	rs[len(rs)-3].Candidate = "2121212"                                    // unreadable
+	rs[len(rs)-2].Candidate, rs[len(rs)-2].Approved = "2222222", "2222222" // rewritten by a rebase
 	v, err := Preview(rs, []string{"S-30", "S-08", "S-02"})
 	if err != nil {
 		t.Fatal(err)
@@ -137,12 +138,17 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 		switch {
 		case commit == "2121212":
 			return false, errors.New("bad object")
-		case commit == "7777777bbbb":
+		case commit == "7777777bbbb" || commit == "2222222":
 			return false, nil
 		case commit == "2020202":
 			return ref == "HEAD", nil
 		}
 		return true, nil
+	}, func(commit, ref string) ([]string, error) {
+		if commit != "2222222" || ref != "HEAD" {
+			t.Fatalf("asked for a copy of %s in %s", commit, ref)
+		}
+		return []string{"abcdefabcdefabcdef"}, nil
 	}, nil)
 	got := map[string]string{}
 	for _, it := range v.Items {
@@ -158,13 +164,17 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 		"S-10": "abandoned: will not be delivered",
 		"S-20": "candidate 2020202 in HEAD, not on main",
 		"S-21": "candidate 2121212 cannot be read here",
+		"S-22": "candidate 2222222 not in HEAD (HEAD holds abcdefa, a rewritten copy), not on main",
 		"S-30": "awaiting implementation",
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("delivery\n got %v\nwant %v", got, want)
 	}
+	if note := "S-22's candidate 2222222 is not in HEAD, which holds abcdefa, a rewritten copy with the same patch, as after a rebase: in the target's checkout, grove update S-22 --set candidate=abcdefabcdef --set approved=abcdefabcdef --commit names it as delivered; then note the rewrite under the record's verdict"; !slices.Contains(v.Notes, note) {
+		t.Errorf("notes %q", v.Notes)
+	}
 	v, _ = Preview([]*project.Record{work("H", "done"), work("W", "proposed", "H")}, []string{"W"})
-	v.Deliver("", func(string, string) (bool, error) { t.Fatal("asked Git without a candidate"); return false, nil }, nil)
+	v.Deliver("", func(string, string) (bool, error) { t.Fatal("asked Git without a candidate"); return false, nil }, nil, nil)
 	if d := v.Items[1].Delivery; !strings.HasPrefix(d, "done without a candidate: delivery unrecorded") {
 		t.Errorf("historical done: %q", d)
 	}
@@ -231,7 +241,7 @@ func TestOverviewEveryWorkAndMissingPrerequisites(t *testing.T) {
 	if last.ID != "S-99" || !last.Outside || last.Status != "" || !reflect.DeepEqual(last.NeededBy, []string{"S-20"}) {
 		t.Fatalf("missing prerequisite %+v", last)
 	}
-	v.Deliver("", func(string, string) (bool, error) { return false, nil }, nil)
+	v.Deliver("", func(string, string) (bool, error) { return false, nil }, nil, nil)
 	if last = v.Items[len(v.Items)-1]; !strings.Contains(last.Delivery, "not among the records read") {
 		t.Errorf("delivery %q", last.Delivery)
 	}
@@ -260,7 +270,7 @@ func TestDeliverMergesInTheSelectionsOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	var asked [][]string
-	v.Deliver("main", func(string, string) (bool, error) { return false, nil }, func(commits []string) ([]versions.Merge, error) {
+	v.Deliver("main", func(string, string) (bool, error) { return false, nil }, nil, func(commits []string) ([]versions.Merge, error) {
 		asked = append(asked, commits)
 		var out []versions.Merge
 		for i, c := range commits {

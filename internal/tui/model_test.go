@@ -117,6 +117,8 @@ type fake struct {
 	fail    error
 	reads   []string
 	acts    []string
+	// copies, when set, offers the comparison by patch and logs its calls.
+	copies func(ctx context.Context, target, branch string) (*versions.Copies, error)
 }
 
 func (f *fake) backend() Backend {
@@ -162,6 +164,12 @@ func (f *fake) backend() Backend {
 		b.Diff = func(_ context.Context, root, from, to, path string) (string, error) {
 			log(&f.reads, "diff "+from+" "+to+" "+path)
 			return f.diff(from, to, path)
+		}
+	}
+	if f.copies != nil {
+		b.Copies = func(ctx context.Context, _, target, branch string) (*versions.Copies, error) {
+			log(&f.reads, "copies "+target[:1]+" "+branch[:1])
+			return f.copies(ctx, target, branch)
 		}
 	}
 	if f.actions {

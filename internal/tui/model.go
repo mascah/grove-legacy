@@ -75,6 +75,13 @@ type Backend struct {
 	// Ancestry answers whether a commit is in a ref in the checkout at root,
 	// for the dependency preview's delivery (G-260925-g39ga); nil leaves it unread.
 	Ancestry func(ctx context.Context, root string) func(commit, ref string) (bool, error)
+	// CopyOf lists a ref's rewritten copies of a commit it lacks, for the
+	// same preview (G-260928-4qv1m); nil looks for none.
+	CopyOf func(ctx context.Context, root string) func(commit, ref string) ([]string, error)
+	// Copies compares a branch with the target by patch, when a card whose
+	// states diverge is open in the current view, never for the board
+	// (G-260928-4qv1m); nil leaves it unread.
+	Copies func(ctx context.Context, root, target, branch string) (*versions.Copies, error)
 	// Predict merges commits into the target in order in the checkout at
 	// root, in objects only (G-260925-h8rj5); nil predicts nothing.
 	Predict func(ctx context.Context, root, target string, commits []string) ([]versions.Merge, error)
@@ -170,6 +177,20 @@ type historyMsg struct {
 	err     error
 }
 
+type copiesMsg struct {
+	gen int
+	key string
+	c   *versions.Copies
+	err error
+}
+
+// copiesRead is one finished comparison of a branch with the target by
+// patch, kept until the next inspection.
+type copiesRead struct {
+	c   *versions.Copies
+	err error
+}
+
 // lineage is one finished history read, kept until the next inspection.
 type lineage struct {
 	commits []versions.Commit
@@ -217,12 +238,13 @@ type Model struct {
 	notice  string // one-shot message, cleared by the next key
 
 	gen       int    // the newest request; older replies are ignored
-	pending   string // "", "inspect", "resolve", "history", "changes", "diff" or "act": one at a time
+	pending   string // "", "inspect", "resolve", "history", "copies", "changes", "diff" or "act": one at a time
 	resolving string // the exact selector a pending resolve was asked for
 	reading   string // the key a pending history, changes or diff read was asked for
 	acting    string // the running action, for the banner
 	cancel    context.CancelFunc
 	hist      map[string]lineage           // by commit and path, for the current result only
+	copies    map[string]copiesRead        // by target and branch commit, likewise
 	changes   map[string]changesRead       // by candidate, tip, target and path, likewise
 	diffs     map[string]diffRead          // by base, candidate and path, likewise
 	md        map[string][]string          // rendered Markdown by key and width, for the current result only
@@ -418,6 +440,72 @@ func (m *Model) refresh() tea.Cmd {
 // re-read would close; the board re-reads by itself only once it is left.
 func (m *Model) pinned() bool { return m.asOf != "" || m.diff != "" }
 
+// rewrite is a branch holding a state of a diverging record that may be a
+// rewritten copy of work on the target (G-260928-4qv1m).
+type rewrite struct{ branch, worktree, target, commit string }
+
+func (r rewrite) key() string { return r.target + "\x00" + r.commit }
+
+// rewrites lists, for a card open in the current view whose states diverge,
+// one on the target, each committed branch other than the target holding
+// another state.
+func (m *Model) rewrites(g *versions.Group) []rewrite {
+	if g == nil || !m.current() || m.res.Target == "" {
+		return nil
+	}
+	states := currentStates(*g)
+	if len(states) < 2 || !slices.ContainsFunc(states, func(state []*versions.Version) bool { return state[0].OnTarget }) {
+		return nil
+	}
+	ref, tip := "refs/heads/"+m.res.Target, ""
+	for _, s := range m.res.Sources {
+		if s.Kind == "committed" && s.Ref == ref {
+			tip = s.Commit
+		}
+	}
+	var out []rewrite
+	for _, state := range states {
+		for _, v := range state {
+			s := v.Source
+			if tip == "" || state[0].OnTarget || s.Kind != "committed" || s.Ref == ref || slices.ContainsFunc(out, func(r rewrite) bool { return r.commit == s.Commit }) {
+				continue
+			}
+			r := rewrite{branch: strings.TrimPrefix(s.Ref, "refs/heads/"), target: tip, commit: s.Commit}
+			for _, l := range m.res.Sources {
+				if l.Kind == "live" && l.Ref == s.Ref {
+					r.worktree = l.Worktree
+				}
+			}
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// wantCopies starts comparing the next such branch with the target, one at
+// a time, while its card is open; like history, the board never asks.
+func (m *Model) wantCopies() tea.Cmd {
+	if m.backend.Copies == nil || m.done || m.screen != versionsScreen && m.screen != detailScreen || m.pending != "" && m.pending != "copies" {
+		return nil
+	}
+	for _, r := range m.rewrites(m.group()) {
+		key := r.key()
+		if key == m.reading {
+			return nil
+		}
+		if _, held := m.copies[key]; held {
+			continue
+		}
+		cmd := m.read("copies", func(ctx context.Context, gen int) tea.Msg {
+			c, err := m.backend.Copies(ctx, m.root, r.target, r.commit)
+			return copiesMsg{gen, key, c, err}
+		})
+		m.reading = key
+		return cmd
+	}
+	return nil
+}
+
 // stop cancels any read in flight and outdates its reply.
 func (m *Model) stop() {
 	if m.cancel != nil {
@@ -429,10 +517,14 @@ func (m *Model) stop() {
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd := m.update(msg)
-	// One read at a time, in this order: a detail's history, then its
-	// changes, then a chosen diff; the next starts when the last delivered.
+	// One read at a time, in this order: a detail's history, then how its
+	// diverging branches compare with the target, then its changes, then a
+	// chosen diff; the next starts when the last delivered.
 	if cmd == nil {
 		cmd = m.wantHistory()
+	}
+	if cmd == nil {
+		cmd = m.wantCopies()
 	}
 	if cmd == nil {
 		cmd = m.wantChanges()
@@ -459,7 +551,7 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		if msg.gen != m.gen || m.pending != "inspect" {
 			return nil
 		}
-		m.pending, m.cancel, m.hist, m.md, m.mentions, m.asOf = "", nil, map[string]lineage{}, nil, nil, ""
+		m.pending, m.cancel, m.hist, m.copies, m.md, m.mentions, m.asOf = "", nil, map[string]lineage{}, map[string]copiesRead{}, nil, nil, ""
 		m.changes, m.diffs, m.diff = map[string]changesRead{}, map[string]diffRead{}, ""
 		m.preview, m.previewErr = nil, "" // computed again from what was read
 		if msg.err != nil {
@@ -492,6 +584,13 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		}
 		m.pending, m.reading, m.cancel = "", "", nil
 		m.hist[msg.key] = lineage{msg.commits, msg.err}
+		m.clampScroll()
+	case copiesMsg:
+		if msg.gen != m.gen || m.pending != "copies" {
+			return nil
+		}
+		m.pending, m.reading, m.cancel = "", "", nil
+		m.copies[msg.key] = copiesRead{msg.c, msg.err}
 		m.clampScroll()
 	case changesMsg:
 		if msg.gen != m.gen || m.pending != "changes" {

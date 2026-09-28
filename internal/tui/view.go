@@ -643,7 +643,7 @@ func (m *Model) describeRows(w int) []string {
 		for i := range g.Versions {
 			all[i] = &g.Versions[i]
 		}
-		return wrapAll(g.ID+": "+summary(g)+" ("+held(all)+").\n\n"+currentText(g, m.res.Target)+"\n\nA version is this record's exact content. Grove read it on every local branch (its committed tip) and in every checkout (its files on disk, committed or not) and lists each differing content once, current ones first.\n\nMove to a row. Enter on ▸ lists the branches and checkouts holding that content; Enter on one of them, or on a row naming a single place, returns the path of the existing checkout to work in.", w)
+		return wrapAll(g.ID+": "+summary(g)+" ("+held(all)+").\n\n"+currentText(g, m.res.Target)+m.copiesText(g, "\n")+"\n\nA version is this record's exact content. Grove read it on every local branch (its committed tip) and in every checkout (its files on disk, committed or not) and lists each differing content once, current ones first.\n\nMove to a row. Enter on ▸ lists the branches and checkouts holding that content; Enter on one of them, or on a row naming a single place, returns the path of the existing checkout to work in.", w)
 	case r.fold != nil:
 		first := r.fold[0]
 		add("Title", first.Record.Title)
@@ -711,7 +711,7 @@ func currentText(g *versions.Group, target string) string {
 	if len(states) == 1 {
 		fmt.Fprintf(&b, "Current: %s.", stateText(states[0], target))
 	} else {
-		fmt.Fprintf(&b, "Diverging: %d current states. None is known to replace the others: each changed this record since they split from a common commit, or their order could not be read (below). The card sits in the earliest status among them until one side takes the other's change, by a merge or an edit.", len(states))
+		fmt.Fprintf(&b, "Diverging: %d current states. None is known to replace the others: each changed this record since they split from a common commit, or their order could not be read (below). The card sits in the earliest status among them until one side takes the other's change, by a merge or an edit, or the branch holding one is deleted, which is how a branch the target already holds as rewritten copies, as after a rebase of the target, is cleared.", len(states))
 		for _, state := range states {
 			b.WriteString("\n  - " + stateText(state, target))
 		}

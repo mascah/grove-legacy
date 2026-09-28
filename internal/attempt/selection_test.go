@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/mascah/grove/internal/update"
 )
 
 // member writes work id needing deps, in status.
@@ -355,5 +357,43 @@ func TestSelectionReopenedGroupRunsTogether(t *testing.T) {
 			t.Fatalf("note repeated: %q", n)
 		}
 		seen[n] = true
+	}
+}
+
+// A done prerequisite whose candidate the base holds only as a rewritten
+// copy, as after a rebase of main (G-260928-4qv1m), still waits, naming the copy and
+// the update that records it; once the record names it, it is delivered.
+func TestSelectionNamesARewrittenPrerequisite(t *testing.T) {
+	t.Parallel()
+	root := fixture(t)
+	git(t, root, "checkout", "-q", "-b", "gone")
+	write(t, root, "delivered.txt", "the work\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "the work")
+	old := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "main")
+	git(t, root, "commit", "-q", "--allow-empty", "-m", "upstream")
+	git(t, root, "cherry-pick", old)
+	landed := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "branch", "-q", "-D", "gone") // the copy's original survives only as an object
+	member(t, root, "G-260101-00006", "done")
+	write(t, root, "grove/G-260101-00006.md", strings.Replace(readFile(t, root, "grove/G-260101-00006.md"), "status: done\n", "status: done\ncandidate: \""+old+"\"\n", 1))
+	member(t, root, "G-260101-00007", "proposed", "G-260101-00006")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "records")
+	l := preview(t, root, "G-260101-00001", "G-260101-00007")
+	want := "needs G-260101-00006, whose candidate " + old[:7] + " the base lacks; the base holds " + landed[:7] + ", a rewritten copy with the same patch, as after a rebase: in the target's checkout, grove update G-260101-00006 --set candidate=" + landed[:12] + " --commit names it as delivered; then note the rewrite under the record's verdict"
+	if w := waits(l)["G-260101-00007"]; w != want {
+		t.Fatalf("wait\n got %q\nwant %q", w, want)
+	}
+	if d := l.Selection.Outside[0].Delivery; d != "done, but candidate "+old[:7]+" is not in the base, which holds "+landed[:7]+", a rewritten copy" {
+		t.Fatalf("delivery %q", d)
+	}
+	if _, err := update.Apply(root, update.Request{ID: "G-260101-00006", Set: []update.Field{{Name: "candidate", Value: landed[:12]}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	l = preview(t, root, "G-260101-00001", "G-260101-00007")
+	if w, d := waits(l)["G-260101-00007"], l.Selection.Outside[0].Delivery; w != "" || d != "delivered: candidate "+landed[:7]+" is in the base" {
+		t.Fatalf("after the update: wait %q delivery %q", w, d)
 	}
 }

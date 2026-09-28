@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	tea "charm.land/bubbletea/v2"
+
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/mascah/grove/internal/project"
@@ -565,4 +567,102 @@ func TestStandingLineNamesWhoApproved(t *testing.T) {
 			t.Fatalf("done standing line lacks %q: %s", want, got)
 		}
 	}
+}
+
+// rewrittenFixture is G-260928-4qv1m's incident: W-001 is done on main and
+// in review, approved, on feature, whose commits main holds as rewritten
+// copies, and each changed the record since they split.
+func rewrittenFixture() *fake {
+	fx := newFixture()
+	fx.cFeat.Commit, fx.feat.Commit = strings.Repeat("b", 40), strings.Repeat("b", 40)
+	var vs []versions.Version
+	for _, s := range []*versions.Source{fx.cMain, fx.main} {
+		v := version(s, "W-001", "Inspect records", "done")
+		v.OnTarget = true
+		vs = append(vs, v)
+	}
+	for _, s := range []*versions.Source{fx.cFeat, fx.feat} {
+		v := version(s, "W-001", "Inspect records", "review")
+		v.Record.Candidate, v.Record.Approved = "c0ffee1", "c0ffee1"
+		vs = append(vs, v)
+	}
+	res := result(fx.main, fx.sources(), vs...)
+	res.Target = "main"
+	return &fake{res: res, actions: true, copies: func(context.Context, string, string) (*versions.Copies, error) {
+		return &versions.Copies{Commits: 4}, nil
+	}}
+}
+
+func TestRewrittenCopyExplainedOnOpen(t *testing.T) {
+	t.Parallel()
+	f := rewrittenFixture()
+	m := open(t, f, 200, 60)
+	if len(f.reads) != 0 || !onRow(plain(m), "W-001", "⑂ 2 states") {
+		t.Fatalf("the board load compared by patch: %v\n%s", f.reads, plain(m))
+	}
+	cmd := press(m, "right", "right", "enter")
+	if cmd == nil || m.pending != "copies" || !strings.Contains(plain(m), "Checking whether branch feature") || !strings.Contains(m.copiesText(m.group(), " "), "Checking whether branch feature is a rewritten copy of work on main…") {
+		t.Fatalf("opening the card should compare feature with main: pending %q\n%s", m.pending, plain(m))
+	}
+	if next := deliver(m, cmd); next != nil || strings.Join(f.reads, ",") != "copies a b" {
+		t.Fatalf("reads %v", f.reads)
+	}
+	for _, want := range []string{"Branch feature is a rewritten copy of work already on main", "git worktree remove /repo/feat,", "git branch -D feature"} {
+		if !strings.Contains(m.copiesText(m.group(), " "), want) || !strings.Contains(plain(m), "Branch feature is a rewritten copy") {
+			t.Fatalf("the detail lacks %q:\n%s", want, plain(m))
+		}
+	}
+	// The shown record is main's done; each review action names the branch in review.
+	for _, k := range []string{"a", "f", "i", "m"} {
+		press(m, k)
+		if want := "W-001 is done on branch main and in review on branch feature: its states diverge, and v shows both and how to settle them"; m.notice != want || m.prompt != nil {
+			t.Fatalf("%s: notice %q", k, m.notice)
+		}
+	}
+	press(m, "v")
+	if screen := plain(m); !strings.Contains(screen, "Diverging: 2 current states.") || !strings.Contains(screen, "Branch feature is a rewritten copy") || len(f.reads) != 1 {
+		t.Fatalf("the versions screen, reads %v:\n%s", f.reads, screen)
+	}
+
+	// Partial: the commits main lacks are named, and nothing says delete.
+	f.copies = func(context.Context, string, string) (*versions.Copies, error) {
+		return &versions.Copies{Commits: 3, Missing: []string{strings.Repeat("d", 40)}}, nil
+	}
+	deliverAll(m, press(m, "esc", "r")) // the re-read card compares again
+	if text := m.copiesText(m.group(), " "); !strings.Contains(text, "2 of the 3 commits of branch feature that main lacks have a copy there") ||
+		!strings.Contains(text, "this one has not: ddddddd") || strings.Contains(text, "branch -D") || !strings.Contains(plain(m), "2 of the 3 commits") {
+		t.Fatalf("partial: %s\n%s", text, plain(m))
+	}
+}
+
+// Like history, the comparison never makes a key wait.
+func TestRewrittenCopyReadYieldsToEveryKey(t *testing.T) {
+	t.Parallel()
+	f := rewrittenFixture()
+	var cancelled []error
+	f.copies = func(ctx context.Context, _, _ string) (*versions.Copies, error) {
+		<-ctx.Done()
+		cancelled = append(cancelled, ctx.Err())
+		return nil, ctx.Err()
+	}
+	m := open(t, f, 160, 50)
+	cmd := press(m, "right", "right", "enter")
+	for i, key := range []string{"esc", "r", "q"} {
+		if m.pending != "copies" || cmd == nil {
+			t.Fatalf("before %s: pending %q", key, m.pending)
+		}
+		reply := make(chan tea.Msg, 1)
+		go func() { reply <- cmd() }()
+		next := press(m, key)
+		if m.Update(<-reply); len(cancelled) != i+1 || !errors.Is(cancelled[i], context.Canceled) || len(m.copies) != 0 {
+			t.Fatalf("%s during the comparison: cancelled %v, held %d", key, cancelled, len(m.copies))
+		}
+		switch key {
+		case "esc":
+			cmd = press(m, "enter")
+		case "r":
+			cmd = deliver(m, next) // the re-read card asks again
+		}
+	}
+	m.reads.close()
 }
