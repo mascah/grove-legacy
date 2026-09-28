@@ -2,9 +2,9 @@
 id: "G-260928-csg91"
 type: work
 title: "Make the board's prompts and refusals legible"
-status: proposed
+status: active
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T19:34:00Z"
+updated: "2026-09-28T20:04:55Z"
 kind: fix
 size: small
 relates_to: ["G-260924-ecs9m", "G-260921-jwk4e", "G-260921-7trd7", "G-260919-k7b8j"]
