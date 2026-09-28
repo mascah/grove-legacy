@@ -82,7 +82,104 @@ missed, as the evals runner already states of its own reader.
    derived.
 5. Owner judgment in the terminal on one real attempt.
 
+## Evidence
+
+Headless session of 2026-09-28 on branch `worktree-G-260927-dx0yn`, from
+`main` at `38511c1`. It started from this record at `sha256:ac01fd5a…` and
+wrote plan [G-260928-j8sc0](G-260928-j8sc0-attempt-shape-facts-and.md), at
+`sha256:06e6087b…` when implementation began. Commits: `6959b93` (plan),
+`133afcb` (active), `6fbc8ff` (implementation), `e096c33` (review fixes).
+
+What changed:
+
+- **`Shape:`** (`internal/attempt/shape.go`, `ReadShape`). It is derived
+  when `grove attempt` reads the attempt, from all of `events.jsonl`,
+  bounded per line by the loop `ReadEvents` now shares (`eachLine`). The
+  record root comes from `grove.yaml` at the attempt's base commit. The
+  line shows the tool calls, the process calls and their share, guide
+  prints by name, and the first edit outside the record root: its tool
+  index, the time from the start, and the path. A running attempt's facts
+  are "so far"; a skipped line makes the counts `≥`; an unknown record
+  root reads `Shape: unknown: …`. The board does not read it, and keeps its
+  bounded window.
+- **`Changed:`** is recorded in `result.json` at finish: `git diff
+  --name-only BASE HEAD`, split under and outside the record root, with up
+  to ten names each. An older attempt reads `Changed: unknown: not recorded
+  when it finished`, and a Git failure says why.
+- **Totals.** `attempt.Sum`. `grove attempts ID` ends with, for example,
+  `Total: 4 attempts, $13.79, ≥124 turns, 80m`, and the board's attempts
+  list for one work opens with the same line. `events.turns` sums
+  `num_turns` over a run's result events. Each counts one query, and the
+  cost is cumulative: this repository's `G-260923-895zb.20260923T200725Z`
+  has 95 and 14 turns at $9.75 in both. The `≥` marks attempts that only
+  hold their last result's turns. An unfinished attempt, or one without a
+  result event, is said beside the total, not summed.
+- `attempt --json` carries `shape`, `shape_error`, `result.changed` and
+  `result.events.turns`.
+
+Against the acceptance:
+
+1. Real output, `grove attempt G-260927-n4wvk.20260928T004357Z`:
+   `Shape: 36 tool calls, 10 process (28%); guides printed: work 1; first
+   edit outside the record root: tool 23, 3m59s after the start,
+   docs/commands.md` and `Changed: unknown: not recorded when it finished`.
+   The second is right, because the attempt predates this. Every existing
+   attempt finished before `Changed` was recorded, so only tests show it
+   filled: `TestChangedAndShapeFacts`, and `TestRunToResult` through a
+   fake provider.
+2. `grove attempts G-260923-fwakw` ends `Total: 2 attempts, $11.79, ≥22
+   turns, 26m`. `TestAttemptScreensReconnectAndStop` asserts the board's
+   row for one work, and asserts that the list of all attempts has none.
+   `TestAttemptCommandsUsage` asserts the CLI line.
+3. `TestReadShape` runs on the recorded fixture
+   `internal/attempt/testdata/shape-events.jsonl`: 19 calls, 10 of them
+   process. It checks guide prints, the first edit (a subagent's) and each
+   documented limit: `env grove`, `$(grove …)`, `FOO=1 grove`, `sed -i`,
+   the `/private` spelling and the heredoc false positive. It also checks
+   an oversized line, a running attempt, and no edit. `TestSum` covers the
+   totals and their labels. `TestReadEventsBounded` and the board's
+   `TestAttemptActivityIsBounded` pass unchanged.
+4. `docs/commands.md` "Attempts" states the facts, how they are derived,
+   and the known misses. `docs/board.md` names the board's total.
+5. This is for the owner, in a terminal.
+
+Verification at `e096c33`, all passing: `go vet ./...`, `gofmt -l .`,
+`go run ./cmd/grove check` (OK: 217 records), `go test -count=1 -timeout
+120s ./...`, and `go test -short ./internal/attempt` (2.8 s).
+`python3 internal/tui/testdata/terminal.py` passed at `6fbc8ff` (12
+scenarios). `e096c33` changes no TUI code.
+
+Review: [G-260928-4ae1r](G-260928-4ae1r-review-of-g-260927-dx0yn.md), by an
+independent `grove-reviewer` subagent in two rounds. Round 1 on `6fbc8ff`
+found four low findings, all fixed in `e096c33`. Round 2 closed with `Open
+findings: none`.
+
+Limits:
+
+- The classification misses some things, as `docs/commands.md` states.
+  Edits made through Bash and guides read as files are the large ones:
+  earlier attempts here read `docs/work-execution.md` with `cat` and wrote
+  records with scripts. So these shares are lower than the hand count's
+  quarter, for example 16% on `G-260923-fwakw.20260923T182316Z`.
+- `Result event:` still prints the last result event's turns, as before.
+- `attempts` without an ID prints no total, and `attempts` has no `--json`.
+
 ## Next
 
-Assign: `/grove-work G-260927-dx0yn`. The evals' work row, listed in
-G-260923-p5pt6's Next, is not this record.
+In review: the candidate (the `candidate` field) is on branch
+`worktree-G-260927-dx0yn`, from `main` at `38511c1`. The owner judges one
+real attempt in a terminal (acceptance 5). Run `go run ./cmd/grove attempt
+ATTEMPT` on any attempt listed by `go run ./cmd/grove attempts`. After
+merging, attempts launched from that point also show `Changed:`. Also run
+`go run ./cmd/grove attempts G-260925-pbx81`, and on the board `A` on a
+work's detail. Then, in this worktree:
+
+```sh
+go run ./cmd/grove approve G-260927-dx0yn "VERDICT"   # or: go run ./cmd/grove feedback G-260927-dx0yn "TEXT"
+```
+
+and in the `main` checkout:
+
+```sh
+go run ./cmd/grove integrate G-260927-dx0yn
+```

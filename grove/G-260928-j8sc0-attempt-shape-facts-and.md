@@ -57,3 +57,11 @@ design, from `main` at `38511c1`.
 3. `internal/tui`: total under the attempts screen header for one work; test.
 4. `docs/commands.md` "Attempts".
 5. Verification as `CLAUDE.md` says, an independent review, handoff.
+
+All five steps done at `e096c33`; the evidence is in
+[G-260927-dx0yn](G-260927-dx0yn-retain-per-attempt-proce.md). Built as designed,
+with two additions: `result.json`'s events gain `turns`, `num_turns` summed
+over a run's result events, since each counts one query of a resumed session
+while the cost is cumulative, and the total's turns show `≥` where an older
+attempt holds only its last result's; and an unreadable HEAD at finish is
+recorded as `Changed`'s error.
