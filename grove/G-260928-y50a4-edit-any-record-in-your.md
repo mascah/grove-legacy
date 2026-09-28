@@ -69,12 +69,39 @@ Proposed design, labelled proposed:
    takes no activity text; the bounded-activity test covers both states.
 4. `docs/board.md` says so; the owner judges in a terminal with their editor.
 
+## Evidence
+
+Branch `worktree-G-260928-csg91-G-260928-r1hkh-G-260928-y50a4-G-260928-63124`,
+base main `453add4`; candidate is the commit adding this Evidence, shared by
+the selection G-260928-csg91, G-260928-r1hkh, G-260928-y50a4, G-260928-63124.
+
+1. `e` edits any record in its checkout; the Answer heading and resolve
+   prompt stay for an open question; refusals (a commit's copy or diff, an
+   older state, deleted, not in a checkout, changed since read) write
+   nothing. `TestEditAnyRecord`, the refusal table, and `terminal.py`
+   `edit_record` end to end. "Live" is read as the current state: not a
+   commit's copy, a diff, an older state or a deleted record.
+2. `gg`/`G`, Ctrl-u/Ctrl-d on the detail, attempt, versions, chooser,
+   attempts list and dependency list and trees (`gg` not on the board,
+   where `g` opens dependencies); `TestVimPagingKeys`, the attempt test,
+   the trees under a refusal; key table updated.
+3. `w` hides the activity; `TestAttemptActivityIsBounded` covers both.
+4. `docs/board.md` "Editing a record"; the owner's judgment with their
+   editor is pending.
+
+Review: [G-260928-q9dyw](G-260928-q9dyw-review-of-g-260928-csg91.md),
+three rounds, examined `9deee95`: "Open findings: none".
+
+Verification at `9deee95`: `go vet ./...` and `gofmt -l .` clean;
+`grove check` OK (247 records); `go test -count=1 -timeout 120s ./...` all
+pass; `terminal.py` all 13 scenarios pass. Under an artificial five-package
+load, `internal/attempt`'s `TestOwnerLost` failed once (a kill race in a
+package this branch does not touch) and passed on rerun.
+
 ## Next
 
-Assign: `/grove-work G-260928-y50a4`. Touches `internal/tui` in places
-separable from [G-260928-csg91](G-260928-csg91-make-the-board-s-prompts.md),
-[G-260928-r1hkh](G-260928-r1hkh-show-approval-and-merge.md) and
-[G-260928-63124](G-260928-63124-show-each-member-s-state.md), which needs no
-edge.
-
-No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (`answer.go`'s editor launch, `scrollKey` and `moved`, `attemptRows`); implementation follows it.
+In review with the selection's shared candidate. The owner judges each in
+a terminal (`go run ./cmd/grove` in the worktree), then, in this worktree,
+`grove approve ID VERDICT` for each of G-260928-csg91, G-260928-r1hkh,
+G-260928-y50a4 and G-260928-63124, and in main's checkout
+`grove integrate G-260928-csg91`, which merges the group.

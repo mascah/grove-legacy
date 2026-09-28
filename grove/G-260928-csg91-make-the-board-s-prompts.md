@@ -75,12 +75,37 @@ The owner deferred a web UI on 2026-09-28 until the board fixes land.
 4. `docs/board.md` says what a prompt and a refusal look like; the owner
    judges both in a terminal.
 
+## Evidence
+
+Branch `worktree-G-260928-csg91-G-260928-r1hkh-G-260928-y50a4-G-260928-63124`,
+base main `453add4`; candidate is the commit adding this Evidence, shared by
+the selection G-260928-csg91, G-260928-r1hkh, G-260928-y50a4, G-260928-63124.
+
+1. Typed text wraps at the edge with the cursor after it, help below;
+   `TestLongPromptsShowEverythingTyped` at 80 columns (verdict, feedback,
+   launch) checks every character and what Enter records.
+2. Refusals are `m.alert`, reverse red, kept until Esc or until the action
+   goes ahead; `TestRefusalsStayUntilDismissed` (before the prompt, on
+   Enter, `NOT DONE` from the runner), `TestRefusalRowsAndTheBody`, and
+   `terminal.py`'s live-attempt refusal.
+3. `fits` holds every row to the width under prompts and long refusals;
+   the hostile-text test covers the alert and the prompt.
+4. `docs/board.md` "Prompts and refusals"; the owner's terminal judgment
+   is pending.
+
+Review: [G-260928-q9dyw](G-260928-q9dyw-review-of-g-260928-csg91.md),
+three rounds, examined `9deee95`: "Open findings: none".
+
+Verification at `9deee95`: `go vet ./...` and `gofmt -l .` clean;
+`grove check` OK (247 records); `go test -count=1 -timeout 120s ./...` all
+pass; `terminal.py` all 13 scenarios pass. Under an artificial five-package
+load, `internal/attempt`'s `TestOwnerLost` failed once (a kill race in a
+package this branch does not touch) and passed on rerun.
+
 ## Next
 
-Assign: `/grove-work G-260928-csg91`. Touches `internal/tui` in places
-separable from [G-260928-r1hkh](G-260928-r1hkh-show-approval-and-merge.md),
-[G-260928-y50a4](G-260928-y50a4-edit-any-record-in-your.md) and
-[G-260928-63124](G-260928-63124-show-each-member-s-state.md), which needs no
-edge; the owner chooses whether to select them together.
-
-No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (`promptRow`, `line`, `m.notice`, `resultRows`); implementation follows it.
+In review with the selection's shared candidate. The owner judges each in
+a terminal (`go run ./cmd/grove` in the worktree), then, in this worktree,
+`grove approve ID VERDICT` for each of G-260928-csg91, G-260928-r1hkh,
+G-260928-y50a4 and G-260928-63124, and in main's checkout
+`grove integrate G-260928-csg91`, which merges the group.

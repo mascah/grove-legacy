@@ -67,14 +67,42 @@ Proposed design, labelled proposed:
    allows, cut last.
 3. `docs/board.md` says so; the owner judges on a real selection.
 
+## Evidence
+
+Branch `worktree-G-260928-csg91-G-260928-r1hkh-G-260928-y50a4-G-260928-63124`,
+base main `453add4`; candidate is the commit adding this Evidence, shared by
+the selection G-260928-csg91, G-260928-r1hkh, G-260928-y50a4, G-260928-63124.
+
+1. `TestSelectionMembersOnTheBoard`: `held by W-002` and
+   `waiting on Q-002 · in W-001+1`, the detail's line, R refused while
+   it waits; after the answer `question answered: R again`, the held
+   member says `R resumes …`, and R relaunches both IDs on the branch in
+   its worktree, checking each member's file on Enter. Members that
+   moved on carry no state; `TestSelectionNextOnlyWhereRResumes`. Limit:
+   the test renders hand-built results, not a fake-provider run;
+   `internal/attempt`'s `TestMemberResults` produces such members.
+2. The attempts row names each member's state (`moved on` when it did),
+   cut last; asserted at 160 columns, and the list fit test holds.
+3. `docs/board.md` Attempts; decision
+   [G-260928-dbgbw](G-260928-dbgbw-r-on-a-member-of-an-ende.md). The owner's
+   judgment on a real selection is pending.
+
+Review: [G-260928-4q08b](G-260928-4q08b-review-of-g-260928-r1hkh.md),
+three rounds, examined `9deee95`: "Open findings: 3", left open at the
+gate's cap: R promises a resume that Start refuses when a member was
+abandoned on the branch (nothing launches); `docs/board.md` lacks
+`moved on`; and the fake-provider limit above.
+
+Verification at `9deee95`: `go vet ./...` and `gofmt -l .` clean;
+`grove check` OK (247 records); `go test -count=1 -timeout 120s ./...` all
+pass; `terminal.py` all 13 scenarios pass. Under an artificial five-package
+load, `internal/attempt`'s `TestOwnerLost` failed once (a kill race in a
+package this branch does not touch) and passed on rerun.
+
 ## Next
 
-Assign: `/grove-work G-260928-63124`. Touches `internal/tui` in places
-separable from [G-260928-csg91](G-260928-csg91-make-the-board-s-prompts.md),
-[G-260928-r1hkh](G-260928-r1hkh-show-approval-and-merge.md) and
-[G-260928-y50a4](G-260928-y50a4-edit-any-record-in-your.md), which needs no
-edge. G-260928-369c1 names this record in its `depends_on`.
-
-No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (card tags from `standingOf`'s rules per member, the attempts row, the detail's attempt row and the attempt's Next).
-
-What `R` does on a member was decided by the owner during implementation and is recorded as [G-260928-dbgbw](G-260928-dbgbw-r-on-a-member-of-an-ende.md).
+In review with the selection's shared candidate. The owner judges each in
+a terminal (`go run ./cmd/grove` in the worktree), then, in this worktree,
+`grove approve ID VERDICT` for each of G-260928-csg91, G-260928-r1hkh,
+G-260928-y50a4 and G-260928-63124, and in main's checkout
+`grove integrate G-260928-csg91`, which merges the group.

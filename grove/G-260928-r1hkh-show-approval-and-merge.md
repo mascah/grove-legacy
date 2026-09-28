@@ -71,12 +71,40 @@ after seeing this; changing what `deps` or the Review block say.
    cover, and the diff head names the records that describe the file.
 4. `docs/board.md` says so; the owner judges the cards in a terminal.
 
+## Evidence
+
+Branch `worktree-G-260928-csg91-G-260928-r1hkh-G-260928-y50a4-G-260928-63124`,
+base main `453add4`; candidate is the commit adding this Evidence, shared by
+the selection G-260928-csg91, G-260928-r1hkh, G-260928-y50a4, G-260928-63124.
+
+1. `approved` / `approved under policy` on Review and Done cards;
+   `TestReviewCardsShowApprovalAndConflicts`.
+2. After the board draws, one `Predict` per Review card through
+   `m.free`, yielding to any other read and cancelled by a re-read;
+   the same test shows the load makes none (`inspects 1`, nothing
+   predicted), then `conflicts main@ccccccc`. Tags join with `·`, member
+   state, then conflict, then approval; a tag too wide leads the meta row,
+   which takes a one-row title's spare row.
+3. One changes row per file (`described by N`, `resolved in merge M`),
+   and each diff opens with the records describing it;
+   `TestReviewListsRecordsDescribingEachFile` and the fit loop.
+4. `docs/board.md` cards and judging; the owner's terminal judgment is
+   pending.
+
+Review: [G-260928-4q08b](G-260928-4q08b-review-of-g-260928-r1hkh.md),
+three rounds, examined `9deee95`: "Open findings: 3", all on
+G-260928-63124; none on this record.
+
+Verification at `9deee95`: `go vet ./...` and `gofmt -l .` clean;
+`grove check` OK (247 records); `go test -count=1 -timeout 120s ./...` all
+pass; `terminal.py` all 13 scenarios pass. Under an artificial five-package
+load, `internal/attempt`'s `TestOwnerLost` failed once (a kill race in a
+package this branch does not touch) and passed on rerun.
+
 ## Next
 
-Assign: `/grove-work G-260928-r1hkh`. Touches `internal/tui` in places
-separable from [G-260928-csg91](G-260928-csg91-make-the-board-s-prompts.md),
-[G-260928-y50a4](G-260928-y50a4-edit-any-record-in-your.md) and
-[G-260928-63124](G-260928-63124-show-each-member-s-state.md), which needs no
-edge.
-
-No plan needed: small, and the proposed design above names each change and where it lands in `internal/tui` (card tags, one after-load prediction read per Review card, the changes list); implementation follows it.
+In review with the selection's shared candidate. The owner judges each in
+a terminal (`go run ./cmd/grove` in the worktree), then, in this worktree,
+`grove approve ID VERDICT` for each of G-260928-csg91, G-260928-r1hkh,
+G-260928-y50a4 and G-260928-63124, and in main's checkout
+`grove integrate G-260928-csg91`, which merges the group.
