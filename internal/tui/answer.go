@@ -172,8 +172,23 @@ func (e *editing) takeBack() error {
 
 // waits reports an attempt waiting on a question that e can answer.
 func (m *Model) waits(v *attempt.View) bool {
-	kind, _ := m.outcome(v)
-	return m.backend.Edit != nil && kind == "question"
+	return m.backend.Edit != nil && m.waitingOn(v) != ""
+}
+
+// waitingOn is the open question an attempt waits on: its work's, or for a
+// selection the first a member waits on (G-260928-63124); "" when none.
+func (m *Model) waitingOn(v *attempt.View) string {
+	if kind, _ := m.outcome(v); kind == "question" {
+		q, _, _ := strings.Cut(m.blockingQuestion(v.Launch.Work), " (")
+		return q
+	}
+	states := m.memberStates(v)
+	for _, mb := range v.Launch.Members() {
+		if q, ok := strings.CutPrefix(states[mb.ID], "waiting on "); ok {
+			return q
+		}
+	}
+	return ""
 }
 
 // answerFor opens the question an attempt waits on as o opens work, so Esc
@@ -186,7 +201,7 @@ func (m *Model) answerFor(v *attempt.View) tea.Cmd {
 		m.alert = v.Launch.Attempt + " is not waiting on a question; e answers one"
 		return nil
 	}
-	q, _, _ := strings.Cut(m.blockingQuestion(v.Launch.Work), " (")
+	q := m.waitingOn(v)
 	if m.openWork(q); m.openID() != q {
 		return nil // openWork said why
 	}

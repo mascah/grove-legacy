@@ -72,6 +72,7 @@ type prompt struct {
 	attempt          string              // stop: the attempt
 	expect           string              // resolve: the question's revision after the editor
 	fact             *versions.Merge     // conflict: the prediction shown, which Conflict checks again
+	read             []readFile          // launch of a selection: its members as the board read them here
 }
 
 // outcome is what an action returned, shown on the result screen until Esc.

@@ -1,10 +1,13 @@
 package tui
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"maps"
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"strings"
@@ -973,18 +976,23 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 	const branch = "worktree-W-001-W-002"
 	cSel, sel := source("committed", "", branch), source("live", "sel", branch)
 	fx.main.Run = project.RunDefaults{BudgetUSD: "3", PermissionMode: "auto"}
+	fx.main.Worktree = t.TempDir() // the members' files, which R checks on Enter
 	ended := time.Date(2026, 9, 23, 2, 0, 0, 0, time.UTC)
-	build := func(answered bool) *versions.Result {
+	build := func(answered bool, status string) *versions.Result {
 		var vs []versions.Version
 		for _, s := range []*versions.Source{fx.cMain, fx.main} {
 			for _, id := range []string{"W-001", "W-002"} {
 				v := version(s, id, "Member "+id, "proposed")
 				v.Older = "branch " + branch + " changed it since"
+				if s == fx.main {
+					os.MkdirAll(filepath.Join(s.Worktree, "grove", "work"), 0o755)
+					os.WriteFile(filepath.Join(s.Worktree, v.Path), v.Record.Source, 0o644)
+				}
 				vs = append(vs, v)
 			}
 		}
 		for _, s := range []*versions.Source{cSel, sel} {
-			vs = append(vs, version(s, "W-001", "Member W-001", "active"), version(s, "W-002", "Member W-002", "active"))
+			vs = append(vs, version(s, "W-001", "Member W-001", status), version(s, "W-002", "Member W-002", status))
 			q := version(s, "Q-002", "Red or blue?", "open")
 			q.Record.Blocks, q.Record.Created = []string{"W-002"}, &ended
 			if answered {
@@ -995,7 +1003,7 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 		}
 		return result(fx.main, []*versions.Source{fx.cMain, cSel, fx.main, sel}, vs...)
 	}
-	f := &fake{res: build(false)}
+	f := &fake{res: build(false, "active")}
 	r := &runs{}
 	ok := &attempt.Final{Subtype: "success"}
 	v := view("W-001", "20260923T010000Z", attempt.Finished, &attempt.Result{Finished: ended, Events: attempt.Events{Result: ok}, Record: &attempt.State{Status: "active"},
@@ -1020,10 +1028,20 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 		t.Fatalf("R waits for the answer: %q", m.alert)
 	}
 
-	// The answer.
+	// The attempt's Next keeps how to answer beside what R then does.
 	press(m, "esc")
+	m.backend.Edit = func(string, func(error) tea.Msg) tea.Cmd { return nil }
+	m.openAttempt(v.Launch.Attempt)
+	settle(m, m.wantAttempts())
+	if s := flat(m); !strings.Contains(s, "W-002 is waiting on Q-002: answer it, then R resumes W-001+1; e answers Q-002 in your editor and offers to resolve it; o opens W-001") {
+		t.Fatalf("the attempt's Next says how to answer:\n%s", plain(m))
+	}
+	m.backend.Edit = nil
+	press(m, "esc")
+
+	// The answer.
 	f.mu.Lock()
-	f.res = build(true)
+	f.res = build(true, "active")
 	f.mu.Unlock()
 	settle(m, press(m, "r"))
 	resumes := "R resumes W-001+1 on " + branch + ", not redoing the members whose checkpoint the branch confirms, and starts W-002"
@@ -1044,6 +1062,16 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 	if m.prompt == nil || !strings.Contains(plain(m), "Launch W-001 W-002 ▏") {
 		t.Fatalf("R opens the selection's line:\n%s", plain(m))
 	}
+	// Every member is checked against what the board read, not only the
+	// first, as Expect would.
+	w2 := filepath.Join(fx.main.Worktree, "grove", "work", "W-002.md")
+	was, _ := os.ReadFile(w2)
+	os.WriteFile(w2, append(bytes.Clone(was), "Edited.\n"...), 0o644)
+	if press(m, "enter"); len(r.launches) != 0 || m.prompt != nil || !strings.HasPrefix(m.alert, "W-002 changed in this checkout since the board read it") {
+		t.Fatalf("a member changed since the read is not launched: %q %+v", m.alert, r.launches)
+	}
+	os.WriteFile(w2, was, 0o644)
+	press(m, "R")
 	settle(m, press(m, "enter"))
 	if len(r.launches) != 1 {
 		t.Fatalf("launches: %+v", r.launches)
@@ -1051,4 +1079,16 @@ func TestSelectionMembersOnTheBoard(t *testing.T) {
 	if got := r.launches[0]; strings.Join(got.IDs, " ") != "W-001 W-002" || got.Branch != branch || got.Worktree != sel.Worktree || got.Expect != "" {
 		t.Fatalf("R relaunches the selection on its branch: %+v", got)
 	}
+
+	// Finished interactively after the answer: both are in review, which the
+	// attempt did not leave them in, so it no longer says where they stand.
+	f.mu.Lock()
+	f.res = build(true, "review")
+	f.mu.Unlock()
+	press(m, "esc")
+	settle(m, press(m, "r"))
+	if s := plain(m); m.memberTag("W-001", "review") != "" || m.memberTag("W-002", "review") != "" || strings.Contains(s, "held by") || strings.Contains(s, "R resumes") {
+		t.Fatalf("members that moved on keep the attempt's states:\n%s", s)
+	}
+
 }

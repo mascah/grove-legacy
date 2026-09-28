@@ -217,7 +217,9 @@ in that attempt while it needs the owner: `candidate ready`, `waiting on
 G-…` for a member a question stops, `question answered: R again` once it is
 resolved, `plan ready`, or `held by G-…` for a member that waits on another
 member's question, since a started member left incomplete holds the whole
-branch out of review. Where the card's ID is not the selection's first, the
+branch out of review. A member whose status is no longer the one the
+attempt left it in, after feedback or when it was finished interactively,
+has moved on and carries none. Where the card's ID is not the selection's first, the
 tag adds the selection, such as `· in G-260925-7k2qm+1`. Its row in `A`
 names every member's state where the width allows, cut last
 ([G-260928-63124](../grove/G-260928-63124-show-each-member-s-state.md)). The
@@ -226,9 +228,12 @@ held by G-260925-7k2qm`, and `R` on any member whose current state stands on
 the selection's branch relaunches the selection, the same IDs on the same
 branch in its worktree: the detail says `R resumes G-260925-7k2qm+1 on
 BRANCH, not redoing the members whose checkpoint the branch confirms, and
-starts ID`, and the attempt's Next says the same. While a started member
-still waits on an open question, `R` is refused and says which question to
-answer first.
+starts ID`, and the attempt's Next says the same, where `e` answers the
+question a member waits on. While a started member still waits on an open
+question, `R` is refused and says which question to answer first. On
+Enter the board checks every member's record in this checkout against
+what it read, as `--expect` does for one work, and launches nothing if one
+changed.
 
 Enter opens one attempt. At the top are the work's ID and title, a coloured
 state and the run's configuration: attempt, model and provider version,

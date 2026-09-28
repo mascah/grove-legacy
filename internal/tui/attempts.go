@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/mascah/grove/internal/attempt"
+	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/versions"
 )
 
@@ -390,8 +392,14 @@ func (m *Model) standingOf(v *attempt.View) standing {
 		}
 		// A selection's next launch is the selection again (G-260928-63124).
 		if kind != "candidate" && kind != "plan" && m.memberStates(v) != nil && m.backend.Launch != nil {
-			text, _ := m.resumeText(v)
-			s.next = text + "; o opens " + work
+			next, _ := m.resumeText(v)
+			switch {
+			case m.waits(v):
+				next += "; e answers " + m.waitingOn(v) + " in your editor and offers to resolve it"
+			case kind == "failed" || kind == "interrupted":
+				next += "; d shows the details and the raw log"
+			}
+			s.next = next + "; o opens " + work
 		}
 	}
 	return s
@@ -519,22 +527,40 @@ func (m *Model) answeredSince(work string, ended time.Time) string {
 // memberStates says where each member of an ended selection stands
 // (G-260928-63124), from what its worktree held at the end and the
 // questions the board reads now, by the rules the attempt's own outcome
-// follows; nil for a live attempt, one without a result or a selection of
-// one. A started member left waiting on a question holds every other active
-// member out of review (G-260925-wc2pz).
+// follows. A member whose current status is no longer the one the attempt
+// left, such as after feedback or an interactive handoff, has moved on and
+// is left out; nil for a live attempt, one without a result, a selection of
+// one, or one no member still stands as it left. A started member left
+// waiting on a question holds every other active member out of review
+// (G-260925-wc2pz).
 func (m *Model) memberStates(v *attempt.View) map[string]string {
 	if live(v) || v.Result == nil || len(v.Launch.Members()) < 2 {
 		return nil
 	}
+	var stands []attempt.MemberState
+	for _, ms := range v.Result.Members {
+		status := ""
+		if g := m.groupOf(ms.ID); g != nil {
+			if r := m.record(g); r != nil {
+				status = r.Status
+			}
+		}
+		if ms.Record == nil || ms.Record.Status == status {
+			stands = append(stands, ms)
+		}
+	}
+	if len(stands) == 0 {
+		return nil
+	}
 	r := v.Result
 	var holders []string
-	for _, ms := range r.Members {
+	for _, ms := range stands {
 		if len(ms.Questions) != 0 && !slices.ContainsFunc(v.Launch.Members(), func(mb attempt.Member) bool { return mb.ID == ms.ID && mb.Wait != "" }) {
 			holders = append(holders, ms.ID)
 		}
 	}
 	out := map[string]string{}
-	for _, ms := range r.Members {
+	for _, ms := range stands {
 		rec := ms.Record
 		switch {
 		case rec == nil:
@@ -814,19 +840,29 @@ func (m *Model) launch() {
 		return
 	}
 	if sel := m.resumable(g.ID, v); sel != nil {
-		// The selection again, on its branch and in its worktree: its
-		// digest, not one record's revision, is what Start checks.
+		// The selection again, on its branch and in its worktree. Start
+		// checks one record's revision (Expect), so the board checks every
+		// member it read in this checkout on Enter instead; Start refuses a
+		// member no longer startable and a wait the branch holds itself.
 		if why, ok := m.resumeText(sel); !ok {
 			m.alert = why
 			return
 		}
 		req := attempt.Request{Root: m.root, IDs: sel.Launch.Selection.Selected, Branch: sel.Launch.Branch}
+		var read []readFile
+		for _, id := range req.IDs {
+			for _, h := range m.groupOf(id).Versions {
+				if h.Source.Kind == "live" && h.Source.GitDir == m.res.GitDir && h.Record != nil {
+					read = append(read, readFile{id, filepath.Join(m.projectDir(h.Source), filepath.FromSlash(h.Path)), h.Revision})
+				}
+			}
+		}
 		for _, s := range m.res.Sources {
 			if s.Kind == "live" && s.Ref == "refs/heads/"+sel.Launch.Branch {
 				req.Worktree = s.Worktree
 			}
 		}
-		m.prompt = &prompt{kind: "launch", id: strings.Join(req.IDs, " "), root: m.root, req: &req, run: here.Source.Run}
+		m.prompt = &prompt{kind: "launch", id: strings.Join(req.IDs, " "), root: m.root, req: &req, run: here.Source.Run, read: read}
 		return
 	}
 	req := attempt.Request{Root: m.root, IDs: []string{g.ID}, Expect: here.Revision}
@@ -847,6 +883,20 @@ func (m *Model) launch() {
 		}
 	}
 	m.prompt = &prompt{kind: "launch", id: g.ID, root: m.root, req: &req, run: here.Source.Run}
+}
+
+// readFile is a record file as the board read it.
+type readFile struct{ id, path, revision string }
+
+// changed names the first of files whose bytes are no longer what the board
+// read; "" when none is.
+func changed(files []readFile) string {
+	for _, f := range files {
+		if b, err := os.ReadFile(f.path); err != nil || project.Revision(b) != f.revision {
+			return f.id + " changed in this checkout"
+		}
+	}
+	return ""
 }
 
 // where says where a launch will run, for its prompt.
@@ -891,6 +941,8 @@ func (m *Model) launchKey(p *prompt) tea.Cmd {
 		m.alert = err.Error()
 	case req.BudgetUSD == "" || req.PermissionMode == "":
 		m.alert = "type --budget USD and --permission-mode MODE, or set them under run: in grove.yaml"
+	case changed(p.read) != "":
+		m.prompt, m.alert = nil, changed(p.read)+" since the board read it; r re-reads it, and nothing was launched"
 	default:
 		p.req = &req
 		return m.act(p)
