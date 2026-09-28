@@ -150,3 +150,18 @@ what to do). The work guide is shipped: it names no record.
 
 Acceptance 7 (the owner judging the wording in a real terminal) is the
 owner's, recorded as pending in the handoff.
+
+## Adjusted after review
+
+Round 1 of the review ([G-260928-0pbpf](G-260928-0pbpf-rewritten-copy-review.md))
+changed three mechanics, in `905ece2`:
+
+- The refusal in `integrate` and `resolve`, and the board's comparison,
+  apply only to work the target already holds as `done`, the incident's
+  shape. A branch landed by a hand cherry-pick while the target still holds
+  the record in review is integrated as before, which marks it done.
+- The prerequisite repair unsets `approved` instead of setting it to the
+  copy: an approval is of one commit and does not carry over
+  ([Approval](G-260921-btyck-approval.md)). The verdict stays in the body.
+- `resolve` explains a rewritten copy before asking for a checkout on the
+  branch.

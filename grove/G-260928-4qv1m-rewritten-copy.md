@@ -152,8 +152,113 @@ does not mark it older.
 7. The owner judges the detail wording in a real terminal against the
    ascah.dev shape.
 
+## Evidence
+
+Branch `worktree-G-260928-4qv1m`, base main `ac43184`. Started from this
+record at `sha256:1e00c3cc…` and plan
+[G-260928-zyqn9](G-260928-zyqn9-rewritten-copy-plan.md) at
+`sha256:1673f192…` (commit `9e85b76`); implementation `fc1e6a9`
+(integrate and resolve), `8e5eea5` (board and prerequisites), `ff18761`
+(documents), `905ece2` (review fixes, recorded in the plan's "Adjusted
+after review").
+
+**How it works.** `versions.CopiesContext` compares a branch with the
+target by patch in one `git log --cherry-mark --right-only TARGET...BRANCH`;
+a merge never has a copy. `versions.CopyOfContext` finds a commit's own
+copies with `git log --cherry-mark --left-only --no-merges BASE...C C^!`.
+`Copies.Text` is the one explanation every surface prints. Everything goes
+through `repo.GitContext`. The explanation applies only to work the target
+already holds as `done`, so a branch cherry-picked by hand while its record
+is still in review on the target is integrated as before.
+
+1. **Met.** Reproduced with a built binary in a disposable repository
+   (fast-forward integrate, branch and worktree kept, main rebased onto a
+   new commit; `versions` shows `done` on main, `review` on the branch):
+   - `grove integrate ID` refused with "merge of BRANCH into main refused:
+     branch BRANCH is a rewritten copy of work already on main: each of its
+     4 commits main lacks has a copy there with the same patch, as after a
+     rebase of main, so nothing needs merging. To clear it: git worktree
+     remove PATH, which also deletes that checkout's ignored files such as
+     build output, then git branch -D BRANCH (-D, since Git checks ancestry,
+     not patches, and -d would refuse); nothing was merged, main is
+     unchanged at …".
+   - `grove resolve ID` refused with the same text and "; there is nothing
+     to resolve".
+   - HEAD, refs and `git status` were unchanged in both checkouts.
+   - The board, driven at `905ece2` with the live backend, shows that text
+     under the detail's Sources and in the versions' divergence text; `a`,
+     `f`, `i` and `m` say "ID is done on branch main and in review on branch
+     BRANCH: its states diverge, and v shows both and how to settle them".
+   - Tests: `TestCopiesAfterARebaseOfTheTarget`,
+     `TestIntegrateRefusesARewrittenCopy`, `TestResolveRefusesARewrittenCopy`,
+     `TestRewrittenCopyExplainedOnOpen`.
+2. **Met** (at `8e5eea5`, and `versions` again at `905ece2` in review
+   round 2). After running the printed `git worktree remove` (it deleted
+   the ignored build output) and `git branch -D`, `versions` lists only
+   `done` and the board shows one Done card, no `⑂`.
+3. **Met.** At `905ece2` (review round 2; my own run at `8e5eea5` agreed
+   but printed the earlier `--set approved`), `grove run DEPENDENT
+   --dry-run` refused: "needs ID, whose candidate OLD the base lacks; the
+   base holds COPY, a rewritten copy with the same patch, as after a
+   rebase: in the target's checkout, grove update ID --set candidate=COPY
+   --unset approved --commit names it as delivered; then note the rewrite
+   under the record's verdict", and `grove deps DEPENDENT` gave the same as
+   a note. After running that update, `check` was OK and the dry-run said
+   "delivered: candidate COPY is in the base … can start". Tests:
+   `TestSelectionNamesARewrittenPrerequisite` (update applied, then
+   delivered) and `TestDeliverExplainsEachStatus`.
+4. **Met, from tests with real Git.** One extra commit gives "2 of the 3
+   commits of branch work that main lacks have a copy there …; this one has
+   not: …", with no delete command (`TestCopiesAfterARebaseOfTheTarget`,
+   and on the board `TestRewrittenCopyExplainedOnOpen`). `integrate` then
+   reaches today's conflict refusal naming `grove resolve`
+   (`TestIntegrateRefusesARewrittenCopy`, second half).
+5. **Met.** `wantCopies` runs only with the detail or versions screen open,
+   through `m.read` like history. `TestRewrittenCopyExplainedOnOpen` asserts
+   no read on the board load; `TestRewrittenCopyReadYieldsToEveryKey`
+   asserts that Esc, `r` and `q` cancel it and ignore its reply. The
+   dependency preview's copy lookup runs only inside the explicit `p`
+   preview read.
+6. **Met.** `docs/board.md` has the divergence sentence, a new "Rewritten
+   copies" section and the key table. `docs/commands.md` covers
+   `integrate`, `resolve`'s refusals, `run`'s waits and `deps`. The
+   versions screen's divergence text (`currentText`) names deletion as a
+   way it ends. `docs/work-execution.md` has "A target rewritten after
+   integration", naming only its example ID.
+7. **Pending**: the owner's judgment of the wording in a real terminal.
+
+**Decision taken, for the owner.** This record's proposed design, and the
+hand repair in ascah.dev, set `approved` to the copy. The settled
+[Approval](G-260921-btyck-approval.md) term says an approval does not carry
+over to another commit, so the printed repair is `--unset approved` where
+the record is approved; the verdict stays in the body. If an approval
+should carry over to a patch-equivalent copy, that amends the term and
+changes one line in `deps.Rewrite`.
+
+Verification at `905ece2`: `go vet ./...` clean, `gofmt -l .` empty,
+`go run ./cmd/grove check` `OK: 230 records`, `go test -count=1 -timeout
+120s ./...` all packages ok, and `python3 internal/tui/testdata/terminal.py
+BINARY` all 12 scenarios ok. No `-race`: the change adds a read on the
+existing one-at-a-time read path and no concurrency.
+
+Review: [G-260928-0pbpf](G-260928-0pbpf-rewritten-copy-review.md), two
+rounds by fresh `grove-reviewer` agents. Round 1 found three, all fixed in
+`905ece2`; round 2 `Open findings: none`.
+
+Limits:
+- A merge commit on the branch never counts as a copy. A branch that went
+  through `grove resolve`, was integrated and then had its target rebased
+  gets the partial message, and `integrate` still points to `resolve`
+  (`ponytail:` note in `internal/versions/copies.go`).
+- The repair is worded for the target's checkout, but `run` and `deps`
+  look for the copy in their base or HEAD. From a base other than the
+  target, `update` refuses a copy the target lacks. Not tested.
+- `internal/versions` takes about 5 s under `-short`, with or without its
+  new test; that is the existing baseline.
+
 ## Next
 
-Assign: `/grove-work G-260928-4qv1m`. Preparation chooses between
-`git cherry` and `git patch-id` and decides where the shared read lives, so
-the board and `integrate` give the same answer.
+Judge the candidate this record names, and acceptance 7 in a terminal
+against the ascah.dev shape. In this checkout:
+`grove approve G-260928-4qv1m "VERDICT"`; then, in main's checkout,
+`grove integrate G-260928-4qv1m`.
