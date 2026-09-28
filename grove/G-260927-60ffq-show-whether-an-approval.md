@@ -4,10 +4,11 @@ type: work
 title: "Show whether an approval was delegated or the owner's wherever a record's standing is shown"
 status: review
 created: "2026-09-27T22:13:37Z"
-updated: "2026-09-28T16:49:29Z"
+updated: "2026-09-28T16:50:19Z"
 size: small
 relates_to: ["G-260921-btyck", "G-260926-a8vyj", "G-260925-wh9ax", "G-260925-5wrn8", "G-260921-jwk4e"]
 candidate: "3af8383a1524aa97d9b0b35c468227aa2162eeb6"
+approved: "3af8383a1524aa97d9b0b35c468227aa2162eeb6"
 ---
 
 ## Outcome
@@ -95,3 +96,5 @@ examined `80ef0f7`: `Open findings: none`.
 Judge the candidate: open the board on a record with each verdict, then
 `grove approve G-260927-60ffq VERDICT` in this worktree and `grove
 integrate G-260927-60ffq` in main's checkout.
+
+Verdict on candidate 3af8383, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb: review G-260928-fav7h examined 80ef0f7 with no open finding; merged with main at 4f8f070, verification passed (go test -count=1 -timeout 120s ./...; go vet ./...; go run ./cmd/grove check); attempt G-260927-60ffq.20260928T164039Z produced it for 2.65 USD
