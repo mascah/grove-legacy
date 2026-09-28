@@ -190,7 +190,7 @@ func TestReviewApproveAndFeedbackFromTheBoard(t *testing.T) {
 	f := reviewFixture(fx, false)
 	m := openReview(t, f, 120, 36)
 	press(m, "a")
-	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Approve W-001 on branch feature · verdict (Enter records it, Esc cancels): ▏") {
+	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Verdict on W-001: ▏") || !strings.Contains(s, "Enter approves W-001 on branch feature with it; Esc cancels") {
 		t.Fatalf("a should open the verdict prompt:\n%s", s)
 	}
 	press(m, "enter")
@@ -240,7 +240,7 @@ func TestReviewApproveAndFeedbackFromTheBoard(t *testing.T) {
 	}
 	// Feedback, with the continuation in its facts.
 	press(m, "f")
-	if s := plain(m); !strings.Contains(s, "Feedback on W-001, returning it to active on branch feature") {
+	if s := plain(m); !strings.Contains(s, "Feedback on W-001: ▏") || !strings.Contains(s, "Enter records it, returning it to active on branch feature") {
 		t.Fatalf("f should open the feedback prompt:\n%s", s)
 	}
 	typeText(m, "Needs the empty case")
@@ -439,7 +439,7 @@ func TestReviewNamesTheGroupSharingACandidate(t *testing.T) {
 		t.Fatalf("the changes read leaves out both records. files:\n%s", reads)
 	}
 	press(m, "f")
-	if s := plain(m); !strings.Contains(s, "Feedback on W-001, returning it and W-003, which share its candidate, to active on branch feature") {
+	if s := plain(m); !strings.Contains(s, "Enter records it, returning it and W-003, which share its candidate, to active on branch feature") {
 		t.Fatalf("f names the group:\n%s", s)
 	}
 	press(m, "esc")
@@ -464,7 +464,7 @@ func TestReviewResolveAConflictFromTheBoard(t *testing.T) {
 	}
 	press(m, "m")
 	s := plain(m)
-	if m.prompt == nil || !strings.Contains(s, "Resolve W-001 ▏ · it conflicts with main at aaaaaaa in internal/x.go: Enter records that as feedback and launches one attempt") || !strings.Contains(s, "$7, mode auto, to the handoff") {
+	if m.prompt == nil || !strings.Contains(s, "Resolve W-001 ▏") || !strings.Contains(s, "it conflicts with main at aaaaaaa in internal/x.go: Enter records that as feedback and launches one attempt") || !strings.Contains(s, "$7, mode auto, to the handoff") {
 		t.Fatalf("m opens the resolve line:\n%s", s)
 	}
 	typeText(m, "--until plan")
@@ -615,8 +615,8 @@ func TestRewrittenCopyExplainedOnOpen(t *testing.T) {
 	// The shown record is main's done; each review action names the branch in review.
 	for _, k := range []string{"a", "f", "i", "m"} {
 		press(m, k)
-		if want := "W-001 is done on branch main and in review on branch feature: its states diverge, and v shows both and how to settle them"; m.notice != want || m.prompt != nil {
-			t.Fatalf("%s: notice %q", k, m.notice)
+		if want := "W-001 is done on branch main and in review on branch feature: its states diverge, and v shows both and how to settle them"; m.alert != want || m.prompt != nil {
+			t.Fatalf("%s: alert %q", k, m.alert)
 		}
 	}
 	press(m, "v")

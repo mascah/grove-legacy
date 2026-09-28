@@ -49,15 +49,15 @@ func (m *Model) answer() tea.Cmd {
 	v := m.shown(g)
 	switch {
 	case v == nil || v.Record == nil || v.Record.Type != "question":
-		m.notice = "e answers a question; " + g.ID + " is not one"
+		m.alert = "e answers a question; " + g.ID + " is not one"
 		return nil
 	case v.Record.Status != "open":
-		m.notice = g.ID + " is " + v.Record.Status + "; e answers an open question"
+		m.alert = g.ID + " is " + v.Record.Status + "; e answers an open question"
 		return nil
 	}
 	lv, branch, why := m.checkoutOf(g, v, "answering")
 	if why != "" {
-		m.notice = why + "; nothing was written"
+		m.alert = why + "; nothing was written"
 		return nil
 	}
 	root := m.projectDir(lv.Source)
@@ -65,10 +65,10 @@ func (m *Model) answer() tea.Cmd {
 	before, err := os.ReadFile(path)
 	switch {
 	case err != nil:
-		m.notice = err.Error() + "; nothing was written"
+		m.alert = err.Error() + "; nothing was written"
 		return nil
 	case project.Revision(before) != lv.Revision:
-		m.notice = g.ID + " changed in " + root + " since the board read it; r re-reads it, and nothing was written"
+		m.alert = g.ID + " changed in " + root + " since the board read it; r re-reads it, and nothing was written"
 		return nil
 	}
 	given := before
@@ -110,7 +110,7 @@ func (m *Model) edited(msg editedMsg) tea.Cmd {
 	unused := err == nil && bytes.Equal(after, e.given)
 	if unused {
 		if werr := e.takeBack(); werr != nil {
-			m.notice = "the Answer heading could not be taken back (" + werr.Error() + "); nothing was committed, and it stays in " + e.path
+			m.alert = "the Answer heading could not be taken back (" + werr.Error() + "); nothing was committed, and it stays in " + e.path
 			return m.refresh()
 		}
 		after = e.before // what an earlier edit's resolve expects
@@ -118,12 +118,12 @@ func (m *Model) edited(msg editedMsg) tea.Cmd {
 	kept := "; nothing was committed, and the edit stays uncommitted in " + e.root
 	switch {
 	case msg.err != nil && unused:
-		m.notice = "the editor failed (" + msg.err.Error() + "); nothing was written"
+		m.alert = "the editor failed (" + msg.err.Error() + "); nothing was written"
 		return nil
 	case msg.err != nil:
-		m.notice = "the editor failed (" + msg.err.Error() + ")" + kept
+		m.alert = "the editor failed (" + msg.err.Error() + ")" + kept
 	case err != nil:
-		m.notice = err.Error() + "; nothing was committed"
+		m.alert = err.Error() + "; nothing was committed"
 	case unused && !e.earlier:
 		m.notice = "no change was saved to " + e.id + "; nothing was written"
 		return nil
@@ -159,7 +159,7 @@ func (m *Model) answerFor(v *attempt.View) tea.Cmd {
 		return nil
 	}
 	if !m.waits(v) {
-		m.notice = v.Launch.Attempt + " is not waiting on a question; e answers one"
+		m.alert = v.Launch.Attempt + " is not waiting on a question; e answers one"
 		return nil
 	}
 	q, _, _ := strings.Cut(m.blockingQuestion(v.Launch.Work), " (")

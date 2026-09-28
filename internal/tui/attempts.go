@@ -633,7 +633,7 @@ func (m *Model) attemptKey(k string) tea.Cmd {
 // openWork opens an attempt's work record, where its reviews and evidence are.
 func (m *Model) openWork(id string) {
 	if m.groupOf(id) == nil {
-		m.notice = id + " is not on any readable branch or checkout"
+		m.alert = id + " is not on any readable branch or checkout"
 		return
 	}
 	back := m.screen
@@ -646,7 +646,7 @@ func (m *Model) askStop(v *attempt.View) {
 	switch {
 	case m.backend.Stop == nil:
 	case !live(v):
-		m.notice = v.Launch.Attempt + " is " + string(v.Status) + "; nothing to stop"
+		m.alert = v.Launch.Attempt + " is " + string(v.Status) + "; nothing to stop"
 	default:
 		m.prompt = &prompt{kind: "stop", id: v.Launch.Work, attempt: v.Launch.Attempt, root: m.root}
 	}
@@ -665,22 +665,22 @@ func (m *Model) launch() {
 	v := m.shown(g)
 	switch {
 	case v == nil || v.Record == nil || v.Record.Type != "work":
-		m.notice = g.ID + " is not work: only work is launched"
+		m.alert = g.ID + " is not work: only work is launched"
 		return
 	case v.Record.Status == "review":
-		m.notice = g.ID + " is in review: judge its candidate (a approve, f feedback) before another attempt"
+		m.alert = g.ID + " is in review: judge its candidate (a approve, f feedback) before another attempt"
 		return
 	case v.Record.Status != "proposed" && v.Record.Status != "active":
-		m.notice = g.ID + " is " + v.Record.Status + "; only proposed or active work is launched"
+		m.alert = g.ID + " is " + v.Record.Status + "; only proposed or active work is launched"
 		return
 	}
 	if q := m.blockingQuestion(g.ID); q != "" {
-		m.notice = g.ID + " is blocked by open question " + q + "; resolve it before another attempt"
+		m.alert = g.ID + " is blocked by open question " + q + "; resolve it before another attempt"
 		return
 	}
 	for _, a := range m.attemptsOf(g.ID) {
 		if live(&a) {
-			m.notice = fmt.Sprintf("attempt %s of %s is %s; A shows it, x stops it", a.Launch.Attempt, g.ID, a.Status)
+			m.alert = fmt.Sprintf("attempt %s of %s is %s; A shows it, x stops it", a.Launch.Attempt, g.ID, a.Status)
 			return
 		}
 	}
@@ -693,7 +693,7 @@ func (m *Model) launch() {
 		}
 	}
 	if here == nil || here.Record == nil {
-		m.notice = g.ID + " is not in this checkout (" + m.root + "); open Grove in a checkout that holds it to launch"
+		m.alert = g.ID + " is not in this checkout (" + m.root + "); open Grove in a checkout that holds it to launch"
 		return
 	}
 	req := attempt.Request{Root: m.root, IDs: []string{g.ID}, Expect: here.Revision}
@@ -755,9 +755,9 @@ func (m *Model) launchKey(p *prompt) tea.Cmd {
 	req, err := p.resolved()
 	switch {
 	case err != nil:
-		m.notice = err.Error()
+		m.alert = err.Error()
 	case req.BudgetUSD == "" || req.PermissionMode == "":
-		m.notice = "type --budget USD and --permission-mode MODE, or set them under run: in grove.yaml"
+		m.alert = "type --budget USD and --permission-mode MODE, or set them under run: in grove.yaml"
 	default:
 		p.req = &req
 		return m.act(p)

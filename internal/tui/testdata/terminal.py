@@ -435,7 +435,8 @@ def review_and_integrate(root, wt, base):
     s.send(ESC)  # alone: an Esc followed at once by a letter reads as Alt
     mark = s.expect("An outcome.", mark)
     s.send(b"a")
-    mark = s.expect("Approve G-260101-00001 on branch feature", mark)
+    s.expect("Verdict on G-260101-00001: ▏", mark)  # one frame: the typed row, then the help
+    mark = s.expect("Enter approves G-260101-00001 on branch feature", mark)
     s.send(b"Ship it" + ENTER)
     s.expect("Approved G-260101-00001", mark)
     mark = s.expect("The board has been re-read.", mark)
@@ -571,7 +572,8 @@ def attempt_lifecycle(root, wt, base):
     # Without run: in grove.yaml the one launch line needs the budget and the
     # mode typed, in run's own flags, and refuses what run refuses.
     s.send(b"R")
-    mark = s.expect("Launch G-260101-00001 ▏ · no budget, no mode, to the handoff, model default, effort default", mark)
+    s.expect("Launch G-260101-00001 ▏", mark)  # one frame: what is typed first, the launch it would start below (G-260928-csg91)
+    mark = s.expect("no budget, no mode, to the handoff, model default, effort default", mark)
     s.send(ENTER)
     mark = s.expect("type --budget USD and --permission-mode MODE", mark)
     s.send(b"--frob" + ENTER)
@@ -631,6 +633,9 @@ def attempt_lifecycle(root, wt, base):
     s.expect("Active 1", mark)
     s.send(ENTER)
     mark = s.expect("A lists them")
+    # A second launch while it runs is refused before any line opens, naming the attempt and A (G-260928-csg91).
+    s.send(b"R")
+    mark = s.expect(f"attempt {first} of G-260101-00001 is running; A shows it, x stops it · Esc dismisses", mark)
     s.send(b"A")
     mark = s.expect("Attempts of G-260101-00001", mark)
     s.send(ENTER)
@@ -651,7 +656,8 @@ def attempt_lifecycle(root, wt, base):
     # The next attempt persists a question and ends: a wait, which a launch then refuses.
     open(question, "w").close()
     s.send(b"R")
-    mark = s.expect("Launch G-260101-00001 ▏ · $1, mode auto, to the handoff, model default, effort default", mark)
+    s.expect("Launch G-260101-00001 ▏", mark)
+    mark = s.expect("$1, mode auto, to the handoff, model default, effort default", mark)
     s.send(ENTER)
     s.expect("started; owner pid", mark)
     mark = s.expect("The board has been re-read.", mark)  # Esc waits for the re-read; both may be one frame
@@ -693,7 +699,7 @@ def attempt_lifecycle(root, wt, base):
     s.send(b"R")
     mark = s.expect("$1, mode auto", mark)
     s.send(b"--effort xhigh")  # a typed flag overrides for this launch only
-    mark = s.expect("$1, mode auto, to the handoff, model default, effort xhigh", mark)
+    mark = s.expect("--effort xhigh▏", mark)  # only changed cells are redrawn; attempt.json below holds what it resolved to
     s.send(ENTER)
     s.expect("worktree: reusing", mark)
     s.expect("started; owner pid", mark)

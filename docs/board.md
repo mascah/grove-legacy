@@ -414,6 +414,28 @@ its own styles reach the terminal. Links are shown as text, never as terminal
 hyperlinks, and a relative target is shown root-relative
 (`/G-260925-7k2qm-….md`). The render is cached per record content and width.
 
+## Prompts and refusals
+
+An action that takes text, `a`'s verdict, `f`'s feedback and the lines `R`
+and `m` open, is drawn at the foot of the screen
+([G-260928-csg91](../grove/G-260928-csg91-make-the-board-s-prompts.md)):
+first what is typed, led by what it is for and broken only at the edge so
+every character shows, then what Enter would do and that Esc cancels, over
+as many rows as they need, up to half the screen. Where rows run out, the
+help goes first, then the start of the typed text, never its end. Typing
+appends and Backspace removes the last character; there is no other
+editing, and Enter records exactly what was typed. A y/n prompt is one row.
+
+A refused action is drawn above the foot in reverse red, a colour no column
+or tag uses, saying why and what to do next: refused before its prompt
+opens, such as `R` on work with a running attempt, which names that attempt
+and `A`; refused on Enter, with its line left open beneath; or refused by
+the operation it ran, whose result screen leads with `NOT DONE` and the
+reason in the same style, before whatever it reported. It stays through
+other keys until Esc dismisses it, which then does nothing else, or until
+an action goes ahead. Other messages, such as a cancelled prompt, show in
+the row under the header until the next key.
+
 ## Keys
 
 | Key | Where | Action |
@@ -445,7 +467,7 @@ hyperlinks, and a relative target is shown root-relative
 | `b` | board, dependencies | Choose the current view or one checkout's board |
 | `s` | everywhere | List every branch and checkout read, with diagnostics; reachable while a banner marks an incomplete result |
 | `r` | everywhere | Re-read |
-| Esc | everywhere | Go back; quits from the board |
+| Esc | everywhere | Dismiss a refusal, cancel a prompt, or go back; quits from the board |
 | `q` | everywhere | Quit |
 
 Below 100 columns one status column shows at a time; below 40x10 the board

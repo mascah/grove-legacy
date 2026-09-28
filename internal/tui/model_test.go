@@ -877,6 +877,11 @@ func TestHostileTextIsInert(t *testing.T) {
 		check("chooser")
 		m.notice = hostile
 		check("notice")
+		m.alert = hostile
+		check("alert")
+		m.prompt = &prompt{kind: "approve", id: "W-001", branch: hostile, text: strings.Repeat(hostile, 4)}
+		check("prompt")
+		m.prompt, m.alert = nil, ""
 	}
 	if string(v.Record.Source) != body {
 		t.Fatal("display escaping changed the record's bytes")

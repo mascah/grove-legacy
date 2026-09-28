@@ -236,6 +236,7 @@ type Model struct {
 	res     *versions.Result
 	failure string // the inventory itself failed: no rows, retry or quit
 	notice  string // one-shot message, cleared by the next key
+	alert   string // a refused or failed action: shown in the attention style until Esc or an action succeeds
 
 	gen       int    // the newest request; older replies are ignored
 	pending   string // "", "inspect", "resolve", "history", "copies", "changes", "diff" or "act": one at a time
@@ -519,7 +520,12 @@ func (m *Model) stop() {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	asked := m.prompt != nil
 	cmd := m.update(msg)
+	// A prompt opening is the refused action going ahead after all.
+	if !asked && m.prompt != nil {
+		m.alert = ""
+	}
 	// One read at a time, in this order: a detail's history, then how its
 	// diverging branches compare with the target, then its changes, then a
 	// chosen diff; the next starts when the last delivered.
@@ -659,6 +665,11 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		}
 		if m.prompt != nil {
 			return m.promptKey(msg)
+		}
+		// Esc dismisses a refusal before it does anything else.
+		if msg.String() == "esc" && m.alert != "" {
+			m.alert = ""
+			return nil
 		}
 		if m.screen == searchScreen {
 			m.searchKey(msg)
@@ -901,7 +912,7 @@ func (m *Model) chooserKey(k string) {
 			m.settleFocus()
 			m.reopenDeps()
 		} else {
-			m.notice = "that checkout cannot fill the board: " + sourceProblem(s)
+			m.alert = "that checkout cannot fill the board: " + sourceProblem(s)
 		}
 	}
 }

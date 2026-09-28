@@ -135,7 +135,7 @@ func TestLaunchFromTheDetail(t *testing.T) {
 	// Without run: defaults the line says what must be typed, and a line
 	// that leaves the budget or the mode unsupplied launches nothing.
 	press(m, "R")
-	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Launch W-002 ▏ · no budget, no mode, to the handoff, model default, effort default, on branch worktree-W-002") {
+	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Launch W-002 ▏") || !strings.Contains(s, "no budget, no mode, to the handoff, model default, effort default, on branch worktree-W-002") {
 		t.Fatalf("R opens the launch line:\n%s", s)
 	}
 	for _, c := range []struct{ typed, want string }{
@@ -195,7 +195,7 @@ func TestLaunchFromTheDetail(t *testing.T) {
 		}
 	}
 	press(m, "R")
-	if s := plain(m); !strings.Contains(s, "Launch W-002 ▏ · $50, mode auto, to the handoff, model default, effort default, on branch worktree-W-002 · Enter") {
+	if s := plain(m); !strings.Contains(s, "Launch W-002 ▏") || !strings.Contains(s, "$50, mode auto, to the handoff, model default, effort default, on branch worktree-W-002 · Enter") {
 		t.Fatalf("the line names the defaults:\n%s", s)
 	}
 	settle(m, press(m, "enter"))
@@ -540,6 +540,9 @@ func TestAttemptScreensReconnectAndStop(t *testing.T) {
 	press(m, "x")
 	if m.prompt != nil || !strings.Contains(plain(m), "is finished; nothing to stop") {
 		t.Fatal(plain(m))
+	}
+	if press(m, "esc"); m.alert != "" || m.screen != attemptScreen {
+		t.Fatalf("Esc dismisses the refusal and nothing else: alert %q screen %d", m.alert, m.screen)
 	}
 	press(m, "o")
 	if m.screen != detailScreen || m.openID() != "W-002" || !strings.Contains(plain(m), "Attempts 1 · latest: stopped by x, 2h ago · A lists them") {

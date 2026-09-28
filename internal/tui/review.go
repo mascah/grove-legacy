@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/mascah/grove/internal/attempt"
@@ -533,7 +533,7 @@ func (m *Model) action(k string) {
 	v := m.shown(g)
 	if !m.reviewable() {
 		if v != nil && v.Record != nil {
-			m.notice = m.notInReview(g, v, "nothing to approve, give feedback on, or integrate")
+			m.alert = m.notInReview(g, v, "nothing to approve, give feedback on, or integrate")
 		}
 		return
 	}
@@ -542,11 +542,11 @@ func (m *Model) action(k string) {
 	case "a", "f":
 		root, branch, why := m.judgeRoot(g, v)
 		if why != "" {
-			m.notice = why
+			m.alert = why
 			return
 		}
 		if k == "a" && r.Approved != "" {
-			m.notice = "candidate " + short7(r.Candidate) + " is already approved; i integrates it"
+			m.alert = "candidate " + short7(r.Candidate) + " is already approved; i integrates it"
 			return
 		}
 		m.prompt = &prompt{kind: map[string]string{"a": "approve", "f": "feedback"}[k], id: g.ID, root: root, branch: branch, sharing: m.sharing(v, false)}
@@ -555,12 +555,12 @@ func (m *Model) action(k string) {
 			return
 		}
 		if r.Approved == "" {
-			m.notice = "approve candidate " + short7(r.Candidate) + " first (a)"
+			m.alert = "approve candidate " + short7(r.Candidate) + " first (a)"
 			return
 		}
 		root, why := m.targetRoot()
 		if why != "" {
-			m.notice = why
+			m.alert = why
 			return
 		}
 		wt, branch, _ := m.judgeRoot(g, v)
@@ -611,7 +611,7 @@ func (m *Model) resolveConflict() {
 	v := m.shown(g)
 	if !m.reviewable() || m.backend.Conflict == nil {
 		if v != nil && v.Record != nil {
-			m.notice = m.notInReview(g, v, "there is no candidate to resolve")
+			m.alert = m.notInReview(g, v, "there is no candidate to resolve")
 		}
 		return
 	}
@@ -619,23 +619,23 @@ func (m *Model) resolveConflict() {
 	fact := m.conflicted(v)
 	switch {
 	case !held || read.c == nil:
-		m.notice = "the candidate's changes are not read yet; m waits for them"
+		m.alert = "the candidate's changes are not read yet; m waits for them"
 		return
 	case fact == nil && read.c.Merge != nil:
-		m.notice = "candidate " + short7(v.Record.Candidate) + " " + read.c.Merge.Text(m.res.Target) + ": nothing to resolve"
+		m.alert = "candidate " + short7(v.Record.Candidate) + " " + read.c.Merge.Text(m.res.Target) + ": nothing to resolve"
 		return
 	case fact == nil:
-		m.notice = "no conflict with the target is predicted, so there is nothing to resolve"
+		m.alert = "no conflict with the target is predicted, so there is nothing to resolve"
 		return
 	}
 	lv, branch, why := m.checkoutOf(g, v, "judging")
 	if why != "" {
-		m.notice = why
+		m.alert = why
 		return
 	}
 	for _, a := range m.attemptsOf(g.ID) {
 		if live(&a) {
-			m.notice = fmt.Sprintf("attempt %s of %s is %s; A shows it, x stops it", a.Launch.Attempt, g.ID, a.Status)
+			m.alert = fmt.Sprintf("attempt %s of %s is %s; A shows it, x stops it", a.Launch.Attempt, g.ID, a.Status)
 			return
 		}
 	}
@@ -672,7 +672,7 @@ func (m *Model) promptKey(msg tea.KeyPressMsg) tea.Cmd {
 	p := m.prompt
 	switch k := msg.String(); {
 	case k == "esc":
-		m.prompt = nil
+		m.prompt, m.alert = nil, ""
 		m.notice = "cancelled; nothing was written"
 		if p.req != nil {
 			m.notice = "cancelled; nothing was launched"
@@ -698,7 +698,7 @@ func (m *Model) promptKey(msg tea.KeyPressMsg) tea.Cmd {
 				return m.launchKey(p)
 			}
 			if strings.TrimSpace(p.text) == "" {
-				m.notice = "type the " + map[string]string{"approve": "verdict", "feedback": "feedback"}[p.kind] + " first, or Esc"
+				m.alert = "type the " + map[string]string{"approve": "verdict", "feedback": "feedback"}[p.kind] + " first, or Esc"
 				return nil
 			}
 			return m.act(p)
@@ -732,7 +732,7 @@ func (m *Model) promptKey(msg tea.KeyPressMsg) tea.Cmd {
 // act runs the prompt's action in the background. Keys wait for it, and a
 // key never cancels its Git commands.
 func (m *Model) act(p *prompt) tea.Cmd {
-	m.prompt = nil
+	m.prompt, m.alert = nil, "" // what the line was refused for is settled; the result says the rest
 	kind, root, id, text, cleanup, req, about, expect, fact := p.kind, p.root, p.id, strings.TrimSpace(p.text), p.cleanup, p.req, p.id, p.expect, p.fact
 	switch {
 	case kind == "cleanup":
@@ -775,51 +775,92 @@ func actingText(kind string) string {
 		"conflict": "Recording the feedback and launching the attempt…"}[kind]
 }
 
-// promptRow is the last row while a prompt is open.
-func (m *Model) promptRow(w int) string {
+// promptText is the open prompt as what is typed, led by what it is for,
+// and the help after it; a y/n prompt has only the help.
+func (m *Model) promptText() (typed, help string) {
 	p := m.prompt
-	var text string
 	switch p.kind {
 	case "approve":
-		text = fmt.Sprintf("Approve %s on branch %s · verdict (Enter records it, Esc cancels): %s▏", p.id, p.branch, p.text)
+		return "Verdict on " + p.id + ": " + p.text, "Enter approves " + p.id + " on branch " + p.branch + " with it; Esc cancels"
 	case "feedback":
 		them := "it"
 		if p.sharing != nil {
 			them = "it and " + strings.Join(p.sharing, ", ") + ", which share its candidate,"
 		}
-		text = fmt.Sprintf("Feedback on %s, returning %s to active on branch %s (Enter records it, Esc cancels): %s▏", p.id, them, p.branch, p.text)
-	case "integrate":
-		// The question first: a long checkout path is what truncation drops.
-		text = fmt.Sprintf("Merge branch %s into %s and mark %s done? y/n   (runs in %s)", p.branch, p.target, strings.Join(append([]string{p.id}, p.sharing...), " and "), p.root)
+		return "Feedback on " + p.id + ": " + p.text, "Enter records it, returning " + them + " to active on branch " + p.branch + "; Esc cancels"
 	case "launch":
 		req, _ := p.resolved() // a line that does not parse yet shows what it has so far
-		// What is typed comes first: truncation drops the help at the end.
-		text = fmt.Sprintf("Launch %s %s▏ · %s, %s · Enter launches; flags such as --until plan or --effort xhigh change it; Esc cancels", p.id, p.text, launchText(req), p.where())
+		return "Launch " + p.id + " " + p.text, launchText(req) + ", " + p.where() + " · Enter launches; flags such as --until plan or --effort xhigh change it; Esc cancels"
 	case "conflict":
 		req, _ := p.resolved()
-		text = fmt.Sprintf("Resolve %s %s▏ · it %s: Enter records that as feedback and launches one attempt to merge it, resolve, verify and hand off, %s, %s; Esc cancels", p.id, p.text, p.fact.Text(p.target), launchText(req), p.where())
+		return "Resolve " + p.id + " " + p.text, "it " + p.fact.Text(p.target) + ": Enter records that as feedback and launches one attempt to merge it, resolve, verify and hand off, " + launchText(req) + ", " + p.where() + "; Esc cancels"
+	case "integrate":
+		// The question first: a long checkout path is what truncation drops.
+		return "", fmt.Sprintf("Merge branch %s into %s and mark %s done? y/n   (runs in %s)", p.branch, p.target, strings.Join(append([]string{p.id}, p.sharing...), " and "), p.root)
 	case "stop":
-		text = fmt.Sprintf("Stop attempt %s of %s? Its partial work stays. y/n", p.attempt, p.id)
+		return "", fmt.Sprintf("Stop attempt %s of %s? Its partial work stays. y/n", p.attempt, p.id)
 	case "resolve":
-		text = fmt.Sprintf("Resolve %s and commit it with your answer on branch %s? y/n   (runs in %s)", p.id, p.branch, p.root)
-	default:
-		text = fmt.Sprintf("Also delete branch %s and remove its worktree? y/n   (%s)", p.branch, p.wt)
+		return "", fmt.Sprintf("Resolve %s and commit it with your answer on branch %s? y/n   (runs in %s)", p.id, p.branch, p.root)
 	}
-	return hot(line(text, w))
+	return "", fmt.Sprintf("Also delete branch %s and remove its worktree? y/n   (%s)", p.branch, p.wt)
 }
+
+// promptRows draws the open prompt in at most n rows of w cells. A y/n
+// prompt is one row. Typed text is broken only at the edge, so every
+// character shows, and comes first; the help follows, and is what a lack
+// of rows drops, then the typed text's start, never its end.
+func (m *Model) promptRows(w, n int) []string {
+	typed, help := m.promptText()
+	if typed == "" {
+		return []string{hot(line(help, w))}
+	}
+	rows := exact(typed+"▏", w)
+	rows = append(rows[max(len(rows)-n, 0):], wrap(help, w)...)
+	for i := range rows {
+		rows[i] = hot(rows[i])
+	}
+	return rows[:min(len(rows), max(n, 1))]
+}
+
+// footer is the rows under the body: a refusal, then the open prompt or the
+// key hints, in at most half the screen.
+func (m *Model) footer(w int, hints string) []string {
+	n := max((m.height-2)/2, 1)
+	var rows []string
+	if m.alert != "" {
+		text := m.alert
+		if m.prompt == nil {
+			text += " · Esc dismisses"
+		}
+		lines := wrap(text, w)
+		for _, r := range lines[:min(len(lines), 3)] {
+			rows = append(rows, attention.Render(r))
+		}
+	}
+	if m.prompt == nil {
+		return append(rows, line(hints, w))
+	}
+	return append(rows, m.promptRows(w, max(n-len(rows), 1))...)
+}
+
+// attention marks a refusal, in a colour no column or tag uses; its text
+// says the same.
+var attention = lipgloss.NewStyle().Bold(true).Reverse(true).Foreground(lipgloss.Color("1"))
 
 // resultRows is the result screen: the action's facts, and the refusal or
 // failure when there was one.
 func (m *Model) resultRows(w int) []string {
 	o := m.result
 	rows := []string{bold(line(o.title, w))}
+	// A refusal leads, in the attention style, before whatever it reported.
+	if o.err != "" {
+		for _, r := range wrap("NOT DONE: "+o.err, w) {
+			rows = append(rows, attention.Render(r))
+		}
+		rows = append(rows, line("", w))
+	}
 	for _, f := range o.facts {
 		rows = append(rows, wrap("  "+f, w)...)
-	}
-	if o.err != "" {
-		failed := wrap("NOT DONE: "+o.err, w)
-		failed[0] = bold(failed[0])
-		rows = append(append(rows, line("", w)), failed...)
 	}
 	if m.pending == "inspect" {
 		return append(rows, line("", w), line("Re-reading the board…", w))

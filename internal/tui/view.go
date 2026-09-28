@@ -208,7 +208,7 @@ func (m *Model) render() string {
 			line("Resize, or q to quit.", w),
 		}, min(h, 2), w), "\n")
 	}
-	body := h - 3
+	body := h - 2 - len(m.footer(w, ""))
 	var rows []string
 	var hints string
 	side, sideKey := "", "" // w hides the detail's sidebar where there is one beside the content
@@ -304,12 +304,8 @@ func (m *Model) render() string {
 			"←→↑↓  Enter open  / search  g deps  a  Tab "+shelf+"  b  s  r  q quit",
 			"Enter open  / g a Tab b s r  q quit")
 	}
-	last := line(hints, w)
-	if m.prompt != nil {
-		last = m.promptRow(w)
-	}
 	out := append([]string{bold(line(m.header(), w)), line(m.banner(), w)}, fit(rows, body, w)...)
-	return strings.Join(append(out, last), "\n")
+	return strings.Join(append(out, m.footer(w, hints)...), "\n")
 }
 
 func (m *Model) header() string {
