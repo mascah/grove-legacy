@@ -226,13 +226,16 @@ func TestAnswerDeclinedUnsavedOrFailed(t *testing.T) {
 // revision shows as not done.
 func TestAnswerRefusals(t *testing.T) {
 	t.Parallel()
-	refuse := func(name string, change func(fx fixture, f *fake, path string), id, want string) {
+	refuse := func(name string, change func(fx fixture, f *fake, path string), id, want string, at ...func(*Model)) {
 		t.Helper()
 		fx, f, path := answerFixture(t)
 		change(fx, f, path)
 		e := &editor{write: "Blue.\n"}
 		m := openQuestion(t, f, e)
 		m.openDetail(id)
+		for _, a := range at {
+			a(m)
+		}
 		press(m, "e")
 		if len(e.edits) != 0 || !strings.Contains(plain(m), want) {
 			t.Fatalf("%s: want %q, edits %v:\n%s", name, want, e.edits, plain(m))
@@ -253,12 +256,19 @@ func TestAnswerRefusals(t *testing.T) {
 		v.Source = other
 		f.res.Groups[0].Versions = append(f.res.Groups[0].Versions, v)
 	}, "Q-001", "2 checkouts are on branch feature, so which one to write is ambiguous")
-	refuse("resolved", func(_ fixture, f *fake, _ string) {
+	// e edits the record as it is now, in its current state (G-260928-y50a4).
+	refuse("timeline commit", func(fixture, *fake, string) {}, "Q-001", "e edits Q-001 as it is now, not a commit's copy or a diff",
+		func(m *Model) { m.asOf = "abcdef1" })
+	refuse("older", func(_ fixture, f *fake, _ string) {
 		for i := range f.res.Groups[0].Versions {
-			f.res.Groups[0].Versions[i].Record.Status = "resolved"
+			f.res.Groups[0].Versions[i].Older = "branch main changed it since"
 		}
-	}, "Q-001", "Q-001 is resolved; e answers an open question")
-	refuse("not a question", func(fixture, *fake, string) {}, "W-001", "e answers a question; W-001 is not one")
+	}, "Q-001", "Q-001 is shown at an older state, which e does not edit")
+	refuse("deleted", func(_ fixture, f *fake, _ string) {
+		for i := range f.res.Groups[0].Versions {
+			f.res.Groups[0].Versions[i].Record = nil
+		}
+	}, "Q-001", "Q-001 is deleted in its current state, so there is no file to edit")
 
 	_, f, _ := answerFixture(t)
 	e := &editor{write: "Blue.\n", answer: errors.New("Q-001 changed since the expected revision")}
@@ -267,6 +277,44 @@ func TestAnswerRefusals(t *testing.T) {
 	deliverAll(m, press(m, "y"))
 	if s := plain(m); !strings.Contains(s, "NOT DONE: Q-001 changed since the expected revision") || strings.Contains(s, "next: R") {
 		t.Fatalf("a refused resolve:\n%s", s)
+	}
+}
+
+// e on any other record, a resolved question included, opens its file in
+// its checkout without the Answer heading or the resolve prompt; the board
+// re-reads, says the file changed, and the edit stays uncommitted
+// (G-260928-y50a4).
+func TestEditAnyRecord(t *testing.T) {
+	t.Parallel()
+	for _, id := range []string{"W-001", "Q-001"} {
+		fx, f, path := answerFixture(t)
+		text := question
+		if id == "W-001" {
+			text = "---\nid: W-001\ntype: work\nstatus: active\n---\n\nBody.\n"
+			path = filepath.Join(fx.feat.Worktree, "grove", "work", "W-001.md")
+			os.MkdirAll(filepath.Dir(path), 0o755)
+			os.WriteFile(path, []byte(text), 0o644)
+		}
+		for i := range f.res.Groups {
+			for j := range f.res.Groups[i].Versions {
+				v := &f.res.Groups[i].Versions[j]
+				if v.Record.ID == id {
+					v.Record.Source, v.Revision, v.Record.Status = []byte(text), project.Revision([]byte(text)), map[string]string{"W-001": "active", "Q-001": "resolved"}[id]
+				}
+			}
+		}
+		e := &editor{write: "More.\n"}
+		m := openQuestion(t, f, e)
+		m.openDetail(id)
+		read := f.inspects
+		deliverAll(m, press(m, "e"))
+		if len(e.edits) != 1 || e.edits[0] != path || m.prompt != nil || len(e.answers) != 0 || f.inspects != read+1 {
+			t.Fatalf("%s: edits %v prompt %v answers %v reads %d", id, e.edits, m.prompt != nil, e.answers, f.inspects-read)
+		}
+		fileIs(t, path, text+"More.\n")
+		if want := id + " changed in " + fx.feat.Worktree + "; it is uncommitted there, yours to commit"; m.notice != want {
+			t.Fatalf("%s: the board says the file changed: %q", id, m.notice)
+		}
 	}
 }
 

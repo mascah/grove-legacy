@@ -125,7 +125,7 @@ func (m *Model) detailKey(k string) tea.Cmd {
 			next = -1
 		}
 		m.side = next
-	case "up", "k", "down", "j", "pgup", "pgdown":
+	case "up", "k", "down", "j", "pgup", "pgdown", "home", "end", "ctrl+u", "ctrl+d":
 		if m.side < 0 {
 			m.dscroll = m.moved(m.dscroll, k)
 			m.clampScroll()
@@ -172,12 +172,13 @@ func (m *Model) detailKey(k string) tea.Cmd {
 	case "m":
 		m.resolveConflict()
 	case "e":
-		return m.answer()
+		return m.edit()
 	}
 	return nil
 }
 
-// moved applies a movement key to a position.
+// moved applies a movement key to a position: a row, a page, half a page
+// (Ctrl-u, Ctrl-d), or the top and the bottom, which the caller clamps.
 func (m *Model) moved(at int, k string) int {
 	page := max(m.height-6, 1)
 	switch k {
@@ -187,6 +188,14 @@ func (m *Model) moved(at int, k string) int {
 		return at + 1
 	case "pgup":
 		return at - page
+	case "ctrl+u":
+		return at - max(page/2, 1)
+	case "ctrl+d":
+		return at + max(page/2, 1)
+	case "home":
+		return 0
+	case "end":
+		return 1 << 30
 	}
 	return at + page
 }

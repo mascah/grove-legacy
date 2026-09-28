@@ -764,8 +764,41 @@ def dependencies(root, wt, base):
 dependencies.mutates = True  # the second record's commit changes the repository on purpose
 
 
+def edit_record(root, wt, base):
+    """e on a work record's detail suspends the board for the owner's editor on its file in the checkout of its branch, resumes, re-reads, and leaves the edit uncommitted there (G-260928-y50a4)."""
+    tools = os.path.join(base, "tools-edit")
+    os.makedirs(tools)
+    editor, edits = os.path.join(tools, "editor"), os.path.join(tools, "edits")
+    with open(editor, "w") as f:
+        f.write(f"#!/bin/sh\n[ -t 0 ] && [ -t 1 ] || exit 3\necho \"$1\" >> '{edits}'\necho EDITOR-RAN\nprintf 'Edited.\\n' >> \"$1\"\n")
+    os.chmod(editor, 0o755)
+    s = Session(root, env=clean_env(VISUAL=editor))
+    s.expect("Board: current view")
+    s.expect("First on feature")
+    s.send(b"l" + ENTER)  # the card is Active, its current state on feature
+    mark = s.expect("e edit")
+    s.send(b"e")
+    mark = s.expect("EDITOR-RAN", mark)
+    s.expect("G-260101-00001 changed in ", mark)  # the banner clips the path; the checks below name it
+    s.expect("uncommitted", mark)  # the re-read detail
+    s.send(b"q")
+    code, out = s.finish()
+    s.restored()
+    check(code == 0 and out == b"", f"exit {code}, stdout {out!r}")
+    path = os.path.join(wt, "grove", "work", "G-260101-00001-first.md")
+    with open(edits) as f:
+        check(f.read() == path + "\n", f"the editor ran on {open(edits).read()!r}, want {path}")
+    with open(path) as f:
+        check(f.read() == WORK.format(title="First on feature", status="active") + "Edited.\n", "the edit is the editor's alone")
+    status = subprocess.run([GIT, "-C", wt, "status", "--porcelain"], check=True, capture_output=True, env=clean_env()).stdout.decode()
+    check(status == " M grove/work/G-260101-00001-first.md\n", f"the edit stays uncommitted: {status!r}")
+
+
+edit_record.mutates = True  # the editor's edit changes a record on purpose
+
+
 SCENARIOS = [select_and_show, leave_without_selecting, refuses_without_terminal, blocked_git, hangup, output_failure, resize, focus_rereads, writes_no_logs, review_and_integrate,
-             attempt_lifecycle, dependencies]
+             attempt_lifecycle, dependencies, edit_record]
 
 
 def main():

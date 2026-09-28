@@ -577,16 +577,11 @@ func (m *Model) openAttempt(id string) {
 func (m *Model) attemptsKey(k string) tea.Cmd {
 	list, _, at := m.listed()
 	switch k {
-	case "up", "k", "down", "j":
+	case "up", "k", "down", "j", "home", "end", "ctrl+u", "ctrl+d":
 		if len(list) == 0 {
 			return nil
 		}
-		if k == "up" || k == "k" {
-			at--
-		} else {
-			at++
-		}
-		m.listAt = list[min(max(at, 0), len(list)-1)].Launch.Attempt
+		m.listAt = list[min(max(m.moved(at, k), 0), len(list)-1)].Launch.Attempt
 	case "enter":
 		if at >= 0 {
 			m.openAttempt(list[at].Launch.Attempt)
@@ -623,6 +618,11 @@ func (m *Model) attemptKey(k string) tea.Cmd {
 		}
 	case "d":
 		m.facts = !m.facts
+		m.clampScroll()
+	case "w":
+		// The report alone takes the width, so a mouse selection of it takes
+		// no activity text (G-260928-y50a4).
+		m.reportAlone = !m.reportAlone
 		m.clampScroll()
 	default:
 		m.scrollKey(k)
@@ -993,6 +993,10 @@ func (m *Model) attemptRows(w int) []string {
 			}
 		}
 		return out
+	}
+	if m.reportAlone {
+		rows = append(rows, report(w)...)
+		return append(rows, blank, faint.Render(line(fmt.Sprintf("Activity hidden (%d) · w shows it", len(a.Entries)), w)))
 	}
 	if w < wideWidth {
 		rows = append(rows, report(w)...)

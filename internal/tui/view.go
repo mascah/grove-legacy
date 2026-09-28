@@ -220,6 +220,10 @@ func (m *Model) render() string {
 	if w >= wideWidth {
 		side, sideKey = "w sidebar   ", "w sidebar  "
 	}
+	edit, editKey, editShort := "", "", "" // e opens any record in the owner's editor
+	if m.backend.Edit != nil {
+		edit, editKey, editShort = "e edit   ", "e edit  ", "e  "
+	}
 	switch {
 	case m.res == nil:
 		rows, hints = m.emptyBody(w), "r retry   q quit"
@@ -236,14 +240,14 @@ func (m *Model) render() string {
 			}
 		}
 		rows, hints = m.detailBody(w, body), pick(w,
-			"↑/↓ PgUp/PgDn scroll or move   Tab pane   Enter open   "+run+"A attempts   "+judge+side+"v versions   s   r   Esc back   q quit",
-			"↑↓ PgUp/PgDn  Tab pane  Enter open  "+run+"A attempts  "+keys+sideKey+"v  Esc  q",
-			"↑↓  Tab  Enter  "+runKey+"A  "+keys+"v  Esc  q quit")
+			"↑/↓ PgUp/PgDn scroll or move   Tab pane   Enter open   "+run+"A attempts   "+judge+edit+side+"v versions   s   r   Esc back   q quit",
+			"↑↓ PgUp/PgDn  Tab pane  Enter open  "+run+"A attempts  "+keys+editKey+sideKey+"v  Esc  q",
+			"↑↓  Tab  Enter  "+runKey+"A  "+keys+editShort+"v  Esc  q quit")
 	case m.screen == detailScreen && m.group() != nil && m.reviewable():
 		rows, hints = m.detailBody(w, body), pick(w,
-			"↑/↓ PgUp/PgDn scroll or move   Tab pane   Enter open   a approve   f feedback   i integrate   "+side+"v versions   s   r   Esc back   q quit",
-			"↑↓ PgUp/PgDn  Tab pane  Enter open  a approve  f feedback  i integrate  "+sideKey+"v  Esc  q",
-			"↑↓  Tab  Enter  a  f  i  v  Esc  q quit")
+			"↑/↓ PgUp/PgDn scroll or move   Tab pane   Enter open   a approve   f feedback   i integrate   "+edit+side+"v versions   s   r   Esc back   q quit",
+			"↑↓ PgUp/PgDn  Tab pane  Enter open  a approve  f feedback  i integrate  "+editKey+sideKey+"v  Esc  q",
+			"↑↓  Tab  Enter  a  f  i  "+editShort+"v  Esc  q quit")
 	case m.screen == detailScreen && m.group() != nil && m.backend.Edit != nil && m.openRecord() != nil && m.openRecord().Type == "question" && m.openRecord().Status == "open":
 		rows, hints = m.detailBody(w, body), pick(w,
 			"↑/↓ PgUp/PgDn scroll or move   Tab pane   Enter open   e answer in your editor   "+side+"v versions   s   r   Esc back   q quit",
@@ -251,9 +255,9 @@ func (m *Model) render() string {
 			"↑↓  Tab  Enter  e answer  v  Esc  q quit")
 	case m.screen == detailScreen && m.group() != nil:
 		rows, hints = m.detailBody(w, body), pick(w,
-			"↑/↓ PgUp/PgDn scroll or move   Tab content, linked, changes, timeline   Enter open   "+side+"v versions and places   s sources   r refresh   Esc back   q quit",
-			"↑↓ PgUp/PgDn  Tab pane  Enter open  "+sideKey+"v versions  s  r  Esc back  q quit",
-			"↑↓  Tab  Enter open  v  Esc back  q quit")
+			"↑/↓ PgUp/PgDn scroll or move   Tab content, linked, changes, timeline   Enter open   "+edit+side+"v versions and places   s sources   r refresh   Esc back   q quit",
+			"↑↓ PgUp/PgDn  Tab pane  Enter open  "+editKey+sideKey+"v versions  s  r  Esc back  q quit",
+			"↑↓  Tab  Enter open  "+editShort+"v  Esc back  q quit")
 	case m.screen == resultScreen && m.result != nil:
 		rows, hints = m.scrolled(m.resultRows(w), body, w), pick(w, "↑/↓ PgUp/PgDn scroll   Esc back to the record   q quit", "↑↓ scroll  Esc back  q quit")
 		if m.pending == "inspect" {
@@ -295,9 +299,11 @@ func (m *Model) render() string {
 		if v := m.attemptOf(m.runID); v != nil && m.waits(v) {
 			answer, key = "e answer the question   ", "e answer  "
 		}
+		alone := map[bool]string{false: "w report alone", true: "w activity"}[m.reportAlone]
 		rows, hints = m.scrolled(m.attemptRows(w), body, w), pick(w,
-			"↑/↓ PgUp/PgDn scroll   "+answer+"d details   x stop it   o open its record   r refresh   Esc back   q quit",
-			"↑↓ scroll  "+key+"d details  x stop  o work  Esc back  q quit")
+			"↑/↓ PgUp/PgDn scroll   "+answer+"d details   "+alone+"   x stop it   o open its record   r refresh   Esc back   q quit",
+			"↑↓ scroll  "+key+"d details  "+alone+"  x stop  o work  Esc back  q quit",
+			"↑↓  "+key+"d  w  x  o  Esc  q quit")
 	default:
 		shelf := "elsewhere"
 		if m.current() {

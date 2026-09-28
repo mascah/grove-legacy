@@ -359,3 +359,36 @@ func TestHidingTheSidebar(t *testing.T) {
 		t.Fatal("below 100 columns w changes nothing")
 	}
 }
+
+// gg and G reach the top and the bottom of a detail and the dependency
+// list, and Ctrl-d and Ctrl-u move half a page (G-260928-y50a4).
+func TestVimPagingKeys(t *testing.T) {
+	t.Parallel()
+	m := openReview(t, reviewFixture(newFixture(), false), 120, 30)
+	press(m, "G")
+	end := m.dscroll
+	if press(m, "g", "g"); end == 0 || m.dscroll != 0 {
+		t.Fatalf("G reaches the end (%d), gg the top (%d)", end, m.dscroll)
+	}
+	half := (m.height - 6) / 2
+	if press(m, "ctrl+d"); m.dscroll != half {
+		t.Fatalf("Ctrl-d moves half a page: %d, want %d", m.dscroll, half)
+	}
+	if press(m, "ctrl+u"); m.dscroll != 0 {
+		t.Fatalf("Ctrl-u moves back: %d", m.dscroll)
+	}
+	if press(m, "g", "j"); m.dscroll != 1 || m.gg {
+		t.Fatal("a g followed by another key is nothing")
+	}
+
+	m, _, _ = openDeps(t, 120, 40)
+	v, _ := m.depsOverview()
+	rows, _ := depsRows(v)
+	press(m, "G")
+	if last := rows[len(rows)-1].ID; m.depsAt != last {
+		t.Fatalf("G reaches the last row %s, not %s", last, m.depsAt)
+	}
+	if press(m, "g", "g"); m.depsAt != rows[0].ID {
+		t.Fatalf("gg reaches the first row %s, not %s", rows[0].ID, m.depsAt)
+	}
+}

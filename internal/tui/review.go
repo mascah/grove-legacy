@@ -234,7 +234,7 @@ func (m *Model) judgeRoot(g *versions.Group, v *versions.Version) (root, branch,
 func (m *Model) checkoutOf(g *versions.Group, v *versions.Version, doing string) (lv *versions.Version, branch, why string) {
 	judging := doing == "judging"
 	if v == nil || v.Record == nil {
-		return nil, "", "the current state holds no record to " + map[bool]string{true: "judge", false: "answer"}[judging]
+		return nil, "", "the current state holds no record to " + map[string]string{"judging": "judge", "answering": "answer", "editing": "edit"}[doing]
 	}
 	branch = branchOf(v)
 	if branch == "" {

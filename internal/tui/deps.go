@@ -144,7 +144,7 @@ func (m *Model) depsKey(k string) tea.Cmd {
 	rows, size := depsRows(v)
 	at := m.depsFocus(rows)
 	switch k {
-	case "up", "k", "down", "j", "pgup", "pgdown":
+	case "up", "k", "down", "j", "pgup", "pgdown", "home", "end", "ctrl+u", "ctrl+d":
 		switch {
 		case len(rows) == 0:
 		case m.depsTree: // the trees have focus: scroll them

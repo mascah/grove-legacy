@@ -19,12 +19,13 @@ import (
 	"github.com/mascah/grove/internal/update"
 )
 
-// Answering a question (G-260924-wp2pe): e on an open question's detail, or on an
-// attempt waiting on one, suspends the board for the owner's editor on the
-// question's file in the checkout holding the shown version; on return it
-// offers to resolve the question and commit it there. The board writes only
-// an Answer heading, which it takes back if the editor leaves it unused, and
-// the one update behind the prompt.
+// Editing a record (G-260924-wp2pe, G-260928-y50a4): e on a record's detail, or on an
+// attempt waiting on a question, suspends the board for the owner's editor on
+// the record's file in the checkout holding the shown version. For an open
+// question it then offers to resolve it and commit it there; the board
+// writes only an Answer heading, which it takes back if the editor leaves it
+// unused, and the one update behind the prompt. Any other record's edit
+// stays uncommitted in that checkout, the owner's to commit.
 
 // editing is an edit the editor has: where, and the file's bytes as read and
 // as handed over.
@@ -32,6 +33,7 @@ type editing struct {
 	id, root, branch, path string
 	before, given          []byte
 	earlier                bool // the file already held an uncommitted edit
+	answer                 bool // an open question: the Answer heading and the resolve prompt
 }
 
 // editedMsg is the editor's exit.
@@ -39,23 +41,27 @@ type editedMsg struct{ err error }
 
 var answerHeading = regexp.MustCompile(`(?m)^##[ \t]+Answer[ \t]*\r?$`)
 
-// answer opens the open question the detail shows in the owner's editor, or
-// says why it cannot. The file must be what the board read.
-func (m *Model) answer() tea.Cmd {
+// edit opens the record the detail shows in the owner's editor, or says why
+// it cannot. The file must be what the board read, as it is now.
+func (m *Model) edit() tea.Cmd {
 	g := m.group()
 	if m.backend.Edit == nil || g == nil {
 		return nil
 	}
 	v := m.shown(g)
 	switch {
-	case v == nil || v.Record == nil || v.Record.Type != "question":
-		m.alert = "e answers a question; " + g.ID + " is not one"
+	case m.asOf != "" || m.diff != "":
+		m.alert = "e edits " + g.ID + " as it is now, not a commit's copy or a diff; Esc returns to it; nothing was written"
 		return nil
-	case v.Record.Status != "open":
-		m.alert = g.ID + " is " + v.Record.Status + "; e answers an open question"
+	case v == nil || v.Record == nil:
+		m.alert = g.ID + " is deleted in its current state, so there is no file to edit; nothing was written"
+		return nil
+	case v.Older != "":
+		m.alert = g.ID + " is shown at an older state, which e does not edit; nothing was written"
 		return nil
 	}
-	lv, branch, why := m.checkoutOf(g, v, "answering")
+	question := v.Record.Type == "question" && v.Record.Status == "open"
+	lv, branch, why := m.checkoutOf(g, v, map[bool]string{true: "answering", false: "editing"}[question])
 	if why != "" {
 		m.alert = why + "; nothing was written"
 		return nil
@@ -72,14 +78,14 @@ func (m *Model) answer() tea.Cmd {
 		return nil
 	}
 	given := before
-	if !answerHeading.Match(before) {
+	if question && !answerHeading.Match(before) {
 		// ponytail: written without the write lock, like the editor's own
 		// save; only an update of this file in this instant could interleave.
 		if given = withHeading(before); os.WriteFile(path, given, 0o644) != nil {
 			given = before // the editor still opens; the answer finds its own place
 		}
 	}
-	m.editing = &editing{g.ID, root, branch, path, before, given, lv.Change != "unchanged"}
+	m.editing = &editing{g.ID, root, branch, path, before, given, lv.Change != "unchanged", question}
 	return m.backend.Edit(path, func(err error) tea.Msg { return editedMsg{err} })
 }
 
@@ -116,6 +122,23 @@ func (m *Model) edited(msg editedMsg) tea.Cmd {
 		after = e.before // what an earlier edit's resolve expects
 	}
 	kept := "; nothing was committed, and the edit stays uncommitted in " + e.root
+	if !e.answer {
+		switch {
+		case msg.err != nil && unused:
+			m.alert = "the editor failed (" + msg.err.Error() + "); nothing was written"
+			return nil
+		case msg.err != nil:
+			m.alert = "the editor failed (" + msg.err.Error() + ")" + kept
+		case err != nil:
+			m.alert = err.Error() + "; nothing was committed"
+		case unused:
+			m.notice = "no change was saved to " + e.id + "; nothing was written"
+			return nil
+		default:
+			m.notice = e.id + " changed in " + e.root + "; it is uncommitted there, yours to commit"
+		}
+		return m.refresh()
+	}
 	switch {
 	case msg.err != nil && unused:
 		m.alert = "the editor failed (" + msg.err.Error() + "); nothing was written"
@@ -166,7 +189,7 @@ func (m *Model) answerFor(v *attempt.View) tea.Cmd {
 	if m.openWork(q); m.openID() != q {
 		return nil // openWork said why
 	}
-	return m.answer()
+	return m.edit()
 }
 
 // answerRow is an open question's header row: where e writes, or why not.

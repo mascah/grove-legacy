@@ -600,6 +600,20 @@ func TestAttemptActivityIsBounded(t *testing.T) {
 		if s := plain(m); !strings.Contains(s, "earlier events are in") {
 			t.Fatalf("width %d: the end says where the rest is:\n%s", w, s)
 		}
+		// w leaves the report alone, with no activity text to select beside
+		// or below it; G and gg reach its end and its top (G-260928-y50a4).
+		press(m, "w", "G")
+		for _, row := range strings.Split(m.render(), "\n") {
+			if ansi.StringWidth(row) != w {
+				t.Fatalf("width %d, report alone: a row of %d cells: %q", w, ansi.StringWidth(row), ansi.Strip(row))
+			}
+		}
+		if s := plain(m); strings.Contains(s, "Bash") || !strings.Contains(s, "Activity hidden (200) · w shows it") {
+			t.Fatalf("width %d: w hides the activity:\n%s", w, s)
+		}
+		if press(m, "g", "g"); m.scroll != 0 {
+			t.Fatalf("width %d: gg reaches the top, not %d", w, m.scroll)
+		}
 		press(m, "esc")
 		if m.screen != boardScreen {
 			t.Fatal("Esc leaves")

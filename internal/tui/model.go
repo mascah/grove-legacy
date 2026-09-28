@@ -278,6 +278,7 @@ type Model struct {
 	detail       bool     // the detail pane has focus
 	scroll       int      // detail pane, or sources screen
 	choice       int      // chooser row
+	gg           bool     // g was pressed where a second g goes to the top
 	refusal      string
 
 	// Attempts, read apart from the Git reads: every attempt, and the one
@@ -293,6 +294,7 @@ type Model struct {
 	run             *attempt.View
 	activity        attempt.Activity
 	facts           bool             // the attempt screen shows its details
+	reportAlone     bool             // w hid the attempt screen's activity, for the session
 	clock           func() time.Time // now, for how long attempts have run
 	listBack        screen           // where Esc leaves the attempts screen for
 	runBack         screen           // and the attempt screen
@@ -698,6 +700,18 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 
 func (m *Model) key(k string) tea.Cmd {
 	m.notice = ""
+	// Vim's gg and G go to the top and the bottom wherever j and k move but
+	// on the board, whose g opens the dependencies (G-260928-y50a4).
+	switch {
+	case k == "g" && m.screen != boardScreen && !m.gg:
+		m.gg = true
+		return nil
+	case k == "g" && m.screen != boardScreen:
+		k = "home"
+	case k == "G":
+		k = "end"
+	}
+	m.gg = false
 	switch k {
 	case "ctrl+c":
 		m.stop()
@@ -868,14 +882,11 @@ func (m *Model) versionsKey(k string) tea.Cmd {
 		m.detail = !m.detail
 	case "pgup", "pgdown":
 		m.scrollKey(k)
-	case "up", "k", "down", "j":
-		switch {
-		case m.detail:
+	case "up", "k", "down", "j", "home", "end", "ctrl+u", "ctrl+d":
+		if m.detail {
 			m.scrollKey(k)
-		case k == "up" || k == "k":
-			move(at - 1)
-		default:
-			move(at + 1)
+		} else {
+			move(max(m.moved(at+1, k), 0) - 1) // the ID header is the top
 		}
 	case "enter":
 		switch {
@@ -905,10 +916,8 @@ func (m *Model) versionsKey(k string) tea.Cmd {
 func (m *Model) chooserKey(k string) {
 	live := m.live()
 	switch k {
-	case "up", "k":
-		m.choice = max(m.choice-1, 0)
-	case "down", "j":
-		m.choice = min(m.choice+1, len(live)) // the current view comes first
+	case "up", "k", "down", "j", "home", "end", "ctrl+u", "ctrl+d":
+		m.choice = min(max(m.moved(m.choice, k), 0), len(live)) // the current view comes first
 	case "enter":
 		// Choosing a context changes what the board displays. It switches no
 		// branch and no directory.
@@ -934,16 +943,9 @@ func (m *Model) chooserKey(k string) {
 }
 
 func (m *Model) scrollKey(k string) {
-	page := max(m.height-6, 1)
 	switch k {
-	case "up", "k":
-		m.scroll--
-	case "down", "j":
-		m.scroll++
-	case "pgup":
-		m.scroll -= page
-	case "pgdown":
-		m.scroll += page
+	case "up", "k", "down", "j", "pgup", "pgdown", "home", "end", "ctrl+u", "ctrl+d":
+		m.scroll = max(m.moved(m.scroll, k), 0)
 	}
 	m.clampScroll()
 }

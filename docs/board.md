@@ -98,7 +98,8 @@ Tab cycles them. From 100 columns `w` hides the sidebar so the content takes
 the width and a mouse selection takes no sidebar text, with Tab cycling as
 below 100 columns; `w` shows it again, and the choice lasts for the session.
 A page, term, decision, question, plan or review opens in the same screen,
-with the fields its type has.
+with the fields its type has. `e` on any record's detail opens its file in
+the owner's editor ([Editing a record](#editing-a-record)).
 
 ## Judging a candidate
 
@@ -223,7 +224,11 @@ outcome in a sentence with why it is settled, and `Next`, the keys that act
 on it. `d` shows or hides the details: the facts `attempt` prints, the raw
 `events.jsonl` and `stderr` paths included. Last come the provider's final
 report, rendered like a record body, and the activity, newest first. From
-100 columns they sit side by side, the report on the left. Each activity row
+100 columns they sit side by side, the report on the left, and below 100
+the report comes first. `w` hides the activity, so the report takes the
+width and a mouse selection of it takes no activity text, for the session;
+`w` shows it again
+([G-260928-y50a4](../grove/G-260928-y50a4-edit-any-record-in-your.md)). Each activity row
 has the event's local time where the provider gave one, and consecutive
 identical rows are one row with a count, such as `system: thinking_tokens
 (×14)`.
@@ -287,8 +292,23 @@ the resolve again, saved or not. The attempt then shows `question answered:
 R again`, which is read from the question's `updated`, as `update` sets it: a
 status changed by hand without it leaves the attempt `ended without a
 handoff`, and a later update of an answered question can mark a later attempt
-answered too. Only questions are edited, and only in the owner's editor; the
-board has no text editing of its own.
+answered too.
+
+## Editing a record
+
+`e` on the detail of any other record, a work item, term, decision, plan,
+review, page or resolved question, opens its file in the owner's editor the
+same way, in the one checkout on the branch its current state stands on
+([G-260928-y50a4](../grove/G-260928-y50a4-edit-any-record-in-your.md)),
+with no `## Answer` heading and no prompt after. It is refused, writing
+nothing, where a question's answer is: no such checkout, two on the branch,
+or a file changed since the read; and also while the detail shows a
+timeline commit or a diff, for a current state that deletes the record,
+and for a state older than another. When the editor exits the board
+re-reads and says whether the file changed; an edit stays uncommitted in
+that checkout, its card marked `uncommitted`, for the owner to commit.
+Records are edited only in the owner's editor; the board has no text
+editing of its own.
 
 ## Timeline
 
@@ -349,8 +369,8 @@ reason until `r` refreshes, after which a version must be selected again. The
 details pane there begins with the focused version's history. Selecting never
 creates a worktree, edits a record, or starts an editor, shell, or agent;
 only `R` and `m` start an agent, behind their prompts, and only `e` starts the
-owner's editor, on an open question (see [Answering a
-question](#answering-a-question)).
+owner's editor, on the record the detail shows (see [Answering a
+question](#answering-a-question) and [Editing a record](#editing-a-record)).
 
 ## Dependencies
 
@@ -461,6 +481,8 @@ the row under the header until the next key.
 | Tab | versions | Switch between versions and details |
 | Enter | anywhere with a cursor | Open the card, record, file diff, commit, attempt or fold; in versions, select that checkout |
 | PgUp/PgDn | detail, versions, search, dependencies, one attempt, sources, result | Scroll |
+| `gg`, `G` | everywhere `j` `k` move but the board, whose `g` opens the dependencies | To the top, to the bottom |
+| Ctrl-u, Ctrl-d | everywhere `j` `k` move but the board | Half a page up, down |
 | `/` | board | Search every record |
 | `a` | board | Show or hide Abandoned |
 | `g` | board | Dependencies of the work it shows |
@@ -471,12 +493,14 @@ the row under the header until the next key.
 | `m` | detail of work in review that conflicts with the target | Resolve: feedback and one attempt to merge the target |
 | `R` | detail of proposed or active work | Launch an attempt |
 | `e` | detail of an open question; attempts list or one attempt waiting on a question | Answer it in your editor, then resolve and commit it on its branch |
+| `e` | detail of any other record | Edit its file in your editor, uncommitted in its branch's checkout |
 | `A` | board or any detail | List attempts: of that work, or every attempt |
 | `x` | attempts list or one attempt | Stop the attempt |
 | `o` | attempts list or one attempt | Open its work record |
 | `d` | one attempt | Show or hide its details |
 | `v` | detail | Open the record's versions |
 | `w` | detail, from 100 columns | Hide or show the sidebar |
+| `w` | one attempt | Hide or show the activity beside or below the report |
 | `b` | board, dependencies | Choose the current view or one checkout's board |
 | `s` | everywhere | List every branch and checkout read, with diagnostics; reachable while a banner marks an incomplete result |
 | `r` | everywhere | Re-read |
