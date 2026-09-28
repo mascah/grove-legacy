@@ -76,5 +76,40 @@ most 1.5 KB of framing for the same call.
 
 ## Next
 
-Waits for G-260927-jds8s, which sets what acceptance 4 spends. Once it is
-answered, assign `/grove-work G-260927-n4wvk`.
+No plan needed: the record's proposed design is the plan, and the change is
+one renderer (`internal/handoff/render.go`), its tests and one doc paragraph.
+
+**Checkpoint 2026-09-28, headless.** Waits on
+[G-260928-351t8](G-260928-351t8-which-gives-in-g-260927.md): acceptance 1's
+1.5 KB bound cannot hold with every fact printed (the facts alone are 1,568
+bytes for that call), so the owner chooses which gives.
+
+- Selected: G-260927-n4wvk. Branch `worktree-G-260927-n4wvk` in
+  `.claude/worktrees/worktree-G-260927-n4wvk`, base main `38511c1`, record
+  revision `sha256:ed2eef20…` at start; G-260927-jds8s answered "reuse the
+  last config" (its option 1).
+- Done at `da457a6`: format 3 as the proposed design says. Records header
+  one line; an included record's path and revision printed only on its
+  source line; `Source: PATH  REVISION  (REASONS)` on one line; links
+  grouped under `in FROM:`, each `TARGET = PATH  WORD` with one legend line;
+  the scope notice two sentences in the text (`scopeText`), the JSON
+  `scope_notice` and link `reason` untouched; both guard sentences kept.
+  `docs/commands.md` "Context" describes format 3. The work guide's
+  mention of `context` output names no format and stays accurate, so it is
+  unchanged. `evals/run.py` scores the commands an agent invoked, never
+  `context` output (checked, lines 325-373), so it needs no change.
+- Evidence at `da457a6`: `grove context G-260927-ngkbz --project` main
+  printed 13,556 bytes in format 2 and 11,980 in format 3, source 9,514:
+  framing 4,042 → 2,466. `--json` diff old/new for G-260927-ngkbz and
+  G-260927-n4wvk: only `format_version` 2 → 3. New test
+  `TestTextPrintsEveryFact` asserts every format-2 fact and both guard
+  sentences. `go vet ./...`, `gofmt -l .` (empty), `grove check` (OK: 216
+  records) and `go test -count=1 -timeout 120s ./...` all passed.
+- Pending: acceptance 1 (the answer to G-260928-351t8; option 1 needs no
+  code change), acceptance 4 (the G-260925-pbx81 `with` rerun under
+  G-260927-jds8s, not started because the format it measures depends on the
+  answer), independent review, handoff, and acceptance 5 (owner).
+- Commands owned: none.
+
+Resume: once G-260928-351t8 is resolved, assign
+`/grove-work G-260927-n4wvk --interaction headless`.
