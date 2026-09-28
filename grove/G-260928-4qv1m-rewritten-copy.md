@@ -4,11 +4,12 @@ type: work
 title: "Say when a diverging state is a rewritten copy already on the target, and how to clear it"
 status: review
 created: "2026-09-28T16:36:30Z"
-updated: "2026-09-28T17:37:26Z"
+updated: "2026-09-28T17:49:47Z"
 kind: feature
 size: medium
 relates_to: ["G-260921-ms6ev", "G-260921-jwk4e", "G-260925-h8rj5", "G-260925-dz10z", "G-260920-svpbc"]
 candidate: "b107ba0e0893f9a81f126714971b0a3c7b97254f"
+approved: "b107ba0e0893f9a81f126714971b0a3c7b97254f"
 ---
 
 ## Outcome
@@ -263,3 +264,5 @@ Judge the candidate this record names, and acceptance 7 in a terminal
 against the ascah.dev shape. In this checkout:
 `grove approve G-260928-4qv1m "VERDICT"`; then, in main's checkout,
 `grove integrate G-260928-4qv1m`.
+
+Verdict on candidate b107ba0, 2026-09-28: approved
