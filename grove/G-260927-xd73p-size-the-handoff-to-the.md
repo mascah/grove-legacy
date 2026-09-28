@@ -78,7 +78,37 @@ the closing line goes when no review record is written. A record without
 3. The shipped-document checks pass; `docs/work-review.md` and
    `docs/commands.md` need no change, or are reconciled.
 
+## Evidence
+
+Compact handoff (`size: small`). Branch `worktree-G-260927-xd73p`, base
+`bb39668`; implementation `1539e3e` and `a75fa09`; the candidate is the
+commit adding this Evidence. No plan needed: the design above is the plan.
+
+1. Step 8 of the work guide names a full and a compact shape: compact for
+   `size: small` or a Next that asks, full otherwise; the step 6 review, the
+   candidate discipline and "never writes done" never shrink. The record
+   model's Review paragraph still holds; its `size` lines and "Not enforced
+   by software" list were reconciled.
+2. Not judgeable in this attempt: it needs a later `grove run` of a
+   `size: small` record on a target holding this change.
+3. `grove check`, `go test ./` and `./internal/cli` pass; the added lines
+   hold no link, record ID or path. `docs/work-review.md` and
+   `docs/commands.md` need no change.
+
+Decision beyond the proposed design: a compact handoff still writes a review
+record where `policy:` delegates approval, since `grove sweep` reads the
+closing line only from one; this repository's policy does, hence
+[G-260928-b4aat](G-260928-b4aat-review-of-g-260927-xd73p.md). Compact also
+keeps a line per limit and the examined commit (review round 1).
+
+Verification at `a75fa09`: `gofmt -l .` empty, `go vet ./...` ok,
+`go run ./cmd/grove check` OK 219 records, `go test -count=1 -timeout 120s
+./...` all ok. Review: two rounds, 3 findings fixed, `Open findings: none`.
+
 ## Next
 
-Waits for G-260927-cg6rt to be delivered (`grove deps G-260927-xd73p` shows
-it); then assign `/grove-work G-260927-xd73p`.
+In review. Judge from this checkout, then integrate from the target's:
+`go run ./cmd/grove approve G-260927-xd73p "VERDICT"`, then
+`go run ./cmd/grove integrate G-260927-xd73p`. After integration, judge
+acceptance 2 on the next `size: small` attempt against G-260927-ngkbz's 46
+turns, $2.99 and 10 minutes.
