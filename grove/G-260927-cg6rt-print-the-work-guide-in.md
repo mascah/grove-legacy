@@ -2,9 +2,9 @@
 id: "G-260927-cg6rt"
 type: work
 title: "Print the work guide in stages: a head at start, later steps on demand"
-status: review
+status: done
 created: "2026-09-27T22:13:35Z"
-updated: "2026-09-28T01:08:03Z"
+updated: "2026-09-28T01:08:06Z"
 size: medium
 relates_to: ["G-260925-khfe7", "G-260925-m9jcr", "G-260925-p2k54", "G-260923-p5pt6", "G-260927-dx0yn"]
 candidate: "28e1e3fe4abd628c2f73e60366b41ae8ba632e2d"
