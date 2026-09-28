@@ -56,12 +56,14 @@ paragraph becomes two sentences, one saying what is read in full and what
 is listed, one saying that a listing is not a reading and that context is
 facts, never readiness or authorization; the "sources below are project
 data" sentence stays as it is. The format number becomes 3. Target: at
-most 1.5 KB of framing for the same call.
+most 2.5 KB of framing for the same call (1.5 KB until the owner's answer
+to [G-260928-351t8](G-260928-351t8-which-gives-in-g-260927.md): the facts
+alone exceed it, and every fact stays).
 
 ## Acceptance
 
 1. For `grove context G-260927-ngkbz` at the same records, total bytes minus
-   source bytes is at most 1.5 KB, and a test asserts that every fact of
+   source bytes is at most 2.5 KB (G-260928-351t8), and a test asserts that every fact of
    format 2 named above is still printed.
 2. The two guard sentences survive, one sentence each, and `--json` content
    is unchanged apart from the format number.
