@@ -28,7 +28,9 @@ none of whose committed current states is on it is marked `not on main`,
 unless it has a live attempt, which runs on a branch anyway; the header names
 the target. Where the current states diverge, one card sits
 in the earliest of their statuses, marked `⑂ 2 states`, and its detail says
-which states exist and where. Work whose current state removes its record is
+which states exist and where, until one side takes the other's change, by a
+merge or an edit, or the branch holding one is deleted (see [Rewritten
+copies](#rewritten-copies)). Work whose current state removes its record is
 listed under Deleted. Done shows the most recently written cards that fit the
 column, newest first, and counts the rest (`+ 23 older · / to search`).
 Abandoned is hidden until `a` shows its column, and the shelf row counts it
@@ -290,6 +292,31 @@ key waits for a read still in progress. It says what happened on one branch
 and nothing about whether another branch contains it.
 [G-260920-svpbc](../grove/G-260920-svpbc-show-a-work-item-s-linea.md) owns this.
 
+## Rewritten copies
+
+Rewriting the target after a branch was integrated, as a rebase of `main`
+onto a remote does, gives the branch's commits new hashes there. The
+record's `done` on the target and its `review` on the kept branch then both
+changed since their merge base, so the card diverges and sits in Review,
+while its detail shows the target's `done`
+([G-260928-4qv1m](../grove/G-260928-4qv1m-rewritten-copy.md)). The current
+view keeps that divergence, since Git ancestry decides it, and explains it:
+opening such a card in the current view, where one state is on the target and
+another on a branch, compares each such branch with the target by patch
+(`git log --cherry-mark`), one read at a time, never while the board loads,
+and any key that starts another read, Esc, `r` and `q` cancel it. The
+sidebar's sources and the versions' divergence text then say either that the
+branch is a rewritten copy of work already on the target, so nothing needs
+merging, with the commands that clear it (`git worktree remove PATH` where a
+checkout is on the branch, which also deletes its ignored files, then `git
+branch -D BRANCH`, since `-d` checks ancestry and refuses), or, where only
+some of its commits have a copy, how many and which do not, with no delete
+command. A branch none of whose commits has a copy says nothing more. `a`,
+`f`, `i` and `m` on a card whose shown record is not in review but another
+current state is name that state's status and branch and point to `v`.
+[`integrate` and `resolve`](commands.md#judging-and-integrating) refuse a
+rewritten copy with the same explanation. Grove runs none of the commands.
+
 ## Versions and selecting a checkout
 
 `v` in a detail opens the record's versions. A version is the record's exact
@@ -405,7 +432,7 @@ hyperlinks, and a relative target is shown root-relative
 | Space, `c`, `p` | dependencies | Select or unselect the focused work; clear the selection; preview it |
 | `h` | dependencies | Show every work, or only unfinished work |
 | Tab | dependencies | Switch focus between the list and the focused trees |
-| `a`, `f`, `i` | detail of work in review | Approve, give feedback, integrate |
+| `a`, `f`, `i` | detail of work in review | Approve, give feedback, integrate; on a diverging card whose other state is in review, name its branch |
 | `m` | detail of work in review that conflicts with the target | Resolve: feedback and one attempt to merge the target |
 | `R` | detail of proposed or active work | Launch an attempt |
 | `e` | detail of an open question; attempts list or one attempt waiting on a question | Answer it in your editor, then resolve and commit it on its branch |

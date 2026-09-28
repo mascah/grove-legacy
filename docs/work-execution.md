@@ -550,6 +550,19 @@ disposition:
   same as `a`, `f` and `i`. A squash or rebase that lands another commit is a
   manual merge followed by `grove update G-260925-7k2qm --set status=done --set
   candidate=COMMIT --commit` on the target.
+- **A target rewritten after integration:** rewriting the target once work
+  is integrated, as a rebase onto a remote does, gives its commits new
+  hashes. A branch kept after the integration then diverges from the
+  target: its record in review, the target's done, the card in Review. Its
+  commits are rewritten copies of work the target already holds, so nothing
+  needs merging: the board's detail, `integrate` and `resolve` say so and
+  print the commands that clear it, `git worktree remove PATH` (which also
+  deletes that checkout's ignored files) and `git branch -D BRANCH`, which
+  Grove never runs. The done record still names the old candidate, so work
+  that depends on it waits; the wait names the copy and the repair, `grove
+  update G-260925-7k2qm --set candidate=COPY --commit` in the target's
+  checkout (with `--set approved=COPY` where it is approved) and a note
+  under the verdict, after which it is delivered.
 - **Rejection:** `status=abandoned`, with the decision and its reasons in the
   record or a decision record it links.
 - **Under a standing policy:** where the configuration holds a `policy:`,

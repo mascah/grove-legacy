@@ -68,6 +68,18 @@ worktree holds no ignored files. A squash or rebase that lands a different
 commit is a manual merge, followed by an `update` that names the landed
 commit as the candidate as it sets `done`.
 
+Before predicting a conflict, `integrate` compares the branch with the
+target by patch (`git log --cherry-mark`), and refuses a branch every commit
+of which the target lacks has a copy there with the same patch: a rewritten
+copy, as a rebase of the target after the branch was integrated leaves
+([G-260928-4qv1m](../grove/G-260928-4qv1m-rewritten-copy.md)). Nothing needs merging,
+and the refusal gives the commands that clear the branch, `git worktree
+remove PATH` where a checkout is on it, which also deletes that checkout's
+ignored files, then `git branch -D BRANCH`, since `-d` checks ancestry and
+refuses. A branch with a commit that has no copy, a merge included, is
+integrated as before. The board explains the same case on the card
+([Rewritten copies](board.md#rewritten-copies)).
+
 ## Versions
 
 `versions [ID] [--json]` shows one row per version of each record: its
@@ -235,7 +247,12 @@ work awaits implementation; a candidate in review or done says whether HEAD
 of this checkout and the target branch contain it, by Git ancestry, or that
 Git cannot read it here; done without a candidate says its delivery is
 unrecorded; abandoned work will not be delivered, and a note names the work
-that still needs it. A candidate in review also says what merging it into
+that still needs it. Done work whose candidate HEAD lacks, where HEAD holds
+exactly one commit with the same patch, a rewritten copy as after a rebase,
+names that copy in its delivery, and a note gives the repair: in the
+target's checkout, `grove update ID --set candidate=COPY --commit`, with
+`--set approved=COPY` where the record is approved, then a note under its
+verdict. The copy counts as delivered only once the record names it. A candidate in review also says what merging it into
 the target's current tip would do, performed with `git merge-tree` in
 objects only: `integrated`, a fast-forward, a clean merge although the
 target moved since the branch left it, or a conflict in named files, with
@@ -301,7 +318,10 @@ A member **waits**, and the agent does not start it, when an open question
 blocks it, when an outside prerequisite is not delivered at the base
 (proposed, active, review or abandoned, or done with a candidate the base
 lacks; done without a candidate is reported as unrecorded delivery), or when
-a selected prerequisite waits. One ID is a selection of one, so work whose
+a selected prerequisite waits. Where the base holds exactly one rewritten
+copy of such a candidate, the wait names it and the `update` that records
+it, as [`deps`](#dependencies) does; it still waits until the record names
+the copy. One ID is a selection of one, so work whose
 prerequisite is undelivered is refused too. Bounded by `--until plan`, only
 an open question stops a member: a plan needs its prerequisites named, not
 delivered. The agent implements the members one at a
@@ -442,6 +462,8 @@ Every refusal comes before the feedback is written:
 - the target is not named;
 - no branch, or several, hold the record in review;
 - no checkout is on that branch;
+- every commit of the branch that the target lacks has a copy there with
+  the same patch, a rewritten copy, which it explains as `integrate` does;
 - the candidate merges without a conflict;
 - an attempt of any member is running or orphaned;
 - no budget or permission mode is supplied;
