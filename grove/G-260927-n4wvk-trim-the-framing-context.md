@@ -2,9 +2,9 @@
 id: "G-260927-n4wvk"
 type: work
 title: "Trim the framing context prints to the facts a session acts on"
-status: proposed
+status: active
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-27T22:28:17Z"
+updated: "2026-09-28T00:45:19Z"
 size: small
 relates_to: ["G-260923-p5pt6", "G-260925-pbx81", "G-260925-khwkq", "G-260919-nddsf", "G-260922-08wxx"]
 ---
