@@ -4,10 +4,10 @@ type: work
 title: "Make CLI refusals name the rule they enforce, and shrink the record model to its contract"
 status: review
 created: "2026-09-27T22:13:35Z"
-updated: "2026-09-28T16:57:15Z"
+updated: "2026-09-28T16:57:28Z"
 size: medium
 relates_to: ["G-260919-shnj5", "G-260921-ebsby", "G-260925-khfe7"]
-candidate: "ecca7cf4754f0996e885593fd38545d0125bfbd0"
+candidate: "f2d9894"
 ---
 
 ## Outcome
@@ -194,7 +194,7 @@ findings: none`. Main has since moved to `fc5a095` (one record commit);
 
 ## Next
 
-In review at candidate `ecca7cf`, the merge of main `2633d8d`. Judge the
+In review: the merge of main `2633d8d` (`ecca7cf`) with its evidence. Judge the
 three refusals in Evidence (acceptance 4) and read `grove guide model`
 against acceptance 2. Then, in this checkout:
 `grove approve G-260927-fwcrr "VERDICT"`, and in the target's checkout:
