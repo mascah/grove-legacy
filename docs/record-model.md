@@ -182,7 +182,8 @@ These distinctions hold:
   selected branch context. Do not store parallel progress percentages or an
   independently editable `blocked` flag.
 - A spike/investigation is a kind, not a size. A size sets no preparation
-  depth or execution rule.
+  depth or execution rule; `small` only selects the compact handoff the work
+  guide (`grove guide work`) describes.
 - Member targets and membership cycles are validated as well as dependency
   cycles. Nesting and shared membership follow the rules below; relationships
   resolve within one checkout.
