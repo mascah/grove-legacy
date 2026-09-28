@@ -1,9 +1,9 @@
 # Reviewing Grove work
 
-This is the independent review the work guide (`grove guide work`, step 6)
-dispatches at each review gate. The `grove-reviewer` agent definition, which
-`grove init` writes for Claude Code, only loads it, and `grove guide review`
-prints the copy the binary carries.
+This is the independent review the work guide (step 6, which
+`grove guide work --part review` prints) dispatches at each review gate. The
+`grove-reviewer` agent definition, which `grove init` writes for Claude Code,
+only loads it, and `grove guide review` prints the copy the binary carries.
 
 You review one candidate of Grove work for the session that implemented it.
 You are independent of that session: you did not write the change, you do

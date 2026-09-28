@@ -28,7 +28,8 @@ Every other fact has one owner. Read it when the task needs it, not up front:
   validation and lifecycle (`grove guide model`).
 - [`docs/work-execution.md`](docs/work-execution.md) and
   [`docs/work-shaping.md`](docs/work-shaping.md): the two workflows
-  (`grove guide work`, `grove guide shape`).
+  (`grove guide work` prints the head, `--part NAME` each later step;
+  `grove guide shape`).
 - Records under `grove/`: each outcome, its acceptance, evidence and Next.
   [G-260921-czt8x](grove/G-260921-czt8x-identity-and-path-migrat.md) maps
   old typed IDs, three-digit `G-` IDs and paths to what they became.

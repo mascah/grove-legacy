@@ -88,7 +88,9 @@ Work runs `proposed`, `active`, `review`, `done`.
 
 `grove guide shape`, `grove guide work` and `grove guide review` print the
 workflows the skills load ([shaping](docs/work-shaping.md),
-[work](docs/work-execution.md), [review](docs/work-review.md)).
+[work](docs/work-execution.md), [review](docs/work-review.md)); `guide work`
+prints the work guide's head, and `--part NAME` each later step as it is
+reached.
 
 ## Commands
 
@@ -115,7 +117,7 @@ and start and stop attempts ([The board](docs/board.md)).
 | `context` | Assemble staged context for selected work | [Context](docs/commands.md#context), `grove guide work` |
 | `deps` | Show how unfinished work depends on other work, or preview a selection's order | [Dependencies](docs/commands.md#dependencies) |
 | `init` | Set up Grove in a Git checkout | [Init](docs/commands.md#init) |
-| `guide`, `version` | Print a workflow or review guide or the record model; name this build | [Version and guide](docs/commands.md#version-and-guide) |
+| `guide`, `version` | Print a workflow or review guide (the work guide's head, or one `--part`) or the record model; name this build | [Version and guide](docs/commands.md#version-and-guide) |
 
 ## Develop Grove
 
