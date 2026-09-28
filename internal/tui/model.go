@@ -239,7 +239,7 @@ type Model struct {
 	alert   string // a refused or failed action: shown in the attention style until Esc or an action succeeds
 
 	gen       int    // the newest request; older replies are ignored
-	pending   string // "", "inspect", "resolve", "history", "copies", "changes", "diff" or "act": one at a time
+	pending   string // "", "inspect", "resolve", "history", "copies", "changes", "diff", "preview", "predict" or "act": one at a time
 	resolving string // the exact selector a pending resolve was asked for
 	reading   string // the key a pending history, changes or diff read was asked for
 	acting    string // the running action, for the banner
@@ -248,6 +248,7 @@ type Model struct {
 	copies    map[string]copiesRead        // by target and branch commit, likewise
 	changes   map[string]changesRead       // by candidate, tip, target and path, likewise
 	diffs     map[string]diffRead          // by base, candidate and path, likewise
+	predicts  map[string]*versions.Merge   // a Review card's merge into the target by target tip and candidate, nil where none was made, likewise
 	md        map[string][]string          // rendered Markdown by key and width, for the current result only
 	mentions  map[string][]handoff.Mention // each record's links and code spans by revision and path, likewise
 	done      bool                         // the session is ending: start nothing more
@@ -366,7 +367,7 @@ func (m *Model) busy() bool {
 // showing, no other read is pending, and that history is not already held or
 // being read. The board never asks for one.
 func (m *Model) wantHistory() tea.Cmd {
-	if m.backend.History == nil || m.done || m.screen != versionsScreen && m.screen != detailScreen || m.pending != "" && m.pending != "history" {
+	if m.backend.History == nil || m.done || m.screen != versionsScreen && m.screen != detailScreen || !m.free("history") {
 		return nil
 	}
 	commit, path := historyAt(m.historyOf())
@@ -489,7 +490,7 @@ func (m *Model) rewrites(g *versions.Group) []rewrite {
 // wantCopies starts comparing the next such branch with the target, one at
 // a time, while its card is open; like history, the board never asks.
 func (m *Model) wantCopies() tea.Cmd {
-	if m.backend.Copies == nil || m.done || m.screen != versionsScreen && m.screen != detailScreen || m.pending != "" && m.pending != "copies" {
+	if m.backend.Copies == nil || m.done || m.screen != versionsScreen && m.screen != detailScreen || !m.free("copies") {
 		return nil
 	}
 	for _, r := range m.rewrites(m.group()) {
@@ -508,6 +509,12 @@ func (m *Model) wantCopies() tea.Cmd {
 		return cmd
 	}
 	return nil
+}
+
+// free reports that a read of kind may start: nothing is pending but that
+// kind, or the board's predictions, which yield to any other read.
+func (m *Model) free(kind string) bool {
+	return m.pending == "" || m.pending == kind || m.pending == "predict"
 }
 
 // stop cancels any read in flight and outdates its reply.
@@ -544,6 +551,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if cmd == nil {
 		cmd = m.wantPreview()
 	}
+	if cmd == nil {
+		cmd = m.wantPredict()
+	}
 	if read := m.wantAttempts(); read != nil {
 		cmd = tea.Batch(cmd, read)
 	}
@@ -561,7 +571,7 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 			return nil
 		}
 		m.pending, m.cancel, m.hist, m.copies, m.md, m.mentions, m.asOf = "", nil, map[string]lineage{}, map[string]copiesRead{}, nil, nil, ""
-		m.changes, m.diffs, m.diff = map[string]changesRead{}, map[string]diffRead{}, ""
+		m.changes, m.diffs, m.diff, m.predicts = map[string]changesRead{}, map[string]diffRead{}, "", map[string]*versions.Merge{}
 		m.preview, m.previewErr = nil, "" // computed again from what was read
 		if msg.err != nil {
 			m.res, m.failure = nil, msg.err.Error()
@@ -617,6 +627,12 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		m.clampScroll()
 	case previewMsg:
 		m.gotPreview(msg)
+	case predictMsg:
+		if msg.gen != m.gen || m.pending != "predict" {
+			return nil
+		}
+		m.pending, m.reading, m.cancel = "", "", nil
+		m.predicts[msg.key] = msg.merge
 	case attemptsMsg:
 		return m.gotAttempts(msg)
 	case editedMsg:
@@ -1057,7 +1073,7 @@ func (m *Model) cards() (columns [len(statuses)][]card, shelf []card) {
 	for i := range columns {
 		for j := range columns[i] {
 			if t := m.attemptTag(columns[i][j].id); t != "" {
-				columns[i][j].tag = strings.TrimSpace(t + " " + columns[i][j].tag)
+				columns[i][j].tag = strings.TrimSuffix(t+" · "+columns[i][j].tag, " · ")
 				columns[i][j].running = true
 			}
 		}
@@ -1065,7 +1081,7 @@ func (m *Model) cards() (columns [len(statuses)][]card, shelf []card) {
 	return
 }
 
-const doneColumn = 3
+const reviewColumn, doneColumn = 2, 3
 
 // newestFirst orders Done by when each record was last written, so the
 // bounded column shows the latest work: updated, then created, then the ID.
@@ -1102,6 +1118,27 @@ func (m *Model) visible() []int {
 // never lands on a cut card; search still reaches it.
 func (m *Model) bounded() (columns [len(statuses)][]card, shelf []card, older int) {
 	columns, shelf = m.cards()
+	// Review and Done lead with a predicted conflict, then who approved
+	// (G-260928-r1hkh): what a narrow card cuts last.
+	for _, i := range []int{reviewColumn, doneColumn} {
+		for j := range columns[i] {
+			c := &columns[i][j]
+			if c.rec == nil {
+				continue
+			}
+			conflict := ""
+			if i == reviewColumn {
+				conflict = m.conflictNote(c.rec)
+			}
+			var tags []string
+			for _, t := range []string{conflict, approval(c.rec), c.tag} {
+				if t != "" {
+					tags = append(tags, t)
+				}
+			}
+			c.tag = strings.Join(tags, " · ")
+		}
+	}
 	if per := m.pageSize(doneColumn); len(columns[doneColumn]) > per {
 		older = len(columns[doneColumn]) - per
 		columns[doneColumn] = columns[doneColumn][:per]
@@ -1167,7 +1204,7 @@ func (m *Model) currentCards() (columns [len(statuses)][]card, shelf []card) {
 			slices.ContainsFunc(states, func(state []*versions.Version) bool { return slices.ContainsFunc(state, committed) }) {
 			tags = append(tags, "not on "+t)
 		}
-		tag := strings.Join(tags, " ")
+		tag := strings.Join(tags, " · ")
 		switch {
 		case best >= 0:
 			columns[best] = append(columns[best], card{g.ID, rec.Title, len(states), tag, meta(rec), rec, false})

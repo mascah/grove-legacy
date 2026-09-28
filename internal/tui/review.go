@@ -137,7 +137,7 @@ func (m *Model) sharing(v *versions.Version, paths bool) []string {
 // wantChanges starts reading the shown record's changes when its detail is
 // open, it has a candidate, no other read is pending, and they are not held.
 func (m *Model) wantChanges() tea.Cmd {
-	if m.backend.Changes == nil || m.done || m.screen != detailScreen || m.pending != "" && m.pending != "changes" {
+	if m.backend.Changes == nil || m.done || m.screen != detailScreen || !m.free("changes") {
 		return nil
 	}
 	g := m.group()
@@ -179,7 +179,7 @@ func (m *Model) diffOf(v *versions.Version) (from, to, path string, ok bool) {
 
 // wantDiff starts reading the chosen file's diff when nothing else is pending.
 func (m *Model) wantDiff() tea.Cmd {
-	if m.backend.Diff == nil || m.done || m.screen != detailScreen || m.pending != "" && m.pending != "diff" {
+	if m.backend.Diff == nil || m.done || m.screen != detailScreen || !m.free("diff") {
 		return nil
 	}
 	g := m.group()
@@ -315,6 +315,60 @@ func approval(r *project.Record) string {
 	return "approved"
 }
 
+// predictMsg is one Review card's predicted merge into the target.
+type predictMsg struct {
+	gen   int
+	key   string
+	merge *versions.Merge // nil where no prediction could be made
+}
+
+// predictKey names one card's prediction: the target as the board read it
+// and the candidate.
+func (m *Model) predictKey(candidate string) string { return m.targetTip() + "\x00" + candidate }
+
+// wantPredict starts predicting the next Review card's merge into the
+// target while the board shows, one card at a time and never as part of its
+// load (G-260928-r1hkh): three Git processes a card, which any other read
+// replaces, and a re-read forgets.
+func (m *Model) wantPredict() tea.Cmd {
+	if m.backend.Predict == nil || m.done || m.screen != boardScreen || m.res == nil || m.res.Target == "" || m.targetTip() == "" || !m.free("predict") {
+		return nil
+	}
+	columns, _ := m.placed()
+	for _, c := range columns[reviewColumn] {
+		if c.rec == nil || c.rec.Candidate == "" {
+			continue
+		}
+		key := m.predictKey(c.rec.Candidate)
+		if key == m.reading {
+			return nil
+		}
+		if _, held := m.predicts[key]; held {
+			continue
+		}
+		target, candidate := "refs/heads/"+m.res.Target, c.rec.Candidate
+		cmd := m.read("predict", func(ctx context.Context, gen int) tea.Msg {
+			merges, err := m.backend.Predict(ctx, m.root, target, []string{candidate})
+			if err != nil || len(merges) != 1 {
+				return predictMsg{gen, key, nil}
+			}
+			return predictMsg{gen, key, &merges[0]}
+		})
+		m.reading = key
+		return cmd
+	}
+	return nil
+}
+
+// conflictNote is a Review card's predicted conflict with the target,
+// naming the target commit it read, or "" when none is predicted or read.
+func (m *Model) conflictNote(r *project.Record) string {
+	if mg := m.predicts[m.predictKey(r.Candidate)]; r.Candidate != "" && mg != nil && mg.Outcome == "conflict" {
+		return "conflicts " + m.res.Target + "@" + short7(mg.Target)
+	}
+	return ""
+}
+
 // reviewRows are the header's Review block: the candidate's standing and
 // where each action would run. Facts only; every action is a key away.
 func (m *Model) reviewRows(g *versions.Group, v *versions.Version) []string {
@@ -409,12 +463,15 @@ func (m *Model) changesSection(v *versions.Version, w int, heading func(string),
 			if f.Added >= 0 {
 				counts = fmt.Sprintf("+%d −%d", f.Added, f.Removed)
 			}
-			item(ansi.Truncate(safe(f.Path), max(w-2-ansi.StringWidth(counts)-2, 8), "…") + "  " + counts)
-			described := m.describedBy(f.Path)
-			if r := read.c.Resolution; r != nil && slices.ContainsFunc(r.Files, func(x versions.Resolved) bool { return x.Path == f.Path }) {
-				described += " · resolved in merge " + short7(r.Merge)
+			// One row a file: the records describing it are counted here and
+			// named at the head of its diff.
+			if n := len(m.describedBy(f.Path)); n != 0 {
+				counts += fmt.Sprintf("  described by %d", n)
 			}
-			plain("    " + described)
+			if r := read.c.Resolution; r != nil && slices.ContainsFunc(r.Files, func(x versions.Resolved) bool { return x.Path == f.Path }) {
+				counts += "  resolved in merge " + short7(r.Merge)
+			}
+			item(ansi.Truncate(safe(f.Path), max(w-2-ansi.StringWidth(counts)-2, 8), "…") + "  " + counts)
 		}
 		if len(read.c.After) != 0 {
 			plain("  after the candidate: " + strings.Join(read.c.After, ", "))
@@ -422,7 +479,7 @@ func (m *Model) changesSection(v *versions.Version, w int, heading func(string),
 	}
 }
 
-// describedBy names the records, other than the open one, that link a
+// describedBy lists the records, other than the open one, that link a
 // changed file or name it in a code span (G-260925-dzxm6), each once at its first
 // tier, in the inspection's order. It reads the loaded records only: no Git
 // process, nothing stored. A file is a path from the repository's top, or a
@@ -430,7 +487,7 @@ func (m *Model) changesSection(v *versions.Version, w int, heading func(string),
 // and a file outside the project can only be named by a code span.
 // ponytail: matched on every frame, about 20 ms for 60 files over 150
 // records; cache by changes key if reviews grow larger.
-func (m *Model) describedBy(file string) string {
+func (m *Model) describedBy(file string) []string {
 	var found []string
 	for i := range m.res.Groups {
 		g := &m.res.Groups[i]
@@ -453,14 +510,30 @@ func (m *Model) describedBy(file string) string {
 				}
 			}
 		}
-		if best >= 0 {
+		if best >= 0 && !slices.ContainsFunc(found, func(f string) bool { return strings.HasPrefix(f, g.ID+" ") }) {
 			found = append(found, g.ID+" "+tiers[best])
 		}
 	}
-	if len(found) == 0 {
-		return "no record names it"
+	return found
+}
+
+// diffHead names, above a file's diff, the records that describe the file
+// and the merge that resolved it, if one did.
+func (m *Model) diffHead(read changesRead, path string, w int) []string {
+	file := path
+	for _, f := range read.c.Files {
+		if f.Path == path || strings.HasSuffix(f.Path, " → "+path) {
+			file = f.Path
+		}
 	}
-	return "described by " + strings.Join(found, ", ")
+	text := "No record names this file."
+	if found := m.describedBy(file); len(found) != 0 {
+		text = "Described by " + strings.Join(found, ", ") + "."
+	}
+	if r := read.c.Resolution; r != nil && slices.ContainsFunc(r.Files, func(x versions.Resolved) bool { return x.Path == file }) {
+		text += " Resolved in merge " + short7(r.Merge) + "."
+	}
+	return append(wrap(text, w), line("", w))
 }
 
 // diffRows renders a diff for the content pane: every line escaped like
@@ -496,10 +569,12 @@ func (m *Model) diffContent(v *versions.Version, w int) []string {
 		return wrapAll("reading the diff…", w)
 	case read.err != nil:
 		return wrapAll("The diff could not be read (r retries): "+read.err.Error(), w)
-	case strings.TrimSpace(read.text) == "":
-		return wrapAll("No textual difference.", w)
 	}
-	return diffRows(read.text, w)
+	head := m.diffHead(m.changes[m.changesKey(v)], path, w)
+	if strings.TrimSpace(read.text) == "" {
+		return append(head, wrapAll("No textual difference.", w)...)
+	}
+	return append(head, diffRows(read.text, w)...)
 }
 
 // startAtEvidence scrolls a review's content to its Evidence heading, so the

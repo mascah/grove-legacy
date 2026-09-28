@@ -216,7 +216,7 @@ func (m *Model) bound() *versions.Source {
 // and reads what Git says of the candidates it names, when no other read is
 // pending. A re-read of the board clears it, so it is computed again.
 func (m *Model) wantPreview() tea.Cmd {
-	if !m.previewing || m.screen != depsScreen || m.preview != nil || m.previewErr != "" || m.pending != "" || m.done || m.res == nil {
+	if !m.previewing || m.screen != depsScreen || m.preview != nil || m.previewErr != "" || !m.free("preview") || m.done || m.res == nil {
 		return nil
 	}
 	src := m.bound()

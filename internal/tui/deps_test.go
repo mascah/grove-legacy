@@ -341,7 +341,8 @@ func TestDepsReviewRegressions(t *testing.T) {
 		deliver(m, press(m, "r"))
 		f.err = nil
 		n := len(*asked)
-		if cmd := deliver(m, press(m, "r")); cmd != nil || m.previewing || len(*asked) != n {
+		// The board's own prediction of its Review cards may follow; nothing of the preview's.
+		if cmd := deliver(m, press(m, "r")); cmd != nil && m.pending != "predict" || m.previewing || len(*asked) != n {
 			t.Fatalf("the board read Git for a closed preview: %q", (*asked)[n:])
 		}
 		press(m, "g")

@@ -30,8 +30,19 @@ the target. Where the current states diverge, one card sits
 in the earliest of their statuses, marked `⑂ 2 states`, and its detail says
 which states exist and where, until one side takes the other's change, by a
 merge or an edit, or the branch holding one is deleted (see [Rewritten
-copies](#rewritten-copies)). Work whose current state removes its record is
-listed under Deleted. Done shows the most recently written cards that fit the
+copies](#rewritten-copies)). A Review or Done card whose candidate is
+approved is marked `approved`, or `approved under policy` for a verdict
+`grove sweep` gave
+([G-260928-r1hkh](../grove/G-260928-r1hkh-show-approval-and-merge.md)). Once
+the board has drawn, each Review card's candidate is merged into the target
+in objects only, as `deps` predicts it, one card at a time, and a card that
+would conflict is marked `conflicts main@abc1234`, naming the target commit
+it read; no prediction is part of a load, any key that starts another read
+and every re-read cancel it, a re-read forgets what it found, and where one
+cannot run the card says nothing. Tags are joined by `·`, a conflict first
+and then the approval; where they do not fit beside the ID they lead the
+metadata row, and a narrow card cuts them last. Work whose current state
+removes its record is listed under Deleted. Done shows the most recently written cards that fit the
 column, newest first, and counts the rest (`+ 23 older · / to search`).
 Abandoned is hidden until `a` shows its column, and the shelf row counts it
 meanwhile. Neither the bound nor the hiding moves a file. ←/→ and `h` `l`
@@ -50,8 +61,9 @@ read or an action is under way or a detail left at a timeline commit or a
 diff is open, even beneath another screen; a terminal that does not report
 focus sends nothing, so there only `r` does. While an attempt runs, the
 board also follows the branch tips (see [Attempts](#attempts)). Otherwise it
-starts no process except on focus or a key, and an uncommitted edit in a
-checkout's files shows only after a re-read.
+starts no process except on focus or a key, and the predictions of its
+Review cards after each read, and an uncommitted edit in a checkout's files
+shows only after a re-read.
 
 ## Record detail
 
@@ -100,16 +112,16 @@ commit, or that it could not be predicted, a resolution row when the branch
 has merged a target commit since the target, and which checkout each action
 runs in), the content opens
 at its `## Evidence`, and the sidebar lists the candidate's changed files
-against the target with their added and removed line counts. Under each
-file a row names the other records that describe it, as `described by
-G-260924-2b8rc link, G-260925-8m3xd code span`, or says `no record names
-it`: a record describes a file when a link in its body resolves to that
-project path or a code span names it, as search matches a path, over the
-records the board already holds, with no further Git read and nothing
-stored. Which of their claims the
-change left true is the reader's judgment. Enter on a file
-shows its diff in the content pane, escaped like record text with added,
-removed and hunk lines coloured, and Esc returns to the content. `a` asks for
+against the target, one row each, with their added and removed line counts
+and how many other records describe it, as `described by 2`: a record
+describes a file when a link in its body resolves to that project path or a
+code span names it, as search matches a path, over the records the board
+already holds, with no further Git read and nothing stored. Enter on a file
+shows its diff in the content pane under a head naming those records, as
+`Described by G-260924-2b8rc link, G-260925-8m3xd code span.`, or saying `No
+record names this file.`; which of their claims the change left true is the
+reader's judgment. The diff is escaped like record text with added, removed
+and hunk lines coloured, and Esc returns to the content. `a` asks for
 a verdict and approves the candidate in the branch's checkout, `f` asks for
 feedback and returns the work to `active` there, and `i` confirms the merge
 into the target from the target's checkout, then asks whether to remove the
@@ -142,7 +154,8 @@ branch:
   on. A file whose result is one side's content says which side it took,
   since that drops the other side's change. A file Git merged by itself is
   not listed. Those the candidate still changes against the target are
-  marked `resolved in merge M` in the Changes list.
+  marked `resolved in merge M` on their row in the Changes list and at the
+  head of their diff.
 
 Only the latest merge is read, and a later merge of another branch or of
 unrelated history hides it.

@@ -37,8 +37,9 @@ var runningAccent = cyan
 
 // cardBox draws one card as a bordered box of rows rows and w cells: its ID
 // with any tag at the right, the title on two rows, and the metadata row
-// unless rows leaves no room. The focused card has a heavy border and a
-// marker before its ID.
+// unless rows leaves no room; a tag too wide for the ID's row leads the
+// metadata row instead. The focused card has a heavy border and a marker
+// before its ID.
 func cardBox(c card, focused bool, accent lipgloss.Style, rows, w int) []string {
 	iw := max(w-2, 1)
 	b := lipgloss.RoundedBorder()
@@ -51,10 +52,14 @@ func cardBox(c card, focused bool, accent lipgloss.Style, rows, w int) []string 
 	if focused {
 		id = "▶" + c.id
 	}
-	first := line(id, iw)
-	if tw := ansi.StringWidth(safe(c.tag)); c.tag != "" && ansi.StringWidth(safe(id))+2+tw <= iw {
+	first, meta := line(id, iw), c.meta
+	switch tw := ansi.StringWidth(safe(c.tag)); {
+	case c.tag == "":
+	case ansi.StringWidth(safe(id))+2+tw <= iw:
 		first = line(id, iw-tw-1) + " " + line(c.tag, tw)
-	} else if c.tag != "" {
+	case rows >= cardHeight:
+		meta = strings.TrimSuffix(c.tag+" · "+c.meta, " · ")
+	default:
 		first = line(id+"  "+c.tag, iw)
 	}
 	if focused {
@@ -71,7 +76,7 @@ func cardBox(c card, focused bool, accent lipgloss.Style, rows, w int) []string 
 		inner = append(inner, " "+t)
 	}
 	if rows >= cardHeight {
-		inner = append(inner, " "+line(c.meta, iw-1))
+		inner = append(inner, " "+line(meta, iw-1))
 	}
 	out := []string{edge(b.TopLeft, b.Top, b.TopRight)}
 	for _, r := range inner {

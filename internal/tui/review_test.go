@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 
@@ -156,6 +157,13 @@ func TestReviewDetailShowsStandingChangesAndDiffs(t *testing.T) {
 		}
 		if s := plain(m); size[1] >= 16 && !strings.Contains(s, "Review: candidate abcdef1 · approved") {
 			t.Fatalf("%v: review block missing:\n%s", size, s)
+		}
+		// One row a file, whatever describes it (G-260928-r1hkh).
+		side := strings.Split(ansi.Strip(strings.Join(m.sidebar(m.shown(m.group()), size[0], 100), "\n")), "\n")
+		from := slices.IndexFunc(side, func(r string) bool { return strings.HasPrefix(r, "Changes against") })
+		to := slices.IndexFunc(side, func(r string) bool { return strings.HasPrefix(r, "Timeline on") })
+		if from < 0 || to-from-1 != 3 {
+			t.Fatalf("%v: three files in %d rows:\n%s", size, to-from-1, strings.Join(side, "\n"))
 		}
 	}
 }
@@ -367,11 +375,11 @@ func TestReviewActionsNeedTheRightCheckout(t *testing.T) {
 	}
 }
 
-// Beside each changed file the review lists the other records that link it
-// or name it in a code span, or says none does; it reads nothing more. A
-// path under the project's prefix, which Git gives with its slash, is
-// matched as a project path, one outside it only by a code span, and a
-// rename by either side.
+// Each changed file is one row that counts the other records linking it or
+// naming it in a code span, and its diff names them; nothing more is read
+// for them (G-260928-r1hkh). A path under the project's prefix, which Git
+// gives with its slash, is matched as a project path, one outside it only
+// by a code span, and a rename by either side.
 func TestReviewListsRecordsDescribingEachFile(t *testing.T) {
 	t.Parallel()
 	for _, prefix := range []string{"", "proj/"} {
@@ -402,8 +410,8 @@ func TestReviewListsRecordsDescribingEachFile(t *testing.T) {
 		}
 		m := openReview(t, f, 160, 50)
 		s := plain(m)
-		want := []string{"internal/x.go  +12 −3", "described by Q-002 code span, D-002 link", "grove/work/W-001.md  +5 −1", "no record names it",
-			"bin.dat  binary", "described by Q-002 link", "new/y.go  +1 −0", "described by D-002 link", "Cargo.toml  +1 −0", "described by D-002 code span"}
+		want := []string{"internal/x.go  +12 −3  described by 2 ", "grove/work/W-001.md  +5 −1  ", "bin.dat  binary  described by 1 ",
+			"new/y.go  +1 −0  described by 1 ", "Cargo.toml  +1 −0  described by 1 "}
 		at := 0
 		for _, w := range want {
 			i := strings.Index(s[at:], w)
@@ -412,8 +420,24 @@ func TestReviewListsRecordsDescribingEachFile(t *testing.T) {
 			}
 			at += i + len(w)
 		}
-		if strings.Contains(s, "W-001 link") || strings.Join(f.reads, ";") != "changes main abcdef1 a grove/work/W-001.md" {
-			t.Fatalf("prefix %q: the open record is not listed, and nothing more is read: %v\n%s", prefix, f.reads, s)
+		if strings.Contains(s, "W-001 link") || strings.Contains(s, "Q-002 code span") || strings.Join(f.reads, ";") != "changes main abcdef1 a grove/work/W-001.md" {
+			t.Fatalf("prefix %q: the open record is not listed, the names wait for the diff, and nothing more is read: %v\n%s", prefix, f.reads, s)
+		}
+		press(m, "tab", "tab") // past the linked review to the first file
+		for _, c := range []struct {
+			moves int
+			head  string
+		}{
+			{0, "Described by Q-002 code span, D-002 link."}, {1, "No record names this file."}, {1, "Described by Q-002 link."},
+			{1, "Described by D-002 link."}, {1, "Described by D-002 code span."},
+		} {
+			for range c.moves {
+				press(m, "down")
+			}
+			deliverAll(m, press(m, "enter"))
+			if s := plain(m); !strings.Contains(s, c.head) {
+				t.Fatalf("prefix %q: the diff of %s lacks %q:\n%s", prefix, m.diff, c.head, s)
+			}
 		}
 	}
 }
@@ -675,4 +699,66 @@ func TestRewrittenCopyReadYieldsToEveryKey(t *testing.T) {
 		}
 	}
 	m.reads.close()
+}
+
+// A Review card says who approved its candidate, the owner or the policy,
+// and a Done card keeps it; once the board has drawn, one prediction per
+// Review card, never part of the load, says whether it conflicts with the
+// target, and a re-read during it cancels it (G-260928-r1hkh).
+func TestReviewCardsShowApprovalAndConflicts(t *testing.T) {
+	t.Parallel()
+	for _, delegated := range []bool{false, true} {
+		approved := "approved"
+		f := reviewFixture(newFixture(), true)
+		if delegated {
+			approved = "approved under policy"
+			for _, g := range f.res.Groups {
+				for _, v := range g.Versions {
+					if v.Record.Approved != "" {
+						v.Record.Source = append(v.Record.Source, "\nVerdict on candidate abcdef1, 2026-09-25: delegated under policy grove.yaml sha256:x: review W-006.\n"...)
+					}
+				}
+			}
+		}
+		var predicted []string
+		block := make(chan struct{})
+		b := f.backend()
+		b.Predict = func(ctx context.Context, _, target string, commits []string) ([]versions.Merge, error) {
+			f.mu.Lock()
+			predicted = append(predicted, target+" "+strings.Join(commits, " "))
+			f.mu.Unlock()
+			select {
+			case <-block:
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+			return []versions.Merge{{Target: strings.Repeat("c", 40), Commit: commits[0], Outcome: "conflict", Conflicts: []string{"internal/x.go"}}}, nil
+		}
+		m := New(t.Context(), "/repo/.", b)
+		m.Update(tea.WindowSizeMsg{Width: 160, Height: 36})
+		next := deliver(m, m.Init())
+		if f.inspects != 1 || len(predicted) != 0 || next == nil || m.pending != "predict" {
+			t.Fatalf("the load predicts nothing, then the board asks for one: inspects %d predicted %v pending %q", f.inspects, predicted, m.pending)
+		}
+		if s := plain(m); !strings.Contains(s, approved+" · not on main") || strings.Contains(s, "conflicts") {
+			t.Fatalf("the card is %s and no conflict is known yet:\n%s", approved, s)
+		}
+		reply := make(chan tea.Msg, 1)
+		go func() { reply <- next() }()
+		refresh := press(m, "r")
+		if _, cmd := m.Update(<-reply); cmd != nil || strings.Contains(plain(m), "conflicts") {
+			t.Fatal("a re-read cancels the prediction and ignores its reply")
+		}
+		close(block)
+		deliverAll(m, deliver(m, refresh))
+		if s := plain(m); !strings.Contains(s, "conflicts main@ccccccc · approved") || strings.Join(predicted, ";") != "refs/heads/main abcdef1;refs/heads/main abcdef1" {
+			t.Fatalf("after the re-read the prediction runs again and shows: %v\n%s", predicted, s)
+		}
+	}
+	fx := newFixture()
+	done := version(fx.cMain, "W-001", "Finished", "done")
+	done.Record.Candidate, done.Record.Approved = "abcdef1", "abcdef1"
+	if s := plain(open(t, &fake{res: result(fx.main, fx.sources(), done)}, 160, 36)); !onRow(s, "W-001", "approved") {
+		t.Fatalf("a Done card keeps its approval:\n%s", s)
+	}
 }
