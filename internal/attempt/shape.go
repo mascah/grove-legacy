@@ -1,7 +1,6 @@
 package attempt
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"path"
@@ -39,9 +38,9 @@ type Changed struct {
 }
 
 // recordRoot is the record folder, repository-relative, as grove.yaml at
-// commit names it: the worktree may be gone, the commit is not.
-func recordRoot(ctx context.Context, dir, commit, prefix string) (string, error) {
-	config, err := repo.GitContext(ctx, dir, "show", commit+":"+path.Join(filepath.ToSlash(prefix), "grove.yaml"))
+// commit names it.
+func recordRoot(dir, commit, prefix string) (string, error) {
+	config, err := repo.Git(dir, "show", commit+":"+path.Join(filepath.ToSlash(prefix), "grove.yaml"))
 	if err != nil {
 		return "", err
 	}
@@ -56,7 +55,7 @@ func recordRoot(ctx context.Context, dir, commit, prefix string) (string, error)
 // repository, split at the record root grove.yaml names at base.
 func changedFiles(worktree, prefix, base, head string) *Changed {
 	c := &Changed{Records: []string{}, Other: []string{}}
-	root, err := recordRoot(context.Background(), worktree, base, prefix)
+	root, err := recordRoot(worktree, base, prefix)
 	if err == nil {
 		c.RecordRoot = root
 		var out string
@@ -73,8 +72,9 @@ func changedFiles(worktree, prefix, base, head string) *Changed {
 			}
 		}
 		if err == nil && len(c.Other) != 0 {
-			// Oldest last: --reverse applies after -n, so it cannot pick it.
-			if out, err = repo.Git(worktree, "log", "--format=%cI", base+".."+head, "--", ":(top)", ":(top,exclude)"+root); err == nil {
+			// Oldest last. --first-parent keeps the commits a merge brings
+			// in, older than the attempt, out: only the merge is its own.
+			if out, err = repo.Git(worktree, "log", "--first-parent", "--format=%cI", base+".."+head, "--", ":(top)", ":(top,exclude)"+root); err == nil {
 				lines := strings.Fields(out)
 				if len(lines) != 0 {
 					c.FirstOther, err = time.Parse(time.RFC3339, lines[len(lines)-1])

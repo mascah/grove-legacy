@@ -71,16 +71,19 @@ func TestChangedAndShapeFacts(t *testing.T) {
 	base := git(t, root, "rev-parse", "HEAD")
 	// A plan under the record root, then two commits outside it: the first
 	// of those is the first commit outside it.
+	gitAt := func(at time.Time, args ...string) {
+		cmd := repo.Command(context.Background(), root, append([]string{"-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false"}, args...)...)
+		cmd.Env = append(cmd.Env, "GIT_COMMITTER_DATE="+at.Format(time.RFC3339))
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("%v\n%s", err, out)
+		}
+	}
 	commit := func(at time.Time, files ...string) {
 		for _, f := range files {
 			write(t, root, f, f)
 		}
 		git(t, root, "add", "-A")
-		cmd := repo.Command(context.Background(), root, "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", "commit", "-qm", "work")
-		cmd.Env = append(cmd.Env, "GIT_COMMITTER_DATE="+at.Format(time.RFC3339))
-		if out, err := cmd.CombinedOutput(); err != nil {
-			t.Fatalf("%v\n%s", err, out)
-		}
+		gitAt(at, "commit", "-qm", "work")
 	}
 	commit(now.Add(time.Minute), "grove/G-260101-00003-plan.md")
 	commit(now.Add(5*time.Minute), "internal/a b.go")
@@ -90,6 +93,21 @@ func TestChangedAndShapeFacts(t *testing.T) {
 		t.Fatalf("%+v", c)
 	}
 	if f := strings.Join(Facts(&View{Status: Finished, Launch: Launch{Started: now}, Result: &Result{Changed: c}}, func(s string) string { return s }), "\n"); !strings.Contains(f, "\nChanged: 2 outside grove/ (grovey.txt, internal/a b.go), 1 under it (grove/G-260101-00003-plan.md); first commit outside it 5m0s after the start\n") {
+		t.Fatal(f)
+	}
+	// A resolution attempt merges the target: the target's commits, older
+	// than the attempt, are not its first; the merge is. A time before the
+	// start is said, not clamped.
+	tip := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-qb", "target", base)
+	commit(now.Add(-time.Hour), "target.go")
+	git(t, root, "checkout", "-q", "-")
+	gitAt(now.Add(20*time.Minute), "merge", "-q", "--no-ff", "-m", "merge", "target")
+	merged := changedFiles(root, "", tip, git(t, root, "rev-parse", "HEAD"))
+	if strings.Join(merged.Other, ",") != "target.go" || !merged.FirstOther.Equal(now.Add(20*time.Minute)) {
+		t.Fatalf("%+v", merged)
+	}
+	if f := strings.Join(Facts(&View{Status: Finished, Launch: Launch{Started: now.Add(30 * time.Minute)}, Result: &Result{Changed: merged}}, func(s string) string { return s }), "\n"); !strings.Contains(f, "; first commit outside it 10m0s before the start\n") {
 		t.Fatal(f)
 	}
 	unknown := changedFiles(root, "", strings.Repeat("0", 40), base)
@@ -104,7 +122,7 @@ func TestChangedAndShapeFacts(t *testing.T) {
 	if f := facts(&Result{Changed: unknown}, View{}); !strings.Contains(f, "\nChanged: unknown: ") || strings.Contains(f, "Shape:") {
 		t.Fatal(f)
 	}
-	if f := facts(&Result{}, View{ShapeError: "no grove.yaml"}); !strings.Contains(f, "\nChanged: unknown: not recorded when it finished\n") || !strings.Contains(f, "\nShape: unknown: no grove.yaml\n") {
+	if f := facts(&Result{}, View{ShapeError: "open events.jsonl: permission denied"}); !strings.Contains(f, "\nChanged: unknown: not recorded when it finished\n") || !strings.Contains(f, "\nShape: unknown: open events.jsonl: permission denied\n") {
 		t.Fatal(f)
 	}
 	many := &Changed{RecordRoot: "grove", Records: []string{"grove/a.md"}, Other: strings.Split("a b c d e f g h i j k l", " ")}

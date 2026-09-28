@@ -106,7 +106,11 @@ func Facts(v *View, visible func(string) string) []string {
 		default:
 			first := ""
 			if !c.FirstOther.IsZero() {
-				first = fmt.Sprintf("; first commit outside it %s after the start", max(c.FirstOther.Sub(l.Started), 0).Round(time.Second))
+				d := c.FirstOther.Sub(l.Started).Round(time.Second)
+				first = fmt.Sprintf("; first commit outside it %s after the start", d)
+				if d < 0 { // a skewed clock, said rather than hidden
+					first = fmt.Sprintf("; first commit outside it %s before the start", -d)
+				}
 			}
 			line("Changed: %d outside %s/%s, %d under it%s%s", len(c.Other), visible(c.RecordRoot), visible(some(c.Other)), len(c.Records), visible(some(c.Records)), first)
 		}

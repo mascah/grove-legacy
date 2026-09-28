@@ -336,7 +336,9 @@ question; and whether each member's record on the target changed.
 when the attempt finishes, since its worktree and branch may be gone when it
 is read, split into the files under the record root, which `grove.yaml` at
 the base names, and the rest, with the time from the start to the committer
-time of the first commit that touched a file outside it; an attempt finished
+time of the first commit that touched a file outside it, following first
+parents so that the commits a merge brings in are not the attempt's own;
+an attempt finished
 before this says it was not recorded, and one whose HEAD or `grove.yaml` Git
 could not read says why. `Shape:` is derived from all of `events.jsonl` each
 time the attempt is read, a line over 1 MiB skipped and counted, which makes
