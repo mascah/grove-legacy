@@ -196,11 +196,39 @@ Limits:
 - `Result event:` still prints the last result event's turns.
 - `attempts` without an ID prints no total, and `attempts` has no `--json`.
 
+**Resolution of the conflict with `main` at `3ec0f68`.** The owner approved
+candidate `24fc77a`, then fed back that it conflicts with `main` at
+`3ec0f68` (Next). A third headless session of 2026-09-28, on the same
+branch from record `sha256:0450c168…`, merged that commit, not a later
+`main` and not a rebase, as `7ac3118`. So `24fc77a` and every review's
+`examined` stay ancestors.
+
+- One file conflicted: `grove/G-260927-cg6rt-print-the-work-guide-in.md`,
+  in its Next. `main` had replaced it with the review handoff, three steps
+  and its verdict line; this branch (`992017f`) had reworded the paragraph
+  naming the facts this work builds. Both are kept: `main`'s Next whole, the
+  verdict line still last, and this branch's paragraph after the steps. Only
+  its `Assign: /grove-work G-260927-cg6rt.` lead is dropped, since that
+  record is `done` on `main`. No side was taken whole.
+- `docs/commands.md` and `internal/cli/cli.go` merged cleanly in disjoint
+  regions (`main`'s `guide --part`, this branch's `attempts` total). Nothing
+  else changed.
+- Verification at `7ac3118`, all passing: `go vet ./...`; `gofmt -l .`
+  (empty); `go run ./cmd/grove check` (OK: 220 records); `go test -count=1
+  -timeout 120s ./...`.
+- Review: [G-260928-a8tfe](G-260928-a8tfe-review-of-g-260927-dx0yn.md), one
+  independent `grove-reviewer` round on `7ac3118`, `Open findings: none`.
+  Its observation: `Shape` counts `grove guide work --part NAME` as a `work`
+  print, the approved behaviour, which `docs/commands.md` states; a count per
+  part would be its own work.
+
 ## Next
 
-In review: the `candidate` field names the candidate, on branch
-`worktree-G-260927-dx0yn` from `main` at `38511c1`. The owner judges one
-real attempt in a terminal (acceptance 5):
+In review: the `candidate` field names the candidate, merge `7ac3118` and
+the record commit after it, on branch `worktree-G-260927-dx0yn` from `main`
+at `38511c1`, with `main` at `3ec0f68` merged. The previous candidate was
+`24fc77a`. The owner judges the resolution (`git show --remerge-diff
+7ac3118`) and one real attempt in a terminal (acceptance 5):
 
 - Run `go run ./cmd/grove attempt ATTEMPT` on any attempt that `go run
   ./cmd/grove attempts` lists. Attempts launched after the merge also show
