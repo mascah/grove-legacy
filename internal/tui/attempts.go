@@ -794,6 +794,9 @@ func (m *Model) attemptsBody(w, n int) []string {
 		count[s.group]++
 	}
 	rows := []string{bold(line(fmt.Sprintf("%s (%d) · %d need you · %d running · %d settled", head, len(list), count[needsYou], count[runningNow], count[settled]), w))}
+	if m.listFor != "" && len(list) != 0 {
+		rows = append(rows, line(attempt.Sum(list).String(), w))
+	}
 	if m.attemptsErr != "" {
 		rows = append(rows, wrap("The attempts could not be read (r retries): "+m.attemptsErr, w)...)
 	}

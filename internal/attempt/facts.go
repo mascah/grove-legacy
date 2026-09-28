@@ -98,6 +98,22 @@ func Facts(v *View, visible func(string) string) []string {
 			dirty = "uncommitted or untracked changes"
 		}
 		line("Worktree after: HEAD %s, %s", short(r.Head), dirty)
+		switch c := r.Changed; {
+		case c == nil:
+			line("Changed: unknown: not recorded when it finished")
+		case c.Error != "":
+			line("Changed: unknown: %s", visible(c.Error))
+		default:
+			first := ""
+			if !c.FirstOther.IsZero() {
+				d := c.FirstOther.Sub(l.Started).Round(time.Second)
+				first = fmt.Sprintf("; first commit outside it %s after the start", d)
+				if d < 0 { // a skewed clock, or a target fast-forwarded in: said, not hidden
+					first = fmt.Sprintf("; first commit outside it %s before the start", -d)
+				}
+			}
+			line("Changed: %d outside %s/%s, %d under it%s%s", len(c.Other), visible(c.RecordRoot), visible(some(c.Other)), len(c.Records), visible(some(c.Records)), first)
+		}
 		if len(members) > 1 {
 			for _, m := range r.Members {
 				line("Member %s on the branch: %s", m.ID, visible(MemberStanding(l, m)))
@@ -115,8 +131,49 @@ func Facts(v *View, visible func(string) string) []string {
 			line("Record on the branch: unreadable: %s", visible(r.RecordError))
 		}
 	}
+	if v.Shape != nil {
+		line("Shape: %s", visible(shapeText(v)))
+	} else if v.ShapeError != "" {
+		line("Shape: unknown: %s", visible(v.ShapeError))
+	}
 	line("Files: %s", visible(v.Dir))
 	return lines
+}
+
+// shapeText is v's Shape as one line: counts are lower bounds (≥) where a
+// line was skipped, and so far while the attempt has not finished.
+func shapeText(v *View) string {
+	s, text := v.Shape, ""
+	if v.Status != Finished {
+		text = "so far, "
+	}
+	at := ""
+	if s.Skipped != 0 {
+		at = "≥"
+	}
+	text += fmt.Sprintf("%s%d tool calls, %s%d running grove; guides printed: ", at, s.Tools, at, s.Grove)
+	if len(s.Guides) == 0 {
+		text += "none"
+	}
+	for i, name := range slices.Sorted(maps.Keys(s.Guides)) {
+		text += fmt.Sprintf("%s%s %d", map[bool]string{true: ", "}[i > 0], name, s.Guides[name])
+	}
+	if s.Skipped != 0 {
+		text += fmt.Sprintf("; %d oversized lines not read: the counts are lower bounds", s.Skipped)
+	}
+	return text
+}
+
+// some lists up to ten paths in parentheses, and how many more there are.
+func some(paths []string) string {
+	if len(paths) == 0 {
+		return ""
+	}
+	more := ""
+	if len(paths) > 10 {
+		paths, more = paths[:10], fmt.Sprintf(" and %d more", len(paths)-10)
+	}
+	return " (" + strings.Join(paths, ", ") + more + ")"
 }
 
 // MemberStanding says where one selected work stood when the attempt ended,

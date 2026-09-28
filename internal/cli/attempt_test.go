@@ -58,6 +58,11 @@ func TestAttemptCommandsUsage(t *testing.T) {
 	if code := Run([]string{"--project", root, "attempts"}, t.TempDir(), &out, &errOut); code != 0 || out.String() != "ATTEMPT  WORK  STATUS  STARTED  BRANCH  EXIT  COST\n" {
 		t.Fatalf("exit %d\n%s%s", code, out.String(), errOut.String())
 	}
+	out.Reset()
+	// One work's attempts end with their total (G-260927-dx0yn).
+	if code := Run([]string{"--project", root, "attempts", "G-260101-00009"}, t.TempDir(), &out, &errOut); code != 0 || out.String() != "ATTEMPT  WORK  STATUS  STARTED  BRANCH  EXIT  COST\nTotal: 0 attempts, $0.00, 0 turns, 0m\n" {
+		t.Fatalf("exit %d\n%s%s", code, out.String(), errOut.String())
+	}
 }
 
 // TestRunDryRun previews a selection, writing nothing, and prints the

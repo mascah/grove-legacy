@@ -183,7 +183,8 @@ approval of that plan. An
 orphan always needs you, since its process runs unowned. A stopped attempt,
 an earlier attempt of the same work and any attempt of work now done or
 abandoned are settled, and each says why, such as `done: candidate 1614e89`
-or `candidate 71a650e, superseded`.
+or `candidate 71a650e, superseded`. The list of one work's attempts opens
+with their total, as [`attempts ID`](commands.md#attempts) prints it.
 
 `R` launches one work; a selection of several is launched with `run ID...`
 ([G-260925-7c8g9](../grove/G-260925-7c8g9-execute-an-explicitly-se.md)). Its attempt is listed by

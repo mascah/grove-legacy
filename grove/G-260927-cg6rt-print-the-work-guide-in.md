@@ -170,4 +170,11 @@ G-260927-ngkbz's: 46 turns, $2.99, 10 minutes, with the guide printed whole.
    the turn it ran at, and record them here with the attempt's cost, turns
    and duration.
 
+The attempt facts
+[G-260927-dx0yn](G-260927-dx0yn-retain-per-attempt-proce.md) builds (guide
+prints and `grove` calls, time to the first commit outside the record root)
+are how this change's effect on a session will be read; its owner dropped
+the process share and first edit it first proposed. This record does not
+need them to be built.
+
 Verdict on candidate 28e1e3f, 2026-09-28: approved

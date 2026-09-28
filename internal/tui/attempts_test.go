@@ -474,6 +474,9 @@ func TestAttemptScreensReconnectAndStop(t *testing.T) {
 	}
 	settle(m, press(m, "A"))
 	s := plain(m)
+	if strings.Contains(s, "Total:") {
+		t.Fatal("only one work's attempts have a total")
+	}
 	// W-001 is active on the board: its candidate had feedback, so the
 	// next attempt is the owner's to launch.
 	for _, want := range []string{"Attempts in this repository (2) · 1 need you · 1 running · 0 settled", " Needs you", "> W-001  Inspect records", "feedback given: R again      25h ago", "  W-002  Create records", "running                    2h so far"} {
@@ -543,7 +546,7 @@ func TestAttemptScreensReconnectAndStop(t *testing.T) {
 		t.Fatalf("o opens the work's record:\n%s", plain(m))
 	}
 	press(m, "A")
-	if s := plain(m); !strings.Contains(s, "Attempts of W-002 (1)") || strings.Contains(s, "W-001.") {
+	if s := plain(m); !strings.Contains(s, "Attempts of W-002 (1)") || !strings.Contains(s, "Total: 1 attempt, $0.00, 0 turns, 0m; 1 without a result event not in the cost or turns") || strings.Contains(s, "W-001.") {
 		t.Fatalf("A on a work lists its attempts:\n%s", s)
 	}
 	press(m, "esc")
