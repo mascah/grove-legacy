@@ -66,7 +66,7 @@ func TestContextCLI(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(got.Selected, []string{"G-260101-00003", "G-260101-00001"}) || !reflect.DeepEqual(got.Order, []string{"G-260101-00001", "G-260101-00003"}) ||
-		got.Interaction != "headless" || got.Root != root || got.FormatVersion != 2 {
+		got.Interaction != "headless" || got.Root != root || got.FormatVersion != 3 {
 		t.Fatalf("%+v", got)
 	}
 	// The selected work, the configuration, and the includes are read in full. The
