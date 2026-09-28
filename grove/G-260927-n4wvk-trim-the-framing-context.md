@@ -4,10 +4,11 @@ type: work
 title: "Trim the framing context prints to the facts a session acts on"
 status: review
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-28T01:41:25Z"
+updated: "2026-09-28T16:20:25Z"
 size: small
 relates_to: ["G-260923-p5pt6", "G-260925-pbx81", "G-260925-khwkq", "G-260919-nddsf", "G-260922-08wxx"]
 candidate: "847c737b5c8cf11439469b03780493d6183a35ce"
+approved: "847c737b5c8cf11439469b03780493d6183a35ce"
 ---
 
 ## Outcome
@@ -148,3 +149,5 @@ Next action:
    column).
 2. `grove approve G-260927-n4wvk "VERDICT"` in this checkout, then
    `grove integrate G-260927-n4wvk` in main's checkout.
+
+Verdict on candidate 847c737, 2026-09-28: approved
