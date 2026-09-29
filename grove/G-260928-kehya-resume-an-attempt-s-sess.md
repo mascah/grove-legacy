@@ -54,25 +54,64 @@ owner's later choice.
 2. Three real resumes compared with fresh relaunches, reported.
 3. `docs/commands.md` (Attempts) and `docs/board.md` (Attempts) say so.
 
+## Evidence
+
+Tested at commit `318fe8e` (`cad3572` code and tests, `318fe8e` docs), branch
+`worktree-G-260928-kehya`, Claude Code 2.1.284.
+
+Acceptance 1 (fake provider) and 3:
+
+- `go vet ./...` clean; `gofmt -l .` empty; `go run ./cmd/grove check` OK, 250
+  records.
+- `go test -count=1 -timeout 120s ./...` passes in every package (attempt
+  20.7s, tui 18.8s, cli 9.7s; the attempt and tui totals include process-spawning
+  tests that skip under `-short`).
+- `python3 internal/tui/testdata/terminal.py BINARY` on a build of that
+  commit: every case ok, including `attempt_lifecycle`.
+- New tests: `TestResume` (fork composition after `--until plan`, `resumed_from`
+  in `Requested` and `Facts`; refusals with nothing written for no worktree, a
+  different selection, a source without an init event, a removed worktree),
+  `TestResumeFlag`, and cases in the CLI usage table and the board's launch and
+  resolve lines.
+- `docs/commands.md` and `docs/board.md` (Attempts) and `grove --help` describe
+  `--resume`; the record links resolve (`grove check`).
+
+Step 5, real provider, disposable fixture (a fresh `grove init` repository with
+one work record, reached by an absolute `--project` path, built from
+`318fe8e`, removed afterward; not a clone of this repository, to keep the
+plan run small):
+
+- `--until plan` attempt `G-260929-2jvac.20260929T030906Z`: success, 4 turns,
+  $0.1245, 1 permission denial, init present, session `d5d6a1c0-...`.
+- `run --resume` without the bound: attempt `G-260929-2jvac.20260929T030925Z`,
+  command carried `--session-id d94ccd8d-... --resume d5d6a1c0-... --fork-session`,
+  `grove attempt` showed `resuming G-260929-2jvac.20260929T030906Z` in
+  `Requested:` and `resumed_from` is in `--json`. Success, 1 turn, $0.1472,
+  0 denials, init present. Its events (9 lines) carry only the new session id
+  `d94ccd8d-...`, so cost and turns are that process's alone. The
+  `--dry-run` preview showed `Resume: ...` and a digest.
+- Total spend about $0.27 against the $3 cap.
+
+Acceptance 2 is pending. Baseline the three resumes will be read against: fresh
+relaunches after a question or a bounded plan in `grove attempts` here (cost,
+turns, duration, record status after):
+
+| Work | Follows | Fresh attempt | Cost | Turns | Duration | Outcome |
+| --- | --- | --- | --- | --- | --- | --- |
+| G-260924-59f5k | plan | 20260924T232247Z | $6.01 | 53 | 2644s | error_during_execution, active |
+| G-260925-7c8g9 | plan | 20260925T232126Z | $16.15 | 139 | 2519s | success, review |
+| G-260925-ced1h | plan | 20260925T042810Z | $3.18 | 56 | 572s | success, review |
+| G-260927-n4wvk | question | 20260928T011916Z | $4.00 | 51 | 1345s | success, review |
+| G-260928-dtrnw | question | 20260929T024521Z | $2.77 | 38 | 661s | success, review |
+| G-260928-pqhyg | question | 20260929T003437Z | $1.49 | 31 | 782s | success, active |
+| G-260928-pqhyg | question | 20260929T005419Z | $0.77 | 17 | 191s | success, active |
+
 ## Next
 
-Checkpoint 2026-09-29: a headless attempt bounded at its plan ran on
-`worktree-G-260928-kehya` from main `9a18f57`. It wrote plan
-[G-260929-pjqxp](G-260929-pjqxp-plan-for-g-260928-kehya.md) at
-`sha256:d1526b8b78cad3905c969b5dd520f8a15f7754803d3ecb63601992cec535074d`
-(commit `c77a7b1`), and left the status proposed. No question is open, and
-nothing waits.
-
-Continuation: `/grove-work G-260928-kehya --interaction headless` on that
-branch, or `grove run G-260928-kehya` (board `R` without the bound).
-Launching it is the owner's approval of that plan revision.
-
-Acceptance 2 is not measured in the implementation attempt. It is measured
+The candidate awaits review. Acceptance 2 is not measured here: it is measured
 on the next three question answers or plan continuations after this lands
-(plan step 6).
+(plan step 6), read against the baseline in Evidence. Nothing else waits.
 
-This touches the command composition
-in `internal/attempt/attempt.go`, which
-[G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) reshapes; no
-order is declared between them, and the owner should not launch them
-alongside each other without reading both.
+This touches the command composition in `internal/attempt/attempt.go`, which
+[G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) reshapes; whichever
+lands second adds the refusal for a provider without resume.
