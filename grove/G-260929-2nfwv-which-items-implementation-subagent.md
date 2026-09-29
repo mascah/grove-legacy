@@ -2,9 +2,9 @@
 id: "G-260929-2nfwv"
 type: question
 title: "Which item's implementation runs as a subagent, and from which session?"
-status: open
+status: resolved
 created: "2026-09-29T00:37:24Z"
-updated: "2026-09-29T00:37:50Z"
+updated: "2026-09-29T00:53:23Z"
 blocks: ["G-260928-pqhyg"]
 relates_to: ["G-260929-jz2gy", "G-260924-5b6pz"]
 ---
@@ -68,3 +68,8 @@ subagent's) spend from the implementer's.
 Open, blocking G-260928-pqhyg's implementation attempts; its plan attempts
 ran. When answered, record the answer here, set `resolved`, and reassign
 `/grove-work G-260928-pqhyg --interaction headless`.
+
+## Answer
+1. kehya
+2. b
+3. accept for now. I want to consider the value of the reviewer agent definition instead of just injecting the prompt/context like we do with shaping or implementation after this is done
