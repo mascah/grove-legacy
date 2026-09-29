@@ -13,14 +13,6 @@ relates_to: ["G-260928-d8py6", "G-260925-5wrn8", "G-260925-wh9ax", "G-260926-a8v
 
 ## Outcome
 
-## Constraints
-
-## Acceptance
-
-## Next
-
-## Outcome
-
 Under the standing policy, a candidate that passed verification and whose
 independent review closed clean is approved and integrated when a delegated,
 bounded judgment finds that it did what its record asked and needs no
