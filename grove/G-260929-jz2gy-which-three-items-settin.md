@@ -2,9 +2,9 @@
 id: "G-260929-jz2gy"
 type: question
 title: "Which three items, settings and cap for the plan-sufficiency experiment?"
-status: open
+status: resolved
 created: "2026-09-29T00:23:42Z"
-updated: "2026-09-29T00:24:06Z"
+updated: "2026-09-29T00:34:29Z"
 blocks: ["G-260928-pqhyg"]
 relates_to: ["G-260924-5b6pz"]
 ---
@@ -62,3 +62,7 @@ Only the owner can answer.
 
 Open, blocking G-260928-pqhyg. When answered, record the answer here, set
 `resolved`, and reassign `/grove-work G-260928-pqhyg`.
+
+## Answer
+kehya here, plus keyborg G-260928-ej7j0 and G-260928-g133n
+plam: opus 5.5 xhigh and implementation sonnet 5.5 high, grove-reviewer should be opus 5.5 high. agree with budgets 
