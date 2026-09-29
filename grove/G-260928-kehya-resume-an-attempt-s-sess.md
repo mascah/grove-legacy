@@ -4,11 +4,12 @@ type: work
 title: "Resume an attempt's session after its question is answered"
 status: review
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-29T03:18:28Z"
+updated: "2026-09-29T16:27:48Z"
 kind: feature
 size: small
 relates_to: ["G-260924-wp2pe", "G-260924-5b6pz", "G-260923-tnn5e", "G-260928-y2p5h"]
 candidate: "63ea8180412ae0721cdd042a4ba1f447888d5f75"
+approved: "63ea8180412ae0721cdd042a4ba1f447888d5f75"
 ---
 
 ## Outcome
@@ -136,3 +137,5 @@ the refusal for a provider without resume.
 
 Integrator: `grove approve G-260928-kehya VERDICT` in this checkout, then
 `grove integrate G-260928-kehya` in main's checkout.
+
+Verdict on candidate 63ea818, 2026-09-29: Approved by the owner for merge, 2026-09-29
