@@ -91,16 +91,19 @@ Plans total $6.46 of the $90 cap. No implementation attempt has run.
 
 ## Next
 
-Waiting on [G-260929-2nfwv](G-260929-2nfwv-which-items-implementation-subagent.md),
-checkpoint 2026-09-29: which item's implementation runs as a subagent, from
-which session, and how the reviewer reaches Opus under a Sonnet
-implementer. Branch `worktree-G-260928-pqhyg`, base `main` `9a18f57`.
-Completed: the three plan attempts (Evidence); their worktrees
-`worktree-G-260928-kehya` here and `worktree-G-260928-ej7j0`,
-`worktree-G-260928-g133n` in keyborg hold the plans, statuses `proposed`.
-No command owned. Once answered, reassign `/grove-work G-260928-pqhyg
---interaction headless`: add the reviewer routing the answer names to each
-implementation worktree, run the two separate-process implementations as
-`grove run ID --model claude-sonnet-5-5 --effort high --budget 15` on those
-worktrees, the subagent one as answered, then add each item's facts to its
-own record's Evidence and write the review record acceptance 2 asks for.
+Waiting on [G-260929-z5nec](G-260929-z5nec-implementation-writes-denied.md),
+checkpoint 2026-09-29: G-260929-2nfwv is answered (kehya as the subagent,
+this headless session as its parent, the reviewer routed to Opus through
+`settings.local.json`), but auto mode denied the two writes the
+implementations begin with: the routing file in the keyborg worktrees and
+kehya's `status=active` in `worktree-G-260928-kehya`. Nothing was launched
+or changed outside this branch. Branch `worktree-G-260928-pqhyg`, base
+`main` `9a18f57`. Completed: the three plan attempts (Evidence); the plans'
+worktrees are unchanged, statuses `proposed`. No command owned. Once
+answered, reassign `/grove-work G-260928-pqhyg --interaction headless`: add
+the reviewer routing to the two keyborg worktrees, run them as `grove run
+ID --model claude-sonnet-5-5 --effort high --budget 15`, run kehya's
+implementation as a `sonnet` subagent of that session (its effort
+unsettable, a limit to report), review it with `grove-reviewer` from the
+parent and hand it off, then add each item's facts to its own record's
+Evidence and write the review record acceptance 2 asks for.
