@@ -2,12 +2,13 @@
 id: "G-260928-pqhyg"
 type: work
 title: "Measure whether a plan from one session suffices for another implementer"
-status: active
+status: review
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-29T00:37:15Z"
+updated: "2026-09-29T03:34:24Z"
 kind: investigation
 size: small
 relates_to: ["G-260924-5b6pz", "G-260924-59f5k", "G-260927-dx0yn", "G-260921-dqdde"]
+candidate: "42ec980fe947643f312b5bbf3f46b26ec7f87d86"
 ---
 
 ## Outcome
