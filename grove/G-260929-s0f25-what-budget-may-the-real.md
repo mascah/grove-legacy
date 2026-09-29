@@ -2,9 +2,9 @@
 id: "G-260929-s0f25"
 type: question
 title: "What budget may the real-provider trial of G-260928-dtrnw spend?"
-status: open
+status: resolved
 created: "2026-09-29T00:57:23Z"
-updated: "2026-09-29T00:57:48Z"
+updated: "2026-09-29T02:45:18Z"
 blocks: ["G-260928-dtrnw"]
 ---
 
@@ -31,3 +31,8 @@ the resumed session.
 ## Next
 
 Answer in `## Answer`, then resolve; G-260928-dtrnw resumes.
+
+## Answer
+1. $30
+2. sonnet 5.5  high
+3. resumed
