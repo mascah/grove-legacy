@@ -208,7 +208,7 @@ func Explain(l *Launch, visible func(string) string) []string {
 		line("Note: %s", visible(n))
 	}
 	if l.ResumedFrom != "" {
-		line("Resume: %s, forking its session", l.ResumedFrom)
+		line("Resume: %s, forking its session", visible(l.ResumedFrom))
 	}
 	line("Review boundary: %s", Boundary)
 	line("Continuation: %s", Continuation)
