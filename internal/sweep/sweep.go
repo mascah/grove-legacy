@@ -84,7 +84,7 @@ func PlanContext(ctx context.Context, root string, only ...string) (*Sweep, erro
 	if p.Target == "" {
 		return nil, errors.New("sweep needs target: BRANCH in grove.yaml, the branch candidates are integrated into")
 	}
-	if branch, err := update.Branch(root); err != nil {
+	if branch, err := update.BranchContext(ctx, root); err != nil {
 		return nil, err
 	} else if branch != p.Target {
 		return nil, fmt.Errorf("sweep runs in the checkout of the target %s, whose grove.yaml holds the policy; this one is on %s", p.Target, cmp.Or(branch, "no branch"))

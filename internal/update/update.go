@@ -5,6 +5,7 @@ package update
 import (
 	"bytes"
 	"cmp"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -507,7 +508,12 @@ func diagnostics(ds []project.Diagnostic) string {
 
 // Branch is the checkout's branch name, or "" when HEAD is detached.
 func Branch(root string) (string, error) {
-	out, err := repo.Git(root, "symbolic-ref", "--short", "-q", "HEAD")
+	return BranchContext(context.Background(), root)
+}
+
+// BranchContext is Branch, whose Git read ends when ctx does.
+func BranchContext(ctx context.Context, root string) (string, error) {
+	out, err := repo.GitContext(ctx, root, "symbolic-ref", "--short", "-q", "HEAD")
 	if err != nil {
 		var exit *exec.ExitError
 		if errors.As(err, &exit) && exit.ExitCode() == 1 { // -q: detached HEAD is exit 1 with nothing said
