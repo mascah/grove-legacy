@@ -2,12 +2,13 @@
 id: "G-260928-kehya"
 type: work
 title: "Resume an attempt's session after its question is answered"
-status: active
+status: review
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-29T03:05:53Z"
+updated: "2026-09-29T03:18:28Z"
 kind: feature
 size: small
 relates_to: ["G-260924-wp2pe", "G-260924-5b6pz", "G-260923-tnn5e", "G-260928-y2p5h"]
+candidate: "63ea8180412ae0721cdd042a4ba1f447888d5f75"
 ---
 
 ## Outcome
