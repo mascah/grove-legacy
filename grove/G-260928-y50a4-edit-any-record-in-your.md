@@ -2,9 +2,9 @@
 id: "G-260928-y50a4"
 type: work
 title: "Edit any record in your editor from the board, page like vim, and read a report alone"
-status: review
+status: done
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-29T00:11:50Z"
+updated: "2026-09-29T00:12:06Z"
 kind: feature
 size: small
 relates_to: ["G-260924-wp2pe", "G-260923-895zb", "G-260924-nqkkh"]
