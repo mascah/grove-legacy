@@ -4,11 +4,12 @@ type: work
 title: "Show approval and merge standing on review cards and bound the changes list"
 status: review
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T21:02:59Z"
+updated: "2026-09-29T00:11:41Z"
 kind: feature
 size: small
 relates_to: ["G-260927-60ffq", "G-260925-h8rj5", "G-260925-dzxm6", "G-260921-jwk4e", "G-260920-svpbc", "G-260920-z8vfp"]
 candidate: "393eb56e7f21a91582a57358615d8d90a5fb029f"
+approved: "393eb56e7f21a91582a57358615d8d90a5fb029f"
 ---
 
 ## Outcome
@@ -109,3 +110,5 @@ a terminal (`go run ./cmd/grove` in the worktree), then, in this worktree,
 `grove approve ID VERDICT` for each of G-260928-csg91, G-260928-r1hkh,
 G-260928-y50a4 and G-260928-63124, and in main's checkout
 `grove integrate G-260928-csg91`, which merges the group.
+
+Verdict on candidate 393eb56, 2026-09-29: approved
