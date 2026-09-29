@@ -110,12 +110,28 @@ turns, duration, record status after):
 | G-260928-pqhyg | question | 20260929T003437Z | $1.49 | 31 | 782s | success, active |
 | G-260928-pqhyg | question | 20260929T005419Z | $0.77 | 17 | 191s | success, active |
 
+Final evidence at `1c7122f`: `go test -count=1 -timeout 120s ./...` passes in
+every package, `grove check` OK (250 records), run by the parent session.
+
+Implemented by a `sonnet` subagent that read only CLAUDE.md, this record and
+plan G-260929-pjqxp, dispatched by the G-260928-pqhyg session (that
+experiment's data). Review: `grove-reviewer` on Opus 5.5 examined
+`631ff7a`: "correct and meets Acceptance 1 and 3", `Open findings: 3`, all
+low, each fixed by the implementer at `0d114ab`/`1c7122f` and checked by the
+parent: the `--help` run paragraph rewrapped; `Explain`'s `Resume:` line now
+escapes the attempt ID read from `attempt.json`; the 59f5k baseline row marked
+stopped. Reviewer limits: main has moved since `9a18f57` (the G-260928-dtrnw
+merge touches `internal/attempt/attempt.go`, `facts.go`, `internal/cli/cli.go`
+and `internal/tui/attempts.go`), so integration must merge and retest.
+
 ## Next
 
-The candidate awaits review. Acceptance 2 is not measured here: it is measured
-on the next three question answers or plan continuations after this lands
-(plan step 6), read against the baseline in Evidence. Nothing else waits.
+In review, candidate on branch `worktree-G-260928-kehya`, base `main`
+`9a18f57`. Acceptance 2 is measured on the next three question answers or
+plan continuations after this lands (plan step 6), against the baseline above.
+Whichever of this and
+[G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) lands second adds
+the refusal for a provider without resume.
 
-This touches the command composition in `internal/attempt/attempt.go`, which
-[G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) reshapes; whichever
-lands second adds the refusal for a provider without resume.
+Integrator: `grove approve G-260928-kehya VERDICT` in this checkout, then
+`grove integrate G-260928-kehya` in main's checkout.
