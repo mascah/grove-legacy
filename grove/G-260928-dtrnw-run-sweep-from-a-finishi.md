@@ -80,7 +80,65 @@ there).
    real-provider trial in a disposable project under a budget the owner
    names at assignment.
 
+## Evidence
+
+Branch `worktree-G-260928-dtrnw`, base `main` at `9a18f57`, plan
+[G-260929-9sszy](G-260929-9sszy-sweep-from-a-finishing-a.md); code at
+`0006993`. Not a candidate yet: see Next.
+
+- The owner process runs `sweep.Own`: `attempt.Own`, then `sweep.After`,
+  which sweeps only the members the result holds in review with a
+  candidate, in the target's checkout, under its committed policy, and
+  appends each fact to the attempt's `sweep.log` (`View.Sweep`; `grove
+  attempt` prints `Sweep:` lines; the attempt screen shows them). It unsets
+  `GROVE_ATTEMPT_OWNER` before any `verify` command.
+- One sweep per repository at a time (`.git/grove/sweep.lock`): `grove
+  sweep` and `S` refuse while it is held, an owner waits for it.
+- The board plans once per re-read, after the predictions and cancellable
+  (`sweep.PlanContext`), tags each Review card `sweep: ACT`, and adds a
+  `Sweep:` row to the Review block; `S` asks y/n, then sweeps.
+
+Acceptance, all in `internal/sweep/sweep_test.go` (TestMain's fake provider
+through the real owner) and `internal/tui`:
+
+1. Met: `TestAnAttemptsOwnerIntegratesItsCandidateInsideThePolicy`: done on
+   main, delegated verdict naming the attempt, `sweep.log` says verified,
+   approved and done.
+2. Met: subtests "out of policy" (waits, never path named) and "a
+   conflict" (a resolution attempt starts; its own end sweeps and waits:
+   "again after a resolution of main at …").
+3. Met: "no policy" (no `sweep.log`, nothing written), "a dirty target",
+   "no target checkout"; also "while another sweep runs".
+4. Met: `TestReviewCardsShowTheSweepAndSRunsIt`, and the attempt screen's
+   `Sweep` rows in `TestAttemptScreenHonesty`.
+5. Docs met: `docs/commands.md` (Attempts; Sweep, "After an attempt"),
+   `docs/board.md`, and README, `docs/record-model.md` and
+   `docs/work-execution.md` where they said who runs a sweep. The
+   real-provider trial is not run: no budget was named
+   ([G-260929-s0f25](G-260929-s0f25-what-budget-may-the-real.md)).
+
+Verification at `0006993`: `go vet ./...` and `gofmt -l .` clean; `go run
+./cmd/grove check` OK, 250 records; `go test -count=1 -timeout 120s ./...`
+all ok; `python3 internal/tui/testdata/terminal.py` all six ok. `go test
+-count=1 ./internal/sweep` alone takes about 3 s.
+
+Review: [G-260929-zznyj](G-260929-zznyj-review-of-g-260928-dtrnw.md), three
+rounds, the last at `0006993`: one minor finding open (a comment in
+`internal/sweep/sweep.go` overclaims ctx), the rest fixed.
+
+Also removed a duplicate set of empty headings at the top of this body.
+
 ## Next
 
-Assign: `/grove-work G-260928-dtrnw`. G-260928-c5j9d names this record in
-its `depends_on`.
+Checkpoint 2026-09-29, headless attempt: active, stopped at the review
+cap with one open finding, and waiting on question
+[G-260929-s0f25](G-260929-s0f25-what-budget-may-the-real.md) (the trial's
+budget, model and effort).
+
+1. Owner: answer G-260929-s0f25.
+2. Then resume on this branch: `/grove-work G-260928-dtrnw`. Fix the open
+   finding (use `repo.GitContext` for the branch check in
+   `sweep.PlanContext`, or narrow its comment), review it at a new gate,
+   run the trial under the answered budget, and hand off with the candidate.
+
+G-260928-c5j9d names this record in its `depends_on`.
