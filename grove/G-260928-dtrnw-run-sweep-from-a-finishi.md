@@ -2,9 +2,9 @@
 id: "G-260928-dtrnw"
 type: work
 title: "Run sweep from a finishing attempt and from the board"
-status: review
+status: done
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-29T03:10:51Z"
+updated: "2026-09-29T03:10:54Z"
 kind: feature
 size: medium
 relates_to: ["G-260925-5wrn8", "G-260925-wh9ax", "G-260926-a8vyj", "G-260923-tnn5e"]
