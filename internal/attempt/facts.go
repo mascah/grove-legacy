@@ -131,6 +131,9 @@ func Facts(v *View, visible func(string) string) []string {
 			line("Record on the branch: unreadable: %s", visible(r.RecordError))
 		}
 	}
+	for _, fact := range v.Sweep {
+		line("Sweep: %s", visible(fact))
+	}
 	if v.Shape != nil {
 		line("Shape: %s", visible(shapeText(v)))
 	} else if v.ShapeError != "" {

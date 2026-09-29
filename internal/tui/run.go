@@ -15,6 +15,7 @@ import (
 	"github.com/mascah/grove/internal/attempt"
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/integrate"
+	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
 )
@@ -110,6 +111,25 @@ func Live() Backend {
 		},
 	}
 	liveAttempts(&b)
+	b.SweepPlan = func(ctx context.Context, root string) ([]sweep.Item, error) {
+		s, err := sweep.PlanContext(ctx, root)
+		if err != nil {
+			return nil, err
+		}
+		return s.Items, nil
+	}
+	b.Sweep = func(_ context.Context, root string) ([]string, error) {
+		s, err := sweep.Plan(root)
+		if err != nil {
+			return nil, err
+		}
+		facts := []string{"sweep in " + root + " under " + s.Attribution}
+		if len(s.Items) == 0 {
+			facts = append(facts, "no candidate is in review")
+		}
+		err = s.Run(time.Now(), func(f string) { facts = append(facts, f) })
+		return facts, err
+	}
 	b.Conflict = func(_ context.Context, req attempt.Request, shown *versions.Merge) ([]string, error) {
 		var facts []string
 		l, err := attempt.Resolve(req, shown, time.Now(), func(f string) { facts = append(facts, f) })

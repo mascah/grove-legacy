@@ -4,7 +4,9 @@
 // policy's conditions once the merged result passed its verification. Each
 // act is attributed to the policy's grove.yaml revision. Everything the
 // policy does not name waits for the owner, and no policy means nothing
-// happens. Nothing runs between sweeps: the owner or a scheduler runs one.
+// happens. The owner, a scheduler, the board's S, or the owner process of an
+// attempt that handed a candidate off (G-260928-dtrnw) runs one; nothing runs
+// between sweeps.
 package sweep
 
 import (
@@ -20,6 +22,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/mascah/grove/internal/attempt"
@@ -65,9 +68,15 @@ type Sweep struct {
 	records      string // the record root, project-relative
 }
 
-// Plan reads every candidate in review on a branch other than the target and
-// decides, without writing anything, what the policy does to each.
-func Plan(root string) (*Sweep, error) {
+// Plan reads every candidate in review on a branch other than the target, or
+// only the IDs in only when some are given, and decides, without writing
+// anything, what the policy does to each.
+func Plan(root string, only ...string) (*Sweep, error) {
+	return PlanContext(context.Background(), root, only...)
+}
+
+// PlanContext is Plan, whose Git reads end when ctx does.
+func PlanContext(ctx context.Context, root string, only ...string) (*Sweep, error) {
 	p, ds := project.Load(root, root)
 	if len(ds) != 0 {
 		return nil, fmt.Errorf("the project is not valid; fix it before sweeping:\n%s", ds[0].String())
@@ -75,7 +84,7 @@ func Plan(root string) (*Sweep, error) {
 	if p.Target == "" {
 		return nil, errors.New("sweep needs target: BRANCH in grove.yaml, the branch candidates are integrated into")
 	}
-	if branch, err := update.Branch(root); err != nil {
+	if branch, err := update.BranchContext(ctx, root); err != nil {
 		return nil, err
 	} else if branch != p.Target {
 		return nil, fmt.Errorf("sweep runs in the checkout of the target %s, whose grove.yaml holds the policy; this one is on %s", p.Target, cmp.Or(branch, "no branch"))
@@ -83,12 +92,12 @@ func Plan(root string) (*Sweep, error) {
 	if p.Policy == nil {
 		return nil, errors.New("grove.yaml has no policy: nothing is automatic, and every candidate in review waits for the owner")
 	}
-	if status, err := repo.Git(root, "status", "--porcelain", "--", "grove.yaml"); err != nil {
+	if status, err := repo.GitContext(ctx, root, "status", "--porcelain", "--", "grove.yaml"); err != nil {
 		return nil, err
 	} else if status != "" {
 		return nil, errors.New("grove.yaml has uncommitted changes; commit the policy first, since every act names the revision it ran under")
 	}
-	res, err := versions.Inspect(p.Root, "")
+	res, err := versions.InspectContext(ctx, p.Root, "")
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +105,9 @@ func Plan(root string) (*Sweep, error) {
 	found := map[string][]*versions.Version{}
 	var ids []string // in the groups' order, by ID
 	for _, g := range res.Groups {
+		if len(only) != 0 && !slices.Contains(only, g.ID) {
+			continue
+		}
 		for i := range g.Versions {
 			v := &g.Versions[i]
 			if v.Source.Kind == "committed" && v.Source.Ref != "refs/heads/"+p.Target && v.Record != nil && v.Record.Type == "work" && v.Record.Status == "review" && v.Record.Candidate != "" {
@@ -108,7 +120,7 @@ func Plan(root string) (*Sweep, error) {
 	}
 	spent := 0.0
 	for _, id := range ids {
-		it := s.plan(res, p, found[id], &spent)
+		it := s.plan(ctx, res, p, found[id], &spent)
 		s.Items = append(s.Items, it)
 	}
 	return s, nil
@@ -116,7 +128,7 @@ func Plan(root string) (*Sweep, error) {
 
 // plan decides one candidate. spent is the aggregate budget the resolutions
 // planned before it take.
-func (s *Sweep) plan(res *versions.Result, p *project.Project, vs []*versions.Version, spent *float64) Item {
+func (s *Sweep) plan(ctx context.Context, res *versions.Result, p *project.Project, vs []*versions.Version, spent *float64) Item {
 	v := vs[0]
 	r := v.Record
 	it := Item{ID: r.ID, Branch: strings.TrimPrefix(v.Source.Ref, "refs/heads/"), Candidate: r.Candidate, tip: v.Source.Commit}
@@ -142,7 +154,7 @@ func (s *Sweep) plan(res *versions.Result, p *project.Project, vs []*versions.Ve
 		}
 		return wait("shares its candidate with %s; a shared candidate waits for the owner", strings.Join(others, ", "))
 	}
-	ms, err := versions.PredictContext(context.Background(), s.Root, "refs/heads/"+s.Target, []string{it.tip})
+	ms, err := versions.PredictContext(ctx, s.Root, "refs/heads/"+s.Target, []string{it.tip})
 	if err != nil {
 		return wait("its merge into %s could not be predicted: %v", s.Target, err)
 	}
@@ -170,7 +182,7 @@ func (s *Sweep) plan(res *versions.Result, p *project.Project, vs []*versions.Ve
 	if it.checkout == "" {
 		return wait("no checkout is on branch %s", it.Branch)
 	}
-	views, err := attempt.List(s.Root, r.ID)
+	views, err := attempt.ListDir(filepath.Join(res.Repository, "grove", "attempts"), r.ID)
 	if err != nil {
 		return wait("its attempts could not be read: %v", err)
 	}
@@ -182,7 +194,7 @@ func (s *Sweep) plan(res *versions.Result, p *project.Project, vs []*versions.Ve
 	if it.merge.Outcome == "conflict" {
 		return s.planResolve(it, r, p, spent)
 	}
-	return s.planApprove(it, r, records)
+	return s.planApprove(ctx, it, r, records)
 }
 
 func (s *Sweep) planResolve(it Item, r *project.Record, p *project.Project, spent *float64) Item {
@@ -218,24 +230,24 @@ func (s *Sweep) planResolve(it Item, r *project.Record, p *project.Project, spen
 	return it
 }
 
-func (s *Sweep) planApprove(it Item, r *project.Record, records []*project.Record) Item {
+func (s *Sweep) planApprove(ctx context.Context, it Item, r *project.Record, records []*project.Record) Item {
 	merge := it.merge.Text(s.Target)
 	it.Act = Wait
 	if !s.Policy.Approve {
 		it.Why = merge + "; the policy does not approve"
 		return it
 	}
-	if others, err := versions.Others(context.Background(), s.Root, r.Candidate, it.tip, r.Path); err != nil || len(others) != 0 {
+	if others, err := versions.Others(ctx, s.Root, r.Candidate, it.tip, r.Path); err != nil || len(others) != 0 {
 		it.Why = fmt.Sprintf("commits after candidate %s change %s: the tip is a new candidate", short(r.Candidate), cmp.Or(strings.Join(others, ", "), fmt.Sprint(err)))
 		return it
 	}
-	review, why := s.review(r, records)
+	review, why := s.review(ctx, r, records)
 	if review == nil {
 		it.Why = why
 		return it
 	}
 	it.review = review
-	lines, why := s.scope(r)
+	lines, why := s.scope(ctx, r)
 	if why != "" {
 		it.Why = why
 		return it
@@ -257,14 +269,14 @@ func (s *Sweep) planApprove(it Item, r *project.Record, records []*project.Recor
 // they examined it, or an earlier commit from which only records changed.
 // Every one must close with ClosingLine, so a later review's open finding
 // is never outvoted; the newest is the one the verdict names.
-func (s *Sweep) review(r *project.Record, records []*project.Record) (*project.Record, string) {
+func (s *Sweep) review(ctx context.Context, r *project.Record, records []*project.Record) (*project.Record, string) {
 	var found *project.Record
 	for _, o := range slices.Backward(records) {
 		if o.Type != "review" || o.Status != "current" || !slices.Contains(o.Work, r.ID) || o.Examined == "" {
 			continue
 		}
 		if !update.SameCommit(o.Examined, r.Candidate) {
-			changed, err := repo.Git(s.Root, "diff", "--name-only", "-z", "--no-relative", o.Examined, r.Candidate)
+			changed, err := repo.GitContext(ctx, s.Root, "diff", "--name-only", "-z", "--no-relative", o.Examined, r.Candidate)
 			if err != nil {
 				return nil, fmt.Sprintf("review %s examined %s, which could not be compared with the candidate: %v", o.ID, short(o.Examined), err)
 			}
@@ -293,8 +305,8 @@ func (s *Sweep) review(r *project.Record, records []*project.Record) (*project.R
 // scope counts the lines the candidate changes against its merge base with
 // the target, and refuses a never path, a path outside the project, a binary
 // change, or more than max_lines.
-func (s *Sweep) scope(r *project.Record) (int, string) {
-	out, err := repo.Git(s.Root, "diff", "--numstat", "-z", "--no-relative", "--no-renames", "refs/heads/"+s.Target+"..."+r.Candidate)
+func (s *Sweep) scope(ctx context.Context, r *project.Record) (int, string) {
+	out, err := repo.GitContext(ctx, s.Root, "diff", "--numstat", "-z", "--no-relative", "--no-renames", "refs/heads/"+s.Target+"..."+r.Candidate)
 	if err != nil {
 		return 0, fmt.Sprintf("its changes could not be read: %v", err)
 	}
@@ -330,8 +342,20 @@ func (s *Sweep) scope(r *project.Record) (int, string) {
 
 // Run acts on the plan, reporting one line per candidate and per fact. An
 // act that fails leaves that candidate waiting with the reason; the sweep
-// goes on to the next.
-func (s *Sweep) Run(now time.Time, report func(string)) {
+// goes on to the next. It refuses, having done nothing, while another sweep
+// of the repository runs.
+func (s *Sweep) Run(now time.Time, report func(string)) error {
+	unlock, err := lock(s.Root, nil)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	s.run(now, report)
+	return nil
+}
+
+// run is Run under the lock its caller holds.
+func (s *Sweep) run(now time.Time, report func(string)) {
 	for _, it := range s.Items {
 		say := func(format string, args ...any) { report(it.ID + ": " + fmt.Sprintf(format, args...)) }
 		switch it.Act {
@@ -352,6 +376,132 @@ func (s *Sweep) Run(now time.Time, report func(string)) {
 			s.approve(it, now, say)
 		}
 	}
+}
+
+// lock takes the repository's sweep lock, beside its attempts: one sweep at
+// a time, whoever started it. Held elsewhere, it refuses, or, given waiting,
+// calls it and waits.
+func lock(root string, waiting func()) (func(), error) {
+	dir, err := attempt.Dir(root)
+	if err != nil {
+		return nil, err
+	}
+	dir = filepath.Dir(dir)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return nil, err
+	}
+	f, err := os.OpenFile(filepath.Join(dir, "sweep.lock"), os.O_CREATE|os.O_RDWR, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	if errors.Is(err, syscall.EWOULDBLOCK) {
+		if waiting == nil {
+			f.Close()
+			return nil, errors.New("another sweep of this repository is running; nothing was done")
+		}
+		waiting()
+		err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX)
+	}
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return func() { f.Close() }, nil
+}
+
+// Own runs as an attempt's owner, as attempt.Own does, and then sweeps for
+// the candidates the attempt handed off, as After says. cmd/grove and every
+// test binary that is its own owner call it.
+func Own(dir string) int {
+	code := attempt.Own(dir)
+	// A verify command's grove or test binary must not take itself for
+	// this attempt's owner.
+	os.Unsetenv(attempt.OwnerEnv)
+	After(dir, time.Now())
+	return code
+}
+
+// After sweeps, in the target's checkout under its committed policy, the
+// work an ended attempt handed off in review with a candidate, and appends
+// what it did, or why it did not run, to the attempt's sweep.log. It writes
+// nothing for an attempt that handed nothing off, a launch without a target,
+// or a target whose grove.yaml has no policy. Nobody waits on it, so it
+// waits for a sweep already running rather than leave its work unswept.
+func After(dir string, now time.Time) {
+	v, err := attempt.Read(dir)
+	if err != nil || v.Result == nil || v.Launch.Target == "" {
+		return
+	}
+	var ids []string
+	for _, m := range v.Result.Members {
+		if m.Record != nil && m.Record.Status == "review" && m.Record.Candidate != "" {
+			ids = append(ids, m.ID)
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	var log *os.File
+	say := func(fact string) {
+		if log == nil {
+			f, err := os.OpenFile(filepath.Join(dir, attempt.SweepLog), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+			if err != nil {
+				return
+			}
+			log = f
+		}
+		fmt.Fprintf(log, "%s %s\n", time.Now().UTC().Format(time.RFC3339), fact)
+	}
+	defer func() {
+		if log != nil {
+			log.Close()
+		}
+	}()
+	root := ""
+	worktrees, err := repo.Worktrees(v.Launch.Worktree)
+	if err != nil {
+		say("not swept: the worktrees could not be read: " + err.Error())
+		return
+	}
+	for _, w := range worktrees {
+		if w.Branch == "refs/heads/"+v.Launch.Target && w.Prunable == "" {
+			root = filepath.Join(w.Path, v.Launch.Prefix)
+		}
+	}
+	if root == "" {
+		say("not swept: no checkout is on the target " + v.Launch.Target)
+		return
+	}
+	// A configuration that parsed without a policy is silence; one that did
+	// not parse is Plan's to refuse, and said.
+	if p, _ := project.Load(root, root); p != nil && p.RecordDir != "" && p.Policy == nil {
+		return
+	}
+	unlock, err := lock(root, func() { say("waiting for another sweep of this repository to end") })
+	if err != nil {
+		say("not swept: " + err.Error())
+		return
+	}
+	defer unlock()
+	switch dirty, err := repo.Git(root, "status", "--porcelain", "--untracked-files=no"); {
+	case err != nil:
+		say(fmt.Sprintf("not swept: the checkout of %s at %s could not be read: %v", v.Launch.Target, root, err))
+		return
+	case dirty != "":
+		say(fmt.Sprintf("not swept: the checkout of %s at %s has uncommitted changes; nothing was written", v.Launch.Target, root))
+		return
+	}
+	s, err := Plan(root, ids...)
+	if err != nil {
+		say("not swept: " + err.Error())
+		return
+	}
+	say(fmt.Sprintf("sweep of %s in %s under %s", strings.Join(ids, ", "), root, s.Attribution))
+	if len(s.Items) == 0 {
+		say("no candidate of " + strings.Join(ids, ", ") + " is committed in review on a branch")
+	}
+	s.run(now, say)
 }
 
 func (s *Sweep) approve(it Item, now time.Time, say func(string, ...any)) {

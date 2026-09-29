@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -15,13 +16,31 @@ import (
 	"github.com/mascah/grove/internal/update"
 )
 
-// TestMain lets the test binary be the owner a resolution attempt starts, as
-// cmd/grove does.
+// TestMain lets the test binary be the owner an attempt starts, sweeping after
+// it as cmd/grove does, and makes every attempt's provider the fake handedOff
+// describes unless a test sets its own.
 func TestMain(m *testing.M) {
 	if dir := os.Getenv(attempt.OwnerEnv); dir != "" {
-		os.Exit(attempt.Own(dir))
+		os.Exit(Own(dir))
 	}
-	os.Exit(m.Run())
+	dir, err := os.MkdirTemp("", "grove-sweep-fake-")
+	if err != nil {
+		panic(err)
+	}
+	fake := filepath.Join(dir, "claude")
+	// The worktree is <dir>/repo/.claude/worktrees/<branch>, and <dir> holds
+	// what to hand off.
+	script := "#!/bin/sh\n[ \"$1\" = --version ] && { echo 'fake 0.1'; exit 0; }\nset -e\nD=$(cd ../../../.. && pwd)\n" +
+		"cp -R \"$D/files/.\" .\ngit add -A\ngit commit -q --allow-empty -m 'feat: the change'\n" +
+		"sed \"s/EXAMINED/$(git rev-parse HEAD)/\" \"$D/review.md\" > grove/G-260101-00005-review.md\ngit add -A\ngit commit -qm 'docs: review'\n" +
+		"f=grove/G-260101-00001-first.md\nawk -v c=\"$(git rev-parse HEAD)\" '/^candidate:/ {next} /^status:/ {print \"status: review\"; print \"candidate: \\\"\" c \"\\\"\"; next} {print}' $f > $f.new\nmv $f.new $f\ngit commit -qam 'docs: hand off'\n"
+	if err := os.WriteFile(fake, []byte(script), 0o755); err != nil {
+		panic(err)
+	}
+	os.Setenv(attempt.ClaudeEnv, fake)
+	code := m.Run()
+	os.RemoveAll(dir)
+	os.Exit(code)
 }
 
 const (
@@ -323,10 +342,10 @@ func TestSweepHeedsEveryReviewOfTheCandidate(t *testing.T) {
 		return &project.Record{ID: id, Type: "review", Status: "current", Work: []string{"G-260101-00001"}, Examined: "abcdef1234", Source: []byte("Findings.\n\n" + closing + "\n")}
 	}
 	s := &Sweep{}
-	if got, why := s.review(r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", "Open findings: 1")}); got != nil || !strings.Contains(why, "review G-260101-00007 of candidate abcdef1 does not end with") {
+	if got, why := s.review(context.Background(), r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", "Open findings: 1")}); got != nil || !strings.Contains(why, "review G-260101-00007 of candidate abcdef1 does not end with") {
 		t.Fatalf("got %v, %q", got, why)
 	}
-	if got, _ := s.review(r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", ClosingLine)}); got == nil || got.ID != "G-260101-00007" {
+	if got, _ := s.review(context.Background(), r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", ClosingLine)}); got == nil || got.ID != "G-260101-00007" {
 		t.Fatalf("got %v, want the newest", got)
 	}
 }
@@ -354,5 +373,210 @@ func TestSweepIntegratesSeveralCandidatesInOneSweep(t *testing.T) {
 	joined := strings.Join(facts, "\n")
 	if strings.Count(joined, ": done: ") != 2 || strings.Contains(joined, "waits") {
 		t.Fatalf("facts:\n%s", joined)
+	}
+}
+
+// handedOff launches one attempt of G-260101-00001, active on main with
+// config, through TestMain's fake provider, which hands off a candidate
+// writing files with a review that closes clean, and waits until the
+// attempt's owner has exited, its sweep included. setup runs in main's
+// checkout before the launch. It returns main's checkout, the branch's, and
+// the attempt.
+func handedOff(t *testing.T, config string, files map[string]string, setup func(root string)) (root, wt string, v *attempt.View) {
+	t.Helper()
+	if testing.Short() {
+		t.Skip("waits on a fake provider's attempt and its owner's sweep")
+	}
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not installed")
+	}
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	root = filepath.Join(dir, "repo")
+	git(t, dir, "init", "-q", "-b", "main", root)
+	for _, kv := range [][2]string{{"user.name", "t"}, {"user.email", "t@t"}, {"commit.gpgsign", "false"}, {"maintenance.auto", "false"}} {
+		git(t, root, "config", kv[0], kv[1])
+	}
+	write(t, root, ".gitignore", ".claude/worktrees/\n")
+	write(t, root, "grove.yaml", config)
+	write(t, root, "grove/G-260101-00001-first.md", strings.Replace(work, "%s", "active", 1))
+	write(t, root, attempt.SkillPath, "---\nname: grove-work\n---\n")
+	write(t, root, "code.txt", "base\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "init")
+	for name, content := range files {
+		write(t, dir, filepath.Join("files", name), content)
+	}
+	write(t, dir, "review.md", strings.Replace(strings.Replace(review, "%s", "EXAMINED", 1), "%s", ClosingLine, 1))
+	if setup != nil {
+		setup(root)
+	}
+	l, err := attempt.Start(attempt.Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}, now, func(string) {})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return root, l.Worktree, ended(t, root, l.Attempt)
+}
+
+// ended waits until the attempt's owner has exited and reads it.
+func ended(t *testing.T, root, id string) *attempt.View {
+	t.Helper()
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		v, err := attempt.Show(root, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// The owner has released the attempt's lock when it sweeps: its exit
+		// is the end, and what it wrote is read after it.
+		if v.Status == attempt.Finished && syscall.Kill(v.Launch.Owner, 0) != nil {
+			if v, err = attempt.Show(root, id); err != nil {
+				t.Fatal(err)
+			}
+			return v
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("attempt %s did not end: %+v", id, v)
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
+
+func TestAnAttemptsOwnerIntegratesItsCandidateInsideThePolicy(t *testing.T) {
+	t.Parallel()
+	// The owner's environment must not reach a verify command, or a grove
+	// or test binary there would take itself for the attempt's owner.
+	config := strings.Replace(policy, "%s", "grep -q change code.txt, 'test -z \"$GROVE_ATTEMPT_OWNER\"'", 1)
+	root, _, v := handedOff(t, config, map[string]string{"code.txt": "the change\n"}, nil)
+	joined := strings.Join(v.Sweep, "\n")
+	for _, want := range []string{"sweep of G-260101-00001 in " + root + " under policy grove.yaml sha256:", "G-260101-00001: verified: ", "G-260101-00001: approved under policy", "G-260101-00001: done: "} {
+		if !strings.Contains(joined, want) {
+			t.Fatalf("missing %q in sweep.log:\n%s", want, joined)
+		}
+	}
+	if r := record(t, root); r.Status != "done" || !update.Delegated(r) || !strings.Contains(string(r.Source), "attempt "+v.Launch.Attempt+" produced it") {
+		t.Fatalf("record on main:\n%s", r.Source)
+	}
+	if facts := strings.Join(attempt.Facts(v, func(s string) string { return s }), "\n"); !strings.Contains(facts, "Sweep: ") {
+		t.Fatalf("facts:\n%s", facts)
+	}
+}
+
+func TestAnAttemptsOwnerLeavesWhatThePolicyDoesNotName(t *testing.T) {
+	t.Parallel()
+	config := strings.Replace(policy, "%s", "'true'", 1)
+	t.Run("out of policy", func(t *testing.T) {
+		t.Parallel()
+		root, wt, v := handedOff(t, config, map[string]string{"secret/key": "x\n"}, nil)
+		if len(v.Sweep) != 2 || !strings.Contains(v.Sweep[1], "G-260101-00001: waits: changes secret/key, which never matches") {
+			t.Fatalf("sweep.log %q", v.Sweep)
+		}
+		if r := record(t, wt); r.Status != "review" || r.Approved != "" || record(t, root).Status != "active" {
+			t.Fatalf("something was written:\n%s", r.Source)
+		}
+	})
+	t.Run("a conflict", func(t *testing.T) {
+		t.Parallel()
+		root, wt, v := handedOff(t, config, map[string]string{"code.txt": "branch\n"}, func(root string) {
+			git(t, root, "branch", "worktree-G-260101-00001")
+			write(t, root, "code.txt", "main\n")
+			git(t, root, "commit", "-qam", "main moves")
+		})
+		last := v.Sweep[len(v.Sweep)-1]
+		if !strings.Contains(last, "G-260101-00001: resolution attempt ") {
+			t.Fatalf("sweep.log %q", v.Sweep)
+		}
+		// The resolution attempt hands the same conflict back; its own
+		// owner's sweep waits instead of trying again.
+		views, err := attempt.List(root, "G-260101-00001")
+		if err != nil || len(views) != 2 {
+			t.Fatalf("attempts %v, %v", views, err)
+		}
+		again := ended(t, root, views[0].Launch.Attempt)
+		if again.Launch.Attempt == v.Launch.Attempt {
+			again = ended(t, root, views[1].Launch.Attempt)
+		}
+		if len(again.Sweep) != 2 || !strings.Contains(again.Sweep[1], "waits: ") || !strings.Contains(again.Sweep[1], "again after a resolution of main at ") {
+			t.Fatalf("the resolution's sweep.log %q", again.Sweep)
+		}
+		if r := record(t, wt); r.Status != "review" || r.Approved != "" {
+			t.Fatalf("record:\n%s", r.Source)
+		}
+	})
+	t.Run("no policy", func(t *testing.T) {
+		t.Parallel()
+		root, wt, v := handedOff(t, "schema_version: 3\nrecords: grove\ntarget: main\n", map[string]string{"code.txt": "x\n"}, nil)
+		if v.Sweep != nil || record(t, wt).Status != "review" || record(t, root).Status != "active" {
+			t.Fatalf("sweep.log %q", v.Sweep)
+		}
+		if _, err := os.Stat(filepath.Join(v.Dir, attempt.SweepLog)); !os.IsNotExist(err) {
+			t.Fatalf("sweep.log written: %v", err)
+		}
+	})
+	t.Run("a dirty target", func(t *testing.T) {
+		t.Parallel()
+		root, wt, v := handedOff(t, config, map[string]string{"code.txt": "the change\n"}, func(root string) {
+			write(t, root, "code.txt", "edited\n")
+		})
+		if len(v.Sweep) != 1 || !strings.Contains(v.Sweep[0], "not swept: the checkout of main at "+root+" has uncommitted changes; nothing was written") {
+			t.Fatalf("sweep.log %q", v.Sweep)
+		}
+		if r := record(t, wt); r.Status != "review" || r.Approved != "" {
+			t.Fatalf("record:\n%s", r.Source)
+		}
+	})
+	t.Run("while another sweep runs", func(t *testing.T) {
+		t.Parallel()
+		// The owner waits, saying so, until the sweep holding the lock ends.
+		root, _, v := handedOff(t, config, map[string]string{"code.txt": "the change\n"}, func(root string) {
+			unlock, err := lock(root, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			go func() {
+				defer unlock()
+				for deadline := time.Now().Add(20 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+					views, _ := attempt.List(root, "G-260101-00001")
+					if len(views) == 1 && views[0].Status == attempt.Finished && len(views[0].Sweep) != 0 {
+						return
+					}
+				}
+			}()
+		})
+		if len(v.Sweep) < 2 || !strings.Contains(v.Sweep[0], "waiting for another sweep of this repository to end") || !strings.Contains(v.Sweep[len(v.Sweep)-1], "G-260101-00001: done: ") {
+			t.Fatalf("sweep.log %q", v.Sweep)
+		}
+		if r := record(t, root); r.Status != "done" {
+			t.Fatalf("record on main:\n%s", r.Source)
+		}
+	})
+	t.Run("no target checkout", func(t *testing.T) {
+		t.Parallel()
+		_, _, v := handedOff(t, config, map[string]string{"code.txt": "the change\n"}, func(root string) {
+			git(t, root, "checkout", "-q", "-b", "elsewhere")
+		})
+		if len(v.Sweep) != 1 || !strings.Contains(v.Sweep[0], "not swept: no checkout is on the target main") {
+			t.Fatalf("sweep.log %q", v.Sweep)
+		}
+	})
+}
+
+// One sweep at a time: a second refuses, having done nothing.
+func TestSweepRefusesWhileAnotherRuns(t *testing.T) {
+	t.Parallel()
+	root, _ := fixture(t, strings.Replace(policy, "%s", "'true'", 1), map[string]string{"code.txt": "x\n"}, ClosingLine)
+	unlock, err := lock(root, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer unlock()
+	s, err := Plan(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Run(now, func(f string) { t.Fatalf("acted: %s", f) }); err == nil || !strings.Contains(err.Error(), "another sweep of this repository is running") {
+		t.Fatalf("got %v", err)
 	}
 }

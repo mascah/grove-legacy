@@ -22,7 +22,7 @@ an existing configuration that validates.
 | `brief` | Optional: the one project brief, a clean project-relative `.md` path without `..`; not a record, and exempt from discovery (compared without case); a live command needs a regular file there |
 | `target` | Optional: the local branch work merges into, such as `main`; surrounding spaces or a `refs/` prefix are refused |
 | `run` | Optional launch defaults for `run`, `resolve` and the board's `R`, named as their flags: `budget`, `permission_mode`, `model`, `effort` |
-| `policy` | Optional standing delegation to `grove sweep`: `budget`, `resolve`, `approve`, `integrate`; absent, nothing is automatic |
+| `policy` | Optional standing delegation to `grove sweep`, which an attempt that hands work off also runs when it ends: `budget`, `resolve`, `approve`, `integrate`; absent, nothing is automatic |
 
 Any other key, at any level, is refused. `target` is compared with branch
 names, never passed to Git; every source whose `grove.yaml` names one must

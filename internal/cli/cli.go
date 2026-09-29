@@ -133,7 +133,9 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             and, with integrate: true, integrated, each attributed to the policy's\n" +
 	"             revision. Anything else waits for the owner, with the reason. Prints one line\n" +
 	"             per candidate and per act; --dry-run prints what would happen to each and\n" +
-	"             why, and writes nothing. Refused without a policy: nothing is automatic.\n" +
+	"             why, and writes nothing. Refused without a policy: nothing is automatic,\n" +
+	"             and while another sweep runs. An attempt that hands off a candidate runs one\n" +
+	"             for it alone when it ends, its facts in the attempt's sweep.log.\n" +
 	"  run        Start one bounded implementation attempt of an explicit selection of\n" +
 	"             proposed or active work as one Grove-owned\n" +
 	"             `claude -p \"/grove-work ID... --interaction headless\"` process that outlives\n" +
@@ -390,7 +392,10 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 			}
 			return 0
 		}
-		s.Run(time.Now(), func(fact string) { fmt.Fprintln(out, visible(fact)) })
+		if err := s.Run(time.Now(), func(fact string) { fmt.Fprintln(out, visible(fact)) }); err != nil {
+			report(errOut, err)
+			return 1
+		}
 		return 0
 	case "attempts":
 		views, err := attempt.List(p.Root, a.id)

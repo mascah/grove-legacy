@@ -12,6 +12,7 @@
 //	events.jsonl  the provider's stdout, raw, written by the kernel
 //	stderr.log    the provider's stderr, raw
 //	result.json   written once when the process is gone: exit, fields, counts
+//	sweep.log     after it, the sweep the owner ran for a handoff: its facts
 //
 // Liveness is the lock, never a pid alone: running means the owner holds
 // owner.lock; owner lost with the child's process group still alive is
@@ -62,6 +63,11 @@ const MaxLine = 1 << 20
 // stopGrace is how long the owner waits after SIGINT, which ends the turn,
 // before SIGKILL to the child's process group.
 const stopGrace = 15 * time.Second
+
+// SweepLog is the file in an attempt's directory where its owner, once the
+// result is written, says what the sweep for its handoff did or why it did
+// not run (G-260928-dtrnw), one fact a line.
+const SweepLog = "sweep.log"
 
 // ReviewerPath is where a checkout holds the reviewer definition the work
 // guide dispatches reviews through, relative to the project.
@@ -200,17 +206,18 @@ const (
 
 // View is one attempt as read.
 type View struct {
-	Dir           string  `json:"dir"`
-	Launch        Launch  `json:"launch"`
-	Status        Status  `json:"status"`
-	ChildPGID     int     `json:"child_pgid,omitempty"`
-	Result        *Result `json:"result,omitempty"`
-	Events        *Events `json:"events,omitempty"`         // while there is no result: a bounded read so far
-	InputsChanged string  `json:"inputs_changed,omitempty"` // the record on the target no longer hashes to the launch revision
-	Shape         *Shape  `json:"shape,omitempty"`          // with events: derived from all of events.jsonl
-	ShapeError    string  `json:"shape_error,omitempty"`    // why Shape could not be derived
-	EventsPath    string  `json:"events_path"`
-	StderrPath    string  `json:"stderr_path"`
+	Dir           string   `json:"dir"`
+	Launch        Launch   `json:"launch"`
+	Status        Status   `json:"status"`
+	ChildPGID     int      `json:"child_pgid,omitempty"`
+	Result        *Result  `json:"result,omitempty"`
+	Events        *Events  `json:"events,omitempty"`         // while there is no result: a bounded read so far
+	InputsChanged string   `json:"inputs_changed,omitempty"` // the record on the target no longer hashes to the launch revision
+	Shape         *Shape   `json:"shape,omitempty"`          // with events: derived from all of events.jsonl
+	ShapeError    string   `json:"shape_error,omitempty"`    // why Shape could not be derived
+	Sweep         []string `json:"sweep,omitempty"`          // sweep.log's lines, once finished
+	EventsPath    string   `json:"events_path"`
+	StderrPath    string   `json:"stderr_path"`
 }
 
 // Request is one launch.
@@ -1197,6 +1204,9 @@ func ShowContext(ctx context.Context, root, attempt string, events bool) (*View,
 	return v, nil
 }
 
+// Read reads the attempt at dir, as List does.
+func Read(dir string) (*View, error) { return read(dir, false) }
+
 // read classifies one attempt; with events, an unfinished one also gets a
 // bounded read of its events so far, which List leaves to Show.
 func read(dir string, events bool) (*View, error) {
@@ -1218,6 +1228,9 @@ func read(dir string, events bool) (*View, error) {
 	switch err := readJSON(filepath.Join(dir, "result.json"), &res); {
 	case err == nil:
 		v.Status, v.Result = Finished, &res
+		if log, err := os.ReadFile(filepath.Join(dir, SweepLog)); err == nil {
+			v.Sweep = strings.Split(strings.TrimSuffix(string(log), "\n"), "\n")
+		}
 		return v, nil
 	case !errors.Is(err, os.ErrNotExist):
 		return nil, err

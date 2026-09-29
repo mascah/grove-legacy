@@ -327,10 +327,14 @@ func (m *Model) render() string {
 		if m.current() {
 			shelf = "deleted"
 		}
+		sweep, sweepKey := "", "" // S sweeps under the policy
+		if m.backend.Sweep != nil {
+			sweep, sweepKey = "S sweep   ", "S sweep  "
+		}
 		rows, hints = m.boardBody(w, body), pick(w,
-			"←/→ columns   ↑/↓ cards   Enter open   / search   g dependencies   a abandoned   A attempts   Tab "+shelf+"   b view or checkout   s sources   r refresh   q quit",
-			"←→↑↓ move  Enter open  / search  g dependencies  a abandoned  Tab "+shelf+"  b view or checkout  s  r  q quit",
-			"←→↑↓  Enter open  / search  g deps  a  Tab "+shelf+"  b  s  r  q quit",
+			"←/→ columns   ↑/↓ cards   Enter open   / search   g dependencies   a abandoned   A attempts   "+sweep+"Tab "+shelf+"   b view or checkout   s sources   r refresh   q quit",
+			"←→↑↓ move  Enter open  / search  g dependencies  a abandoned  "+sweepKey+"Tab "+shelf+"  b view or checkout  s  r  q quit",
+			"←→↑↓  Enter open  / search  g deps  a  "+sweepKey+"Tab "+shelf+"  b  s  r  q quit",
 			"Enter open  / g a Tab b s r  q quit")
 	}
 	out := append([]string{bold(line(m.header(), w)), line(m.banner(), w)}, fit(rows, body, w)...)
