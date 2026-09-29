@@ -1157,6 +1157,16 @@ func (m *Model) attemptRows(w int) []string {
 			rows = append(rows, faint.Render(label)+r)
 		}
 	}
+	// What the owner's sweep did after the handoff (G-260928-dtrnw).
+	for i, f := range v.Sweep {
+		for j, r := range wrap(f, w-7) {
+			label := "       "
+			if i == 0 && j == 0 {
+				label = "Sweep  "
+			}
+			rows = append(rows, faint.Render(label)+r)
+		}
+	}
 	if m.facts {
 		rows = append(rows, blank, bold(line("Details · d hides them", w)))
 		for _, f := range attempt.Facts(m.run, func(s string) string { return s }) {

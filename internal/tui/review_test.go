@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/versions"
 )
 
@@ -351,7 +352,7 @@ func TestReviewActionsNeedTheRightCheckout(t *testing.T) {
 	}
 	f.res.Groups = f.res.Groups[:1]
 	m = openReview(t, f, 120, 36)
-	if s := plain(m); !strings.Contains(s, "a approve and f feedback: no checkout is on branch feature; git worktree add one, or run grove approve there") || !strings.Contains(s, "integrate: no checkout is on the target main; i needs one") {
+	if s := plain(m); !strings.Contains(s, "a approve and f feedback: no checkout is on branch feature; git worktree add one, or run grove approve there") || !strings.Contains(s, "integrate: no checkout is on the target main") {
 		t.Fatalf("review block without checkouts:\n%s", s)
 	}
 	press(m, "a")
@@ -760,5 +761,70 @@ func TestReviewCardsShowApprovalAndConflicts(t *testing.T) {
 	done.Record.Candidate, done.Record.Approved = "abcdef1", "abcdef1"
 	if s := plain(open(t, &fake{res: result(fx.main, fx.sources(), done)}, 160, 36)); !onRow(s, "W-001", "approved") {
 		t.Fatalf("a Done card keeps its approval:\n%s", s)
+	}
+}
+
+// Once the board has drawn, one sweep plan per re-read, never part of the
+// load, tags each Review card with its act and names act and reason in the
+// Review block; S asks, then sweeps in the target's checkout, and the board
+// is re-read and planned again (G-260928-dtrnw).
+func TestReviewCardsShowTheSweepAndSRunsIt(t *testing.T) {
+	t.Parallel()
+	f := reviewFixture(newFixture(), false)
+	var plans, sweeps []string
+	b := f.backend()
+	b.SweepPlan = func(_ context.Context, root string) ([]sweep.Item, error) {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		plans = append(plans, root)
+		return []sweep.Item{{ID: "W-001", Act: sweep.Integrate, Why: "merges cleanly; verify, then approve and integrate \x1b[31m"}}, nil
+	}
+	b.Sweep = func(_ context.Context, root string) ([]string, error) {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		sweeps = append(sweeps, root)
+		return []string{"W-001: done: W-001 done at commit 1234567"}, nil
+	}
+	m := New(t.Context(), "/repo/.", b)
+	m.Update(tea.WindowSizeMsg{Width: 160, Height: 36})
+	next := deliver(m, m.Init())
+	if f.inspects != 1 || len(plans) != 0 || m.pending != "plan" {
+		t.Fatalf("the load plans nothing, then the board asks for one: plans %v pending %q", plans, m.pending)
+	}
+	deliverAll(m, next)
+	if s := plain(m); len(plans) != 1 || plans[0] != "/repo" || !strings.Contains(s, "sweep: integrate · not on main") || !strings.Contains(s, "S sweep") {
+		t.Fatalf("plans %v:\n%s", plans, s)
+	}
+	press(m, "S")
+	if s := plain(m); !strings.Contains(s, "Sweep every candidate in review under the policy: 1 integrate? y/n   (runs in /repo)") || len(sweeps) != 0 {
+		t.Fatalf("S asks first:\n%s", s)
+	}
+	press(m, "n")
+	if m.prompt != nil || m.notice != "cancelled; nothing was swept" || len(sweeps) != 0 {
+		t.Fatalf("n cancels: %q", m.notice)
+	}
+	deliverAll(m, press(m, "S", "y"))
+	if s := plain(m); len(sweeps) != 1 || sweeps[0] != "/repo" || !strings.Contains(s, "Sweep under the policy") || !strings.Contains(s, "W-001: done: W-001 done at commit 1234567") {
+		t.Fatalf("sweeps %v:\n%s", sweeps, s)
+	}
+	if f.inspects != 2 || len(plans) != 2 {
+		t.Fatalf("the board is re-read and planned again: inspects %d plans %v", f.inspects, plans)
+	}
+	press(m, "esc", "right", "right")
+	deliverAll(m, press(m, "enter"))
+	if s := flat(m); !strings.Contains(s, "Sweep: integrate: merges cleanly; verify, then approve and integrate") || strings.Contains(m.render(), "\x1b[31m") {
+		t.Fatalf("the Review block names the plan, escaped:\n%s", s)
+	}
+
+	// Without a policy the plan says so, and S refuses.
+	b.SweepPlan = func(context.Context, string) ([]sweep.Item, error) {
+		return nil, errors.New("grove.yaml has no policy: nothing is automatic")
+	}
+	m = New(t.Context(), "/repo/.", b)
+	m.Update(tea.WindowSizeMsg{Width: 160, Height: 36})
+	deliverAll(m, m.Init())
+	press(m, "S")
+	if m.prompt != nil || m.alert != "nothing to sweep: grove.yaml has no policy: nothing is automatic" || len(sweeps) != 1 {
+		t.Fatalf("S refuses: %q", m.alert)
 	}
 }

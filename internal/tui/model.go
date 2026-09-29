@@ -28,6 +28,7 @@ import (
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/handoff"
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/versions"
 )
 
@@ -85,6 +86,11 @@ type Backend struct {
 	// Predict merges commits into the target in order in the checkout at
 	// root, in objects only (G-260925-h8rj5); nil predicts nothing.
 	Predict func(ctx context.Context, root, target string, commits []string) ([]versions.Merge, error)
+	// SweepPlan plans a sweep in the target's checkout at root, writing
+	// nothing, once per re-read, and Sweep runs one there on S and returns
+	// its facts (G-260928-dtrnw); nil leaves the plan and S out.
+	SweepPlan func(ctx context.Context, root string) ([]sweep.Item, error)
+	Sweep     func(ctx context.Context, root string) ([]string, error)
 }
 
 type screen int
@@ -249,6 +255,8 @@ type Model struct {
 	changes   map[string]changesRead       // by candidate, tip, target and path, likewise
 	diffs     map[string]diffRead          // by base, candidate and path, likewise
 	predicts  map[string]*versions.Merge   // a Review card's merge into the target by target tip and candidate, nil where none was made, likewise
+	planned   map[string]sweep.Item        // the sweep's plan by work ID, read once per re-read (G-260928-dtrnw); nil until read
+	planErr   string                       // why the sweep could not be planned
 	md        map[string][]string          // rendered Markdown by key and width, for the current result only
 	mentions  map[string][]handoff.Mention // each record's links and code spans by revision and path, likewise
 	done      bool                         // the session is ending: start nothing more
@@ -514,9 +522,10 @@ func (m *Model) wantCopies() tea.Cmd {
 }
 
 // free reports that a read of kind may start: nothing is pending but that
-// kind, or the board's predictions, which yield to any other read.
+// kind, or the board's predictions or sweep plan, which yield to any other
+// read.
 func (m *Model) free(kind string) bool {
-	return m.pending == "" || m.pending == kind || m.pending == "predict"
+	return m.pending == "" || m.pending == kind || m.pending == "predict" || m.pending == "plan"
 }
 
 // stop cancels any read in flight and outdates its reply.
@@ -557,6 +566,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if cmd == nil {
 		cmd = m.wantPredict()
 	}
+	if cmd == nil {
+		cmd = m.wantPlan()
+	}
 	if read := m.wantAttempts(); read != nil {
 		cmd = tea.Batch(cmd, read)
 	}
@@ -575,6 +587,7 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		}
 		m.pending, m.cancel, m.hist, m.copies, m.md, m.mentions, m.asOf = "", nil, map[string]lineage{}, map[string]copiesRead{}, nil, nil, ""
 		m.changes, m.diffs, m.diff, m.predicts = map[string]changesRead{}, map[string]diffRead{}, "", map[string]*versions.Merge{}
+		m.planned, m.planErr = nil, ""
 		m.preview, m.previewErr = nil, "" // computed again from what was read
 		if msg.err != nil {
 			m.res, m.failure = nil, msg.err.Error()
@@ -636,6 +649,19 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		}
 		m.pending, m.reading, m.cancel = "", "", nil
 		m.predicts[msg.key] = msg.merge
+	case planMsg:
+		if msg.gen != m.gen || m.pending != "plan" {
+			return nil
+		}
+		m.pending, m.cancel = "", nil
+		m.planned, m.planErr = map[string]sweep.Item{}, ""
+		if msg.err != nil {
+			m.planErr = msg.err.Error()
+		}
+		for _, it := range msg.items {
+			m.planned[it.ID] = it
+		}
+		m.clampScroll()
 	case attemptsMsg:
 		return m.gotAttempts(msg)
 	case editedMsg:
@@ -656,7 +682,7 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		m.pending, m.acting, m.cancel = "", "", nil
 		title := map[string]string{"approve": "Approved " + msg.about, "feedback": "Feedback recorded on " + msg.about, "integrate": "Integration of " + msg.about,
 			"launch": "Launch of an attempt of " + msg.about, "stop": "Stop of attempt " + msg.about, "resolve": "Answer to " + msg.about,
-			"conflict": "Resolution attempt of " + msg.about}[msg.kind]
+			"conflict": "Resolution attempt of " + msg.about, "sweep": "Sweep under the policy"}[msg.kind]
 		m.result = &outcome{title: title, facts: msg.facts}
 		if msg.kind == "feedback" && msg.err == nil && m.backend.Launch != nil {
 			m.result.facts = append(m.result.facts, "or: R on "+msg.about+" launches a bounded attempt on its branch")
@@ -853,6 +879,8 @@ func (m *Model) boardKey(k string) tea.Cmd {
 		}
 	case "A":
 		m.openAttempts("")
+	case "S":
+		m.askSweep()
 	case "g":
 		m.openDeps()
 	case "enter":
@@ -1130,15 +1158,18 @@ func (m *Model) bounded() (columns [len(statuses)][]card, shelf []card, older in
 			if c.rec == nil {
 				continue
 			}
-			conflict, approved := "", ""
+			conflict, approved, swept := "", "", ""
 			if i == reviewColumn {
 				conflict = m.conflictNote(c.rec)
+				if it, ok := m.planned[c.id]; ok {
+					swept = "sweep: " + it.Act
+				}
 			}
 			if i == reviewColumn || i == doneColumn {
 				approved = approval(c.rec)
 			}
 			var tags []string
-			for _, t := range []string{m.memberTag(c.id, c.rec.Status), conflict, approved, c.tag} {
+			for _, t := range []string{m.memberTag(c.id, c.rec.Status), conflict, swept, approved, c.tag} {
 				if t != "" {
 					tags = append(tags, t)
 				}

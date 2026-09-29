@@ -772,11 +772,14 @@ func TestAttemptScreenHonesty(t *testing.T) {
 	split := bounded(view("W-002", "20260923T013000Z", attempt.Finished, &attempt.Result{Events: attempt.Events{Init: &attempt.Init{Model: "claude-opus-5-5"},
 		Result: &attempt.Final{Subtype: "success", CostUSD: 3, ModelCostUSD: map[string]float64{"claude-opus-5-5": 2.5, "claude-sonnet-5": 0.5}}}}))
 	split.Launch.Model, split.Launch.Effort, split.Launch.Reviewer = "opus", "xhigh", "none"
+	// The sweep its owner ran after the handoff, as sweep.log says it.
+	split.Sweep = []string{"2026-09-23T01:40:00Z sweep of W-002 in /repo under policy grove.yaml sha256:x", "2026-09-23T01:40:09Z W-002: waits: changes grove.yaml, which never matches (grove.yaml)"}
 	r.set(split)
 	m.openAttempt(split.Launch.Attempt)
 	settle(m, m.wantAttempts())
 	s = plain(m)
-	for _, want := range []string{"Asked    until plan, model opus, effort xhigh, no reviewer definition", "Budget   $3.00 (claude-opus-5-5 $2.50, claude-sonnet-5 $0.50) of $2"} {
+	for _, want := range []string{"Asked    until plan, model opus, effort xhigh, no reviewer definition", "Budget   $3.00 (claude-opus-5-5 $2.50, claude-sonnet-5 $0.50) of $2",
+		"Sweep  2026-09-23T01:40:00Z sweep of W-002 in /repo", "       2026-09-23T01:40:09Z W-002: waits: changes grove.yaml, which never matches"} {
 		if !strings.Contains(s, want) {
 			t.Fatalf("lacks %q:\n%s", want, s)
 		}

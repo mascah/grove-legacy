@@ -15,6 +15,7 @@ import (
 	"github.com/mascah/grove/internal/attempt"
 	"github.com/mascah/grove/internal/handoff"
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
 )
@@ -290,7 +291,7 @@ func (m *Model) targetRoot() (root, why string) {
 			return m.projectDir(s), ""
 		}
 	}
-	return "", "no checkout is on the target " + m.res.Target + "; i needs one"
+	return "", "no checkout is on the target " + m.res.Target
 }
 
 // targetTip is the target branch's commit as the board read it, or "".
@@ -361,6 +362,66 @@ func (m *Model) wantPredict() tea.Cmd {
 	return nil
 }
 
+// planMsg is the sweep's plan, read in the target's checkout.
+type planMsg struct {
+	gen   int
+	items []sweep.Item
+	err   error
+}
+
+// wantPlan plans a sweep once per re-read, when no other read is pending
+// and a Review card has a candidate, never as part of the load and never
+// acting (G-260928-dtrnw): the board sweeps only on S.
+func (m *Model) wantPlan() tea.Cmd {
+	if m.backend.SweepPlan == nil || m.done || m.pending != "" || m.res == nil || m.planned != nil || m.planErr != "" {
+		return nil
+	}
+	root, why := m.targetRoot()
+	if why != "" {
+		return nil
+	}
+	columns, _ := m.placed()
+	if !slices.ContainsFunc(columns[reviewColumn], func(c card) bool { return c.rec != nil && c.rec.Candidate != "" }) {
+		return nil
+	}
+	return m.read("plan", func(ctx context.Context, gen int) tea.Msg {
+		items, err := m.backend.SweepPlan(ctx, root)
+		return planMsg{gen, items, err}
+	})
+}
+
+// planText is the Review block's row for the sweep's plan for id, or ""
+// when there is none to show.
+func (m *Model) planText(id string) string {
+	if m.backend.SweepPlan == nil {
+		return ""
+	}
+	if m.planErr != "" {
+		return "Sweep: not planned: " + m.planErr
+	}
+	if it, ok := m.planned[id]; ok {
+		return "Sweep: " + it.Act + ": " + it.Why + " (S sweeps from the board)"
+	}
+	return ""
+}
+
+// askSweep opens the y/n line for S, or says why there is nothing to sweep.
+func (m *Model) askSweep() {
+	if m.backend.Sweep == nil || m.res == nil {
+		return
+	}
+	root, why := m.targetRoot()
+	switch {
+	case why != "":
+		m.alert = "a sweep runs in the target's checkout: " + why
+		return
+	case m.planErr != "":
+		m.alert = "nothing to sweep: " + m.planErr
+		return
+	}
+	m.prompt = &prompt{kind: "sweep", root: root, target: m.res.Target}
+}
+
 // conflictNote is a Review card's predicted conflict with the target,
 // naming the target commit it read, or "" when none is predicted or read.
 func (m *Model) conflictNote(r *project.Record) string {
@@ -417,6 +478,9 @@ func (m *Model) reviewRows(g *versions.Group, v *versions.Version) []string {
 	}
 	if m.conflicted(v) != nil && m.backend.Conflict != nil {
 		where = append(where, "m resolves the conflict: feedback and one attempt on its branch")
+	}
+	if text := m.planText(g.ID); text != "" {
+		rows = append(rows, text)
 	}
 	return append(rows, strings.Join(where, " · "))
 }
@@ -764,6 +828,11 @@ func (m *Model) promptKey(msg tea.KeyPressMsg) tea.Cmd {
 		m.notice = "cancelled; nothing was stopped"
 	case msg.Text == "y" && p.kind == "resolve":
 		return m.act(p)
+	case msg.Text == "y" && p.kind == "sweep":
+		return m.act(p)
+	case msg.Text == "n" && p.kind == "sweep":
+		m.prompt = nil
+		m.notice = "cancelled; nothing was swept"
 	case msg.Text == "n" && p.kind == "resolve":
 		m.prompt = nil
 		m.notice = unresolved(p)
@@ -835,6 +904,8 @@ func (m *Model) act(p *prompt) tea.Cmd {
 			facts, err = m.backend.Feedback(ctx, root, id, text)
 		case "resolve":
 			facts, err = m.backend.Answer(ctx, root, id, expect)
+		case "sweep":
+			facts, err = m.backend.Sweep(ctx, root)
 		default:
 			facts, err = m.backend.Integrate(ctx, root, id, cleanup)
 		}
@@ -848,7 +919,7 @@ func (m *Model) act(p *prompt) tea.Cmd {
 func actingText(kind string) string {
 	return map[string]string{"approve": "Approving…", "feedback": "Recording the feedback…", "integrate": "Integrating…",
 		"launch": "Launching the attempt…", "stop": "Stopping the attempt…", "resolve": "Resolving and committing…",
-		"conflict": "Recording the feedback and launching the attempt…"}[kind]
+		"conflict": "Recording the feedback and launching the attempt…", "sweep": "Sweeping under the policy…"}[kind]
 }
 
 // promptText is the open prompt as what is typed, led by what it is for,
@@ -877,6 +948,8 @@ func (m *Model) promptText() (typed, help string) {
 		return "", fmt.Sprintf("Stop attempt %s of %s? Its partial work stays. y/n", p.attempt, p.id)
 	case "resolve":
 		return "", fmt.Sprintf("Resolve %s and commit it with your answer on branch %s? y/n   (runs in %s)", p.id, p.branch, p.root)
+	case "sweep":
+		return "", fmt.Sprintf("Sweep every candidate in review under the policy: %s? y/n   (runs in %s)", m.planSummary(), p.root)
 	}
 	return "", fmt.Sprintf("Also delete branch %s and remove its worktree? y/n   (%s)", p.branch, p.wt)
 }
@@ -954,3 +1027,27 @@ func unresolved(p *prompt) string {
 }
 
 func short7(commit string) string { return commit[:min(len(commit), 7)] }
+
+// planSummary counts the plan's acts for S's question, in the order a sweep
+// takes them, or says the plan is not read.
+func (m *Model) planSummary() string {
+	if m.planned == nil {
+		return "its plan is not read yet"
+	}
+	var parts []string
+	for _, act := range []string{sweep.Integrate, sweep.Approve, sweep.Resolve, sweep.Wait, sweep.Skip} {
+		n := 0
+		for _, it := range m.planned {
+			if it.Act == act {
+				n++
+			}
+		}
+		if n != 0 {
+			parts = append(parts, fmt.Sprintf("%d %s", n, act))
+		}
+	}
+	if parts == nil {
+		return "no candidate in review"
+	}
+	return strings.Join(parts, ", ")
+}
