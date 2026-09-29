@@ -85,16 +85,17 @@ type Launch struct {
 	RecordRevision string     `json:"record_revision,omitempty"` // before selections: as HEAD held it at launch
 	Base           string     `json:"base"`                      // the commit the worktree started from, or continues on
 	Branch         string     `json:"branch"`
-	Worktree       string     `json:"worktree"`         // absolute checkout the process runs in
-	Prefix         string     `json:"prefix"`           // the project's path inside the checkout, "" at its top
-	WorktreeReused bool       `json:"worktree_reused"`  // it existed before this attempt
-	Command        []string   `json:"command"`          // the exact argv, command[0] the executable as resolved
-	Executable     string     `json:"executable"`       // command[0] as given (claude or GROVE_CLAUDE)
-	ClaudeVersion  string     `json:"claude_version"`   // `--version` at launch
-	GroveVersion   string     `json:"grove_version"`    // the launching grove's version line; the agent's grove is not recorded
-	Model          string     `json:"model,omitempty"`  // requested; the actual one is in the result's init
-	Effort         string     `json:"effort,omitempty"` // requested reasoning effort, passed as --effort
-	Until          string     `json:"until,omitempty"`  // the assignment's bound: "plan", or "" to run through
+	Worktree       string     `json:"worktree"`               // absolute checkout the process runs in
+	Prefix         string     `json:"prefix"`                 // the project's path inside the checkout, "" at its top
+	WorktreeReused bool       `json:"worktree_reused"`        // it existed before this attempt
+	Command        []string   `json:"command"`                // the exact argv, command[0] the executable as resolved
+	Executable     string     `json:"executable"`             // command[0] as given (claude or GROVE_CLAUDE)
+	ClaudeVersion  string     `json:"claude_version"`         // `--version` at launch
+	GroveVersion   string     `json:"grove_version"`          // the launching grove's version line; the agent's grove is not recorded
+	Model          string     `json:"model,omitempty"`        // requested; the actual one is in the result's init
+	Effort         string     `json:"effort,omitempty"`       // requested reasoning effort, passed as --effort
+	Until          string     `json:"until,omitempty"`        // the assignment's bound: "plan", or "" to run through
+	ResumedFrom    string     `json:"resumed_from,omitempty"` // the attempt whose session this one forks (--resume)
 	// Reviewer is the sha256 of the worktree's grove-reviewer definition at
 	// launch, "none" when it had none, "" for an attempt before this field.
 	Reviewer string `json:"reviewer,omitempty"`
@@ -222,6 +223,7 @@ type Request struct {
 	Model          string
 	Effort         string
 	Until          string // "plan" ends the attempt at its plan; "" runs through
+	Resume         bool   // fork the latest finished attempt's session on this branch
 	Branch         string // default worktree-ID
 	Worktree       string // default <root>/.claude/worktrees/<branch>
 	Expect         string // one work's record revision the caller read in root; "" checks nothing
@@ -263,6 +265,13 @@ var flags = []struct {
 // "--name=VALUE", into req, each at most once; it reports false for any
 // other argument.
 func Flag(args []string, i *int, req *Request) (bool, error) {
+	if args[*i] == "--resume" {
+		if req.Resume {
+			return true, errors.New("--resume may only be supplied once")
+		}
+		req.Resume = true
+		return true, nil
+	}
 	for _, f := range flags {
 		value, inline := strings.CutPrefix(args[*i], f.name+"=")
 		if !inline && args[*i] != f.name {
@@ -314,7 +323,8 @@ func Dir(root string) (string, error) {
 type prepared struct {
 	launch       *Launch
 	head         string
-	branchExists bool // the branch exists, with or without a worktree
+	branchExists bool   // the branch exists, with or without a worktree
+	source       string // --resume: the session to fork, "" otherwise
 }
 
 // prepare checks req against the launching checkout and the branch the
@@ -385,6 +395,12 @@ func prepare(req Request) (*prepared, error) {
 	if err != nil {
 		return nil, err
 	}
+	var resumed *View
+	if req.Resume {
+		if !reused {
+			return nil, fmt.Errorf("--resume continues the session in the worktree it ran in; %s has no worktree at %s; launch without --resume", branch, worktree)
+		}
+	}
 	contains := containsIn(root, base)
 	s, err := selectionOf(p, req.IDs, req.Until, contains)
 	if err != nil {
@@ -439,17 +455,50 @@ func prepare(req Request) (*prepared, error) {
 	if err := s.startable(); err != nil {
 		return nil, err
 	}
+	if req.Resume {
+		if resumed, err = resumeSource(root, s.Selected, branch, worktree, prefix); err != nil {
+			return nil, err
+		}
+	}
 	l := &Launch{
 		Work: s.Selected[0], Project: root, Target: p.Target, Selection: s,
 		Base: base, Branch: branch, Worktree: worktree, Prefix: prefix, WorktreeReused: reused,
 		Model: req.Model, Effort: req.Effort, Until: req.Until,
 		BudgetUSD: req.BudgetUSD, PermissionMode: req.PermissionMode,
 	}
+	var source string
+	if resumed != nil {
+		l.ResumedFrom, source = resumed.Launch.Attempt, resumed.Launch.SessionID
+	}
 	s.Digest = digest(l)
 	if req.Digest != "" && req.Digest != s.Digest {
 		return nil, fmt.Errorf("the assignment changed since its preview: its digest is %s, not %s; what it would run now:\n%s\npreview it again (run --dry-run) before launching", s.Digest, req.Digest, strings.Join(Explain(l, func(v string) string { return v }), "\n"))
 	}
-	return &prepared{launch: l, head: head, branchExists: exists}, nil
+	return &prepared{launch: l, head: head, branchExists: exists, source: source}, nil
+}
+
+// resumeSource is the newest finished attempt of selected on branch at
+// worktree, whose session --resume forks. The bound may differ, so a plan
+// continuation resumes the --until plan attempt; interrupted attempts are
+// skipped, and Start refuses a running one.
+func resumeSource(root string, selected []string, branch, worktree, prefix string) (*View, error) {
+	views, err := List(root, selected[0])
+	if err != nil {
+		return nil, err
+	}
+	for i := range views { // newest first
+		v := &views[i]
+		l := v.Launch
+		same := l.Selection == nil && len(selected) == 1 || l.Selection != nil && slices.Equal(l.Selection.Selected, selected)
+		if v.Status != Finished || l.Branch != branch || !samePath(l.Worktree, worktree) || l.Prefix != prefix || !same {
+			continue
+		}
+		if l.SessionID == "" || v.Result == nil || v.Result.Events.Init == nil {
+			return nil, fmt.Errorf("attempt %s never started its provider's session; launch without --resume", l.Attempt)
+		}
+		return v, nil
+	}
+	return nil, fmt.Errorf("no finished attempt of %s on %s to resume", strings.Join(selected, " "), branch)
 }
 
 // onBranch rereads the members as the attempt's checkout at dir holds them,
@@ -589,6 +638,11 @@ func Start(req Request, now time.Time, report func(string)) (*Launch, error) {
 		"--session-id", session,
 		"--max-budget-usd", l.BudgetUSD,
 		"--permission-mode", l.PermissionMode, "--permission-prompts", "none"}
+	if pre.source != "" {
+		// A fork keeps one session per attempt; Claude Code refuses --session-id
+		// with --resume unless it is forked.
+		command = append(command, "--resume", pre.source, "--fork-session")
+	}
 	if l.Model != "" {
 		command = append(command, "--model", l.Model)
 	}

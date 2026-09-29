@@ -152,6 +152,7 @@ func TestLaunchFromTheDetail(t *testing.T) {
 		{"--budget 2 --permission-mode auto --frob", "unknown option --frob"},
 		{"--budget 2 --permission-mode auto plan", "unknown option plan"},
 		{"--budget 2 --permission-mode auto --branch x", "the board chooses where an attempt runs"},
+		{"--budget 2 --permission-mode auto --resume --resume", "--resume may only be supplied once"},
 	} {
 		typeText(m, c.typed)
 		press(m, "enter")
@@ -162,8 +163,8 @@ func TestLaunchFromTheDetail(t *testing.T) {
 			press(m, "backspace")
 		}
 	}
-	typeText(m, "--budget 2.5 --permission-mode=auto --until plan --model opus --effort x")
-	if req, err := m.prompt.resolved(); err != nil || launchText(req) != "$2.5, mode auto, until plan, model opus, effort x" {
+	typeText(m, "--budget 2.5 --permission-mode=auto --until plan --resume --model opus --effort x")
+	if req, err := m.prompt.resolved(); err != nil || launchText(req) != "$2.5, mode auto, until plan, resuming, model opus, effort x" {
 		t.Fatalf("the line resolves what is typed as it is typed: %v %+v", err, req)
 	}
 	typeText(m, "high")
@@ -172,7 +173,7 @@ func TestLaunchFromTheDetail(t *testing.T) {
 		t.Fatalf("Enter launches: %q", m.pending)
 	}
 	settle(m, cmd)
-	want := attempt.Request{Root: "/repo/.", IDs: []string{"W-002"}, Expect: fx.twoBranches().Groups[1].Versions[1].Revision, BudgetUSD: "2.5", PermissionMode: "auto", Until: "plan", Model: "opus", Effort: "xhigh"}
+	want := attempt.Request{Root: "/repo/.", IDs: []string{"W-002"}, Expect: fx.twoBranches().Groups[1].Versions[1].Revision, BudgetUSD: "2.5", PermissionMode: "auto", Until: "plan", Resume: true, Model: "opus", Effort: "xhigh"}
 	if len(r.launches) != 1 || !reflect.DeepEqual(r.launches[0], want) {
 		t.Fatalf("launched %+v, want %+v", r.launches, want)
 	}

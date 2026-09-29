@@ -28,8 +28,8 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 	switch {
 	case len(req.IDs) != 1:
 		return nil, errors.New("resolve takes one work ID; the records sharing its candidate go with it")
-	case req.Until != "" || req.Branch != "" || req.Worktree != "":
-		return nil, errors.New("resolve runs on the candidate's branch in its checkout, through to the handoff; --until, --branch and --worktree do not apply")
+	case req.Until != "" || req.Branch != "" || req.Worktree != "" || req.Resume:
+		return nil, errors.New("resolve runs on the candidate's branch in its checkout, through to the handoff, with a new mandate; --until, --branch, --worktree and --resume do not apply")
 	}
 	id := req.IDs[0]
 	p, ds := project.Load(req.Root, req.Root)

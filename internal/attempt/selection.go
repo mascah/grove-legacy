@@ -169,6 +169,9 @@ func digest(l *Launch) string {
 	}
 	fmt.Fprintf(h, "base %s\nbranch %s\nworktree %s\nbudget %s\npermission %s\nmodel %s\neffort %s\nuntil %s\n",
 		l.Base, l.Branch, l.Worktree, l.BudgetUSD, l.PermissionMode, l.Model, l.Effort, l.Until)
+	if l.ResumedFrom != "" {
+		fmt.Fprintf(h, "resume %s\n", l.ResumedFrom)
+	}
 	return fmt.Sprintf("sha256:%x", h.Sum(nil))
 }
 
@@ -203,6 +206,9 @@ func Explain(l *Launch, visible func(string) string) []string {
 	}
 	for _, n := range s.Notes {
 		line("Note: %s", visible(n))
+	}
+	if l.ResumedFrom != "" {
+		line("Resume: %s, forking its session", l.ResumedFrom)
 	}
 	line("Review boundary: %s", Boundary)
 	line("Continuation: %s", Continuation)
