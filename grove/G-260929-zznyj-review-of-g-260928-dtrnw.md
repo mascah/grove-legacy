@@ -4,9 +4,9 @@ type: review
 title: "Review of G-260928-dtrnw: sweep from a finishing attempt and the board"
 status: current
 created: "2026-09-29T00:57:22Z"
-updated: "2026-09-29T00:57:48Z"
+updated: "2026-09-29T02:55:38Z"
 work: ["G-260928-dtrnw"]
-examined: "00069930f0e959b4bcab4ea25ec765ebfdc81e25"
+examined: "6c0a1d2d076bad90f28fa889f765e3f0b501e175"
 ---
 
 ## Examined
@@ -56,9 +56,37 @@ G-260925-wh9ax, G-260923-tnn5e or the Policy term G-260926-a8vyj. The limit
 G-260925-5wrn8 listed, that a finishing attempt's owner starts no sweep, is
 what this record changes.
 
+Gate 2, after the resumed session, two rounds through a fresh
+`grove-reviewer` each, read-only:
+
+- Round 1 at `51823e2` (the fix, `0006993..51823e2`; the combined
+  `9a18f57..51823e2`; and the real-provider trial's evidence).
+- Round 2 at `6c0a1d2` (`51823e2..6c0a1d2`, the combined tip briefly).
+
+Each ran `go vet ./...`, `gofmt -l .`, `go run ./cmd/grove check`,
+`go test -count=1` on `internal/sweep` and `internal/update` (round 2 also
+`internal/attempt`) and `go test -short ./...`: all clean.
+
+Gate 2, round 1, one finding, minor: the round-3 finding was fixed in `51823e2`
+(`update.BranchContext` in `sweep.PlanContext`), but `(*Sweep).plan` still
+listed attempts through `attempt.List`, whose `repo.Locate` ignores ctx.
+Fixed in `6c0a1d2`: `attempt.ListDir` on the common directory the plan's
+`versions.InspectContext` already read, as the board does.
+
+Gate 2, round 2: none. Every Git read reachable from `PlanContext` now ends with
+ctx; the attempts directory is the same one by construction.
+
+Noted, not counted as findings: no sweep test makes the plan wait on a
+running or orphaned attempt (untested at the base too); the trial binary,
+built with `go build` in this linked worktree, is stamped with `main`'s
+`9a18f57` rather than `51823e2`, so the attempt's `Started:` line names
+that commit, while its symbols (`update.BranchContext`) are `51823e2`'s.
+
+Trial (acceptance 5), judged in round 1: met on the evidence.
+
 ## Disposition
 
-Stopped at the review cap with the round-3 finding open; the work stays
-active.
+Gate 1 stopped at the review cap with its round-3 finding open; gate 2
+fixed it and the one it found after; nothing is open.
 
-Open findings: 1
+Open findings: none

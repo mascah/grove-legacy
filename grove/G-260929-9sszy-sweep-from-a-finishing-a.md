@@ -55,4 +55,6 @@ the result screen. The board never sweeps unprompted (the record's default).
    tag, Review row, `S`; tests.
 4. `docs/commands.md` (Attempts, Sweep), `docs/board.md`, help text.
 5. The real-provider trial needs a budget the owner names at assignment;
-   none was named, so it is left to the owner.
+   none was named at first, so it waited on question G-260929-s0f25,
+   whose answer (30 USD, sonnet 5.5, effort high, run by the resumed
+   session) the resumed session followed.
