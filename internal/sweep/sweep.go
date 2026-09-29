@@ -4,7 +4,9 @@
 // policy's conditions once the merged result passed its verification. Each
 // act is attributed to the policy's grove.yaml revision. Everything the
 // policy does not name waits for the owner, and no policy means nothing
-// happens. Nothing runs between sweeps: the owner or a scheduler runs one.
+// happens. The owner, a scheduler, the board's S, or the owner process of an
+// attempt that handed a candidate off (G-260928-dtrnw) runs one; nothing runs
+// between sweeps.
 package sweep
 
 import (
@@ -20,6 +22,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/mascah/grove/internal/attempt"
@@ -65,9 +68,10 @@ type Sweep struct {
 	records      string // the record root, project-relative
 }
 
-// Plan reads every candidate in review on a branch other than the target and
-// decides, without writing anything, what the policy does to each.
-func Plan(root string) (*Sweep, error) {
+// Plan reads every candidate in review on a branch other than the target, or
+// only the IDs in only when some are given, and decides, without writing
+// anything, what the policy does to each.
+func Plan(root string, only ...string) (*Sweep, error) {
 	p, ds := project.Load(root, root)
 	if len(ds) != 0 {
 		return nil, fmt.Errorf("the project is not valid; fix it before sweeping:\n%s", ds[0].String())
@@ -96,6 +100,9 @@ func Plan(root string) (*Sweep, error) {
 	found := map[string][]*versions.Version{}
 	var ids []string // in the groups' order, by ID
 	for _, g := range res.Groups {
+		if len(only) != 0 && !slices.Contains(only, g.ID) {
+			continue
+		}
 		for i := range g.Versions {
 			v := &g.Versions[i]
 			if v.Source.Kind == "committed" && v.Source.Ref != "refs/heads/"+p.Target && v.Record != nil && v.Record.Type == "work" && v.Record.Status == "review" && v.Record.Candidate != "" {
@@ -330,8 +337,14 @@ func (s *Sweep) scope(r *project.Record) (int, string) {
 
 // Run acts on the plan, reporting one line per candidate and per fact. An
 // act that fails leaves that candidate waiting with the reason; the sweep
-// goes on to the next.
-func (s *Sweep) Run(now time.Time, report func(string)) {
+// goes on to the next. It refuses, having done nothing, while another sweep
+// of the repository runs.
+func (s *Sweep) Run(now time.Time, report func(string)) error {
+	unlock, err := lock(s.Root)
+	if err != nil {
+		return err
+	}
+	defer unlock()
 	for _, it := range s.Items {
 		say := func(format string, args ...any) { report(it.ID + ": " + fmt.Sprintf(format, args...)) }
 		switch it.Act {
@@ -351,6 +364,115 @@ func (s *Sweep) Run(now time.Time, report func(string)) {
 		case Approve, Integrate:
 			s.approve(it, now, say)
 		}
+	}
+	return nil
+}
+
+// lock takes the repository's sweep lock, beside its attempts, without
+// waiting: one sweep at a time, whoever started it.
+func lock(root string) (func(), error) {
+	dir, err := attempt.Dir(root)
+	if err != nil {
+		return nil, err
+	}
+	dir = filepath.Dir(dir)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return nil, err
+	}
+	f, err := os.OpenFile(filepath.Join(dir, "sweep.lock"), os.O_CREATE|os.O_RDWR, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		f.Close()
+		if errors.Is(err, syscall.EWOULDBLOCK) {
+			return nil, errors.New("another sweep of this repository is running; nothing was done")
+		}
+		return nil, err
+	}
+	return func() { f.Close() }, nil
+}
+
+// Own runs as an attempt's owner, as attempt.Own does, and then sweeps for
+// the candidates the attempt handed off, as After says. cmd/grove and every
+// test binary that is its own owner call it.
+func Own(dir string) int {
+	code := attempt.Own(dir)
+	// A verify command's grove or test binary must not take itself for
+	// this attempt's owner.
+	os.Unsetenv(attempt.OwnerEnv)
+	After(dir, time.Now())
+	return code
+}
+
+// After sweeps, in the target's checkout under its committed policy, the
+// work an ended attempt handed off in review with a candidate, and appends
+// what it did, or why it did not run, to the attempt's sweep.log. It writes
+// nothing for an attempt that handed nothing off, a launch without a target,
+// or a target whose grove.yaml has no policy.
+func After(dir string, now time.Time) {
+	v, err := attempt.Read(dir)
+	if err != nil || v.Result == nil || v.Launch.Target == "" {
+		return
+	}
+	var ids []string
+	for _, m := range v.Result.Members {
+		if m.Record != nil && m.Record.Status == "review" && m.Record.Candidate != "" {
+			ids = append(ids, m.ID)
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	var log *os.File
+	say := func(fact string) {
+		if log == nil {
+			f, err := os.OpenFile(filepath.Join(dir, attempt.SweepLog), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+			if err != nil {
+				return
+			}
+			log = f
+		}
+		fmt.Fprintf(log, "%s %s\n", time.Now().UTC().Format(time.RFC3339), fact)
+	}
+	defer func() {
+		if log != nil {
+			log.Close()
+		}
+	}()
+	root := ""
+	worktrees, err := repo.Worktrees(v.Launch.Worktree)
+	if err != nil {
+		say("not swept: the worktrees could not be read: " + err.Error())
+		return
+	}
+	for _, w := range worktrees {
+		if w.Branch == "refs/heads/"+v.Launch.Target && w.Prunable == "" {
+			root = filepath.Join(w.Path, v.Launch.Prefix)
+		}
+	}
+	if root == "" {
+		say("not swept: no checkout is on the target " + v.Launch.Target)
+		return
+	}
+	if p, _ := project.Load(root, root); p != nil && p.Policy == nil {
+		return
+	}
+	if dirty, err := repo.Git(root, "status", "--porcelain", "--untracked-files=no"); err != nil || dirty != "" {
+		say(fmt.Sprintf("not swept: the checkout of %s at %s has uncommitted changes; nothing was written", v.Launch.Target, root))
+		return
+	}
+	s, err := Plan(root, ids...)
+	if err != nil {
+		say("not swept: " + err.Error())
+		return
+	}
+	say(fmt.Sprintf("sweep of %s in %s under %s", strings.Join(ids, ", "), root, s.Attribution))
+	if len(s.Items) == 0 {
+		say("no candidate of " + strings.Join(ids, ", ") + " is committed in review on a branch")
+	}
+	if err := s.Run(now, say); err != nil {
+		say("not swept: " + err.Error())
 	}
 }
 

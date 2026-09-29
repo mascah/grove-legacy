@@ -6,6 +6,7 @@ import (
 
 	"github.com/mascah/grove/internal/attempt"
 	"github.com/mascah/grove/internal/cli"
+	"github.com/mascah/grove/internal/sweep"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	// owner, named by the environment rather than an argument so that a test
 	// binary can be its own owner the same way (internal/attempt).
 	if dir := os.Getenv(attempt.OwnerEnv); dir != "" {
-		os.Exit(attempt.Own(dir))
+		os.Exit(sweep.Own(dir))
 	}
 	cwd, err := os.Getwd()
 	if err != nil {
