@@ -527,6 +527,31 @@ func TestAnAttemptsOwnerLeavesWhatThePolicyDoesNotName(t *testing.T) {
 			t.Fatalf("record:\n%s", r.Source)
 		}
 	})
+	t.Run("while another sweep runs", func(t *testing.T) {
+		t.Parallel()
+		// The owner waits, saying so, until the sweep holding the lock ends.
+		root, _, v := handedOff(t, config, map[string]string{"code.txt": "the change\n"}, func(root string) {
+			unlock, err := lock(root, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			go func() {
+				defer unlock()
+				for deadline := time.Now().Add(20 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+					views, _ := attempt.List(root, "G-260101-00001")
+					if len(views) == 1 && views[0].Status == attempt.Finished && len(views[0].Sweep) != 0 {
+						return
+					}
+				}
+			}()
+		})
+		if len(v.Sweep) < 2 || !strings.Contains(v.Sweep[0], "waiting for another sweep of this repository to end") || !strings.Contains(v.Sweep[len(v.Sweep)-1], "G-260101-00001: done: ") {
+			t.Fatalf("sweep.log %q", v.Sweep)
+		}
+		if r := record(t, root); r.Status != "done" {
+			t.Fatalf("record on main:\n%s", r.Source)
+		}
+	})
 	t.Run("no target checkout", func(t *testing.T) {
 		t.Parallel()
 		_, _, v := handedOff(t, config, map[string]string{"code.txt": "the change\n"}, func(root string) {
@@ -542,7 +567,7 @@ func TestAnAttemptsOwnerLeavesWhatThePolicyDoesNotName(t *testing.T) {
 func TestSweepRefusesWhileAnotherRuns(t *testing.T) {
 	t.Parallel()
 	root, _ := fixture(t, strings.Replace(policy, "%s", "'true'", 1), map[string]string{"code.txt": "x\n"}, ClosingLine)
-	unlock, err := lock(root)
+	unlock, err := lock(root, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -174,7 +174,10 @@ unrelated history hides it.
 policy: 1 integrate, 2 wait? y/n`, and on `y` runs
 [`sweep`](commands.md#sweep) in the target's checkout; the result screen
 shows its facts, and the board is re-read. Where the plan was refused, `S`
-says why and asks nothing. The board never sweeps unprompted.
+says why and asks nothing. The board never sweeps unprompted. An attempt's
+own sweep ([after an attempt](commands.md#after-an-attempt)) runs once the
+attempt reads as ended, so what it does shows at the next re-read, on focus
+or `r`.
 
 ## Attempts
 

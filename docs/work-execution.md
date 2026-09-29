@@ -572,8 +572,8 @@ disposition:
   a conflict and approves, then integrates, a candidate that meets the
   policy's conditions after its merged result passed the policy's
   verification, each attributed to the policy's revision. An attempt
-  `grove run` started sweeps the work it handed off when it ends, and the
-  board's `S` sweeps too. Integration under a policy names the merge to
+  Grove started, by `grove run`, `grove resolve` or a sweep, sweeps the work
+  it handed off when it ends, and the board's `S` sweeps too. Integration under a policy names the merge to
   revert. Everything else waits for these
   dispositions, as the record model's `policy:` says.
 

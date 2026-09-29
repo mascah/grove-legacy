@@ -509,8 +509,8 @@ a scheduler such as cron, or the board's `S` runs one, and so does the
 owner process of an attempt that hands work off ([after an
 attempt](#after-an-attempt)); Grove starts no resident process, and a wait
 that has not changed does not retry. One sweep of a repository runs at a
-time: another is refused, having done nothing, while one holds
-`.git/grove/sweep.lock`.
+time: while one holds `.git/grove/sweep.lock`, `sweep` and `S` are refused,
+having done nothing, and an attempt's owner waits for it.
 
 For each candidate, in ID order, it decides one act and prints it with the
 reason; `--dry-run` stops there and writes nothing:
@@ -561,13 +561,15 @@ attempt's `sweep.log`, which `attempt` prints as `Sweep:` lines and the
 board's attempt screen shows. It writes nothing at all when the attempt
 handed nothing off, the launch had no target, or the target's `grove.yaml`
 has no policy. It reports, and does nothing else, when no checkout is on
-the target, that checkout has uncommitted changes to tracked files, the
-plan is refused, or another sweep runs. A resolution it starts is an attempt
-of its own, whose end sweeps again: a candidate that still conflicts with
-the same target commit then waits for the owner. The owner holds no lock
-while it sweeps, so the attempt reads as finished meanwhile, and the
-environment variable that made it the owner is gone before any `verify`
-command runs.
+the target, that checkout has uncommitted changes to tracked files or
+cannot be read, or the plan is refused, as for a `grove.yaml` that does not
+parse. While another sweep runs it says so and waits for it, since nobody
+would sweep its work later. A resolution it starts is an attempt of its
+own, whose end sweeps again: a candidate that still conflicts with the same
+target commit then waits for the owner. The owner has released the
+attempt's lock before it sweeps, so the attempt reads as finished
+meanwhile, and the environment variable that made it the owner is gone
+before any `verify` command runs.
 
 ## Init
 

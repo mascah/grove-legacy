@@ -111,10 +111,8 @@ func Live() Backend {
 		},
 	}
 	liveAttempts(&b)
-	// ponytail: the plan ignores ctx, so a read the board cancels finishes
-	// unseen; thread a context through sweep.Plan if that ever costs.
-	b.SweepPlan = func(_ context.Context, root string) ([]sweep.Item, error) {
-		s, err := sweep.Plan(root)
+	b.SweepPlan = func(ctx context.Context, root string) ([]sweep.Item, error) {
+		s, err := sweep.PlanContext(ctx, root)
 		if err != nil {
 			return nil, err
 		}

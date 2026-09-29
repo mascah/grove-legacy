@@ -50,8 +50,9 @@ target: main
 - `run:` sets `grove run`'s defaults (`budget`, `permission_mode`, `model`,
   `effort`); without it, every launch passes `--budget` and
   `--permission-mode`.
-- `policy:` lets `grove sweep` resolve, approve and integrate candidates
-  without you. Leave it out until you want automatic acts.
+- `policy:` lets `grove sweep`, which every attempt that hands work off
+  runs when it ends, resolve, approve and integrate candidates without you.
+  Leave it out until you want automatic acts.
 
 `grove guide model` prints the rules for each key, under "Configuration and
 discovery", with the record types, fields and lifecycle. Check and commit
