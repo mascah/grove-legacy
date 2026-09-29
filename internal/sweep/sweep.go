@@ -182,7 +182,7 @@ func (s *Sweep) plan(ctx context.Context, res *versions.Result, p *project.Proje
 	if it.checkout == "" {
 		return wait("no checkout is on branch %s", it.Branch)
 	}
-	views, err := attempt.List(s.Root, r.ID)
+	views, err := attempt.ListDir(filepath.Join(res.Repository, "grove", "attempts"), r.ID)
 	if err != nil {
 		return wait("its attempts could not be read: %v", err)
 	}
