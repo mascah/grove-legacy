@@ -2,9 +2,9 @@
 id: "G-260929-z5nec"
 type: question
 title: "How do the plan-sufficiency implementations get the writes auto mode denied?"
-status: open
+status: resolved
 created: "2026-09-29T00:56:48Z"
-updated: "2026-09-29T00:57:12Z"
+updated: "2026-09-29T03:01:30Z"
 blocks: ["G-260928-pqhyg"]
 relates_to: ["G-260929-2nfwv", "G-260929-jz2gy"]
 ---
@@ -65,3 +65,16 @@ Only the owner can answer.
 Open, blocking G-260928-pqhyg's implementation attempts. When answered,
 record the answer here, set `resolved`, and reassign
 `/grove-work G-260928-pqhyg --interaction headless`.
+
+## Answer
+
+Owner, 2026-09-29:
+
+1. (b): no reviewer routing. `grove-reviewer` runs on Sonnet 5.5 (its
+   `model: inherit` under the Sonnet implementer) for G-260928-ej7j0 and
+   G-260928-g133n; no `settings.local.json` is written. This departs from
+   G-260929-jz2gy's answer (reviewer on Opus 5.5) for those two, and the
+   report states it as a limit. kehya's reviewer, dispatched by the Opus
+   parent, stays on Opus.
+2. (a): the owner allows the session to write in `worktree-G-260928-kehya`,
+   then reassigns `/grove-work G-260928-pqhyg --interaction headless`.
