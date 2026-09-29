@@ -500,6 +500,14 @@ func TestReviewResolveAConflictFromTheBoard(t *testing.T) {
 	for range "--until plan" {
 		press(m, "backspace")
 	}
+	typeText(m, "--resume")
+	press(m, "enter")
+	if m.prompt == nil || !strings.Contains(plain(m), "--resume does not apply") {
+		t.Fatalf("a resume is refused on the line:\n%s", plain(m))
+	}
+	for range "--resume" {
+		press(m, "backspace")
+	}
 	typeText(m, "--effort xhigh")
 	deliverAll(m, press(m, "enter"))
 	if s := plain(m); m.screen != resultScreen || !strings.Contains(s, "Resolution attempt of W-001") || !strings.Contains(s, "attempt: started") {

@@ -927,6 +927,8 @@ func (p *prompt) resolved() (attempt.Request, error) {
 		var ok bool
 		if strings.HasPrefix(args[i], "--branch") || strings.HasPrefix(args[i], "--worktree") {
 			err = errors.New("the board chooses where an attempt runs; grove run takes --branch and --worktree")
+		} else if p.kind == "conflict" && args[i] == "--resume" {
+			err = errors.New("a resolution carries a new mandate; --resume does not apply")
 		} else if p.kind == "conflict" && strings.HasPrefix(args[i], "--until") {
 			err = errors.New("a resolution runs through to the handoff; --until does not apply")
 		} else if ok, err = attempt.Flag(args, &i, &req); err == nil && !ok {
@@ -965,6 +967,9 @@ func launchText(r attempt.Request) string {
 	}
 	if r.Until != "" {
 		until = "until " + r.Until
+	}
+	if r.Resume {
+		until += ", resuming"
 	}
 	return fmt.Sprintf("%s, %s, %s, model %s, effort %s", budget, mode, until, cmp.Or(r.Model, "default"), cmp.Or(r.Effort, "default"))
 }

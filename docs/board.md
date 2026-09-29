@@ -150,7 +150,7 @@ candidate.
 When the candidate conflicts with the target, `m` opens a line like `R`'s
 ([G-260925-dz10z](../grove/G-260925-dz10z-update-a-conflicting-can.md)). It names the conflict
 and the launch, over the branch checkout's `run:` defaults with any flags
-typed over them except `--until`. Enter runs
+typed over them except `--until` and `--resume`. Enter runs
 [`resolve`](commands.md#resolving-a-conflict) with the prediction shown:
 feedback naming the target commit and the files, then one attempt on the
 branch. A candidate that merges cleanly has nothing to resolve, and `m` says
@@ -189,7 +189,10 @@ launch it would start: budget, permission mode, bound, model and effort from
 this checkout's `grove.yaml` `run:` defaults, and where it runs. Enter
 launches it. Text typed there is `run`'s own flags, such as `--until plan
 --effort xhigh` ([G-260924-5b6pz](../grove/G-260924-5b6pz-bound-an-attempt-at-its.md)),
-which override the defaults for that launch; what `run` refuses the line
+which override the defaults for that launch, and `--resume`, which continues
+the previous attempt's session, meant for `question answered: R again` and a
+plan that is ready ([G-260928-kehya](../grove/G-260928-kehya-resume-an-attempt-s-sess.md));
+what `run` refuses the line
 refuses with the same message, and `--branch` and `--worktree` too, since
 the board chooses where. Without a default for the budget or the mode, the
 line says so and refuses Enter until `--budget` and `--permission-mode` are

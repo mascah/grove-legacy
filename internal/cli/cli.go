@@ -40,6 +40,7 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"       grove [--project DIR] run WORK_ID... [--dry-run | --expect DIGEST] [--budget USD]\n" +
 	"                                     [--permission-mode MODE] [--until plan] [--model MODEL]\n" +
 	"                                     [--effort LEVEL] [--branch NAME] [--worktree DIR]\n" +
+	"                                     [--resume]\n" +
 	"       grove [--project DIR] attempts [ID] | attempt ATTEMPT [--json] | stop ATTEMPT\n" +
 	"       grove [--project DIR] convert PATH --type TYPE --title TITLE [--slug SLUG]\n" +
 	"       grove [--project DIR] versions [ID] [--json]\n" +
@@ -147,10 +148,15 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             dependency order; nothing outside the selection is added, and the complete\n" +
 	"             members are handed off together on one shared candidate. --until plan ends the\n" +
 	"             attempt at committed plans, leaving statuses as found; --model and --effort are\n" +
-	"             passed to the provider. --budget and --permission-mode are required unless\n" +
-	"             grove.yaml's run: sets them; it may set --model and --effort too, and a flag\n" +
-	"             overrides it. --dry-run checks and prints the assignment without writing or\n" +
-	"             starting anything: order, each member's revision and whether it can start or\n" +
+	"             passed to the provider. --resume, off by default, continues the session of the\n" +
+	"             newest finished attempt of the same selection on the branch, in its worktree,\n" +
+	"             as a fork under a new session id, with the same prompt; the attempt records\n" +
+	"             resumed_from. It is refused, with nothing written, when the branch has no\n" +
+	"             worktree, no such attempt exists, or that attempt never started its provider.\n" +
+	"             --budget and --permission-mode are required unless grove.yaml's run: sets them;\n" +
+	"             it may set --model and --effort too, and a flag overrides it. --dry-run checks\n" +
+	"             and prints the assignment without writing or starting anything:\n" +
+	"             order, each member's revision and whether it can start or\n" +
 	"             waits (an open question, a prerequisite outside the selection the base does not\n" +
 	"             hold, or a selected one that waits), the outside prerequisites, the base,\n" +
 	"             bounds, review boundary, continuation policy, and a digest; --expect DIGEST\n" +
@@ -722,8 +728,8 @@ func parseArgs(args []string) (a invocation, err error) {
 	if (a.run.BudgetUSD != "" || a.run.PermissionMode != "" || a.run.Model != "" || a.run.Effort != "") && a.command != "run" && a.command != "resolve" {
 		return a, fmt.Errorf("--budget, --permission-mode, --model, and --effort apply only to run and resolve")
 	}
-	if (a.run.Until != "" || a.run.Branch != "" || a.run.Worktree != "") && a.command != "run" {
-		return a, fmt.Errorf("--until, --branch, and --worktree apply only to run")
+	if (a.run.Until != "" || a.run.Branch != "" || a.run.Worktree != "" || a.run.Resume) && a.command != "run" {
+		return a, fmt.Errorf("--until, --branch, --worktree, and --resume apply only to run")
 	}
 	if a.statuses != nil && a.command != "list" {
 		return a, fmt.Errorf("--status applies only to list")

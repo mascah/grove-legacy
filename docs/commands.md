@@ -287,7 +287,7 @@ Grove starts an agent only through `run` or the board's `R`, one assigned
 work, or one explicit selection of work, per attempt. `run ID...
 [--dry-run | --expect DIGEST] [--budget USD] [--permission-mode MODE]
 [--until plan] [--model MODEL] [--effort LEVEL] [--branch NAME]
-[--worktree DIR]` starts one bounded implementation
+[--worktree DIR] [--resume]` starts one bounded implementation
 attempt of proposed or active work as a Grove-owned `claude -p "/grove-work
 ID... --interaction headless"` process that outlives the terminal
 ([G-260923-tnn5e](../grove/G-260923-tnn5e-run-attempts-as-a-grove.md),
@@ -344,6 +344,23 @@ refuses a launch whose assignment no longer has that digest and prints what
 it would run now. `attempt.json` records the selection with its digest and
 member revisions; an attempt from before selections reads as a selection of
 its one work.
+
+`--resume`, off by default and the owner's choice for a relaunch after a
+question is answered or a plan is ready, continues the previous attempt's
+session instead of starting fresh ([G-260928-kehya](../grove/G-260928-kehya-resume-an-attempt-s-sess.md)).
+It resumes the newest finished attempt of the same selection on the same
+branch and worktree, whatever its bound, so the attempt after a `--until plan`
+one continues that session. The command gains `--resume SESSION
+--fork-session`, so the new attempt keeps its own session id and events and
+cost, and the source's transcript stays as it ended; the prompt is unchanged,
+so the resumed session runs the guide again and rereads what changed. The
+source's ID is recorded as `resumed_from`, and appears in `Requested:`
+(`, resuming ATTEMPT`) and in the `--dry-run` preview and its digest. It is
+refused, before anything is written, when the branch has no worktree at the
+one that would be used, no finished attempt of the selection ran there, or the
+newest one never started its provider's session; `resolve` does not take it.
+A session the provider no longer holds ends the attempt at once with the
+provider's own error and no cost.
 
 Three options shape one launch, recorded in `attempt.json` and reported as
 the attempt's `Requested:` fact ([G-260924-5b6pz](../grove/G-260924-5b6pz-bound-an-attempt-at-its.md)).

@@ -842,3 +842,97 @@ func TestFactsOfAnEarlierLaunch(t *testing.T) {
 		t.Fatal(facts)
 	}
 }
+
+func TestResume(t *testing.T) {
+	skipShort(t)
+	root := fixture(t)
+	req := Request{Root: root, IDs: []string{"G-260101-00001"}, BudgetUSD: "1", PermissionMode: "acceptEdits"}
+	resume := req
+	resume.Resume = true
+	launch := func(r Request, at time.Time) (*Launch, error) { return Start(r, at, func(string) {}) }
+	attempts := func() int { views, _ := List(root, ""); return len(views) }
+
+	// Nothing to resume from, and a source that never started its provider.
+	fake(t, initLine+"\n"+resultLine("success", false))
+	if _, err := launch(resume, now); err == nil || !strings.Contains(err.Error(), "has no worktree") {
+		t.Fatalf("no worktree yet: %v", err)
+	}
+	bounded := req
+	bounded.Until = "plan"
+	first, err := launch(bounded, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	await(t, root, first.Attempt, Finished)
+
+	// A plan continuation resumes across the change of bound: a fork of the
+	// source's session under a new one, recorded and shown.
+	l, err := launch(resume, now.Add(time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := strings.Join(l.Command, " ")
+	if l.ResumedFrom != first.Attempt || l.SessionID == first.SessionID || !strings.Contains(cmd, "--session-id "+l.SessionID+" ") || !strings.Contains(cmd, " --resume "+first.SessionID+" --fork-session") || strings.Contains(cmd, "--until") {
+		t.Fatalf("resumed from %q, command %q", l.ResumedFrom, cmd)
+	}
+	v := await(t, root, l.Attempt, Finished)
+	if !strings.HasSuffix(Requested(&v.Launch), ", resuming "+first.Attempt) || strings.Contains(Requested(&first0(t, root, first.Attempt).Launch), "resuming") {
+		t.Fatalf("requested %q", Requested(&v.Launch))
+	}
+	if !slices.Contains(Facts(v, func(s string) string { return s }), "Requested: "+Requested(&v.Launch)) {
+		t.Fatal("Facts do not show the resume")
+	}
+
+	// Each refusal comes before anything is written.
+	before := attempts()
+	refuse := func(r Request, want string) {
+		t.Helper()
+		if _, err := launch(r, now.Add(2*time.Minute)); err == nil || !strings.Contains(err.Error(), want) {
+			t.Fatalf("want %q, got %v", want, err)
+		}
+		if attempts() != before {
+			t.Fatal("a refused resume wrote an attempt")
+		}
+	}
+	other := resume
+	other.IDs, other.Branch = []string{"G-260101-00001", "G-260101-00003"}, first.Branch
+	write(t, root, "grove/G-260101-00003-third.md", strings.NewReplacer("00001", "00003", "First", "Third").Replace(fmt.Sprintf(work, "proposed")))
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "a second work")
+	git(t, l.Worktree, "merge", "-q", "main")                                // the attempt's branch holds it too
+	refuse(other, "no finished attempt of G-260101-00001 G-260101-00003 on") // a different selection
+	fake(t, "exit 2")                                                        // no init event
+	bare, err := launch(req, now.Add(3*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	await(t, root, bare.Attempt, Finished)
+	before = attempts()
+	refuse(resume, "never started its provider's session")
+	wt := l.Worktree
+	git(t, root, "worktree", "remove", "--force", wt)
+	refuse(resume, "has no worktree")
+}
+
+func first0(t *testing.T, root, attempt string) *View {
+	t.Helper()
+	v, err := Show(root, attempt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
+}
+
+func TestResumeFlag(t *testing.T) {
+	var req Request
+	i := 0
+	if ok, err := Flag([]string{"--resume"}, &i, &req); !ok || err != nil || !req.Resume {
+		t.Fatalf("%v %v %+v", ok, err, req)
+	}
+	if _, err := Flag([]string{"--resume"}, &i, &req); err == nil || !strings.Contains(err.Error(), "only be supplied once") {
+		t.Fatalf("%v", err)
+	}
+	if ok, _ := Flag([]string{"--resume=x"}, &i, &Request{}); ok {
+		t.Fatal("--resume=x must stay unknown")
+	}
+}

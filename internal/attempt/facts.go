@@ -226,7 +226,11 @@ func Requested(l *Launch) string {
 	case "":
 		reviewer = "reviewer definition not recorded"
 	}
-	return fmt.Sprintf("%s, model %s, effort %s, %s", until, cmp.Or(l.Model, "default"), cmp.Or(l.Effort, "default"), reviewer)
+	resume := ""
+	if l.ResumedFrom != "" {
+		resume = ", resuming " + l.ResumedFrom
+	}
+	return fmt.Sprintf("%s, model %s, effort %s, %s%s", until, cmp.Or(l.Model, "default"), cmp.Or(l.Effort, "default"), reviewer, resume)
 }
 
 // CostByModel lists the result's cost per model, most expensive first.
