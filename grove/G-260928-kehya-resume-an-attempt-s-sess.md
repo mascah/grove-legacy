@@ -56,7 +56,11 @@ owner's later choice.
 
 ## Evidence
 
-Tested at commit `318fe8e` (`cad3572` code and tests, `318fe8e` docs), branch
+Tested at commit `318fe8e` (`cad3572` code and tests, `318fe8e` docs), then
+re-run after review fixes (usage rewrap, escaped `Resume:` line, baseline row) at
+`0d114ab`: `go vet`, `gofmt -l .`, `grove check` (250 records), `go test -short` of
+attempt, cli and tui, and `go test -count=1 -timeout 120s ./internal/attempt
+./internal/cli` all pass. Branch
 `worktree-G-260928-kehya`, Claude Code 2.1.284.
 
 Acceptance 1 (fake provider) and 3:
@@ -98,7 +102,7 @@ turns, duration, record status after):
 
 | Work | Follows | Fresh attempt | Cost | Turns | Duration | Outcome |
 | --- | --- | --- | --- | --- | --- | --- |
-| G-260924-59f5k | plan | 20260924T232247Z | $6.01 | 53 | 2644s | error_during_execution, active |
+| G-260924-59f5k | plan | 20260924T232247Z | $6.01 | 53 | 2644s | stopped (exit 0), error_during_execution, active; not a natural end |
 | G-260925-7c8g9 | plan | 20260925T232126Z | $16.15 | 139 | 2519s | success, review |
 | G-260925-ced1h | plan | 20260925T042810Z | $3.18 | 56 | 572s | success, review |
 | G-260927-n4wvk | question | 20260928T011916Z | $4.00 | 51 | 1345s | success, review |
