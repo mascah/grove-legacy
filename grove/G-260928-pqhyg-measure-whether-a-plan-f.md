@@ -87,21 +87,33 @@ its worktree clean, and changed only its record and one new plan record:
 | keyborg G-260928-ej7j0 | `G-260928-ej7j0.20260929T003721Z` | $2.98 | 9 min 23 s | 43 | 42 | G-260929-4fkdm, 212 lines, `b7ed1ae` |
 | keyborg G-260928-g133n | `G-260928-g133n.20260929T003721Z` | $1.75 | 5 min 4 s | 32 | 31 | G-260929-ehvzq, 140 lines, `0bd0108` |
 
-Plans total $6.46 of the $90 cap. No implementation attempt has run.
+Plans total $6.46 of the $90 cap.
+
+Implementations, 2026-09-29, run interactively from this session (the owner
+chose that over z5nec's headless reassignment, to approve permissions):
+keyborg `G-260928-ej7j0.20260929T030536Z` ($5.02, 26 min 21 s) and
+`G-260928-g133n.20260929T030536Z` ($2.45, 26 min 59 s), each `grove run ID
+--model claude-sonnet-5-5 --effort high --budget 15`, reviewer on Sonnet;
+kehya as a `sonnet` subagent of this session, reviewed by `grove-reviewer`
+on Opus from here. All three are in review with candidates `62e2911`,
+`3d41e96` and `63ea818`; each record's Evidence holds its implementation,
+verification and review. Total spent: $14.20 in attempts plus kehya's
+unmeasured subagent share and $0.27 of its real-provider check, within
+the $90 cap.
+
+- 1: the three items ran as answered; per-item facts in each record's
+  Evidence and in [G-260929-1w9x4](G-260929-1w9x4-does-a-plan-from-one-ses.md).
+- 2: G-260929-1w9x4 reports the comparison and answers the three questions;
+  its recommendation is for the owner.
+- 3: `git diff --name-only 9a18f57 -- . ':!grove'` is empty on this branch.
+- Self-checked, documentation only: `grove check` OK (253 records). No
+  independent review of this record's report.
+
 
 ## Next
 
-Checkpoint 2026-09-29: running interactively in this session (the owner
-chose to approve permissions here rather than reassign headless, in place
-of G-260929-z5nec's 2 (a)), on branch `worktree-G-260928-pqhyg`, base
-`main` `9a18f57`. In flight, launched 03:05Z from keyborg with grove
-`9a18f57`: `G-260928-ej7j0.20260929T030536Z` and
-`G-260928-g133n.20260929T030536Z` (`grove attempt ID` in keyborg; Sonnet 5.5
-at `high`, $15 each, reviewer on Sonnet per z5nec). kehya set `active` at
-`ddac889` in `worktree-G-260928-kehya`; its implementation runs as a
-`sonnet` subagent of this session, told to read only CLAUDE.md, the record
-and plan G-260929-pjqxp, effort unsettable. If this session ends before
-they finish: collect the two attempts' facts, review kehya's branch with
-`grove-reviewer` from an Opus session and hand it off, then add each item's
-facts to its own record's Evidence and write the review record acceptance 2
-asks for.
+In review, branch `worktree-G-260928-pqhyg`, base `main` `9a18f57`. Owner:
+judge kehya (`grove approve G-260928-kehya VERDICT` in its worktree) and the
+two keyborg candidates, then read G-260929-1w9x4 and decide what to shape.
+Then `grove approve G-260928-pqhyg VERDICT` in this checkout and
+`grove integrate G-260928-pqhyg` in main's.
