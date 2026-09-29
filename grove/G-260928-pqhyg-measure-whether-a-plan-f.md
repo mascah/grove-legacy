@@ -12,14 +12,6 @@ relates_to: ["G-260924-5b6pz", "G-260924-59f5k", "G-260927-dx0yn", "G-260921-dqd
 
 ## Outcome
 
-## Constraints
-
-## Acceptance
-
-## Next
-
-## Outcome
-
 Evidence, on real work, of whether a plan produced by a bounded preparation
 attempt is enough for a separate implementer, at a cheaper model or effort,
 as a subagent, or on another provider, to implement to acceptance without
@@ -77,6 +69,12 @@ ends with a recommendation for the guide. No product change.
 
 ## Next
 
-Assign: `/grove-work G-260928-pqhyg`, with the three items, the settings and
-the cap named in the assignment. The bounded plan attempt and the
-implementation attempt already exist as `grove run --until plan` and `R`.
+Waiting on [G-260929-jz2gy](G-260929-jz2gy-which-three-items-settin.md),
+checkpoint 2026-09-29. A headless assignment `G-260928-pqhyg --interaction
+headless` named no items, settings or cap, so nothing ran and nothing was
+spent; status stays `proposed`. Branch `worktree-G-260928-pqhyg`, base
+`main` `9a18f57`. Completed: context and state inspected, question written.
+No commands owned, no plan, no attempt launched. Once the question is
+resolved, reassign `/grove-work G-260928-pqhyg` naming its answer; the
+bounded plan attempt and the implementation attempt already exist as
+`grove run --until plan` and `R`.
