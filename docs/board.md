@@ -39,8 +39,15 @@ in objects only, as `deps` predicts it, one card at a time, and a card that
 would conflict is marked `conflicts main@abc1234`, naming the target commit
 it read; no prediction is part of a load, any key that starts another read
 and every re-read cancel it, a re-read forgets what it found, and where one
-cannot run the card says nothing. Tags are joined by `·`, a selection
-member's state first, then a conflict and then the approval; where they do
+cannot run the card says nothing. After them, where a Review card has a
+candidate and the target has a checkout, the board plans a sweep there as
+`grove sweep --dry-run` does, once per read, writing nothing and acting on
+nothing ([G-260928-dtrnw](../grove/G-260928-dtrnw-run-sweep-from-a-finishi.md)),
+and marks each Review card with the act it would take, as `sweep:
+integrate` or `sweep: wait`; any other read cancels it, and a plan that is
+refused, as without a policy, marks nothing. Tags are joined by `·`, a
+selection member's state first, then a conflict, the sweep's act and then
+the approval; where they do
 not fit beside the ID they lead the metadata row, which takes the row a
 one-row title leaves when it needs two, and a narrow card cuts them last. Work whose current state
 removes its record is listed under Deleted. Done shows the most recently written cards that fit the
@@ -63,7 +70,7 @@ diff is open, even beneath another screen; a terminal that does not report
 focus sends nothing, so there only `r` does. While an attempt runs, the
 board also follows the branch tips (see [Attempts](#attempts)). Otherwise it
 starts no process except on focus or a key, and the predictions of its
-Review cards after each read, and an uncommitted edit in a checkout's files
+Review cards and the sweep plan after each read, and an uncommitted edit in a checkout's files
 shows only after a re-read.
 
 ## Record detail
@@ -111,8 +118,9 @@ only the record changed since it or the tip is a new candidate, what
 merging it into the target would do, as `deps` says it, with the target
 commit that was read and a note when the board read the target at another
 commit, or that it could not be predicted, a resolution row when the branch
-has merged a target commit since the target, and which checkout each action
-runs in), the content opens
+has merged a target commit since the target, the sweep's planned act with
+its reason, or why no plan was made, and which checkout each action runs
+in), the content opens
 at its `## Evidence`, and the sidebar lists the candidate's changed files
 against the target, one row each, with their added and removed line counts
 and how many other records describe it, as `described by 2`: a record
@@ -161,6 +169,12 @@ branch:
 
 Only the latest merge is read, and a later merge of another branch or of
 unrelated history hides it.
+
+`S` on the board asks, as `Sweep every candidate in review under the
+policy: 1 integrate, 2 wait? y/n`, and on `y` runs
+[`sweep`](commands.md#sweep) in the target's checkout; the result screen
+shows its facts, and the board is re-read. Where the plan was refused, `S`
+says why and asks nothing. The board never sweeps unprompted.
 
 ## Attempts
 
@@ -245,8 +259,9 @@ start and end, and for a selection each member with its state on the branch
 (awaiting judgment, active, not started and why, or waiting on a question).
 What the run used follows: turns, tokens, context size against the model's
 window, subagents, compactions, tool calls and tool errors. Then come `State`, the
-outcome in a sentence with why it is settled, and `Next`, the keys that act
-on it. `d` shows or hides the details: the facts `attempt` prints, the raw
+outcome in a sentence with why it is settled, `Next`, the keys that act
+on it, and `Sweep`, one row per fact of the sweep the owner ran after a
+handoff ([after an attempt](commands.md#after-an-attempt)). `d` shows or hides the details: the facts `attempt` prints, the raw
 `events.jsonl` and `stderr` paths included. Last come the provider's final
 report, rendered like a record body, and the activity, newest first. From
 100 columns they sit side by side, the report on the left, and below 100
@@ -519,6 +534,7 @@ the row under the header until the next key.
 | `a`, `f`, `i` | detail of work in review | Approve, give feedback, integrate; on a diverging card whose other state is in review, name its branch |
 | `m` | detail of work in review that conflicts with the target | Resolve: feedback and one attempt to merge the target |
 | `R` | detail of proposed or active work | Launch an attempt |
+| `S` | board | Sweep under the policy, after asking |
 | `e` | detail of an open question; attempts list or one attempt waiting on a question | Answer it in your editor, then resolve and commit it on its branch |
 | `e` | detail of any other record | Edit its file in your editor, uncommitted in its branch's checkout |
 | `A` | board or any detail | List attempts: of that work, or every attempt |

@@ -571,8 +571,10 @@ disposition:
   would happen to each candidate and why) starts one resolution attempt for
   a conflict and approves, then integrates, a candidate that meets the
   policy's conditions after its merged result passed the policy's
-  verification, each attributed to the policy's revision. Integration under
-  a policy names the merge to revert. Everything else waits for these
+  verification, each attributed to the policy's revision. An attempt
+  `grove run` started sweeps the work it handed off when it ends, and the
+  board's `S` sweeps too. Integration under a policy names the merge to
+  revert. Everything else waits for these
   dispositions, as the record model's `policy:` says.
 
 A candidate several records share is judged per record and integrated as

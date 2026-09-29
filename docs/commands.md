@@ -413,7 +413,9 @@ model where the provider reports one (a subagent on another model shows
 apart), the result
 (exit, the worktree's HEAD and whether it holds uncommitted or untracked
 changes), what its commits changed, the record as the branch holds it, whether the record on the target
-changed since launch, and the file paths; no provider text is printed. For a
+changed since launch, what the owner's sweep after a handoff did ([after an
+attempt](#after-an-attempt)), and the file paths; no provider text is
+printed. For a
 selection it prints each member at launch and, once ended, one line per member
 as the branch holds it: awaiting judgment (review, with the candidate),
 active with its checkpoint in its Next, not started and why, or waiting on a
@@ -502,9 +504,13 @@ policy, the `policy:` mapping the [record model](record-model.md) describes
 [G-260925-wh9ax](../grove/G-260925-wh9ax-delegate-conflict-resolu.md)). It runs in the
 target's checkout, whose committed `grove.yaml` holds the policy, and every
 act is attributed to that file's revision, as `policy grove.yaml
-sha256:…`. Without a policy it is refused: nothing is automatic. Grove runs
-no sweep by itself; the owner or a scheduler such as cron runs one, and a
-wait that has not changed does not retry.
+sha256:…`. Without a policy it is refused: nothing is automatic. The owner,
+a scheduler such as cron, or the board's `S` runs one, and so does the
+owner process of an attempt that hands work off ([after an
+attempt](#after-an-attempt)); Grove starts no resident process, and a wait
+that has not changed does not retry. One sweep of a repository runs at a
+time: another is refused, having done nothing, while one holds
+`.git/grove/sweep.lock`.
 
 For each candidate, in ID order, it decides one act and prints it with the
 reason; `--dry-run` stops there and writes nothing:
@@ -542,6 +548,26 @@ owner's wherever the record's standing is shown: the board's Review block
 and the detail's standing line read `approved under policy`, in review and
 in done, where the owner's read `approved`, and `show --json` gives
 `approved_by` as `policy`, or `owner`.
+
+### After an attempt
+
+The owner process of an attempt, once it has written `result.json`, sweeps
+the work the attempt handed off, alone
+([G-260928-dtrnw](../grove/G-260928-dtrnw-run-sweep-from-a-finishi.md)): the
+members its result holds in review with a candidate, in the checkout Git
+lists on the target branch, under that checkout's committed policy, as
+`sweep` decides and acts. It appends each fact, with its time, to the
+attempt's `sweep.log`, which `attempt` prints as `Sweep:` lines and the
+board's attempt screen shows. It writes nothing at all when the attempt
+handed nothing off, the launch had no target, or the target's `grove.yaml`
+has no policy. It reports, and does nothing else, when no checkout is on
+the target, that checkout has uncommitted changes to tracked files, the
+plan is refused, or another sweep runs. A resolution it starts is an attempt
+of its own, whose end sweeps again: a candidate that still conflicts with
+the same target commit then waits for the owner. The owner holds no lock
+while it sweeps, so the attempt reads as finished meanwhile, and the
+environment variable that made it the owner is gone before any `verify`
+command runs.
 
 ## Init
 
