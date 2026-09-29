@@ -67,14 +67,40 @@ ends with a recommendation for the guide. No product change.
    shaping.
 3. Nothing in the binary or the guides changes in this work.
 
+## Evidence
+
+Settings from [G-260929-jz2gy](G-260929-jz2gy-which-three-items-settin.md)'s
+answer: items G-260928-kehya (here), keyborg G-260928-ej7j0 and
+G-260928-g133n; plan on Opus 5.5 at `xhigh`, implementation on Sonnet 5.5 at
+`high`, `grove-reviewer` on Opus 5.5 at `high`; $15 per plan attempt, $15
+per implementation attempt, $90 in total. Which item's implementation runs
+as a subagent was not answered: [G-260929-2nfwv](G-260929-2nfwv-which-items-implementation-subagent.md).
+
+Plan attempts, 2026-09-29, each `grove run ID --until plan --model
+claude-opus-5-5 --effort xhigh --budget 15`, launched together, Claude Code
+2.1.284, grove at `9a18f57`; each exited 0, left its record `proposed`,
+its worktree clean, and changed only its record and one new plan record:
+
+| Item | Attempt | Cost | Duration | Turns | Tool calls | Plan |
+| --- | --- | --- | --- | --- | --- | --- |
+| G-260928-kehya | `G-260928-kehya.20260929T003720Z` | $1.73 | 4 min 41 s | 35 | 34 | G-260929-pjqxp, 142 lines, `a6b7cdf` |
+| keyborg G-260928-ej7j0 | `G-260928-ej7j0.20260929T003721Z` | $2.98 | 9 min 23 s | 43 | 42 | G-260929-4fkdm, 212 lines, `b7ed1ae` |
+| keyborg G-260928-g133n | `G-260928-g133n.20260929T003721Z` | $1.75 | 5 min 4 s | 32 | 31 | G-260929-ehvzq, 140 lines, `0bd0108` |
+
+Plans total $6.46 of the $90 cap. No implementation attempt has run.
+
 ## Next
 
-Waiting on [G-260929-jz2gy](G-260929-jz2gy-which-three-items-settin.md),
-checkpoint 2026-09-29. A headless assignment `G-260928-pqhyg --interaction
-headless` named no items, settings or cap, so nothing ran and nothing was
-spent; status stays `proposed`. Branch `worktree-G-260928-pqhyg`, base
-`main` `9a18f57`. Completed: context and state inspected, question written.
-No commands owned, no plan, no attempt launched. Once the question is
-resolved, reassign `/grove-work G-260928-pqhyg` naming its answer; the
-bounded plan attempt and the implementation attempt already exist as
-`grove run --until plan` and `R`.
+Waiting on [G-260929-2nfwv](G-260929-2nfwv-which-items-implementation-subagent.md),
+checkpoint 2026-09-29: which item's implementation runs as a subagent, from
+which session, and how the reviewer reaches Opus under a Sonnet
+implementer. Branch `worktree-G-260928-pqhyg`, base `main` `9a18f57`.
+Completed: the three plan attempts (Evidence); their worktrees
+`worktree-G-260928-kehya` here and `worktree-G-260928-ej7j0`,
+`worktree-G-260928-g133n` in keyborg hold the plans, statuses `proposed`.
+No command owned. Once answered, reassign `/grove-work G-260928-pqhyg
+--interaction headless`: add the reviewer routing the answer names to each
+implementation worktree, run the two separate-process implementations as
+`grove run ID --model claude-sonnet-5-5 --effort high --budget 15` on those
+worktrees, the subagent one as answered, then add each item's facts to its
+own record's Evidence and write the review record acceptance 2 asks for.
