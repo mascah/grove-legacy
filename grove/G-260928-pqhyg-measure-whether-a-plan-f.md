@@ -91,16 +91,17 @@ Plans total $6.46 of the $90 cap. No implementation attempt has run.
 
 ## Next
 
-[G-260929-z5nec](G-260929-z5nec-implementation-writes-denied.md) is
-answered, checkpoint 2026-09-29: no reviewer routing (the keyborg reviews run
-on Sonnet, a departure from G-260929-jz2gy to report as a limit), and the
-owner allows the write in `worktree-G-260928-kehya`. Branch
-`worktree-G-260928-pqhyg`, base `main` `9a18f57`. Completed: the three plan
-attempts (Evidence); the plans' worktrees are unchanged, statuses
-`proposed`. No command owned. Next, under
-`/grove-work G-260928-pqhyg --interaction headless`: run the two keyborg
-items as `grove run ID --model claude-sonnet-5-5 --effort high --budget 15`,
-run kehya's implementation as a `sonnet` subagent of that session (its
-effort unsettable, a limit to report), review it with `grove-reviewer` from
-the parent and hand it off, then add each item's facts to its own record's
-Evidence and write the review record acceptance 2 asks for.
+Checkpoint 2026-09-29: running interactively in this session (the owner
+chose to approve permissions here rather than reassign headless, in place
+of G-260929-z5nec's 2 (a)), on branch `worktree-G-260928-pqhyg`, base
+`main` `9a18f57`. In flight, launched 03:05Z from keyborg with grove
+`9a18f57`: `G-260928-ej7j0.20260929T030536Z` and
+`G-260928-g133n.20260929T030536Z` (`grove attempt ID` in keyborg; Sonnet 5.5
+at `high`, $15 each, reviewer on Sonnet per z5nec). kehya set `active` at
+`ddac889` in `worktree-G-260928-kehya`; its implementation runs as a
+`sonnet` subagent of this session, told to read only CLAUDE.md, the record
+and plan G-260929-pjqxp, effort unsettable. If this session ends before
+they finish: collect the two attempts' facts, review kehya's branch with
+`grove-reviewer` from an Opus session and hand it off, then add each item's
+facts to its own record's Evidence and write the review record acceptance 2
+asks for.
