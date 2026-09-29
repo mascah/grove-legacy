@@ -342,10 +342,10 @@ func TestSweepHeedsEveryReviewOfTheCandidate(t *testing.T) {
 		return &project.Record{ID: id, Type: "review", Status: "current", Work: []string{"G-260101-00001"}, Examined: "abcdef1234", Source: []byte("Findings.\n\n" + closing + "\n")}
 	}
 	s := &Sweep{}
-	if got, why := s.review(r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", "Open findings: 1")}); got != nil || !strings.Contains(why, "review G-260101-00007 of candidate abcdef1 does not end with") {
+	if got, why := s.review(context.Background(), r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", "Open findings: 1")}); got != nil || !strings.Contains(why, "review G-260101-00007 of candidate abcdef1 does not end with") {
 		t.Fatalf("got %v, %q", got, why)
 	}
-	if got, _ := s.review(r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", ClosingLine)}); got == nil || got.ID != "G-260101-00007" {
+	if got, _ := s.review(context.Background(), r, []*project.Record{rev("G-260101-00005", ClosingLine), rev("G-260101-00007", ClosingLine)}); got == nil || got.ID != "G-260101-00007" {
 		t.Fatalf("got %v, want the newest", got)
 	}
 }
@@ -429,8 +429,8 @@ func ended(t *testing.T, root, id string) *attempt.View {
 		if err != nil {
 			t.Fatal(err)
 		}
-		// The owner holds no lock while it sweeps: its exit is the end, and
-		// what it wrote is read after it.
+		// The owner has released the attempt's lock when it sweeps: its exit
+		// is the end, and what it wrote is read after it.
 		if v.Status == attempt.Finished && syscall.Kill(v.Launch.Owner, 0) != nil {
 			if v, err = attempt.Show(root, id); err != nil {
 				t.Fatal(err)

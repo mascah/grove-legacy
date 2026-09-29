@@ -92,7 +92,7 @@ func PlanContext(ctx context.Context, root string, only ...string) (*Sweep, erro
 	if p.Policy == nil {
 		return nil, errors.New("grove.yaml has no policy: nothing is automatic, and every candidate in review waits for the owner")
 	}
-	if status, err := repo.Git(root, "status", "--porcelain", "--", "grove.yaml"); err != nil {
+	if status, err := repo.GitContext(ctx, root, "status", "--porcelain", "--", "grove.yaml"); err != nil {
 		return nil, err
 	} else if status != "" {
 		return nil, errors.New("grove.yaml has uncommitted changes; commit the policy first, since every act names the revision it ran under")
@@ -241,13 +241,13 @@ func (s *Sweep) planApprove(ctx context.Context, it Item, r *project.Record, rec
 		it.Why = fmt.Sprintf("commits after candidate %s change %s: the tip is a new candidate", short(r.Candidate), cmp.Or(strings.Join(others, ", "), fmt.Sprint(err)))
 		return it
 	}
-	review, why := s.review(r, records)
+	review, why := s.review(ctx, r, records)
 	if review == nil {
 		it.Why = why
 		return it
 	}
 	it.review = review
-	lines, why := s.scope(r)
+	lines, why := s.scope(ctx, r)
 	if why != "" {
 		it.Why = why
 		return it
@@ -269,14 +269,14 @@ func (s *Sweep) planApprove(ctx context.Context, it Item, r *project.Record, rec
 // they examined it, or an earlier commit from which only records changed.
 // Every one must close with ClosingLine, so a later review's open finding
 // is never outvoted; the newest is the one the verdict names.
-func (s *Sweep) review(r *project.Record, records []*project.Record) (*project.Record, string) {
+func (s *Sweep) review(ctx context.Context, r *project.Record, records []*project.Record) (*project.Record, string) {
 	var found *project.Record
 	for _, o := range slices.Backward(records) {
 		if o.Type != "review" || o.Status != "current" || !slices.Contains(o.Work, r.ID) || o.Examined == "" {
 			continue
 		}
 		if !update.SameCommit(o.Examined, r.Candidate) {
-			changed, err := repo.Git(s.Root, "diff", "--name-only", "-z", "--no-relative", o.Examined, r.Candidate)
+			changed, err := repo.GitContext(ctx, s.Root, "diff", "--name-only", "-z", "--no-relative", o.Examined, r.Candidate)
 			if err != nil {
 				return nil, fmt.Sprintf("review %s examined %s, which could not be compared with the candidate: %v", o.ID, short(o.Examined), err)
 			}
@@ -305,8 +305,8 @@ func (s *Sweep) review(r *project.Record, records []*project.Record) (*project.R
 // scope counts the lines the candidate changes against its merge base with
 // the target, and refuses a never path, a path outside the project, a binary
 // change, or more than max_lines.
-func (s *Sweep) scope(r *project.Record) (int, string) {
-	out, err := repo.Git(s.Root, "diff", "--numstat", "-z", "--no-relative", "--no-renames", "refs/heads/"+s.Target+"..."+r.Candidate)
+func (s *Sweep) scope(ctx context.Context, r *project.Record) (int, string) {
+	out, err := repo.GitContext(ctx, s.Root, "diff", "--numstat", "-z", "--no-relative", "--no-renames", "refs/heads/"+s.Target+"..."+r.Candidate)
 	if err != nil {
 		return 0, fmt.Sprintf("its changes could not be read: %v", err)
 	}
