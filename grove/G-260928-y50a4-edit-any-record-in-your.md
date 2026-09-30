@@ -2,14 +2,16 @@
 id: "G-260928-y50a4"
 type: work
 title: "Edit any record in your editor from the board, page like vim, and read a report alone"
-status: done
+status: accepted
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-29T00:12:06Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: small
 relates_to: ["G-260924-wp2pe", "G-260923-895zb", "G-260924-nqkkh"]
 candidate: "393eb56e7f21a91582a57358615d8d90a5fb029f"
 approved: "393eb56e7f21a91582a57358615d8d90a5fb029f"
+approved_by: owner
+approved_context: "sha256:7b24ce173f76ae916a285994864c4b913678e89469150b6de52aef6d31f34644"
 ---
 
 ## Outcome
@@ -109,3 +111,5 @@ G-260928-y50a4 and G-260928-63124, and in main's checkout
 `grove integrate G-260928-csg91`, which merges the group.
 
 Verdict on candidate 393eb56, 2026-09-29: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

@@ -2,12 +2,14 @@
 id: "G-260924-59f5k"
 type: work
 title: "Run the G-260923-p5pt6 eval pair on Codex"
-status: done
+status: accepted
 created: "2026-09-24T21:48:22Z"
-updated: "2026-09-25T04:05:29Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260921-ahbrj", "G-260923-tnn5e", "G-260923-p5pt6", "G-260924-frzeg", "G-260924-5b6pz"]
 candidate: "fec6e94d382aea3ab8b5b50c681145f91ad7c35b"
 approved: "fec6e94d382aea3ab8b5b50c681145f91ad7c35b"
+approved_by: owner
+approved_context: "sha256:8cda9f9228daeb799747cb8e9b7793c178b743c31a99026fa2e8c925db198ba0"
 ---
 
 ## Outcome
@@ -154,3 +156,5 @@ base main `132709e`, from G-260924-59f5k at `sha256:0baef170…` and plan
   G-260925-04ccr, G-260925-beby3, G-260925-ced1h merge with it; G-260925-beby3 and G-260925-ced1h then await shaping.
 
 Verdict on candidate fec6e94, 2026-09-25: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

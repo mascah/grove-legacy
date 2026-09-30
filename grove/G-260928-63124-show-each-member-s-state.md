@@ -2,14 +2,16 @@
 id: "G-260928-63124"
 type: work
 title: "Show each member's state of a selection on the board"
-status: done
+status: accepted
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-29T00:12:06Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: small
 relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260923-895zb", "G-260928-dbgbw"]
 candidate: "393eb56e7f21a91582a57358615d8d90a5fb029f"
 approved: "393eb56e7f21a91582a57358615d8d90a5fb029f"
+approved_by: owner
+approved_context: "sha256:10676b09c27d6f0730c627975282a460b7536221cb395bc8ca0dd20f70fcba13"
 ---
 
 ## Outcome
@@ -110,3 +112,5 @@ G-260928-y50a4 and G-260928-63124, and in main's checkout
 `grove integrate G-260928-csg91`, which merges the group.
 
 Verdict on candidate 393eb56, 2026-09-28: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

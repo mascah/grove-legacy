@@ -2,13 +2,15 @@
 id: "G-260927-60ffq"
 type: work
 title: "Show whether an approval was delegated or the owner's wherever a record's standing is shown"
-status: done
+status: accepted
 created: "2026-09-27T22:13:37Z"
-updated: "2026-09-28T16:50:19Z"
+updated: "2026-09-30T13:18:01Z"
 size: small
 relates_to: ["G-260921-btyck", "G-260926-a8vyj", "G-260925-wh9ax", "G-260925-5wrn8", "G-260921-jwk4e"]
 candidate: "3af8383a1524aa97d9b0b35c468227aa2162eeb6"
 approved: "3af8383a1524aa97d9b0b35c468227aa2162eeb6"
+approved_by: "policy sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb"
+approved_context: "sha256:73d391cd2650f242fca6d6454f9ce6be8c6c7a82d070682b6c55010a9a1012fd"
 ---
 
 ## Outcome
@@ -100,3 +102,5 @@ integrate G-260927-60ffq` in main's checkout.
 Verdict on candidate 3af8383, 2026-09-28: delegated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb: review G-260928-fav7h examined 80ef0f7 with no open finding; merged with main at 4f8f070, verification passed (go test -count=1 -timeout 120s ./...; go vet ./...; go run ./cmd/grove check); attempt G-260927-60ffq.20260928T164039Z produced it for 2.65 USD
 
 Integrated under policy grove.yaml sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb as merge f800f02f29d55b56261ec0d7b4b5f321afd0be6f on main (was 4f8f07066ea4d45ee691ae262df959930af6ac5a); to reverse it: git revert -m 1 f800f02f29d55b56261ec0d7b4b5f321afd0be6f
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by policy sha256:182036ce84beda7043a09222a7e22419798a46d27e4511f5e747a5032a5d7dcb.

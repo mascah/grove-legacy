@@ -2,12 +2,14 @@
 id: "G-260923-895zb"
 type: work
 title: "Make Attempts easy to scan and act on"
-status: done
+status: accepted
 created: "2026-09-23T16:05:07Z"
-updated: "2026-09-23T22:32:58Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260923-fwakw", "G-260923-gsthp"]
 candidate: "2235092fdbea4af7e30ec43b811996d92f01e5d0"
 approved: "2235092fdbea4af7e30ec43b811996d92f01e5d0"
+approved_by: owner
+approved_context: "sha256:26fbd5f7efe593f4ea0e013d744ac80d814bf5dd13a1eecd94241f1edbdafaa1"
 ---
 
 ## Outcome
@@ -238,3 +240,5 @@ go run ./cmd/grove integrate G-260923-895zb
 ```
 
 Verdict on candidate 2235092, 2026-09-23: good pass, much more usable now.
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

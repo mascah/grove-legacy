@@ -2,12 +2,14 @@
 id: "G-260924-ecs9m"
 type: work
 title: "Default an attempt's budget, mode, model and effort from grove.yaml and launch from one line"
-status: done
+status: accepted
 created: "2026-09-24T23:52:07Z"
-updated: "2026-09-25T04:31:58Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260924-5b6pz", "G-260924-59f5k", "G-260925-04ccr"]
 candidate: "b18804e8a9194d596355893698e2d688a3c19130"
 approved: "b18804e8a9194d596355893698e2d688a3c19130"
+approved_by: owner
+approved_context: "sha256:100d09f2b70ffc0795499c96d39c065e9273b12cc916f8c3ae5ba8df26cb121d"
 ---
 
 ## Outcome
@@ -273,3 +275,5 @@ Then, in this worktree:
 `~/.local/bin/grove`: the one at `670ca9c` refuses the merged `grove.yaml`.
 
 Verdict on candidate b18804e, 2026-09-25: approve
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

@@ -2,14 +2,16 @@
 id: "G-260924-nqkkh"
 type: work
 title: "Make board navigation and cards quicker to read and move through"
-status: done
+status: accepted
 created: "2026-09-24T01:23:27Z"
-updated: "2026-09-24T04:53:23Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: small
 relates_to: ["G-260921-k0mwk", "G-260923-895zb", "G-260924-zxvqf", "G-260924-wp2pe"]
 candidate: "ff15e25d4cf5c0b85d2c6ab618984dbf5cf726bd"
 approved: "ff15e25d4cf5c0b85d2c6ab618984dbf5cf726bd"
+approved_by: owner
+approved_context: "sha256:6b2b515a6ef99dd59812902115ce49215e6ef64d42d033c5bb8e38fd4ffb85d3"
 ---
 
 ## Outcome
@@ -179,3 +181,5 @@ then `go run ./cmd/grove integrate G-260924-nqkkh` in the `main` checkout. Run
 they change the same package.
 
 Verdict on candidate ff15e25, 2026-09-24: lgtn
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

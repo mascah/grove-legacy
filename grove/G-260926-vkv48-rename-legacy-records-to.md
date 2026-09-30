@@ -2,14 +2,16 @@
 id: "G-260926-vkv48"
 type: work
 title: "Rename legacy records to the date form"
-status: done
+status: accepted
 created: "2026-09-26T16:09:19Z"
-updated: "2026-09-26T19:19:40Z"
+updated: "2026-09-30T13:18:01Z"
 kind: refactor
 size: large
 relates_to: ["G-260926-yvjy6", "G-260926-2da4n", "G-260926-pgj43", "G-260921-r491p", "G-260921-gtydy", "G-260921-czt8x", "G-260921-905y3"]
 candidate: "6e7ae1399969aa709c1dea3a4e7f4e935d602741"
 approved: "6e7ae1399969aa709c1dea3a4e7f4e935d602741"
+approved_by: owner
+approved_context: "sha256:4d3b266b114f1efc62d96f71d6bc68f231fa7d1c3a5c609af379598f75510760"
 ---
 
 ## Outcome
@@ -232,3 +234,5 @@ commit. Only then assign
 [G-260926-19gzg](G-260926-19gzg-retire-the-legacy-id-for.md).
 
 Verdict on candidate 6e7ae13, 2026-09-26: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

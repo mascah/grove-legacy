@@ -2,14 +2,16 @@
 id: "G-260924-zxvqf"
 type: work
 title: "Keep the board fresh without pressing r"
-status: done
+status: accepted
 created: "2026-09-24T01:23:28Z"
-updated: "2026-09-24T14:58:03Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: small
 relates_to: ["G-260921-7trd7", "G-260923-895zb", "G-260924-nqkkh"]
 candidate: "3d4597b02229ae36c623846959e6f49ff048d469"
 approved: "3d4597b02229ae36c623846959e6f49ff048d469"
+approved_by: owner
+approved_context: "sha256:edac4da0d6a79deae7ffdeb80e32e793bad19437f1519e347d91e35fc3ed5cb1"
 ---
 
 ## Outcome
@@ -179,3 +181,5 @@ Integration: `go run ./cmd/grove approve G-260924-zxvqf "VERDICT"` in this check
 then `go run ./cmd/grove integrate G-260924-zxvqf` in the `main` checkout.
 
 Verdict on candidate 3d4597b, 2026-09-24: working as expected
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

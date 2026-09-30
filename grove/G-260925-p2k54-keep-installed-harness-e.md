@@ -2,12 +2,14 @@
 id: "G-260925-p2k54"
 type: work
 title: "Keep installed harness entrypoints compatible with Grove upgrades"
-status: done
+status: accepted
 created: "2026-09-25T21:04:46Z"
-updated: "2026-09-26T00:28:06Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260923-tnn5e", "G-260925-3pj9a", "G-260925-khfe7", "G-260921-5gz9a", "G-260923-gsthp", "G-260925-358a2", "G-260925-m9jcr"]
 candidate: "f2ba8d0f8a13c3de41a6bc119790ba2e5aeb1d04"
 approved: "f2ba8d0f8a13c3de41a6bc119790ba2e5aeb1d04"
+approved_by: owner
+approved_context: "sha256:272900d9d83a628cc8b62800e5fa6d3167ee742cce74cd56b9ffa5d9d53d99b8"
 ---
 
 ## Outcome
@@ -219,3 +221,5 @@ go run ./cmd/grove integrate G-260925-p2k54           # in the main checkout
 ```
 
 Verdict on candidate f2ba8d0, 2026-09-26: approved with the requirement to run grove init in existing projects
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

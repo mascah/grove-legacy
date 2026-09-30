@@ -2,9 +2,9 @@
 id: "G-260921-h46pb"
 type: work
 title: "Run one bounded implementation independently of the viewing terminal"
-status: done
+status: accepted
 created: "2026-09-21T00:54:16Z"
-updated: "2026-09-23T03:30:02Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: large
 priority: 4
@@ -13,6 +13,8 @@ relates_to: ["G-260921-tkdwh", "G-260921-jwk4e", "G-260921-7trd7", "G-260923-tnn
 formerly: "W-027"
 candidate: "d8ed3159447bdc7f4930499aaf6a57e182e68c04"
 approved: "d8ed3159447bdc7f4930499aaf6a57e182e68c04"
+approved_by: owner
+approved_context: "sha256:ef5d80a32b6bb638465446a99c4e4afedb8f4cfaf117e7988ce2b91c82a8b3bc"
 ---
 
 ## Outcome
@@ -158,3 +160,5 @@ then `go run ./cmd/grove integrate G-260921-h46pb` in `main`'s checkout. Feedbac
 [G-260921-7trd7](G-260921-7trd7-launch-and-inspect-manag.md) can be prepared on this package.
 
 Verdict on candidate d8ed315, 2026-09-23: working as expected
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

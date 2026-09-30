@@ -2,15 +2,17 @@
 id: "G-260925-ej1xh"
 type: work
 title: "Strip Grove-repository pointers from the shipped guides and model"
-status: done
+status: accepted
 created: "2026-09-25T19:06:01Z"
-updated: "2026-09-25T20:09:10Z"
+updated: "2026-09-30T13:18:01Z"
 kind: fix
 priority: 1
 size: small
 relates_to: ["G-260923-gsthp", "G-260925-ced1h", "G-260925-02jsj", "G-260925-w62y4", "G-260925-khfe7"]
 candidate: "80aa23e"
 approved: "80aa23e"
+approved_by: owner
+approved_context: "sha256:f62b58ed460508743191a7f5cab0ea17f20ea38e3227a1017ab2dc5a87b5b3ce"
 ---
 
 ## Outcome
@@ -167,3 +169,5 @@ grove integrate G-260925-ej1xh           # in the main checkout
 ```
 
 Verdict on candidate 80aa23e, 2026-09-25: approve
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

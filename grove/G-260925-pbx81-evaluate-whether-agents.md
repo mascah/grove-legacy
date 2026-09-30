@@ -2,13 +2,15 @@
 id: "G-260925-pbx81"
 type: work
 title: "Evaluate whether agents find a constraint held in a listed record or in the code they touch"
-status: done
+status: accepted
 created: "2026-09-25T19:15:12Z"
-updated: "2026-09-25T22:40:32Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260923-p5pt6", "G-260924-frzeg", "G-260924-59f5k", "G-260925-dzxm6"]
 kind: investigation
 candidate: "357c5079248dfec989cf155a1bf7833f20e5cc5a"
 approved: "357c5079248dfec989cf155a1bf7833f20e5cc5a"
+approved_by: owner
+approved_context: "sha256:9a84578665e0a62f75f162fac7c6fcafd276e28ec4475654f3addec0a4418421"
 ---
 
 ## Outcome
@@ -206,3 +208,5 @@ also carry a later search's `with` row, deserves its own work (G-260925-khwkq
 Disposition).
 
 Verdict on candidate 357c507, 2026-09-25: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

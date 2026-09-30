@@ -2,14 +2,16 @@
 id: "G-260925-5wrn8"
 type: work
 title: "Resolve, approve and integrate candidates under an explicit owner policy"
-status: done
+status: accepted
 created: "2026-09-25T21:39:28Z"
-updated: "2026-09-26T04:58:41Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 depends_on: ["G-260925-h8rj5", "G-260925-dz10z"]
 relates_to: ["G-260921-jwk4e", "G-260921-rz7bn", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e", "G-260924-5b6pz", "G-260924-ecs9m", "G-260925-beby3", "G-260925-7c8g9", "G-260925-80w3a", "G-260925-w33j7", "G-260925-wh9ax", "G-260926-a8vyj"]
 candidate: "2251569c061a951ad7ba5d09da8c5d242a678e8d"
 approved: "2251569c061a951ad7ba5d09da8c5d242a678e8d"
+approved_by: owner
+approved_context: "sha256:96002868ffaf331dc3294d68aeafc1e48caf19aa8a14599906a0735e6ef0f255"
 ---
 
 ## Outcome
@@ -271,3 +273,5 @@ proposed policy from `2251569`, so the first `grove sweep` on main after
 integration acts under it; the real-provider trial is still open.
 
 Verdict on candidate 2251569, 2026-09-26: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

@@ -2,12 +2,14 @@
 id: "G-260924-3bapc"
 type: work
 title: "Headless attempts run long commands in the foreground, never as a background continuation"
-status: done
+status: accepted
 created: "2026-09-24T04:49:40Z"
-updated: "2026-09-24T17:30:19Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260923-h9c30", "G-260923-p5pt6", "G-260921-h46pb"]
 candidate: "8868ba4"
 approved: "8868ba4"
+approved_by: owner
+approved_context: "sha256:c8d9d7cfbcbb9924edea8e237df9f5de44e3dad2bb8f069e0b1ae51a590b7d36"
 ---
 
 ## Outcome
@@ -170,3 +172,5 @@ a continuation?
 Feedback on candidate 347e3ab, 2026-09-24: poke
 
 Verdict on candidate 8868ba4, 2026-09-24: lgtm
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

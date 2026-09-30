@@ -2,12 +2,14 @@
 id: "G-260925-358a2"
 type: work
 title: "Give every distributed build and attempt attributable release identity"
-status: done
+status: accepted
 created: "2026-09-25T21:04:55Z"
-updated: "2026-09-25T23:00:06Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260921-vz0v3", "G-260925-khfe7", "G-260925-p2k54"]
 candidate: "74ec79f"
 approved: "74ec79f"
+approved_by: owner
+approved_context: "sha256:4a1626674a7fa82fde4dceb357120010949844e9e37781704b8cbcf46d96f82a"
 ---
 
 ## Outcome
@@ -159,3 +161,5 @@ grove integrate G-260925-358a2           # in the main checkout, clean
 Or `grove feedback G-260925-358a2 "TEXT"` here to return it to active.
 
 Verdict on candidate 74ec79f, 2026-09-25: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

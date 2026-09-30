@@ -2,12 +2,14 @@
 id: "G-260923-p5pt6"
 type: work
 title: "Establish behavioral evaluations for Grove context and workflows"
-status: done
+status: accepted
 created: "2026-09-23T16:05:04Z"
-updated: "2026-09-24T04:18:59Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260922-08wxx", "G-260921-5gz9a", "G-260923-fwakw", "G-260923-gsthp"]
 candidate: "60c9537b95cd8968a33d47f7833797cb1bc96ef3"
 approved: "60c9537b95cd8968a33d47f7833797cb1bc96ef3"
+approved_by: owner
+approved_context: "sha256:6674786143a3aeb29c244bacad29162382049eeb65c6daee941751d62b115a32"
 ---
 ## Outcome
 
@@ -268,3 +270,5 @@ acceptance 5 is one, and its review record's form is the evidence for whether
 to generalize it.
 
 Verdict on candidate 60c9537, 2026-09-24: lgtm
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

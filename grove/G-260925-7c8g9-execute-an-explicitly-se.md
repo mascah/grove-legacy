@@ -2,13 +2,15 @@
 id: "G-260925-7c8g9"
 type: work
 title: "Execute an explicitly selected set of work with bounded progress and review"
-status: done
+status: accepted
 created: "2026-09-25T20:35:28Z"
-updated: "2026-09-26T00:35:57Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260921-jwk4e", "G-260923-tnn5e", "G-260921-vr8a8", "G-260921-sth8q", "G-260921-jatts", "G-260921-btyck", "G-260921-3qgsf", "G-260925-g39ga", "G-260925-wc2pz"]
 candidate: "81fa4f874aa9ce137b16debd3d9016405340df2e"
 approved: "81fa4f874aa9ce137b16debd3d9016405340df2e"
+approved_by: owner
+approved_context: "sha256:0298a04e64df5f55270aa383fdbf80bfae08a4ec0211f3af2c24d92ef9569bb7"
 ---
 
 ## Outcome
@@ -239,3 +241,5 @@ in a disposable project, with a `grove` built from the integrated main:
 Verdict on candidate 2fb756b, 2026-09-26: approved
 
 Verdict on candidate 81fa4f8, 2026-09-26: approved: merge of main (G-260925-p2k54) at 81fa4f8 over approved 2fb756b; conflicts in attempt.go, cli.go and commands.md resolved by keeping both G-260925-p2k54's entrypoint-revision refusal (moved into prepare) and G-260925-7c8g9's selection; vet, gofmt, check and the full test suite pass
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

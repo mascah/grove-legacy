@@ -2,13 +2,15 @@
 id: "G-260927-dx0yn"
 type: work
 title: "Retain per-attempt process facts and show cost per work record"
-status: done
+status: accepted
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-28T16:37:18Z"
+updated: "2026-09-30T13:18:01Z"
 size: medium
 relates_to: ["G-260921-sth8q", "G-260923-tnn5e", "G-260923-895zb", "G-260921-h46pb", "G-260923-p5pt6"]
 candidate: "f1f75b2"
 approved: "f1f75b2"
+approved_by: owner
+approved_context: "sha256:f99c9b9dd69f5737be826108e2e78038f2362af55aafc367a8d2fc4c53fc5428"
 ---
 
 ## Outcome
@@ -257,3 +259,5 @@ Verdict on candidate 24fc77a, 2026-09-28: approved
 Feedback on candidate 24fc77a, 2026-09-28: conflicts with main at 3ec0f68 in grove/G-260927-cg6rt-print-the-work-guide-in.md. Resolve only that (grove resolve): in this branch, git merge 3ec0f688c3cd3e6acf3fa42183dbe1d10e43b6e1, that commit of main even if main has moved since, never a rebase; resolve those files keeping both sides' intent; rerun the repository's verification; and hand off the merge as the new candidate, with the previous candidate 24fc77a, the merged commit and the resolved files in Evidence. Change nothing else. If a resolution needs a choice this record does not settle, stop with a checkpoint naming it.
 
 Verdict on candidate f1f75b2, 2026-09-28: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

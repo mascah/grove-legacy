@@ -2,14 +2,16 @@
 id: "G-260928-dtrnw"
 type: work
 title: "Run sweep from a finishing attempt and from the board"
-status: done
+status: accepted
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-29T03:10:54Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: medium
 relates_to: ["G-260925-5wrn8", "G-260925-wh9ax", "G-260926-a8vyj", "G-260923-tnn5e"]
 candidate: "6b110517b0deb262f4ec42b023ac2ee4783db18d"
 approved: "6b110517b0deb262f4ec42b023ac2ee4783db18d"
+approved_by: owner
+approved_context: "sha256:dd9330a84ff7bc6f98933ff5eac4efb0f13610b934d095c3e6956e34c7d412cf"
 ---
 
 ## Outcome
@@ -165,3 +167,5 @@ grove --project /Users/mascah/GitHub/mascah/grove integrate G-260928-dtrnw
 G-260928-c5j9d names this record in its `depends_on`.
 
 Verdict on candidate 6b11051, 2026-09-29: approvd
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

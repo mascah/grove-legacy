@@ -2,14 +2,16 @@
 id: "G-260928-pqhyg"
 type: work
 title: "Measure whether a plan from one session suffices for another implementer"
-status: done
+status: accepted
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-29T16:28:27Z"
+updated: "2026-09-30T13:18:01Z"
 kind: investigation
 size: small
 relates_to: ["G-260924-5b6pz", "G-260924-59f5k", "G-260927-dx0yn", "G-260921-dqdde"]
 candidate: "42ec980fe947643f312b5bbf3f46b26ec7f87d86"
 approved: "42ec980fe947643f312b5bbf3f46b26ec7f87d86"
+approved_by: owner
+approved_context: "sha256:80f8978a3a56704a3584f11accff74d087b75c4e77a66991f1e71e3fa1190518"
 ---
 
 ## Outcome
@@ -121,3 +123,5 @@ Then `grove approve G-260928-pqhyg VERDICT` in this checkout and
 `grove integrate G-260928-pqhyg` in main's.
 
 Verdict on candidate 42ec980, 2026-09-29: Approved by the owner for merge, 2026-09-29
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

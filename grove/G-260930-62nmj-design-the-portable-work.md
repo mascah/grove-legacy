@@ -2,14 +2,16 @@
 id: "G-260930-62nmj"
 type: work
 title: "Design the portable workflow journey and contracts"
-status: done
+status: accepted
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T04:41:54Z"
+updated: "2026-09-30T13:18:01Z"
 kind: investigation
 size: large
 relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260928-vdhf0", "G-260923-tnn5e", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260921-sth8q", "G-260930-npw49", "G-260930-84fnb", "G-260930-y6fyy", "G-260930-2qa4a"]
 candidate: "f376a6dab7a5999560b25adaacb93d919c36e7a8"
 approved: "f376a6dab7a5999560b25adaacb93d919c36e7a8"
+approved_by: owner
+approved_context: "sha256:75ee6b958c76e5a6240aac5cb3eaed17f2d2a75764ef7b03b3413650f6bc3262"
 ---
 
 ## Outcome
@@ -125,3 +127,5 @@ Implementation work remains proposed and unassigned. Design acceptance
 supplies its prerequisite; it does not launch implementation, paid trials,
 adopter changes, a merge or a push. The current schema 3 lifecycle is used
 to record this closure until the selected replacement is implemented.
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

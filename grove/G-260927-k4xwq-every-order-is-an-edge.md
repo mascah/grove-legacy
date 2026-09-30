@@ -2,15 +2,17 @@
 id: "G-260927-k4xwq"
 type: work
 title: "Every order shaping states is a depends_on edge"
-status: done
+status: accepted
 created: "2026-09-27T19:57:19Z"
-updated: "2026-09-27T20:11:39Z"
+updated: "2026-09-30T13:18:01Z"
 kind: fix
 size: small
 depends_on: ["G-260927-3n027"]
 relates_to: ["G-260927-y3pc2", "G-260925-g39ga"]
 candidate: "80c93fc1ba36a02dcaaa497f895c28eae2c646e4"
 approved: "80c93fc1ba36a02dcaaa497f895c28eae2c646e4"
+approved_by: owner
+approved_context: "sha256:da038e0c5c04b91af080ffe15d04daa459b402bd90d35c3f69d1b63a0df5c06c"
 ---
 
 ## Outcome
@@ -144,3 +146,5 @@ go run ./cmd/grove integrate G-260927-k4xwq --cleanup
 Or `go run ./cmd/grove feedback G-260927-k4xwq "TEXT"` in the worktree.
 
 Verdict on candidate 80c93fc, 2026-09-27: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

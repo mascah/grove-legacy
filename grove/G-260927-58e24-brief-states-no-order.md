@@ -2,14 +2,16 @@
 id: "G-260927-58e24"
 type: work
 title: "The brief states no order among work records"
-status: done
+status: accepted
 created: "2026-09-27T20:13:00Z"
-updated: "2026-09-27T21:45:42Z"
+updated: "2026-09-30T13:18:01Z"
 kind: fix
 size: small
 relates_to: ["G-260927-y3pc2", "G-260927-k4xwq"]
 candidate: "401c385bf4b4d71f18ef65376f8e04c0aca93cf2"
 approved: "401c385bf4b4d71f18ef65376f8e04c0aca93cf2"
+approved_by: owner
+approved_context: "sha256:09aac8f673748b4f521dd2936001e6bd4d01548bbd121a7f938700c7c1f236bb"
 ---
 
 ## Outcome
@@ -76,3 +78,5 @@ go run ./cmd/grove integrate G-260927-58e24 --cleanup
 ```
 
 Verdict on candidate 401c385, 2026-09-27: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

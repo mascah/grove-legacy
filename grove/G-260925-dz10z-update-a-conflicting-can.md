@@ -2,13 +2,15 @@
 id: "G-260925-dz10z"
 type: work
 title: "Update a conflicting candidate to the moved target through one bounded attempt"
-status: done
+status: accepted
 created: "2026-09-25T21:39:27Z"
-updated: "2026-09-26T03:08:42Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 relates_to: ["G-260921-jwk4e", "G-260921-h46pb", "G-260921-7trd7", "G-260921-jatts", "G-260921-rz7bn", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e", "G-260924-5b6pz", "G-260924-ecs9m", "G-260925-h8rj5", "G-260925-w33j7", "G-260925-5wrn8", "G-260925-wh9ax", "G-260926-kfcpp"]
 candidate: "4e9b1b26a7b699659ec8d697a67fc8e21121aed3"
 approved: "4e9b1b26a7b699659ec8d697a67fc8e21121aed3"
+approved_by: owner
+approved_context: "sha256:ff9e3f17a7207586fc5bbc416f941cf25de0319385867ceafbc9ad05e3015189"
 ---
 
 ## Outcome
@@ -271,3 +273,5 @@ the board, press `m`, then Enter; or run `grove resolve ID`. G-260925-5wrn8 buil
 on `attempt.Resolve`.
 
 Verdict on candidate 4e9b1b2, 2026-09-26: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

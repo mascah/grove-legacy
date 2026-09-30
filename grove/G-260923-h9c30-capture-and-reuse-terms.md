@@ -2,12 +2,14 @@
 id: "G-260923-h9c30"
 type: work
 title: "Capture and reuse terms, questions and decisions across shaping, work and review"
-status: done
+status: accepted
 created: "2026-09-23T19:44:56Z"
-updated: "2026-09-24T15:03:27Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260921-w9x25", "G-260921-e8bva", "G-260921-sth8q", "G-260923-fwakw", "G-260923-p5pt6", "G-260923-659zw", "G-260924-frzeg", "G-260924-wp2pe"]
 candidate: "fdfd933e334eef1aa27631e44df7e535b762d244"
 approved: "fdfd933e334eef1aa27631e44df7e535b762d244"
+approved_by: owner
+approved_context: "sha256:742babbccc099ab9715fa7bf2c2eff7d8d7f4cee48623aa33753f06b4d09194e"
 ---
 ## Outcome
 
@@ -238,3 +240,5 @@ is not this record's; G-260923-p5pt6's Next lists the knowledge-sequence eval ca
 the follow-on once this lands.
 
 Verdict on candidate fdfd933, 2026-09-24: needs more work, but later. Good enough for now
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

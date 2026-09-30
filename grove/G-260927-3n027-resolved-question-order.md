@@ -2,14 +2,16 @@
 id: "G-260927-3n027"
 type: work
 title: "Shaping keeps the order a resolved question was holding"
-status: done
+status: accepted
 created: "2026-09-27T19:15:26Z"
-updated: "2026-09-27T20:11:27Z"
+updated: "2026-09-30T13:18:01Z"
 kind: fix
 size: small
 relates_to: ["G-260925-g39ga"]
 candidate: "58a7855687c5ec319b0e715ab12ddf701b5834a1"
 approved: "58a7855687c5ec319b0e715ab12ddf701b5834a1"
+approved_by: owner
+approved_context: "sha256:b83698097e490b590cab76ed7b4dfb6561b371f348549f0310387a8bd5181f1d"
 ---
 
 ## Outcome
@@ -110,3 +112,5 @@ go run ./cmd/grove integrate G-260927-3n027 --cleanup
 Or `go run ./cmd/grove feedback G-260927-3n027 "TEXT"` in the worktree.
 
 Verdict on candidate 58a7855, 2026-09-27: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

@@ -2,12 +2,14 @@
 id: "G-260924-5b6pz"
 type: work
 title: "Bound an attempt at its plan and choose each phase's model and reviewer"
-status: done
+status: accepted
 created: "2026-09-24T21:48:22Z"
-updated: "2026-09-24T22:33:14Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260921-h46pb", "G-260921-7trd7", "G-260921-dqdde", "G-260923-tnn5e", "G-260923-p5pt6", "G-260923-895zb", "G-260923-h9c30", "G-260924-59f5k"]
 candidate: "da8a936cd0478ddfe5b27a7a9a06b37d399fcd75"
 approved: "da8a936cd0478ddfe5b27a7a9a06b37d399fcd75"
+approved_by: owner
+approved_context: "sha256:8f89b000653a5aa070899c87f07f7073b737436bee7f7cb3d47c951eade43033"
 ---
 
 ## Outcome
@@ -342,3 +344,5 @@ second harness wait on G-260924-59f5k's report. [G-260923-gsthp](G-260923-gsthp-
 remains a poor first target for the experiment.
 
 Verdict on candidate da8a936, 2026-09-24: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

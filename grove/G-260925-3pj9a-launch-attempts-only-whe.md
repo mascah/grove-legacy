@@ -2,15 +2,17 @@
 id: "G-260925-3pj9a"
 type: work
 title: "Launch attempts only where the worktree holds the entrypoints init wrote"
-status: done
+status: accepted
 created: "2026-09-25T19:06:01Z"
-updated: "2026-09-25T20:12:11Z"
+updated: "2026-09-30T13:18:01Z"
 kind: fix
 priority: 1
 size: small
 relates_to: ["G-260921-5gz9a", "G-260923-tnn5e", "G-260923-gsthp", "G-260924-5b6pz", "G-260925-khfe7"]
 candidate: "ac1b787b820190c102a9b4f11a21b8579c96e2fc"
 approved: "ac1b787b820190c102a9b4f11a21b8579c96e2fc"
+approved_by: owner
+approved_context: "sha256:4781446d603164d53d5dae368f782725a8a5106d41e88f9cb4d7fe1d5fd28b91"
 ---
 
 ## Outcome
@@ -190,3 +192,5 @@ go run ./cmd/grove integrate G-260925-3pj9a           # in the main checkout
 ```
 
 Verdict on candidate ac1b787, 2026-09-25: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

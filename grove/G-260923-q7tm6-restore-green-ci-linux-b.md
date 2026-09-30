@@ -2,14 +2,16 @@
 id: "G-260923-q7tm6"
 type: work
 title: "Restore green CI: Linux build, Go patch, and dependency advisories"
-status: done
+status: accepted
 created: "2026-09-23T04:44:12Z"
-updated: "2026-09-23T05:22:22Z"
+updated: "2026-09-30T13:18:01Z"
 kind: fix
 size: small
 relates_to: ["G-260922-jtsed", "G-260921-h46pb", "G-260921-7trd7"]
 candidate: "e30f90c6572edf3493e9f2c24504b6477e64053e"
 approved: "e30f90c6572edf3493e9f2c24504b6477e64053e"
+approved_by: owner
+approved_context: "sha256:36eb5395d51ab11b83aee7f76bf28d3c621cbc41a3a99e62f5c6ddab8fac48de"
 ---
 
 ## Outcome
@@ -168,3 +170,5 @@ gh pr list --state all --limit 5
 Acceptance 1, 2 and 5 are read from those last three after the push.
 
 Verdict on candidate e30f90c, 2026-09-23: lgtm
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

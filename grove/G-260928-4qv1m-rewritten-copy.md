@@ -2,14 +2,16 @@
 id: "G-260928-4qv1m"
 type: work
 title: "Say when a diverging state is a rewritten copy already on the target, and how to clear it"
-status: done
+status: accepted
 created: "2026-09-28T16:36:30Z"
-updated: "2026-09-28T17:49:50Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: medium
 relates_to: ["G-260921-ms6ev", "G-260921-jwk4e", "G-260925-h8rj5", "G-260925-dz10z", "G-260920-svpbc"]
 candidate: "b107ba0e0893f9a81f126714971b0a3c7b97254f"
 approved: "b107ba0e0893f9a81f126714971b0a3c7b97254f"
+approved_by: owner
+approved_context: "sha256:e9fdeb77f015ab730ebf1d36c5a567a6aff4f6929bdcd79ff073475cd805b831"
 ---
 
 ## Outcome
@@ -266,3 +268,5 @@ against the ascah.dev shape. In this checkout:
 `grove integrate G-260928-4qv1m`.
 
 Verdict on candidate b107ba0, 2026-09-28: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

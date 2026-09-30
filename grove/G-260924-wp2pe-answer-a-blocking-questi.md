@@ -2,14 +2,16 @@
 id: "G-260924-wp2pe"
 type: work
 title: "Answer a blocking question from the board"
-status: done
+status: accepted
 created: "2026-09-24T01:23:28Z"
-updated: "2026-09-24T21:03:16Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: medium
 relates_to: ["G-260921-jwk4e", "G-260921-7trd7", "G-260922-q3cr9", "G-260923-h9c30", "G-260924-nqkkh"]
 candidate: "6833eb5c0cb1c19ef6d80f04a3ceba6feedf210d"
 approved: "6833eb5c0cb1c19ef6d80f04a3ceba6feedf210d"
+approved_by: owner
+approved_context: "sha256:5bbf4c6e7cb3ef34ab7ab668939ae4979c1afc29c88bf33c60babdecd8d344ef"
 ---
 
 ## Outcome
@@ -140,3 +142,5 @@ In review with the candidate this record names. The integrator's actions:
    "TEXT"` here.
 
 Verdict on candidate 6833eb5, 2026-09-24: lgtm
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

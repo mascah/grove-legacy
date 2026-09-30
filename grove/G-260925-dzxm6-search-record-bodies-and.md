@@ -2,14 +2,16 @@
 id: "G-260925-dzxm6"
 type: work
 title: "Search record bodies and list the records that describe the code a change touches"
-status: done
+status: accepted
 created: "2026-09-25T19:15:12Z"
-updated: "2026-09-25T21:16:26Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260921-ms6ev", "G-260921-ebsby", "G-260923-p5pt6", "G-260923-h9c30", "G-260925-02jsj", "G-260925-ej1xh", "G-260925-khfe7", "G-260925-pbx81"]
 kind: feature
 size: medium
 candidate: "a6c2fa4168eb559bde9c8263dcbe4761df011ce2"
 approved: "a6c2fa4168eb559bde9c8263dcbe4761df011ce2"
+approved_by: owner
+approved_context: "sha256:fbb4c4cc52641bd6ac651e8d473e6202b78e42e9841099f51ea43f4afa706664"
 ---
 
 ## Outcome
@@ -286,3 +288,5 @@ reshaping `grove search` and the guide sentences as their own work is the
 owner's choice.
 
 Verdict on candidate a6c2fa4, 2026-09-25: fine with deferring the grove search command for now
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

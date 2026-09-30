@@ -2,15 +2,17 @@
 id: "G-260926-19gzg"
 type: work
 title: "Retire the legacy ID form from the binary"
-status: done
+status: accepted
 created: "2026-09-26T16:09:19Z"
-updated: "2026-09-26T20:14:46Z"
+updated: "2026-09-30T13:18:01Z"
 kind: refactor
 size: small
 depends_on: ["G-260926-vkv48"]
 relates_to: ["G-260926-yvjy6", "G-260926-2da4n", "G-260926-pgj43", "G-260921-czt8x"]
 candidate: "33f78f2d7c228804a1c0e4c2fd78161213f24685"
 approved: "33f78f2d7c228804a1c0e4c2fd78161213f24685"
+approved_by: owner
+approved_context: "sha256:49ffeeb1bed094892856219c84940bf3dcf1e2b02b6ca48bf38e1127a459cac1"
 ---
 
 ## Outcome
@@ -190,3 +192,5 @@ After `just install`, the installed `grove` refuses any legacy record, in
 nullsec too (already renamed there).
 
 Verdict on candidate 33f78f2, 2026-09-26: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

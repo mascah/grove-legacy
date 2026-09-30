@@ -2,13 +2,15 @@
 id: "G-260927-n4wvk"
 type: work
 title: "Trim the framing context prints to the facts a session acts on"
-status: done
+status: accepted
 created: "2026-09-27T22:13:36Z"
-updated: "2026-09-28T16:20:27Z"
+updated: "2026-09-30T13:18:01Z"
 size: small
 relates_to: ["G-260923-p5pt6", "G-260925-pbx81", "G-260925-khwkq", "G-260919-nddsf", "G-260922-08wxx"]
 candidate: "847c737b5c8cf11439469b03780493d6183a35ce"
 approved: "847c737b5c8cf11439469b03780493d6183a35ce"
+approved_by: owner
+approved_context: "sha256:fc284c0703c745a1147d028ecad7f8d89faed17c874271f27ee8bdb39f709bf5"
 ---
 
 ## Outcome
@@ -151,3 +153,5 @@ Next action:
    `grove integrate G-260927-n4wvk` in main's checkout.
 
 Verdict on candidate 847c737, 2026-09-28: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

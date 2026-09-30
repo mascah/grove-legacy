@@ -2,13 +2,15 @@
 id: "G-260925-g39ga"
 type: work
 title: "See work dependencies and preview a selected assignment"
-status: done
+status: accepted
 created: "2026-09-25T20:35:15Z"
-updated: "2026-09-25T22:57:01Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 relates_to: ["G-260921-tkdwh", "G-260921-ms6ev", "G-260921-k0mwk", "G-260919-nddsf", "G-260921-466b5", "G-260921-vr8a8", "G-260921-3qgsf", "G-260925-7c8g9"]
 candidate: "83e7f3823f3444832b5c9866300e201f06691674"
 approved: "83e7f3823f3444832b5c9866300e201f06691674"
+approved_by: owner
+approved_context: "sha256:01f309bacd6d12ca655542e953fc4ced8915e12eaa265fc75112f6258f70f2d2"
 ---
 
 ## Outcome
@@ -227,3 +229,5 @@ next commit sets only `status=review`. Awaiting the owner's judgment, including 
   - In the target's checkout: `grove integrate G-260925-g39ga`.
 
 Verdict on candidate 83e7f38, 2026-09-25: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

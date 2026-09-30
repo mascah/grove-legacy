@@ -2,12 +2,14 @@
 id: "G-260925-ced1h"
 type: work
 title: "Give adopting projects the record model the guides cite"
-status: done
+status: accepted
 created: "2026-09-25T03:53:22Z"
-updated: "2026-09-25T14:41:03Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260924-59f5k", "G-260925-42j50"]
 candidate: "6def6c6"
 approved: "6def6c6"
+approved_by: owner
+approved_context: "sha256:87f29493f2faa3204eab84bb621cb76292c63171376ffe4dc48f7cf75ba24c64"
 ---
 
 ## Outcome
@@ -134,3 +136,5 @@ go run ./cmd/grove integrate G-260925-ced1h           # in the main checkout
 ```
 
 Verdict on candidate 6def6c6, 2026-09-25: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

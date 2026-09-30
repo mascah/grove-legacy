@@ -2,12 +2,14 @@
 id: "G-260925-beby3"
 type: work
 title: "Keep a blank mandate answer from approving spend"
-status: done
+status: accepted
 created: "2026-09-25T03:47:15Z"
-updated: "2026-09-27T16:51:07Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260924-59f5k", "G-260924-7x7p7", "G-260925-04ccr", "G-260925-gymkr", "G-260925-02jsj", "G-260924-ecs9m"]
 candidate: "f9b38bb574e2e5a3af81ba43b96b01915768c103"
 approved: "f9b38bb574e2e5a3af81ba43b96b01915768c103"
+approved_by: owner
+approved_context: "sha256:4931586513e7a74a180728aa7a3921f53e2af1ba651be36a28aae2b7fe762b13"
 ---
 
 ## Outcome
@@ -127,3 +129,5 @@ checkout `go run ./cmd/grove integrate G-260925-beby3 --cleanup`, or
 `go run ./cmd/grove feedback G-260925-beby3 "TEXT"` here.
 
 Verdict on candidate f9b38bb, 2026-09-27: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

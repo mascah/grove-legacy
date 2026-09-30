@@ -2,12 +2,14 @@
 id: "G-260926-pgj43"
 type: work
 title: "Coordination-free record IDs"
-status: done
+status: accepted
 created: "2026-09-26T02:56:11Z"
-updated: "2026-09-26T15:12:25Z"
+updated: "2026-09-30T13:18:01Z"
 relates_to: ["G-260926-2da4n", "G-260919-4h6pn", "G-260919-5f89v", "G-260921-gtydy"]
 candidate: "f6f180279905e07427b31851ca32569f92475992"
 approved: "f6f180279905e07427b31851ca32569f92475992"
+approved_by: owner
+approved_context: "sha256:65a54430b65c349db17637d576d70f2280d530c46276fa2203598fda06631340"
 ---
 
 ## Outcome
@@ -191,3 +193,5 @@ go run ./cmd/grove integrate G-260926-pgj43
 ```
 
 Verdict on candidate f6f1802, 2026-09-26: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

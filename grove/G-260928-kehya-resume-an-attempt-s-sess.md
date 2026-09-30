@@ -2,14 +2,16 @@
 id: "G-260928-kehya"
 type: work
 title: "Resume an attempt's session after its question is answered"
-status: done
+status: accepted
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-29T16:27:51Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: small
 relates_to: ["G-260924-wp2pe", "G-260924-5b6pz", "G-260923-tnn5e", "G-260928-y2p5h"]
 candidate: "63ea8180412ae0721cdd042a4ba1f447888d5f75"
 approved: "63ea8180412ae0721cdd042a4ba1f447888d5f75"
+approved_by: owner
+approved_context: "sha256:66e690d8982f68b10d6fca4e5bba33fe543080fa50f0f8a0d313b0c5fcb2489d"
 ---
 
 ## Outcome
@@ -139,3 +141,5 @@ Integrator: `grove approve G-260928-kehya VERDICT` in this checkout, then
 `grove integrate G-260928-kehya` in main's checkout.
 
 Verdict on candidate 63ea818, 2026-09-29: Approved by the owner for merge, 2026-09-29
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

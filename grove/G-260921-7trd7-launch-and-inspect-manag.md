@@ -2,9 +2,9 @@
 id: "G-260921-7trd7"
 type: work
 title: "Launch and inspect managed attempts from the TUI"
-status: done
+status: accepted
 created: "2026-09-21T00:54:16Z"
-updated: "2026-09-23T04:35:16Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: medium
 priority: 4
@@ -13,6 +13,8 @@ relates_to: ["G-260921-tkdwh", "G-260921-k0mwk"]
 formerly: "W-028"
 candidate: "61edd53390c4459462e79ededf5a25eb0644a1f7"
 approved: "61edd53390c4459462e79ededf5a25eb0644a1f7"
+approved_by: owner
+approved_context: "sha256:8504ff649f4db5d45b245b26ee41cca11d28f59bb2fcdf177a72fadcb98d1971"
 ---
 
 ## Outcome
@@ -158,3 +160,5 @@ then `go run ./cmd/grove integrate G-260921-7trd7` in `main`'s checkout. Feedbac
 `go run ./cmd/grove feedback G-260921-7trd7 "TEXT"` here.
 
 Verdict on candidate 61edd53, 2026-09-23: Only able to test the attempts views right now. Lets merge and I will test launching new background runs fro th TUI with fesh work.
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

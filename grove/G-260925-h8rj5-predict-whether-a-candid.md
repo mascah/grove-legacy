@@ -2,13 +2,15 @@
 id: "G-260925-h8rj5"
 type: work
 title: "Predict whether a candidate in review merges cleanly into the target"
-status: done
+status: accepted
 created: "2026-09-25T21:39:27Z"
-updated: "2026-09-25T23:30:44Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 relates_to: ["G-260925-g39ga", "G-260925-7c8g9", "G-260925-80w3a", "G-260921-jwk4e", "G-260921-3qgsf", "G-260921-jatts", "G-260920-svpbc", "G-260925-dz10z", "G-260925-5wrn8"]
 candidate: "a658921371a89424c0482a22d387fef9c17bc2e1"
 approved: "a658921371a89424c0482a22d387fef9c17bc2e1"
+approved_by: owner
+approved_context: "sha256:26e2724f25b7cb20c05e45268181d96e1a79991e68fc477bf2f157dedebde1ab"
 ---
 
 ## Outcome
@@ -191,3 +193,5 @@ G-260925-h8rj5 G-260925-dz10z` or the board's `g`, `p` on candidates in review, 
 Review block. G-260925-dz10z and G-260925-5wrn8 act on this fact.
 
 Verdict on candidate a658921, 2026-09-25: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

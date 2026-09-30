@@ -2,14 +2,16 @@
 id: "G-260928-r1hkh"
 type: work
 title: "Show approval and merge standing on review cards and bound the changes list"
-status: done
+status: accepted
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-29T00:12:06Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: small
 relates_to: ["G-260927-60ffq", "G-260925-h8rj5", "G-260925-dzxm6", "G-260921-jwk4e", "G-260920-svpbc", "G-260920-z8vfp"]
 candidate: "393eb56e7f21a91582a57358615d8d90a5fb029f"
 approved: "393eb56e7f21a91582a57358615d8d90a5fb029f"
+approved_by: owner
+approved_context: "sha256:899169fdb8730651c8f6c29f9418905ac0479309b8833ecf0e628fdf6f4701f3"
 ---
 
 ## Outcome
@@ -112,3 +114,5 @@ G-260928-y50a4 and G-260928-63124, and in main's checkout
 `grove integrate G-260928-csg91`, which merges the group.
 
 Verdict on candidate 393eb56, 2026-09-29: approved
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

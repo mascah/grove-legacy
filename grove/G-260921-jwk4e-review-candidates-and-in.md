@@ -2,9 +2,9 @@
 id: "G-260921-jwk4e"
 type: work
 title: "Review candidates and integrate approved work locally"
-status: done
+status: accepted
 created: "2026-09-21T00:54:16Z"
-updated: "2026-09-23T02:07:54Z"
+updated: "2026-09-30T13:18:01Z"
 kind: feature
 size: large
 priority: 3
@@ -13,6 +13,8 @@ relates_to: ["G-260921-tkdwh", "G-260921-7trd7", "G-260921-gtydy"]
 formerly: "W-026"
 candidate: "93b971b"
 approved: "93b971b"
+approved_by: owner
+approved_context: "sha256:e615a34258a6a53034ec203c4e283cf1caff65eeb0e22e7a7bf0bb8dc547ee86"
 ---
 
 ## Outcome
@@ -148,3 +150,5 @@ Feedback instead: `/tmp/grove-G-260921-jwk4e --project …/G-260921-jwk4e feedba
 or `f` on the board, then `/grove-work G-260921-jwk4e` in this worktree.
 
 Verdict on candidate 93b971b, 2026-09-23: looks good to merge
+
+Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.
