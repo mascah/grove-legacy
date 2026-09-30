@@ -229,9 +229,16 @@ rounds, the owner's review, a fix round and a re-review at `9c9fed2`, Open
 findings: 3, of which the redesign removes the cause of two and `6b7ab0b`
 fixes the third. The redesign's review: `2cb7bdd`, 5 findings, fixed in
 `f1fa1b7` and `aaf2d5a`; `aaf2d5a`, 2 findings on carried work, fixed in
-`a4453d1` (`TestIntegrateDeliversCarriedWorkFirst`,
+`a4453d1`; `281a8f1`, 2 findings on carried work delivered for another
+candidate, fixed in `e144aa6` by one rule: the target's own copy of carried
+work decides, and the latest of several acceptances is delivered
+(`TestIntegrateDeliversCarriedWorkFirst`,
 `TestIntegrateCarriedWorkDeliveredElsewhere`,
-`TestIntegrateCarriedWorkOnOneBranch`).
+`TestIntegrateCarriedWorkRevisedElsewhere`,
+`TestIntegrateCarriedWorkOnOneBranch`,
+`TestIntegrateDeliversTheLatestAcceptance`). At `e144aa6`: `go vet ./...`,
+`gofmt -l .` clean, `grove check` OK, and one
+`go test -count=1 -timeout 120s ./...` passed every package.
 
 ## Next
 
