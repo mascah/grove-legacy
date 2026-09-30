@@ -28,6 +28,7 @@ import (
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/handoff"
 	"github.com/mascah/grove/internal/project"
+	standings "github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/versions"
 )
@@ -51,6 +52,10 @@ type Backend struct {
 	Approve   func(ctx context.Context, root, id, verdict string) ([]string, error)
 	Feedback  func(ctx context.Context, root, id, text string) ([]string, error)
 	Integrate func(ctx context.Context, root, id string, cleanup bool) ([]string, error)
+	// Standing judges the records read at the target's tip (G-260930-2qa4a),
+	// which places accepted work in Review or Done; nil leaves every
+	// accepted card in Review, its delivery unexamined.
+	Standing func(ctx context.Context, root, target string, records []*project.Record) (map[*project.Record]*standings.Standing, error)
 	// Attempts lists the attempts in the repository's attempts directory,
 	// starting no process, and Attempt reads one in root with the end of its
 	// activity (G-260921-7trd7); nil leaves attempts out. Launch starts one and Stop
@@ -127,12 +132,16 @@ type card struct {
 }
 
 // meta is a card's last line: what a glance at the board needs beyond the
-// title. Done work shows when it was last written and its candidate.
-func meta(r *project.Record) string {
+// title. Done work shows when it was last written and its candidate, or
+// the commit that delivered it.
+func (m *Model) meta(r *project.Record) string {
 	if r == nil {
 		return ""
 	}
 	var parts []string
+	if st := m.standing[r]; st != nil && st.State == standings.Done && !st.Legacy {
+		return "done · " + short7(st.Delivered)
+	}
 	if r.Status == "done" {
 		if r.Updated != nil {
 			parts = append(parts, "done "+r.Updated.Format("2006-01-02"))
@@ -166,6 +175,7 @@ type row struct {
 type inspectMsg struct {
 	gen int
 	res *versions.Result
+	st  map[*project.Record]*standings.Standing
 	err error
 }
 
@@ -234,7 +244,9 @@ type Model struct {
 	ctx     context.Context
 	root    string
 	backend Backend
-	reads   reads
+	// standing is what Backend.Standing said of the accepted records read.
+	standing map[*project.Record]*standings.Standing
+	reads    reads
 
 	width, height int
 	readAt        time.Time // when res arrived, for the header
@@ -353,7 +365,21 @@ func (m *Model) read(kind string, call func(ctx context.Context, gen int) tea.Ms
 func (m *Model) inspect() tea.Cmd {
 	return m.read("inspect", func(ctx context.Context, gen int) tea.Msg {
 		res, err := m.backend.Inspect(ctx, m.root, "")
-		return inspectMsg{gen, res, err}
+		var st map[*project.Record]*standings.Standing
+		if err == nil && m.backend.Standing != nil {
+			var records []*project.Record
+			for _, g := range res.Groups {
+				for _, v := range g.Versions {
+					if v.Record != nil && v.Record.Status == "accepted" {
+						records = append(records, v.Record)
+					}
+				}
+			}
+			// Standing that cannot be read leaves accepted work in Review,
+			// never Done.
+			st, _ = m.backend.Standing(ctx, m.root, res.Target, records)
+		}
+		return inspectMsg{gen, res, st, err}
 	})
 }
 
@@ -468,7 +494,7 @@ func (m *Model) rewrites(g *versions.Group) []rewrite {
 	}
 	states := currentStates(*g)
 	if len(states) < 2 || !slices.ContainsFunc(states, func(state []*versions.Version) bool {
-		return state[0].OnTarget && state[0].Record != nil && state[0].Record.Status == "done"
+		return state[0].OnTarget && state[0].Record != nil && m.place(state[0].Record) == doneColumn
 	}) {
 		return nil
 	}
@@ -585,6 +611,7 @@ func (m *Model) update(msg tea.Msg) tea.Cmd {
 		if msg.gen != m.gen || m.pending != "inspect" {
 			return nil
 		}
+		m.standing = msg.st
 		m.pending, m.cancel, m.hist, m.copies, m.md, m.mentions, m.asOf = "", nil, map[string]lineage{}, map[string]copiesRead{}, nil, nil, ""
 		m.changes, m.diffs, m.diff, m.predicts = map[string]changesRead{}, map[string]diffRead{}, "", map[string]*versions.Merge{}
 		m.planned, m.planErr = nil, ""
@@ -1085,8 +1112,8 @@ func (m *Model) placed() (columns [len(statuses)][]card, shelf []card) {
 			if src == nil || v.Source != src || v.Record == nil {
 				continue
 			}
-			if i := slices.Index(statuses[:], v.Record.Status); i >= 0 {
-				columns[i] = append(columns[i], card{g.ID, v.Record.Title, distinct(g), count("", distinct(g), ""), meta(v.Record), v.Record, false})
+			if i := m.place(v.Record); i >= 0 {
+				columns[i] = append(columns[i], card{g.ID, v.Record.Title, distinct(g), count("", distinct(g), ""), m.meta(v.Record), v.Record, false})
 				placed = true
 			}
 		}
@@ -1225,9 +1252,9 @@ func (m *Model) currentCards() (columns [len(statuses)][]card, shelf []card) {
 			deleted = deleted || state[0].Record == nil
 			work = work || state[0].Record != nil && state[0].Record.Type == "work"
 		}
-		best, rec := -1, earliest(states)
+		best, rec := -1, m.earliest(states)
 		if rec != nil {
-			best = slices.Index(statuses[:], rec.Status)
+			best = m.place(rec)
 		}
 		var tags []string
 		if len(states) > 1 {
@@ -1245,7 +1272,7 @@ func (m *Model) currentCards() (columns [len(statuses)][]card, shelf []card) {
 		tag := strings.Join(tags, " · ")
 		switch {
 		case best >= 0:
-			columns[best] = append(columns[best], card{g.ID, rec.Title, len(states), tag, meta(rec), rec, false})
+			columns[best] = append(columns[best], card{g.ID, rec.Title, len(states), tag, m.meta(rec), rec, false})
 		case !work && deleted && isWork(g, nil):
 			shelf = append(shelf, card{id: g.ID, versions: len(states), tag: tag})
 		}
@@ -1255,19 +1282,32 @@ func (m *Model) currentCards() (columns [len(statuses)][]card, shelf []card) {
 }
 
 // earliest is the work record a card stands for among current states: the
-// one in the earliest status, or nil when none is work in a known status.
-func earliest(states [][]*versions.Version) *project.Record {
+// one in the earliest column, or nil when none is work in a known status.
+func (m *Model) earliest(states [][]*versions.Version) *project.Record {
 	var rec *project.Record
 	for _, state := range states {
 		r := state[0].Record
-		if r == nil || r.Type != "work" || !slices.Contains(statuses[:], r.Status) {
+		if r == nil || r.Type != "work" || m.place(r) < 0 {
 			continue
 		}
-		if rec == nil || slices.Index(statuses[:], r.Status) < slices.Index(statuses[:], rec.Status) {
+		if rec == nil || m.place(r) < m.place(rec) {
 			rec = r
 		}
 	}
 	return rec
+}
+
+// place is the board column of a work record: its status's, except that
+// accepted work is in Review until its standing says it was delivered
+// (G-260930-2qa4a), and schema 3's done is in Done; -1 for none.
+func (m *Model) place(r *project.Record) int {
+	if r.Status == "accepted" {
+		if st := m.standing[r]; st != nil && st.State == standings.Done {
+			return doneColumn
+		}
+		return reviewColumn
+	}
+	return slices.Index(statuses[:], r.Status)
 }
 
 // committed reports a version held by a commit: a branch's, or a checkout's

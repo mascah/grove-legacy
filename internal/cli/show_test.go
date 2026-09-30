@@ -41,6 +41,9 @@ func TestShowJSONMatchesExactBytes(t *testing.T) {
 				t.Fatal("plain show altered BOM, CRLF, or the missing final newline")
 			}
 		}
+		if id == "G-260101-00001" { // work carries its derived standing beside the bytes
+			want["standing"] = map[string]any{"id": id, "recorded": "proposed", "state": "proposed"}
+		}
 		if !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %v\nwant %v", got, want)
 		}

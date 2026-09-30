@@ -19,6 +19,7 @@ import (
 
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/versions"
 )
 
@@ -38,6 +39,9 @@ type Item struct {
 	Unlocks   []string `json:"unlocks"`   // unfinished work whose depends_on names it
 	NeededBy  []string `json:"needed_by"` // outside: the rows that need it
 	Delivery  string   `json:"delivery"`  // what Deliver found; "" until it runs
+	// Standing is what the record says and what its delivery evidence says
+	// (G-260930-2qa4a), when the caller judged it; nil otherwise.
+	Standing *standing.Standing `json:"standing"`
 	// Merge is what merging a candidate in review into the target would do,
 	// when Deliver could predict it (G-260925-h8rj5).
 	Merge *versions.Merge `json:"merge"`
@@ -68,29 +72,39 @@ type View struct {
 	MergeOrder []OrderedMerge `json:"merge_order"`
 }
 
-var unfinished = []string{"proposed", "active", "review"}
+// unfinished is work not yet done, abandoned or schema 3's claim: accepted
+// work stays unfinished until st says it was delivered.
+func unfinished(r *project.Record, st map[string]*standing.Standing) bool {
+	switch r.Status {
+	case "proposed", "active", "review":
+		return true
+	case "accepted":
+		return st[r.ID] == nil || st[r.ID].State != standing.Done
+	}
+	return false
+}
 
 // Overview is the unfinished work in records, or every work with every,
 // ordered by group, layer and ID, with the prerequisites of those rows which
-// are not rows.
-func Overview(records []*project.Record, every bool) *View {
+// are not rows. st, which may be nil, is each record's standing.
+func Overview(records []*project.Record, every bool, st map[string]*standing.Standing) *View {
 	var rows []string
 	for _, r := range records {
-		if r.Type == "work" && (every || slices.Contains(unfinished, r.Status)) {
+		if r.Type == "work" && (every || unfinished(r, st)) {
 			rows = append(rows, r.ID)
 		}
 	}
 	slices.Sort(rows)
-	return build(records, rows, nil)
+	return build(records, rows, nil, st)
 }
 
 // Preview is the explicit selection ids, in the order Order gives.
-func Preview(records []*project.Record, ids []string) (*View, error) {
+func Preview(records []*project.Record, ids []string, st map[string]*standing.Standing) (*View, error) {
 	order, _, err := Order(index(records), ids)
 	if err != nil {
 		return nil, err
 	}
-	return build(records, order, ids), nil
+	return build(records, order, ids, st), nil
 }
 
 func index(records []*project.Record) map[string]*project.Record {
@@ -101,7 +115,7 @@ func index(records []*project.Record) map[string]*project.Record {
 	return byID
 }
 
-func build(records []*project.Record, rows, selected []string) *View {
+func build(records []*project.Record, rows, selected []string, st map[string]*standing.Standing) *View {
 	byID := index(records)
 	reach := map[string]map[string]bool{}
 	var visit func(from string, r *project.Record)
@@ -165,10 +179,10 @@ func build(records []*project.Record, rows, selected []string) *View {
 	item := func(r *project.Record) Item {
 		it := Item{
 			ID: r.ID, Title: r.Title, Status: r.Status, Revision: project.Revision(r.Source), Candidate: r.Candidate, approved: r.Approved != "",
-			Needs: append([]string{}, r.DependsOn...), Unlocks: []string{}, NeededBy: []string{},
+			Needs: append([]string{}, r.DependsOn...), Unlocks: []string{}, NeededBy: []string{}, Standing: st[r.ID],
 		}
 		for _, o := range records {
-			if o.Type == "work" && slices.Contains(unfinished, o.Status) && slices.Contains(o.DependsOn, r.ID) {
+			if o.Type == "work" && unfinished(o, st) && slices.Contains(o.DependsOn, r.ID) {
 				it.Unlocks = append(it.Unlocks, o.ID)
 			}
 		}
@@ -223,7 +237,7 @@ func build(records []*project.Record, rows, selected []string) *View {
 
 	var waiting []string
 	for _, it := range v.Items {
-		if it.Outside && slices.Contains(unfinished, it.Status) {
+		if it.Outside && byID[it.ID] != nil && unfinished(byID[it.ID], st) {
 			waiting = append(waiting, it.ID)
 		}
 		if it.Status == "abandoned" {
@@ -270,13 +284,13 @@ func build(records []*project.Record, rows, selected []string) *View {
 func (v *View) Deliver(target string, contains func(commit, ref string) (bool, error), copies func(commit, ref string) ([]string, error), predict func(commits []string) ([]versions.Merge, error)) {
 	for i := range v.Items {
 		it := &v.Items[i]
-		c := it.Candidate
+		c, label := it.Candidate, "candidate"
 		where := func() string {
 			in, err := contains(c, "HEAD")
 			if err != nil {
-				return "candidate " + short(c) + " cannot be read here"
+				return label + " " + short(c) + " cannot be read here"
 			}
-			text := "candidate " + short(c) + map[bool]string{true: " in HEAD", false: " not in HEAD"}[in]
+			text := label + " " + short(c) + map[bool]string{true: " in HEAD", false: " not in HEAD"}[in]
 			if !in && it.Status == "done" {
 				if y := copyOf(copies, c, "HEAD"); y != "" {
 					text += " (HEAD holds " + short(y) + ", a rewritten copy)"
@@ -309,8 +323,16 @@ func (v *View) Deliver(target string, contains func(commit, ref string) (bool, e
 					it.Delivery += "; " + it.Merge.Text(target)
 				}
 			}
+		case it.Status == "accepted" && it.Standing != nil:
+			it.Delivery = it.Standing.Text()
+			if it.Standing.State == standing.Done {
+				c, label = it.Standing.Delivered, "delivery"
+				it.Delivery += "; " + where()
+			}
+		case it.Status == "accepted":
+			it.Delivery = "accepted; delivery not examined"
 		case it.Status == "done" && c != "":
-			it.Delivery = where()
+			it.Delivery = "schema 3's done claim; " + where()
 		case it.Status == "done":
 			it.Delivery = "done without a candidate: delivery unrecorded; establish it by Git ancestry or behaviour"
 		case it.Status == "abandoned":

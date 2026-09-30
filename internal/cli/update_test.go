@@ -68,7 +68,7 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 		{[]string{"--set", "status=active", "--set", "kind=feature", "--set=priority=2", "--set", `depends_on=["G-260101-00001"]`, "--set", "title=Renamed: 版本 \"quoted\""}, true, "active"},
 		{[]string{"--set", "status=active", "--unset", "size"}, false, "active"},
 		{[]string{"--set", "status=review", "--set", "candidate=" + gitIn(t, root, "rev-parse", "HEAD"), "--unset", "priority"}, true, "review"},
-		{[]string{"--set", "status=done"}, true, "done"}, // HEAD contains the candidate, so this checkout may close it
+		{[]string{"--set", "status=abandoned"}, true, "abandoned"}, // closed without delivery: done is derived, never written
 		{[]string{"--set", "status=active"}, true, "active"},
 	}
 	for _, step := range steps {
@@ -112,7 +112,7 @@ func TestUpdateWorkflowCreateUpdateCloseReopenCheck(t *testing.T) {
 		t.Fatalf("check: %s %s", out.String(), errOut.String())
 	}
 	out.Reset()
-	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), id+"  work      active    Renamed: 版本 \\\"quoted\\\"") {
+	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), id+"  work      active    active    Renamed: 版本 \\\"quoted\\\"") {
 		t.Fatalf("list: %s", out.String())
 	}
 	// The new record lands flat under the record root, not in this type

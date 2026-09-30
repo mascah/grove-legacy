@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/versions"
 )
 
@@ -32,7 +33,7 @@ func backlog() []*project.Record {
 }
 
 func TestOverviewLayersGroupsAndUnlocks(t *testing.T) {
-	v := Overview(backlog(), false)
+	v := Overview(backlog(), false, nil)
 	type row struct {
 		id            string
 		group, layer  int
@@ -71,7 +72,7 @@ func TestOverviewLayersGroupsAndUnlocks(t *testing.T) {
 }
 
 func TestPreviewKeepsTheSelectionAndAddsNothing(t *testing.T) {
-	v, err := Preview(backlog(), []string{"S-05", "S-03", "S-09"})
+	v, err := Preview(backlog(), []string{"S-05", "S-03", "S-09"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,10 +98,10 @@ func TestPreviewKeepsTheSelectionAndAddsNothing(t *testing.T) {
 	if len(v.Questions) != 0 {
 		t.Errorf("a resolved question and one blocking other work are not listed: %v", v.Questions)
 	}
-	if _, err := Preview(backlog(), []string{"S-12"}); err == nil {
+	if _, err := Preview(backlog(), []string{"S-12"}, nil); err == nil {
 		t.Error("a question was selectable")
 	}
-	if _, err := Preview(backlog(), []string{"S-99"}); err == nil {
+	if _, err := Preview(backlog(), []string{"S-99"}, nil); err == nil {
 		t.Error("an unknown ID was selectable")
 	}
 }
@@ -112,25 +113,30 @@ func TestOnlyDependenciesOrder(t *testing.T) {
 	a, b, c := work("A", "proposed", "C"), work("B", "proposed"), work("C", "proposed", "B")
 	a.Priority, b.Priority = &five, &one
 	b.Members = []string{"A"}
-	v, err := Preview([]*project.Record{a, b, c}, []string{"A", "B"})
+	v, err := Preview([]*project.Record{a, b, c}, []string{"A", "B"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(v.Order, []string{"B", "A"}) {
 		t.Errorf("order %v", v.Order)
 	}
-	v, _ = Preview([]*project.Record{work("A", "proposed"), b}, []string{"B", "A"})
+	v, _ = Preview([]*project.Record{work("A", "proposed"), b}, []string{"B", "A"}, nil)
 	if !reflect.DeepEqual(v.Order, []string{"B", "A"}) {
 		t.Errorf("membership or priority reordered: %v", v.Order)
 	}
 }
 
 func TestDeliverExplainsEachStatus(t *testing.T) {
-	rs := append(backlog(), work("S-20", "done"), work("S-21", "done"), work("S-22", "done"), work("S-30", "proposed", "S-20", "S-21", "S-22", "S-07"))
+	rs := append(backlog(), work("S-40", "accepted"), work("S-41", "accepted"), work("S-20", "done"), work("S-21", "done"), work("S-22", "done"), work("S-30", "proposed", "S-20", "S-21", "S-22", "S-07", "S-40", "S-41"))
+	rs[len(rs)-6].Candidate, rs[len(rs)-5].Candidate = "4040404", "4141414"
+	st := map[string]*standing.Standing{
+		"S-40": {ID: "S-40", Recorded: "accepted", State: standing.Done, Target: "main", Delivered: "4040d0d", Submitted: "4040505"},
+		"S-41": {ID: "S-41", Recorded: "accepted", State: standing.Accepted, Target: "main"},
+	}
 	rs[len(rs)-4].Candidate = "2020202"                                    // in HEAD, not on main
 	rs[len(rs)-3].Candidate = "2121212"                                    // unreadable
 	rs[len(rs)-2].Candidate, rs[len(rs)-2].Approved = "2222222", "2222222" // rewritten by a rebase
-	v, err := Preview(rs, []string{"S-30", "S-08", "S-02"})
+	v, err := Preview(rs, []string{"S-30", "S-08", "S-02"}, st)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +146,7 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 			return false, errors.New("bad object")
 		case commit == "7777777bbbb" || commit == "2222222":
 			return false, nil
-		case commit == "2020202":
+		case commit == "2020202", commit == "4040d0d":
 			return ref == "HEAD", nil
 		}
 		return true, nil
@@ -155,16 +161,18 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 		got[it.ID] = it.Delivery
 	}
 	want := map[string]string{
-		"S-01": "candidate 1111111 in HEAD, on main",
+		"S-01": "schema 3's done claim; candidate 1111111 in HEAD, on main",
 		"S-02": "awaiting implementation",
 		"S-03": "awaiting implementation",
 		"S-04": "awaiting implementation",
 		"S-07": "awaiting review; candidate 7777777 not in HEAD, not on main",
 		"S-08": "awaiting implementation",
 		"S-10": "abandoned: will not be delivered",
-		"S-20": "candidate 2020202 in HEAD, not on main",
-		"S-21": "candidate 2121212 cannot be read here",
-		"S-22": "candidate 2222222 not in HEAD (HEAD holds abcdefa, a rewritten copy), not on main",
+		"S-20": "schema 3's done claim; candidate 2020202 in HEAD, not on main",
+		"S-21": "schema 3's done claim; candidate 2121212 cannot be read here",
+		"S-22": "schema 3's done claim; candidate 2222222 not in HEAD (HEAD holds abcdefa, a rewritten copy), not on main",
+		"S-40": "done: squashed as 4040d0d on main; delivery 4040d0d in HEAD, not on main",
+		"S-41": "accepted, awaiting delivery to main",
 		"S-30": "awaiting implementation",
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -173,7 +181,7 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 	if note := "S-22's candidate 2222222 is not in HEAD, which holds abcdefa, a rewritten copy with the same patch, as after a rebase: in the target's checkout, grove update S-22 --set candidate=abcdefabcdef --unset approved --commit names it as delivered; then note the rewrite under the record's verdict"; !slices.Contains(v.Notes, note) {
 		t.Errorf("notes %q", v.Notes)
 	}
-	v, _ = Preview([]*project.Record{work("H", "done"), work("W", "proposed", "H")}, []string{"W"})
+	v, _ = Preview([]*project.Record{work("H", "done"), work("W", "proposed", "H")}, []string{"W"}, nil)
 	v.Deliver("", func(string, string) (bool, error) { t.Fatal("asked Git without a candidate"); return false, nil }, nil, nil)
 	if d := v.Items[1].Delivery; !strings.HasPrefix(d, "done without a candidate: delivery unrecorded") {
 		t.Errorf("historical done: %q", d)
@@ -209,7 +217,7 @@ func TestCompareDescribesOtherVersions(t *testing.T) {
 			{Source: branch, Record: eReordered, Revision: rev(eReordered)},
 		}},
 	}}
-	v, err := Preview([]*project.Record{a, b, c, d, e}, []string{"A", "C", "D", "E"})
+	v, err := Preview([]*project.Record{a, b, c, d, e}, []string{"A", "C", "D", "E"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,7 +244,7 @@ func TestCompareDescribesOtherVersions(t *testing.T) {
 // A board's current view can hold work whose prerequisite's current state
 // deletes it, and every work includes done and abandoned rows.
 func TestOverviewEveryWorkAndMissingPrerequisites(t *testing.T) {
-	v := Overview(append(backlog(), work("S-20", "proposed", "S-99")), false)
+	v := Overview(append(backlog(), work("S-20", "proposed", "S-99")), false, nil)
 	last := v.Items[len(v.Items)-1]
 	if last.ID != "S-99" || !last.Outside || last.Status != "" || !reflect.DeepEqual(last.NeededBy, []string{"S-20"}) {
 		t.Fatalf("missing prerequisite %+v", last)
@@ -245,7 +253,7 @@ func TestOverviewEveryWorkAndMissingPrerequisites(t *testing.T) {
 	if last = v.Items[len(v.Items)-1]; !strings.Contains(last.Delivery, "not among the records read") {
 		t.Errorf("delivery %q", last.Delivery)
 	}
-	every := Overview(backlog(), true)
+	every := Overview(backlog(), true, nil)
 	var rows []string
 	for _, it := range every.Items {
 		if it.Outside {
@@ -265,7 +273,7 @@ func TestDeliverMergesInTheSelectionsOrder(t *testing.T) {
 	for _, r := range rs[:4] {
 		r.Candidate = strings.Repeat(strings.ToLower(r.ID), 7)
 	}
-	v, err := Preview(rs, []string{"D", "C", "B", "A", "E"})
+	v, err := Preview(rs, []string{"D", "C", "B", "A", "E"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

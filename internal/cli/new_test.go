@@ -59,7 +59,7 @@ func TestNewCreatesRecordAndReadCommandsLeaveNoState(t *testing.T) {
 		t.Fatalf("created records must validate: %s %s", out.String(), errOut.String())
 	}
 	out.Reset()
-	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), second+"  work      proposed  Second thing") {
+	if code := Run([]string{"list"}, root, &out, &errOut); code != 0 || !strings.Contains(out.String(), second+"  work      proposed  proposed  Second thing") {
 		t.Fatalf("list must show the created record: %s", out.String())
 	}
 	// G-260926-pgj43 acceptance 3: the write lock is the only coordination state.

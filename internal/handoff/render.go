@@ -43,7 +43,11 @@ func Text(b *Bundle) []byte {
 				state = "included as " + r.Source
 			}
 		}
-		line("  %s", inert(strings.Join([]string{r.ID, r.Type, cmp.Or(r.Status, "-"), state, strings.Join(r.Roles, "; ")}, "  "), false))
+		status := cmp.Or(r.Status, "-")
+		if r.Standing != "" && r.Standing != r.Status && r.Status != "done" {
+			status += " (" + r.Standing + ")"
+		}
+		line("  %s", inert(strings.Join([]string{r.ID, r.Type, status, state, strings.Join(r.Roles, "; ")}, "  "), false))
 		fields := []string{strconv.Quote(r.Title)}
 		if !r.Included || r.Source != r.Path { // an included record's own source line names its path and revision
 			fields = append(fields, r.Path, r.Revision)
@@ -58,10 +62,13 @@ func Text(b *Bundle) []byte {
 				selected = "selected"
 			}
 			status := r.Status
-			if r.Status == "done" && r.Candidate != "" {
-				status = "done, candidate " + r.Candidate
-			} else if r.Status == "done" {
-				status = "done, no candidate"
+			switch {
+			case r.Status == "done" && r.Candidate != "":
+				status = "done (schema 3 claim), candidate " + r.Candidate
+			case r.Status == "done":
+				status = "done (schema 3 claim), no candidate"
+			case r.Standing != "" && r.Standing != r.Status:
+				status += ", candidate " + r.Candidate + "; " + r.Standing
 			}
 			line("  %s", inert(fmt.Sprintf("%s depends on %s: %s, %s", r.Work, r.Prerequisite, status, selected), false))
 		}

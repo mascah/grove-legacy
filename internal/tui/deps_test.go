@@ -224,7 +224,7 @@ func TestDepsPreview(t *testing.T) {
 		"1   W-03    active", "2   W-05    proposed", "3   W-07    review",
 		"awaiting review; candidate c7 not in HEAD, not on main; conflicts with main at ttttttt in x.go",
 		"Outside the selection, not added",
-		"W-01    done", "needed by W-03 W-05 W-07 · needs nothing · candidate c1 in HEAD, on main",
+		"W-01    done", "needed by W-03 W-05 W-07 · needs nothing · schema 3's done claim; candidate c1 in HEAD, on main",
 		"W-02    proposed", "W-04    proposed",
 		"Questions: none open blocks",
 		"No declared order between W-05 and W-07",
@@ -244,7 +244,7 @@ func TestDepsPreview(t *testing.T) {
 			}
 		}
 	}
-	want, _ := deps.Preview(records, []string{"W-05", "W-03", "W-07"})
+	want, _ := deps.Preview(records, []string{"W-05", "W-03", "W-07"}, nil)
 	if !slices.Equal(want.Order, m.preview.Order) || len(want.Items) != len(m.preview.Items) {
 		t.Errorf("board %q, command %q", m.preview.Order, want.Order)
 	}

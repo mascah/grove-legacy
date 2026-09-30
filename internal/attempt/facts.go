@@ -191,6 +191,8 @@ func MemberStanding(l *Launch, m MemberState) string {
 	switch {
 	case r.Status == "review" && r.Candidate != "":
 		text = "awaiting judgment: review, candidate " + r.Candidate[:min(len(r.Candidate), 12)]
+	case r.Status == "accepted":
+		text = "accepted: candidate " + r.Candidate[:min(len(r.Candidate), 12)] + " awaits delivery"
 	case len(m.Questions) != 0:
 		text = r.Status + ", waiting on question " + strings.Join(m.Questions, ", ")
 	case r.Status == "active":

@@ -527,7 +527,7 @@ func onBranch(s *Selection, dir, branch, worktree, until string, contains func(s
 		// Feedback reopens a group sharing a candidate (G-260925-wc2pz); its next
 		// candidate is the group's, so the group runs again together.
 		for _, o := range wp.Records {
-			if o.Type == "work" && !selected(o.ID) && (o.Status == "active" || o.Status == "review") && c.Candidate != "" && update.SameCommit(o.Candidate, c.Candidate) {
+			if o.Type == "work" && !selected(o.ID) && (o.Status == "active" || o.Status == "review" || o.Status == "accepted") && c.Candidate != "" && update.SameCommit(o.Candidate, c.Candidate) {
 				return fmt.Errorf("%s shares candidate %s with %s on %s and was reopened with it; select them together (grove run %s %s)", o.ID, short(c.Candidate), c.ID, branch, strings.Join(s.Selected, " "), o.ID)
 			}
 		}

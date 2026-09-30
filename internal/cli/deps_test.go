@@ -53,7 +53,7 @@ func TestDepsCLI(t *testing.T) {
 		"1      0      G-260101-00001  proposed  -                              -               awaiting implementation",
 		"2      0      G-260101-00005  review    -                              G-260101-00004  awaiting review; candidate " + candidate[:7] + " not in HEAD, not on main" + merges + "  In review\n",
 		"2      1      G-260101-00004  proposed  G-260101-00003 G-260101-00005  -               awaiting implementation",
-		"G-260101-00003  done    G-260101-00004  candidate " + base[:7] + " in HEAD, on main  Done before\n",
+		"G-260101-00003  done    G-260101-00004  schema 3's done claim; candidate " + base[:7] + " in HEAD, on main  Done before\n",
 		"Equal layers have no declared order",
 	} {
 		if !strings.Contains(out, want) {
@@ -85,7 +85,7 @@ func TestDepsCLI(t *testing.T) {
 	if want := map[string]string{
 		"G-260101-00005": "awaiting review; candidate " + candidate[:7] + " not in HEAD, not on main" + merges,
 		"G-260101-00004": "awaiting implementation",
-		"G-260101-00003": "candidate " + base[:7] + " in HEAD, on main",
+		"G-260101-00003": "schema 3's done claim; candidate " + base[:7] + " in HEAD, on main",
 	}; !reflect.DeepEqual(delivery, want) {
 		t.Errorf("delivery %v", delivery)
 	}

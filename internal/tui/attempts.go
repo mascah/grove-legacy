@@ -208,7 +208,7 @@ func (m *Model) outcome(v *attempt.View) (kind, text string) {
 		return string(v.Status), string(v.Status)
 	}
 	work, rec, uncommitted, with := handedOff(v)
-	review := rec != nil && rec.Status == "review" && rec.Candidate != ""
+	review := rec != nil && (rec.Status == "review" || rec.Status == "accepted") && rec.Candidate != ""
 	// The record is read from the worktree's files, so it is the handoff only
 	// if the owner found it committed when the process ended. Later commits
 	// to the branch, such as an approval, change nothing about that.
@@ -264,7 +264,7 @@ func (m *Model) outcome(v *attempt.View) (kind, text string) {
 func handedOff(v *attempt.View) (work string, rec *attempt.State, uncommitted bool, with []string) {
 	r := v.Result
 	ready := func(s *attempt.State, uncommitted bool) bool {
-		return s != nil && s.Status == "review" && s.Candidate != "" && !uncommitted
+		return s != nil && (s.Status == "review" || s.Status == "accepted") && s.Candidate != "" && !uncommitted
 	}
 	work, rec, uncommitted = v.Launch.Work, r.Record, r.RecordUncommitted
 	for _, ms := range r.Members {
@@ -333,6 +333,9 @@ func (m *Model) standingOf(v *attempt.View) standing {
 	if g := m.groupOf(work); g != nil {
 		if r := m.record(g); r != nil {
 			status, current = r.Status, r.Candidate
+			if status == "accepted" && m.place(r) == doneColumn { // delivered (G-260930-2qa4a)
+				status = "done"
+			}
 		}
 	}
 	cand := ""
@@ -354,7 +357,7 @@ func (m *Model) standingOf(v *attempt.View) standing {
 	case status == "done" && sameCommit(cand, current):
 		s.short = "done: candidate " + short7(cand)
 		s.state += " Candidate " + short7(cand) + " was integrated: " + work + " is done."
-	case cand != "" && (!latest || status == "done" || status == "abandoned" || status == "review" && current != "" && !sameCommit(cand, current)):
+	case cand != "" && (!latest || status == "done" || status == "abandoned" || (status == "review" || status == "accepted") && current != "" && !sameCommit(cand, current)):
 		s.short = "candidate " + short7(cand) + ", superseded"
 		s.state += " " + work + " has moved on: it is " + inStatus(status) + " with candidate " + short7(orUnread(current)) + "."
 	case status == "done" || status == "abandoned":
@@ -367,7 +370,9 @@ func (m *Model) standingOf(v *attempt.View) standing {
 		s.group = needsYou
 		switch kind {
 		case "candidate":
-			if status == "review" || status == "" {
+			if status == "accepted" {
+				s.short, s.next = "accepted: deliver "+short7(cand), "o opens "+work+": i integrates it"
+			} else if status == "review" || status == "" {
 				s.short, s.next = "judge candidate "+short7(cand), "o opens "+work+": a approves, f gives feedback"
 			} else {
 				s.short, s.next = "feedback given: R again", "o opens "+work+": R launches the next attempt"
@@ -565,7 +570,7 @@ func (m *Model) memberStates(v *attempt.View) map[string]string {
 		switch {
 		case rec == nil:
 			out[ms.ID] = "unreadable"
-		case rec.Status == "review" && rec.Candidate != "" && !ms.Uncommitted:
+		case (rec.Status == "review" || rec.Status == "accepted") && rec.Candidate != "" && !ms.Uncommitted:
 			out[ms.ID] = "candidate ready"
 		case len(ms.Questions) != 0:
 			q, _, _ := strings.Cut(m.blockingQuestion(ms.ID), " (")
@@ -812,6 +817,9 @@ func (m *Model) launch() {
 		return
 	case v.Record.Status == "review":
 		m.alert = g.ID + " is in review: judge its candidate (a approve, f feedback) before another attempt"
+		return
+	case v.Record.Status == "accepted":
+		m.alert = g.ID + " is accepted: deliver its candidate (i integrate) or give feedback (f) before another attempt"
 		return
 	case v.Record.Status != "proposed" && v.Record.Status != "active":
 		m.alert = g.ID + " is " + v.Record.Status + "; only proposed or active work is launched"

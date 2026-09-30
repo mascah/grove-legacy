@@ -11,6 +11,7 @@ import (
 
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/project"
+	standings "github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/versions"
 )
 
@@ -27,6 +28,18 @@ type previewMsg struct {
 	view *deps.View
 }
 
+// byID is the standing of records, the ones a dependency view reads, one
+// per ID.
+func (m *Model) byID(records []*project.Record) map[string]*standings.Standing {
+	out := map[string]*standings.Standing{}
+	for _, r := range records {
+		if s := m.standing[r]; s != nil {
+			out[r.ID] = s
+		}
+	}
+	return out
+}
+
 // depsRecords are the records the list shows: each record's current state in
 // the current view, whose divergent cards the list marks as the board does,
 // or a checkout's own records on its board.
@@ -36,7 +49,7 @@ func (m *Model) depsRecords() []*project.Record {
 	for i := range m.res.Groups {
 		g := &m.res.Groups[i]
 		if m.current() {
-			if r := earliest(currentStates(*g)); r != nil {
+			if r := m.earliest(currentStates(*g)); r != nil {
 				out = append(out, r) // the state the board places the card by
 			} else if r := m.record(g); r != nil && r.Type != "work" {
 				out = append(out, r)
@@ -60,7 +73,7 @@ func (m *Model) depsOverview() (*deps.View, map[string]*project.Record) {
 	for _, r := range records {
 		byID[r.ID] = r
 	}
-	return deps.Overview(records, m.depsAll), byID
+	return deps.Overview(records, m.depsAll, m.byID(records)), byID
 }
 
 // depsRows lists the rows of v, the unfinished or every work, as the list
@@ -236,7 +249,7 @@ func (m *Model) wantPreview() tea.Cmd {
 			}
 		}
 	}
-	view, err := deps.Preview(records, m.depsPicked)
+	view, err := deps.Preview(records, m.depsPicked, m.byID(records))
 	if err != nil {
 		m.previewErr = err.Error() + ". The preview reads " + label(src) + " only: Esc, then b chooses another checkout, or c clears the selection."
 		return nil
@@ -432,7 +445,7 @@ func openBlocks(byID map[string]*project.Record) map[string][]string {
 func (m *Model) treeRows(it deps.Item, place string, byID map[string]*project.Record, blockedBy map[string][]string, focused bool, w int) []string {
 	unlocks := map[string][]string{}
 	for _, id := range slices.Sorted(maps.Keys(byID)) {
-		if r := byID[id]; r.Type == "work" && (m.depsAll || r.Status == "proposed" || r.Status == "active" || r.Status == "review") {
+		if r := byID[id]; r.Type == "work" && (m.depsAll || r.Status == "proposed" || r.Status == "active" || m.place(r) == reviewColumn) {
 			for _, p := range r.DependsOn {
 				unlocks[p] = append(unlocks[p], id)
 			}

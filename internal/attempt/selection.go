@@ -9,6 +9,7 @@ import (
 
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/standing"
 )
 
 // Selection is the explicit set of work one attempt runs (G-260925-7c8g9, decision
@@ -81,7 +82,11 @@ func selectionOf(p *project.Project, ids []string, until string, contains func(c
 	if err != nil {
 		return nil, err
 	}
-	v, err := deps.Preview(p.Records, ids)
+	// A prerequisite accepted in this checkout is delivered only when the
+	// target holds it verified and the base holds that delivery
+	// (G-260930-2qa4a); an unreadable standing waits like unknown evidence.
+	st, _ := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
+	v, err := deps.Preview(p.Records, ids, st)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +106,24 @@ func selectionOf(p *project.Project, ids []string, until string, contains func(c
 		switch {
 		case it.Status == "":
 			o.Delivery, wait = "not among the records read", "needs "+it.ID+", which is not in this checkout"
+		case it.Status == "accepted" && (st[it.ID] == nil || st[it.ID].State != standing.Done):
+			text := "accepted; delivery not examined"
+			if st[it.ID] != nil {
+				text = st[it.ID].Text()
+			}
+			o.Delivery, wait = text, "needs "+it.ID+", which is "+text
+		case it.Status == "accepted":
+			d := st[it.ID].Delivered
+			switch in, _, err := contains(d); {
+			case err != nil:
+				o.Delivery = st[it.ID].Text() + ", but that cannot be read here"
+				wait = "needs " + it.ID + ", whose delivery " + short(d) + " cannot be read here"
+			case in:
+				o.Delivery = "delivered: " + st[it.ID].Text() + ", in the base"
+			default:
+				o.Delivery = st[it.ID].Text() + ", not in the base"
+				wait = "needs " + it.ID + ", delivered as " + short(d) + ", which the base lacks: start from " + st[it.ID].Target
+			}
 		case it.Status == "done" && it.Candidate == "":
 			o.Delivery = "done without a candidate: delivery unrecorded"
 		case it.Status == "done":

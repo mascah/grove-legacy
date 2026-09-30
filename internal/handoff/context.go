@@ -18,6 +18,7 @@ import (
 
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/standing"
 )
 
 const (
@@ -51,11 +52,14 @@ type Source struct {
 // Record is an observation of a record the loader read and validated. Its
 // full source is among the sources only when Included says so.
 type Record struct {
-	ID       string   `json:"id"`
-	Path     string   `json:"path"`
-	Type     string   `json:"type"`
-	Title    string   `json:"title"`
-	Status   string   `json:"status"`
+	ID     string `json:"id"`
+	Path   string `json:"path"`
+	Type   string `json:"type"`
+	Title  string `json:"title"`
+	Status string `json:"status"`
+	// Standing is work's derived standing (G-260930-2qa4a): the file says what
+	// was accepted, and Git evidence whether it was delivered.
+	Standing string   `json:"standing,omitempty"`
 	Revision string   `json:"revision"` // of the record as loaded, included or not
 	Roles    []string `json:"roles"`    // why it is listed
 	Selected bool     `json:"selected"`
@@ -69,7 +73,8 @@ type Requirement struct {
 	Work         string `json:"work"`
 	Prerequisite string `json:"prerequisite"`
 	Status       string `json:"status"`
-	Candidate    string `json:"candidate,omitempty"` // the prerequisite's candidate, if any: merged when done, offered when in review, kept when reopened
+	Standing     string `json:"standing,omitempty"`  // derived, as Record's
+	Candidate    string `json:"candidate,omitempty"` // the prerequisite's candidate, if any: accepted, offered when in review, kept when reopened
 	Selected     bool   `json:"selected"`
 }
 
@@ -252,10 +257,17 @@ func assemble(ctx context.Context, dir *os.Root, root string, ids []string, opts
 			scope = append(scope, r)
 		}
 	}
+	st, _ := standing.Inspect(ctx, p.Root, p.Target, p.Records)
+	text := func(id string) string {
+		if s := st[id]; s != nil {
+			return s.Text()
+		}
+		return ""
+	}
 	for _, r := range scope {
 		for _, id := range r.DependsOn {
 			b.Requirements = append(b.Requirements, Requirement{
-				Work: r.ID, Prerequisite: id, Status: byID[id].Status, Candidate: byID[id].Candidate, Selected: slices.Contains(ids, id),
+				Work: r.ID, Prerequisite: id, Status: byID[id].Status, Standing: text(id), Candidate: byID[id].Candidate, Selected: slices.Contains(ids, id),
 			})
 		}
 	}
@@ -315,7 +327,7 @@ func assemble(ctx context.Context, dir *os.Root, root string, ids []string, opts
 			continue
 		}
 		row := Record{
-			ID: r.ID, Path: r.Path, Type: r.Type, Title: r.Title, Status: r.Status, Revision: project.Revision(r.Source),
+			ID: r.ID, Path: r.Path, Type: r.Type, Title: r.Title, Status: r.Status, Standing: text(r.ID), Revision: project.Revision(r.Source),
 			Roles: roles[r.ID], Selected: slices.Contains(ids, r.ID),
 		}
 		if source := s.held(r.Path); source != nil {

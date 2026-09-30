@@ -336,7 +336,7 @@ func TestBoardReviewWorkflow(t *testing.T) {
 		"Changes against main from ", "code.txt  +1 −0", "docs/records/work/renamed.md  +1 −1", "a approve   f feedback   i integrate")
 	// The temp dir's length decides where the card wraps, so read it unwrapped.
 	card := strings.Join(strings.Fields(strings.ReplaceAll(s.screen(), "┃", "")), " ")
-	for _, want := range []string{"Review: candidate " + short + " · not yet approved · only the record changed since it · merges into main at " + tip[:7] + " as a fast-forward",
+	for _, want := range []string{"Review: candidate " + short + " · not yet accepted · only the record changed since it · merges into main at " + tip[:7] + " as a fast-forward",
 		"a approve and f feedback run on branch feature in " + wt, "i integrate runs into main in " + root} {
 		if !strings.Contains(card, want) {
 			t.Fatalf("the card lacks %q:\n%s", want, s.screen())
@@ -366,22 +366,22 @@ func TestBoardReviewWorkflow(t *testing.T) {
 		t.Fatalf("feature's record after approval:\n%s", got)
 	}
 	s.press("esc")
-	s.want("Review: candidate " + short + " · approved · only the record changed since it · merges into main at " + tip[:7])
+	s.want("Review: candidate " + short + " · accepted · only the record changed since it · merges into main at " + tip[:7])
 
-	// Integration merges feature into main and writes done there.
+	// Integration squashes feature onto main, and done is derived from it.
 	s.press("i")
-	s.want("Merge branch feature into main and mark G-260101-00001 done? y/n   (runs in ") // the temp path is truncated at 160 columns
+	s.want("Squash branch feature onto main, delivering G-260101-00001? y/n   (runs in ") // the temp path is truncated at 160 columns
 	s.press("y")
 	s.want("Also delete branch feature and remove its worktree? y/n   (")
 	s.press("n")
-	s.want("Integration of G-260101-00001", "approval: candidate "+short+" of G-260101-00001 approved on branch feature at ", "merge: fast-forward main from ", "done: G-260101-00001 done at commit ")
-	if got := gitIn(t, root, "show", "HEAD:docs/records/work/renamed.md"); !strings.Contains(got, "status: done") || !strings.Contains(got, "approved: \""+candidate+"\"") {
+	s.want("Integration of G-260101-00001", "acceptance: candidate "+short+" of G-260101-00001 accepted by owner on branch feature at ", "delivery: squash commit ", "done: G-260101-00001 is done: squashed as ")
+	if got := gitIn(t, root, "show", "HEAD:docs/records/work/renamed.md"); !strings.Contains(got, "status: accepted") || !strings.Contains(got, "approved: \""+candidate+"\"") {
 		t.Fatalf("main's record after integration:\n%s", got)
 	}
 	if _, err := os.Stat(wt); err != nil {
 		t.Fatal("n should keep the worktree")
 	}
 	s.press("esc")
-	s.want("G-260101-00001 · done", "candidate "+short+" · approved · on main")
+	s.want("G-260101-00001 · done · accepted, delivered as ", "candidate "+short+" · accepted · on main")
 	s.lacks("a approve")
 }

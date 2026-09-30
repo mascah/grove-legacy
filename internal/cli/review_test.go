@@ -77,13 +77,14 @@ func TestApproveAndFeedbackCommands(t *testing.T) {
 	if got, held := showJSON(t, root, "G-260101-00001")["approved_by"]; held {
 		t.Fatalf("approved_by without an approval: %v", got)
 	}
-	// A verdict the sweep gives under the standing policy is told apart.
+	// Authority is who ran approve, never what the verdict says: only the
+	// sweep approves under the standing policy.
 	run("update", "G-260101-00001", "--set", "status=review", "--commit")
 	if code, _, stderr := run("approve", "G-260101-00001", "delegated under policy grove.yaml sha256:x: review G-260101-00009 examined it."); code != 0 {
 		t.Fatal(stderr)
 	}
-	if by := showJSON(t, root, "G-260101-00001")["approved_by"]; by != "policy" {
-		t.Fatalf("approved_by after a delegated verdict: %v", by)
+	if by := showJSON(t, root, "G-260101-00001")["approved_by"]; by != "owner" {
+		t.Fatalf("a verdict's text claimed the policy's authority: %v", by)
 	}
 }
 
@@ -120,7 +121,7 @@ func TestIntegrateCommand(t *testing.T) {
 	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\ntarget: main\n")
 	gitIn(t, root, "commit", "-qam", "chore: target")
 	code, out, stderr := run("integrate", "G-260101-00001")
-	if code != 1 || out != "" || !strings.Contains(stderr, "grove: no branch holds G-260101-00001 in review; nothing to integrate") {
+	if code != 1 || out != "" || !strings.Contains(stderr, "grove: no branch holds G-260101-00001 accepted; nothing to integrate") {
 		t.Fatalf("code=%d out=%q stderr=%s", code, out, stderr)
 	}
 	gitIn(t, root, "checkout", "-q", "-b", "feature")
@@ -135,14 +136,15 @@ func TestIntegrateCommand(t *testing.T) {
 	before := gitIn(t, root, "rev-parse", "HEAD")
 	code, out, stderr = run("integrate", "G-260101-00001", "--cleanup")
 	head := gitIn(t, root, "rev-parse", "HEAD")
-	want := "approval: candidate " + candidate[:7] + " of G-260101-00001 approved on branch feature at " + tip[:7] + " (Verdict on candidate " + candidate[:7] + ", " + today() + ": Yes)\n" +
-		"merge: fast-forward main from " + before[:7] + " to " + tip[:7] + "\n" +
-		"done: G-260101-00001 done at commit " + head[:7] + "\n" +
+	want := "acceptance: candidate " + candidate[:7] + " of G-260101-00001 accepted by owner on branch feature at " + tip[:7] + " (Verdict on candidate " + candidate[:7] + ", " + today() + ": Yes)\n" +
+		"retained: refs/grove/submitted/" + tip + "\n" +
+		"delivery: squash commit " + head[:7] + " on main (was " + before[:7] + ")\n" +
+		"done: G-260101-00001 is done: squashed as " + head[:7] + " on main\n" +
 		"cleanup: deleted branch feature\n"
 	if code != 0 || out != want {
 		t.Fatalf("code=%d stderr=%s\nout:\n%s\nwant:\n%s", code, stderr, out, want)
 	}
-	if src := showJSON(t, root, "G-260101-00001")["source"].(string); !strings.Contains(src, "status: done\n") || !strings.Contains(src, "approved: \""+candidate+"\"\n") {
+	if src := showJSON(t, root, "G-260101-00001")["source"].(string); !strings.Contains(src, "status: accepted\n") || !strings.Contains(src, "approved: \""+candidate+"\"\n") {
 		t.Fatalf("record on main:\n%s", src)
 	}
 }

@@ -4,6 +4,7 @@ package cli
 import (
 	"bytes"
 	"cmp"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,6 +23,7 @@ import (
 	"github.com/mascah/grove/internal/handoff"
 	"github.com/mascah/grove/internal/integrate"
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
@@ -54,10 +56,12 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             workspace (--json likewise).\n" +
 	"             Needs a terminal on stdin and stderr; stdout may be redirected. Reads only.\n" +
 	"  list       List records in the selected checkout; --status VALUE, repeatable, keeps\n" +
-	"             only records in any given status (a value outside the vocabulary is refused)\n" +
-	"  show ID    Print the complete Markdown source for a record;\n" +
-	"             --json prints {id, path, revision, source} instead, with approved_by\n" +
-	"             (owner or policy, from the verdict) when approved is set\n" +
+	"             only records in any given status (a value outside the vocabulary is refused);\n" +
+	"             STANDING is work's derived standing, done only from verified delivery\n" +
+	"  show ID    Print the complete Markdown source for a record, and for work its\n" +
+	"             standing on stderr (done only from verified delivery); --json prints\n" +
+	"             {id, path, revision, source} instead, with standing for work and\n" +
+	"             approved_by (owner or policy) when accepted\n" +
 	"  brief      Print the project brief that grove.yaml names with brief: PATH;\n" +
 	"             --json prints {path, revision, source}. context never adds it by itself.\n" +
 	"  check      Validate configuration, records, and relationships\n" +
@@ -462,12 +466,22 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 	case "list":
 		var buffer bytes.Buffer
 		table := tabwriter.NewWriter(&buffer, 0, 4, 2, ' ', 0)
-		fmt.Fprintln(table, "ID\tTYPE\tSTATUS\tTITLE")
+		// STATUS is the file's; STANDING is derived for work from its
+		// acceptance and delivery evidence (G-260930-2qa4a).
+		st, _ := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
+		fmt.Fprintln(table, "ID\tTYPE\tSTATUS\tSTANDING\tTITLE")
 		for _, r := range p.Records {
 			if a.statuses != nil && !slices.Contains(a.statuses, r.Status) {
 				continue
 			}
-			fmt.Fprintf(table, "%s\t%s\t%s\t%s\n", r.ID, r.Type, cmp.Or(r.Status, "-"), visible(r.Title)) // a page has no status
+			derived := "-"
+			if s := st[r.ID]; s != nil {
+				derived = s.State
+				if s.Legacy {
+					derived += " (schema 3)"
+				}
+			}
+			fmt.Fprintf(table, "%s\t%s\t%s\t%s\t%s\n", r.ID, r.Type, cmp.Or(r.Status, "-"), derived, visible(r.Title)) // a page has no status
 		}
 		table.Flush() // The destination is a bytes.Buffer, whose writes cannot fail.
 		return writeResult(out, errOut, buffer.Bytes())
@@ -477,9 +491,22 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 				if _, err := fmt.Fprintf(errOut, "File: %s\n", visible(r.Path)); err != nil {
 					return 1
 				}
+				// The standing is observed, never written into the file's
+				// bytes, which print as they are.
+				var s *standing.Standing
+				if r.Type == "work" {
+					st, _ := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
+					s = st[r.ID]
+					if _, err := fmt.Fprintf(errOut, "Standing: %s\n", visible(s.Text())); err != nil {
+						return 1
+					}
+				}
 				if a.json {
 					result := map[string]any{"id": r.ID, "path": r.Path, "revision": project.Revision(r.Source), "source": string(r.Source)}
-					if r.Approved != "" { // who gave it, told apart as the board does (G-260925-wh9ax)
+					if s != nil {
+						result["standing"] = s
+					}
+					if r.ApprovedBy != "" { // who gave it, told apart as the board does (G-260925-wh9ax)
 						result["approved_by"] = "owner"
 						if update.Delegated(r) {
 							result["approved_by"] = "policy"

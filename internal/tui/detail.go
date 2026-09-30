@@ -392,7 +392,10 @@ func (m *Model) detailHead(v *versions.Version, w int) []string {
 		first, title = g.ID+" · deleted", "The current state removes this record; v lists the places that still hold an older copy."
 	case r.Type == "work":
 		first, title = g.ID+" · "+r.Status, r.Title
-		if i := slices.Index(statuses[:], r.Status); i >= 0 {
+		if r.Status == "accepted" && m.place(r) == doneColumn { // derived from its verified delivery
+			first = g.ID + " · done · accepted, delivered as " + short7(m.standing[r].Delivered)
+		}
+		if i := m.place(r); i >= 0 {
 			accent = accents[i].Bold(true)
 		}
 	case r.Status != "":
@@ -416,7 +419,7 @@ func (m *Model) detailHead(v *versions.Version, w int) []string {
 		inner = append(inner, wrap(meta, iw)[:min(len(wrap(meta, iw)), rows)]...)
 	}
 	// A candidate in review shows its standing and where the actions run.
-	if !compact && r != nil && r.Type == "work" && r.Status == "review" {
+	if !compact && r != nil && r.Type == "work" && (r.Status == "review" || r.Status == "accepted") && m.place(r) == reviewColumn {
 		for _, row := range m.reviewRows(g, v) {
 			inner = append(inner, wrap(row, iw)[:min(len(wrap(row, iw)), rows)]...)
 		}

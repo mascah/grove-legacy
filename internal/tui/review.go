@@ -15,6 +15,7 @@ import (
 	"github.com/mascah/grove/internal/attempt"
 	"github.com/mascah/grove/internal/handoff"
 	"github.com/mascah/grove/internal/project"
+	standings "github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
@@ -90,7 +91,7 @@ func (m *Model) reviewable() bool {
 		return false
 	}
 	r := m.openRecord()
-	return r != nil && r.Type == "work" && r.Status == "review"
+	return r != nil && r.Type == "work" && (r.Status == "review" || r.Status == "accepted")
 }
 
 // openRecord is the record the detail shows now, if any.
@@ -127,7 +128,7 @@ func (m *Model) sharing(v *versions.Version, paths bool) []string {
 			switch {
 			case paths:
 				out = append(out, o.Path)
-			case o.Record.ID != v.Record.ID && o.Record.Status == "review": // what the action covers
+			case o.Record.ID != v.Record.ID && (o.Record.Status == "review" || o.Record.Status == "accepted"): // what the action covers
 				out = append(out, o.Record.ID)
 			}
 		}
@@ -309,12 +310,14 @@ func (m *Model) targetTip() string {
 // owner's (G-260925-wh9ax).
 func approval(r *project.Record) string {
 	switch {
-	case r.Approved == "":
+	case r.Status != "accepted":
 		return ""
+	case standings.Of(r).State == standings.Review:
+		return "acceptance no longer applies"
 	case update.Delegated(r):
-		return "approved under policy"
+		return "accepted under policy"
 	}
-	return "approved"
+	return "accepted"
 }
 
 // predictMsg is one Review card's predicted merge into the target.
@@ -436,7 +439,7 @@ func (m *Model) conflictNote(r *project.Record) string {
 func (m *Model) reviewRows(g *versions.Group, v *versions.Version) []string {
 	r := v.Record
 	parts := []string{"Review: candidate " + short7(r.Candidate)}
-	parts = append(parts, cmp.Or(approval(r), "not yet approved"))
+	parts = append(parts, cmp.Or(approval(r), "not yet accepted"))
 	switch read, held := m.changes[m.changesKey(v)]; {
 	case m.backend.Changes == nil:
 	case !held:
@@ -650,7 +653,7 @@ func (m *Model) startAtEvidence() {
 		return
 	}
 	v := m.shown(g)
-	if v == nil || v.Record == nil || v.Record.Type != "work" || v.Record.Status != "review" {
+	if v == nil || v.Record == nil || v.Record.Type != "work" || v.Record.Status != "review" && v.Record.Status != "accepted" {
 		return
 	}
 	w := m.width
@@ -685,8 +688,8 @@ func (m *Model) action(k string) {
 			m.alert = why
 			return
 		}
-		if k == "a" && r.Approved != "" {
-			m.alert = "candidate " + short7(r.Candidate) + " is already approved; i integrates it"
+		if k == "a" && r.Status == "accepted" && standings.Of(r).State != standings.Review {
+			m.alert = "candidate " + short7(r.Candidate) + " is already accepted; i integrates it"
 			return
 		}
 		m.prompt = &prompt{kind: map[string]string{"a": "approve", "f": "feedback"}[k], id: g.ID, root: root, branch: branch, sharing: m.sharing(v, false)}
@@ -694,8 +697,8 @@ func (m *Model) action(k string) {
 		if m.backend.Integrate == nil {
 			return
 		}
-		if r.Approved == "" {
-			m.alert = "approve candidate " + short7(r.Candidate) + " first (a)"
+		if r.Status != "accepted" || standings.Of(r).State == standings.Review {
+			m.alert = "accept candidate " + short7(r.Candidate) + " first (a)"
 			return
 		}
 		root, why := m.targetRoot()
@@ -713,7 +716,7 @@ func (m *Model) action(k string) {
 // current state is, and the notice names where (G-260928-4qv1m).
 func (m *Model) notInReview(g *versions.Group, v *versions.Version, what string) string {
 	for _, state := range currentStates(*g) {
-		if r := state[0].Record; !m.current() || r == nil || r.Status != "review" || slices.Contains(state, v) {
+		if r := state[0].Record; !m.current() || r == nil || r.Status != "review" && r.Status != "accepted" || slices.Contains(state, v) {
 			continue
 		}
 		var places []string
@@ -733,7 +736,7 @@ func (m *Model) notInReview(g *versions.Group, v *versions.Version, what string)
 // conflicted is the shown candidate's conflict with the target, when its
 // changes are read and predict one.
 func (m *Model) conflicted(v *versions.Version) *versions.Merge {
-	if v == nil || v.Record == nil || v.Record.Status != "review" {
+	if v == nil || v.Record == nil || v.Record.Status != "review" && v.Record.Status != "accepted" {
 		return nil
 	}
 	if read, held := m.changes[m.changesKey(v)]; held && read.c != nil && read.c.Merge != nil && read.c.Merge.Outcome == "conflict" {
@@ -943,7 +946,7 @@ func (m *Model) promptText() (typed, help string) {
 		return "Resolve " + p.id + " " + p.text, "it " + p.fact.Text(p.target) + ": Enter records that as feedback and launches one attempt to merge it, resolve, verify and hand off, " + launchText(req) + ", " + p.where() + "; Esc cancels"
 	case "integrate":
 		// The question first: a long checkout path is what truncation drops.
-		return "", fmt.Sprintf("Merge branch %s into %s and mark %s done? y/n   (runs in %s)", p.branch, p.target, strings.Join(append([]string{p.id}, p.sharing...), " and "), p.root)
+		return "", fmt.Sprintf("Squash branch %s onto %s, delivering %s? y/n   (runs in %s)", p.branch, p.target, strings.Join(append([]string{p.id}, p.sharing...), " and "), p.root)
 	case "stop":
 		return "", fmt.Sprintf("Stop attempt %s of %s? Its partial work stays. y/n", p.attempt, p.id)
 	case "resolve":

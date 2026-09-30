@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/mascah/grove/internal/project"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
 )
@@ -54,6 +55,15 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 			checkout = s
 		}
 	}
+	if r.Status == "accepted" {
+		st, err := standing.Each(context.Background(), p.Root, p.Target, branchRecords(res, from))
+		if err != nil {
+			return nil, err
+		}
+		if s := st[r]; s.State == standing.Done {
+			return nil, fmt.Errorf("%s is %s; there is nothing to resolve", id, s.Text())
+		}
+	}
 	// Work done on the target whose branch the target holds as rewritten
 	// copies (G-260928-4qv1m) has nothing to resolve, checkout or not.
 	if doneOn(res, id, p.Target) {
@@ -87,7 +97,7 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 	// The group reopens with the feedback (G-260925-wc2pz), so it runs together.
 	ids := []string{id}
 	for _, o := range update.Group(branchRecords(res, from), r) {
-		if o.ID != id && o.Status == "review" {
+		if o.ID != id && (o.Status == "review" || o.Status == "accepted") {
 			ids = append(ids, o.ID)
 		}
 	}
@@ -177,7 +187,7 @@ func inReview(res *versions.Result, id, target string) (*versions.Source, *proje
 	for _, g := range res.Groups {
 		for i := range g.Versions {
 			v := &g.Versions[i]
-			if g.ID == id && v.Source.Kind == "committed" && v.Source.Ref != "refs/heads/"+target && v.Record != nil && v.Record.Type == "work" && v.Record.Status == "review" && v.Record.Candidate != "" {
+			if g.ID == id && v.Source.Kind == "committed" && v.Source.Ref != "refs/heads/"+target && v.Record != nil && v.Record.Type == "work" && (v.Record.Status == "review" || v.Record.Status == "accepted") && v.Record.Candidate != "" {
 				found = append(found, v)
 			}
 		}

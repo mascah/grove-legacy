@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"errors"
+	standings "github.com/mascah/grove/internal/standing"
 	"slices"
 	"strings"
 	"testing"
@@ -29,10 +30,10 @@ func reviewFixture(fx fixture, approved bool) *fake {
 	for _, s := range []*versions.Source{fx.cFeat, fx.feat} {
 		w := version(s, "W-001", "Inspect records", "review")
 		w.Record.Candidate = "abcdef1"
-		if approved {
-			w.Record.Approved = "abcdef1"
-		}
 		w.Record.Source = []byte("---\nid: W-001\n---\n\n## Outcome\n\nA board.\n" + strings.Repeat("\nfiller\n", 30) + "\n## Evidence\n\nIt works.\n\n## Next\n\nJudge it.\n")
+		if approved {
+			accept(w.Record, "owner")
+		}
 		review := version(s, "W-006", "W-001 review", "current")
 		review.Record.Type, review.Record.Work, review.Record.Examined = "review", []string{"W-001"}, "abcdef1"
 		vs = append(vs, w, review)
@@ -73,7 +74,7 @@ func TestReviewMergePredictionNamesAMovedTarget(t *testing.T) {
 		return &versions.Changes{Base: "base000", Merge: &versions.Merge{Target: strings.Repeat("b", 40), Commit: candidate, Outcome: "clean", Conflicts: []string{}}}, nil
 	}
 	s := plain(openReview(t, f, 200, 36))
-	if want := "approved · only the record changed since it · merges cleanly into main at bbbbbbb, which moved since the branch left it; the board read main at aaaaaaa (r re-reads)"; !strings.Contains(s, want) {
+	if want := "accepted · only the record changed since it · merges cleanly into main at bbbbbbb, which moved since the branch left it; the board read main at aaaaaaa (r re-reads)"; !strings.Contains(s, want) {
 		t.Fatalf("review detail lacks %q:\n%s", want, s)
 	}
 }
@@ -104,7 +105,7 @@ func TestReviewDetailShowsStandingChangesAndDiffs(t *testing.T) {
 	s := plain(m)
 	for _, want := range []string{
 		"W-001 · review", "candidate abcdef1 · not on main",
-		"Review: candidate abcdef1 · not yet approved · only the record changed since it · conflicts with main at aaaaaaa in", "┃ internal/x.go ",
+		"Review: candidate abcdef1 · not yet accepted · only the record changed since it · conflicts with main at aaaaaaa in", "┃ internal/x.go ",
 		"a approve and f feedback run on branch feature in /repo/feat · i integrate runs into main in /repo",
 		"## Evidence", "It works.",
 		"review     W-006  W-001 review  current", "examined abcdef1 = candidate",
@@ -156,7 +157,7 @@ func TestReviewDetailShowsStandingChangesAndDiffs(t *testing.T) {
 				t.Fatalf("%v: row is %d cells: %q", size, got, ansi.Strip(row))
 			}
 		}
-		if s := plain(m); size[1] >= 16 && !strings.Contains(s, "Review: candidate abcdef1 · approved") {
+		if s := plain(m); size[1] >= 16 && !strings.Contains(s, "Review: candidate abcdef1 · accepted") {
 			t.Fatalf("%v: review block missing:\n%s", size, s)
 		}
 		// One row a file, whatever describes it (G-260928-r1hkh).
@@ -277,17 +278,17 @@ func TestReviewIntegrateFromTheBoard(t *testing.T) {
 	fx := newFixture()
 	m := openReview(t, reviewFixture(fx, false), 120, 36)
 	press(m, "i")
-	if s := plain(m); m.prompt != nil || !strings.Contains(s, "approve candidate abcdef1 first (a)") {
+	if s := plain(m); m.prompt != nil || !strings.Contains(s, "accept candidate abcdef1 first (a)") {
 		t.Fatalf("i before approval:\n%s", s)
 	}
 	f := reviewFixture(fx, true)
 	m = openReview(t, f, 120, 36)
 	press(m, "a")
-	if s := plain(m); m.prompt != nil || !strings.Contains(s, "candidate abcdef1 is already approved; i integrates it") {
+	if s := plain(m); m.prompt != nil || !strings.Contains(s, "candidate abcdef1 is already accepted; i integrates it") {
 		t.Fatalf("a after approval:\n%s", s)
 	}
 	press(m, "i")
-	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Merge branch feature into main and mark W-001 done? y/n   (runs in /repo)") {
+	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Squash branch feature onto main, delivering W-001? y/n   (runs in /repo)") {
 		t.Fatalf("i should confirm the merge:\n%s", s)
 	}
 	press(m, "n")
@@ -346,7 +347,8 @@ func TestReviewActionsNeedTheRightCheckout(t *testing.T) {
 		if s == fx.cMain {
 			v.Older = "branch feature changed it since"
 		} else {
-			v.Record.Candidate, v.Record.Approved = "abcdef1", "abcdef1"
+			v.Record.Candidate = "abcdef1"
+			accept(v.Record, "owner")
 		}
 		f.res.Groups[0].Versions = append(f.res.Groups[0].Versions, v)
 	}
@@ -451,7 +453,8 @@ func TestReviewNamesTheGroupSharingACandidate(t *testing.T) {
 	f := reviewFixture(fx, true)
 	for _, s := range []*versions.Source{fx.cFeat, fx.feat} {
 		o := version(s, "W-003", "Build on it", "review")
-		o.Record.Candidate, o.Record.Approved = "abcdef1", "abcdef1"
+		o.Record.Candidate = "abcdef1"
+		accept(o.Record, "owner")
 		done := version(s, "W-004", "Reopened by hand", "proposed") // same commit, not in review
 		done.Record.Candidate = "abcdef1"
 		f.res.Groups = append(f.res.Groups, versions.Group{ID: "W-003", Versions: []versions.Version{o}}, versions.Group{ID: "W-004", Versions: []versions.Version{done}})
@@ -469,7 +472,7 @@ func TestReviewNamesTheGroupSharingACandidate(t *testing.T) {
 	}
 	press(m, "esc")
 	press(m, "i")
-	if s := plain(m); !strings.Contains(s, "Merge branch feature into main and mark W-001 and W-003 done? y/n") || strings.Contains(s, "W-004 done") {
+	if s := plain(m); !strings.Contains(s, "Squash branch feature onto main, delivering W-001 and W-003? y/n") || strings.Contains(s, "W-003 and W-004") {
 		t.Fatalf("i names the group:\n%s", s)
 	}
 }
@@ -564,10 +567,11 @@ func TestReviewNamesADelegatedApproval(t *testing.T) {
 		for _, v := range g.Versions {
 			if v.Record.ID == "W-001" && v.Record.Approved != "" {
 				v.Record.Source = append(v.Record.Source, "\nVerdict on candidate abcdef1, 2026-09-25: delegated under policy grove.yaml sha256:x: review W-006.\n"...)
+				v.Record.ApprovedBy = "policy sha256:x"
 			}
 		}
 	}
-	if s := plain(openReview(t, f, 200, 36)); !strings.Contains(s, "Review: candidate abcdef1 · approved under policy ·") {
+	if s := plain(openReview(t, f, 200, 36)); !strings.Contains(s, "Review: candidate abcdef1 · accepted under policy ·") {
 		t.Fatalf("review detail:\n%s", s)
 	}
 }
@@ -577,14 +581,15 @@ func TestReviewNamesADelegatedApproval(t *testing.T) {
 func TestStandingLineNamesWhoApproved(t *testing.T) {
 	t.Parallel()
 	for _, delegated := range []bool{false, true} {
-		want := "candidate abcdef1 · approved · not on main"
+		want := "candidate abcdef1 · accepted · not on main"
 		f := reviewFixture(newFixture(), true)
 		if delegated {
-			want = "candidate abcdef1 · approved under policy · not on main"
+			want = "candidate abcdef1 · accepted under policy · not on main"
 			for _, g := range f.res.Groups {
 				for _, v := range g.Versions {
 					if v.Record.Approved != "" {
 						v.Record.Source = append(v.Record.Source, "\nVerdict on candidate abcdef1, 2026-09-25: delegated under policy grove.yaml sha256:x: review W-006.\n"...)
+						v.Record.ApprovedBy = "policy sha256:x"
 					}
 				}
 			}
@@ -595,7 +600,7 @@ func TestStandingLineNamesWhoApproved(t *testing.T) {
 		}
 		g := m.group()
 		v := m.shown(g)
-		v.Record.Status = "done"
+		m.standing = map[*project.Record]*standings.Standing{v.Record: {State: standings.Done, Target: "main", Delivered: "d0d0d0d"}}
 		if got := m.detailMeta(g, v); !strings.Contains(got, want) {
 			t.Fatalf("done standing line lacks %q: %s", want, got)
 		}
@@ -616,7 +621,8 @@ func rewrittenFixture() *fake {
 	}
 	for _, s := range []*versions.Source{fx.cFeat, fx.feat} {
 		v := version(s, "W-001", "Inspect records", "review")
-		v.Record.Candidate, v.Record.Approved = "c0ffee1", "c0ffee1"
+		v.Record.Candidate = "c0ffee1"
+		accept(v.Record, "owner")
 		vs = append(vs, v)
 	}
 	res := result(fx.main, fx.sources(), vs...)
@@ -717,14 +723,15 @@ func TestRewrittenCopyReadYieldsToEveryKey(t *testing.T) {
 func TestReviewCardsShowApprovalAndConflicts(t *testing.T) {
 	t.Parallel()
 	for _, delegated := range []bool{false, true} {
-		approved := "approved"
+		approved := "accepted"
 		f := reviewFixture(newFixture(), true)
 		if delegated {
-			approved = "approved under policy"
+			approved = "accepted under policy"
 			for _, g := range f.res.Groups {
 				for _, v := range g.Versions {
 					if v.Record.Approved != "" {
 						v.Record.Source = append(v.Record.Source, "\nVerdict on candidate abcdef1, 2026-09-25: delegated under policy grove.yaml sha256:x: review W-006.\n"...)
+						v.Record.ApprovedBy = "policy sha256:x"
 					}
 				}
 			}
@@ -765,9 +772,12 @@ func TestReviewCardsShowApprovalAndConflicts(t *testing.T) {
 		}
 	}
 	fx := newFixture()
-	done := version(fx.cMain, "W-001", "Finished", "done")
-	done.Record.Candidate, done.Record.Approved = "abcdef1", "abcdef1"
-	if s := plain(open(t, &fake{res: result(fx.main, fx.sources(), done)}, 160, 36)); !onRow(s, "W-001", "approved") {
+	done := version(fx.cMain, "W-001", "Finished", "review")
+	done.Record.Candidate = "abcdef1"
+	accept(done.Record, "owner")
+	m := open(t, &fake{res: result(fx.main, fx.sources(), done)}, 160, 36)
+	m.standing = map[*project.Record]*standings.Standing{done.Record: {State: standings.Done, Target: "main", Delivered: "d0d0d0d"}}
+	if s := plain(m); !onRow(s, "W-001", "accepted") {
 		t.Fatalf("a Done card keeps its approval:\n%s", s)
 	}
 }
@@ -835,4 +845,9 @@ func TestReviewCardsShowTheSweepAndSRunsIt(t *testing.T) {
 	if m.prompt != nil || m.alert != "nothing to sweep: grove.yaml has no policy: nothing is automatic" || len(sweeps) != 1 {
 		t.Fatalf("S refuses: %q", m.alert)
 	}
+}
+
+// accept makes r the acceptance of its candidate by, as grove approve writes it.
+func accept(r *project.Record, by string) {
+	r.Status, r.Approved, r.ApprovedBy, r.ApprovedContext = "accepted", r.Candidate, by, project.AcceptanceContext(r)
 }
