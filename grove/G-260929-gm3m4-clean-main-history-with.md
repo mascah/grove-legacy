@@ -155,12 +155,14 @@ mechanisms and lifecycle contracts change.
 ## Evidence
 
 Implemented on branch `worktree-G-260929-gm3m4` from base `556f362` (main),
-following [the plan](G-260930-3hcv4-plan-for-g-260929-gm3m4.md); last
-reviewed commit `0e5e8cd`. Commits: `ce12b1a` schema 4 contract, `6159f4b`
-`grove migrate`, `04edb08` this repository's records migrated, `4c2ee0c`
-standing verifier, `7466c1e` squash integrate, `a08bdae` consumers,
-`8548c07`/`48bb0c1`/`af6c8df` documents and terms, `e17ddd4` and `0e5e8cd`
-review fixes.
+following [the plan](G-260930-3hcv4-plan-for-g-260929-gm3m4.md). Commits:
+`ce12b1a` schema 4 contract, `6159f4b` `grove migrate`, `04edb08` this
+repository's records migrated, `4c2ee0c` standing, `7466c1e` squash
+integrate, `a08bdae` consumers, `8548c07`/`48bb0c1`/`af6c8df` documents and
+terms, `e17ddd4`, `0e5e8cd`, `826b97f`, `da5e5ed`, `9c9fed2` review fixes,
+`6b7ab0b` cleanup retains the submitted tip, then the owner's redesign
+([G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md)): `c71b0c2`
+code, `bfe2c80` and the commit holding this Evidence, documents and records.
 
 1. One squash commit per delivery, `TYPE: title` from the candidate's own
    commits, members listed, trailers `Grove-Work`, `Grove-Candidate`,
@@ -168,60 +170,76 @@ review fixes.
    (`TestIntegrateSquashesAndRetainsEvidence`,
    `TestGroupIntegratesOnlyWhenEveryMemberIsApproved`). /tmp trial: main
    read `feat: add greeting` over `chore: unrelated work on main`, with a
-   `fixup:` and a `test:` commit folded in. The owner's judgment of
-   representative history is still owed.
+   `fixup:` and a `test:` commit folded in. A branch kept after its delivery
+   merges the target first, and its next delivery's type comes from all its
+   commits since the fork (`TestIntegrateDeliversReopenedWorkAgain`). The
+   owner's judgment of representative history is still owed.
 2. Acceptance binds candidate and context (`approved_by`,
-   `approved_context`); a moved target, changed candidate or context, and
-   forged, altered or code-carrying claims are refused or unknown
-   (`TestStandingRejectsForgedDeliveries`,
-   `TestIntegrateRefusesAnAlteredDelivery`, `TestIntegrateNeverUndoesTheTarget`).
-   Open: review finding 1 (criss-cross base).
-3. Status `accepted`; done derived by `internal/standing`, read by list
-   (STANDING), show (stderr, JSON `standing`), deps, context, run selection,
-   facts, resolve, sweep and the board; raw file and tools compared in
-   `TestIntegrateCommand`.
+   `approved_context`); a moved target and a changed candidate or context
+   are refused. Forged, altered or code-carrying delivery claims are not
+   proved by integrate's proof of its own commit or by
+   `grove check --deliveries` (`TestAuditRejectsForgedDeliveries`,
+   `TestAuditSurvivesUnrelatedClaims`,
+   `TestIntegrateLeavesAnAlteredDeliveryToTheAudit`).
+3. Status `accepted`; done read from the target tip's own copy of the
+   record, by list (STANDING), show (stderr, JSON `standing`), deps,
+   context, run selection, resolve, feedback, sweep and the board
+   (`TestStandingReadsTheTargetsRecord`, `TestJudgeStartsNothing`). A
+   reading starts one Git process, a `cat-file --batch`, and no log,
+   rev-list, merge-tree, merge-base or for-each-ref, whatever the
+   deliveries and versions (`TestStandingGitWorkIsConstant`, GIT_TRACE).
+   Traced once each on this repository: `grove list` starts 0 Git
+   processes on main and 1 here; `grove versions`, the board's inspection,
+   8 on both, and the board adds none. One timed `list` each: about 20 ms
+   CPU on main, 40 ms here, at the timer's resolution. An acceptance
+   written on the target by hand reads done and only the audit reports it
+   (`TestAuditProvesDeliveries`), the trade the owner accepted.
 4. Dirty target, conflicts, shared groups, target movement, changed
-   acceptance, crash after advance and retry, reopen then redeliver, and
+   acceptance, crash after advance and retry, reopen then redeliver after
+   merging the target, a candidate merged alone then delivered, and
    feedback after delivery are tested in `internal/integrate` and
-   `internal/standing`; done is reconstructed from Git alone.
-5. `refs/grove/submitted/S` survives cleanup and `gc --prune=now`; a
-   `--no-local` clone reads unknown until `git fetch origin
-   'refs/grove/*:refs/grove/*'`, and a shallow clone reads unknown
-   (`TestStandingGroupAndTransport`, `TestStandingOrdinaryMergeAndUnknowns`).
+   `internal/standing`; done is reconstructed from the target's record.
+5. `refs/grove/submitted/S` survives cleanup and `gc --prune=now`; cleanup
+   writes it before deleting a branch at S
+   (`TestIntegrateCleanupRetainsTheSubmittedTip`). A `--no-local` clone
+   reads done without it, and its audit says it cannot prove the delivery
+   there until `git fetch origin 'refs/grove/*:refs/grove/*'`; a shallow
+   clone cannot audit (`TestAuditTransport`).
 6. `grove migrate` dry run and `--commit` with `refs/grove/schema-3/BRANCH`;
    on a clone of main: 50 accepted, 29 kept as schema 3's claim, 190
    unchanged, check OK. A schema 3 branch is refused with the path. Model,
-   commands, board, work guide, record design, README, CLAUDE.md,
-   `just clean-merged`, and the Work, Approval, Integration, Candidate,
-   Policy and Review terms reconciled; new term
-   [Standing](G-260930-44q35-standing.md). The entrypoint revision is
-   unchanged: the entrypoints need nothing new of the binary.
+   commands, board, work guide, record design, README, CLAUDE.md, the
+   brief, `just clean-merged`, the contract, and the Work, Approval,
+   Integration, Candidate and Standing terms reconciled with the redesign.
+   The entrypoint revision is unchanged: the entrypoints need nothing new
+   of the binary.
 7. Fixtures cover both entry paths; the real-agent evaluation is the
    owner's.
 
-Verification at `0e5e8cd`: `go vet ./...` and `gofmt -l .` clean; `go run
-./cmd/grove check` OK; `go test -count=1 -timeout 120s ./...` all ok;
-`python3 internal/tui/testdata/terminal.py` all ok. One earlier full run
-failed `TestTerminal/attempt_lifecycle` on a redraw and passed on rerun.
-Known limit: verification runs one `rev-list` per delivery claim naming an
-open acceptance (about 5 ms each).
+Verification after the redesign: `go vet ./...` and `gofmt -l .` clean;
+`go run ./cmd/grove check` OK: 273 records; one
+`go test -count=1 -timeout 120s ./...` run failed two size budgets (the
+record model at 12594 bytes, the work guide head at 13030), which the last
+commit trims; the two packages then passed on rerun (`.` and
+`internal/cli`), every other package passed in the full run;
+`python3 internal/tui/testdata/terminal.py` all ok.
 
-Review: [G-260930-c0g5p](G-260930-c0g5p-review-of-g-260929-gm3m4.md), three
-rounds, Open findings: 4 at `0e5e8cd`, the cap reached.
+Review: [G-260930-c0g5p](G-260930-c0g5p-review-of-g-260929-gm3m4.md): three
+rounds, the owner's review, a fix round and a re-review at `9c9fed2`, Open
+findings: 3, of which the redesign removes the cause of two and `6b7ab0b`
+fixes the third. The redesign itself is unreviewed.
 
 ## Next
 
-Checkpoint, 2026-09-30: stopped at the review cap with 4 open findings, so
-the work stays active and nothing enters review. Branch
-`worktree-G-260929-gm3m4` in `.claude/worktrees/worktree-G-260929-gm3m4`,
-base `556f362`, reviewed code at `0e5e8cd`; nothing is merged or pushed and
-no command is running.
+Checkpoint, 2026-09-30: the owner's redesign is implemented and verified on
+branch `worktree-G-260929-gm3m4` in
+`.claude/worktrees/worktree-G-260929-gm3m4`, base `556f362`; nothing is
+merged or pushed and no command is running. The work stays active.
 
-Pending, for the owner: whether to allow a fourth fix round for the review's
-findings (the criss-cross merge base, the ref-dependent base prefilter,
-the ref left by the "would change nothing" refusal, and a test for the
-`noBranch` gate, with the fixes suggested there), then an independent
-re-review and the handoff; acceptance 7's real-agent evaluation; and the
-judgment of representative history (a trial repository shows it in a few
-commands: `grove integrate ID` in the target's checkout, then `git log
---oneline main`).
+Next: an independent review of the redesign (from `9c9fed2` to the branch
+tip), then the handoff; acceptance 7's real-agent evaluation; and the
+owner's judgment of representative history (`grove integrate ID` in a
+trial target's checkout, then `git log --oneline main`). A small follow-up,
+if the owner wants no refs at all: stop retaining `refs/grove/submitted/`,
+at the cost of the audit proving squash deliveries only while their
+branches exist.

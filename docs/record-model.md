@@ -56,9 +56,8 @@ worktree.
 Without `--project DIR`, the nearest `grove.yaml` upward from the current
 directory is used, the search stopping at the Git checkout root, or the
 filesystem root outside Git. `--project DIR` names the directory holding it.
-Reading records needs no Git: `list`, `show` and `check` read the selected
-checkout's live files, and work's standing reads only the target's own copy
-of each accepted record.
+Reading needs no Git, and `list`, `show` and `check` read only the selected
+checkout's live files, and the target's copy of accepted work.
 
 ### Folders and files
 
@@ -151,7 +150,8 @@ prerequisite is not delivered.
 
 Proposed → Active → Review → Accepted, with Abandoned by explicit human
 decision. Done is derived, never stored: an applicable acceptance plus its
-delivery to the target, the standing every command and the board read. `check` and `update` enforce:
+delivery, the standing every command and the board read. `check` and
+`update` enforce:
 
 - `review` requires `candidate`. Records on one branch sharing a
   `candidate` are one group, handed off, reopened and delivered together.
@@ -167,13 +167,10 @@ feedback, reopenings, delivery and migration notes). An acceptance applies
 while it equals `approved_context`; any other edit makes it stale, and the
 work awaits judgment again.
 
-An applicable acceptance is done when the target tip's own copy of the
-record, at the same path, is accepted for the same candidate, and otherwise
-awaits delivery; it is unknown only when the target cannot be read. An
-acceptance reaches the target only through a delivery, so reading consults
-nothing else. `integrate` proves each delivery as it makes it, and
-`check --deliveries` proves them again on request, from the delivery
-commits and the submitted tips retained under `refs/grove/submitted/`.
+An applicable acceptance is done when the target's copy of the record is
+accepted for the same candidate, else awaits delivery (unknown if the
+target cannot be read). `integrate` proves each delivery;
+`check --deliveries` again on request.
 
 `approve`, `feedback`, `integrate`, `resolve` and `sweep` act on this
 lifecycle as `grove --help` describes.

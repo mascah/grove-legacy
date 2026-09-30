@@ -25,9 +25,8 @@ Work runs Proposed → Active → Review → Accepted → Done, with Abandoned o
 by an explicit human decision. An assignment sets `active` when
 implementation starts (step 5) and ends by handing a candidate commit into
 `review` (step 8). `grove approve` records the acceptance. Done is never
-written: it is derived from the target's own copy of the record being
-accepted for the same candidate, which only a delivery brings there, the
-standing `grove list` and `grove show` print. A
+written: it is derived from the target's copy of the record holding the
+acceptance, the standing `grove list` and `grove show` print. A
 status saying otherwise is not delivery, and `done` is the previous
 schema's claim. Preparation,
 independent review, waiting and a failed attempt are facts recorded in the
