@@ -75,7 +75,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if err != nil {
 		return err
 	}
-	from, r, err := accepted(root, res, req.ID, p.Target)
+	from, r, err := accepted(ctx, root, res, req.ID, p.Target)
 	if errors.As(err, new(noBranch)) {
 		// No branch holds the work at all: the target's own record may
 		// say why.
@@ -150,13 +150,29 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		if err != nil {
 			return err
 		}
-		if carried && !landed && o.Status == "accepted" {
-			if standing.Each(ctx, root, p.Target, []*project.Record{o})[o].State != standing.Done {
-				return fmt.Errorf("delivering %s would also carry %s's candidate %s, accepted and not yet delivered to %s; integrate %s first; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, o.ID, p.Target)
-			}
-		} else if carried && !landed {
-			return fmt.Errorf("delivering %s would also carry %s's candidate %s, which is %s without an acceptance; hand it off and judge it with %s, or move it off %s; %s is unchanged", name, o.ID, short(o.Candidate), o.Status, ids(group), name, p.Target)
+		if !carried || landed {
+			continue
 		}
+		if o.Status == "accepted" {
+			if standing.Each(ctx, root, p.Target, []*project.Record{o})[o].State == standing.Done {
+				continue
+			}
+			// Only another branch can deliver it alone; on this one alone, the
+			// two go together as one candidate.
+			f, _, err := accepted(ctx, root, res, o.ID, p.Target)
+			if err == nil && f != from {
+				return fmt.Errorf("delivering %s would also carry %s's candidate %s, accepted and not yet delivered to %s; integrate %s first, from %s; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, o.ID, strings.TrimPrefix(f.Ref, "refs/heads/"), p.Target)
+			}
+			return fmt.Errorf("delivering %s would also carry %s's candidate %s, accepted and not yet delivered to %s, and no other branch delivers %s without %s; reopen each with grove feedback, hand both off as one candidate and judge them again; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, o.ID, ids(group), p.Target)
+		}
+		// Its acceptance may have reached the target from another branch,
+		// leaving this one behind.
+		if i := slices.IndexFunc(p.Records, func(t *project.Record) bool { return t.ID == o.ID && t.Path == o.Path }); i >= 0 {
+			if t := p.Records[i]; standing.Each(ctx, root, p.Target, []*project.Record{t})[t].State == standing.Done && update.SameCommit(t.Candidate, o.Candidate) {
+				return fmt.Errorf("delivering %s would also carry %s's candidate %s, which %s already holds delivered, while %s is behind it; merge %s into %s and hand off a new candidate; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, name, p.Target, name, p.Target)
+			}
+		}
+		return fmt.Errorf("delivering %s would also carry %s's candidate %s, which is %s without an acceptance; hand it off and judge it with %s, or move it off %s; %s is unchanged", name, o.ID, short(o.Candidate), o.Status, ids(group), name, p.Target)
 	}
 	if others, err := versions.Others(ctx, root, r.Candidate, submitted, paths...); err != nil {
 		return err
@@ -330,10 +346,12 @@ func subject(title string) string {
 
 // accepted finds the one branch holding the record accepted, its acceptance
 // applicable. The target itself never counts: what it holds is what
-// delivery produces, not a submission. Branches accepting the same
-// candidate, as when later work was based on this work's branch, deliver
-// from the one every other contains, which carries nothing more.
-func accepted(root string, res *versions.Result, id, target string) (*versions.Source, *project.Record, error) {
+// delivery produces, not a submission. Of branches accepting the same
+// candidate, as when later work was based on this work's branch, it delivers
+// from the one whose commits after the candidate change only the records
+// sharing it, as delivery requires, or
+// among several such, the one every other contains.
+func accepted(ctx context.Context, root string, res *versions.Result, id, target string) (*versions.Source, *project.Record, error) {
 	var judged, ok []*versions.Version
 	for i := range res.Groups {
 		if res.Groups[i].ID != id {
@@ -361,7 +379,21 @@ func accepted(root string, res *versions.Result, id, target string) (*versions.S
 	case len(ok) == 1:
 		return ok[0].Source, ok[0].Record, nil
 	case len(ok) > 1:
-		if v := earliest(root, ok); v != nil {
+		var clean []*versions.Version
+		for _, v := range ok {
+			var paths []string
+			for _, m := range update.Group(branchRecords(res, v.Source), v.Record) {
+				paths = append(paths, m.Path)
+			}
+			others, err := versions.Others(ctx, root, v.Record.Candidate, v.Source.Commit, paths...)
+			if err == nil && len(others) == 0 {
+				clean = append(clean, v)
+			}
+		}
+		if len(clean) == 1 {
+			return clean[0].Source, clean[0].Record, nil
+		}
+		if v := earliest(root, clean); v != nil {
 			return v.Source, v.Record, nil
 		}
 		return nil, nil, fmt.Errorf("%s is accepted on several branches (%s); integrate needs one", id, names(ok))

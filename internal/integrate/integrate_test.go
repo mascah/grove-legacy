@@ -416,14 +416,34 @@ func TestIntegrateDeliversCarriedWorkFirst(t *testing.T) {
 	if _, err := update.Approve(later, "G-260101-00003", "Yes.", update.Owner, now); err != nil {
 		t.Fatal(err)
 	}
+	// A checkpoint on the earlier branch after later was based on it: the
+	// branches diverge, and the earlier one still changes only its record.
+	write(t, wt, "grove/G-260101-00001-first.md", string(record(t, wt).Source)+"\n## Next\n\nNoted.\n")
+	git(t, wt, "commit", "-qam", "docs: checkpoint")
 	var facts []string
 	say := func(f string) { facts = append(facts, f) }
 	head := tipOf(t, root, "main")
-	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err == nil || !strings.Contains(err.Error(), "would also carry G-260101-00001's candidate") || !strings.Contains(err.Error(), "integrate G-260101-00001 first") || tipOf(t, root, "main") != head {
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err == nil || !strings.Contains(err.Error(), "would also carry G-260101-00001's candidate") || !strings.Contains(err.Error(), "integrate G-260101-00001 first, from feature") || tipOf(t, root, "main") != head {
 		t.Fatalf("%v %q", err, facts)
 	}
 	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, say); err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tipOf(t, root, "feature")) {
 		t.Fatalf("the earlier work, from its own branch: %v %q", err, facts)
+	}
+	// The squash and the checkpoint change the earlier record apart, so the
+	// later branch merges the target first and is judged again, as any
+	// branch behind a squash is.
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err == nil || !strings.Contains(err.Error(), "conflicts with main") {
+		t.Fatalf("the later work, behind: %v", err)
+	}
+	git(t, later, "merge", "-q", "-X", "theirs", "-m", "merge main", "main")
+	if _, err := update.Feedback(later, "G-260101-00003", "Take main first.", now); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.Apply(later, update.Request{ID: "G-260101-00003", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: tipOf(t, later, "HEAD")}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.Approve(later, "G-260101-00003", "Still yes.", update.Owner, now); err != nil {
+		t.Fatal(err)
 	}
 	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err != nil {
 		t.Fatalf("the later work: %v %q", err, facts)
@@ -432,6 +452,85 @@ func TestIntegrateDeliversCarriedWorkFirst(t *testing.T) {
 	proofs, err := standing.Audit(context.Background(), root, "main", p.RecordDir, p.Records)
 	if err != nil || len(proofs) != 2 || !proofs[0].Proved || !proofs[1].Proved {
 		t.Fatalf("%v %+v %+v", err, proofs[0], proofs[len(proofs)-1])
+	}
+}
+
+// TestIntegrateCarriedWorkDeliveredElsewhere: later work based on earlier
+// work while it was in review carries it unaccepted; once the earlier work
+// is delivered from its own branch, the refusal says to merge the target.
+func TestIntegrateCarriedWorkDeliveredElsewhere(t *testing.T) {
+	t.Parallel()
+	root, wt, _ := fixture(t, false)
+	later := filepath.Join(filepath.Dir(wt), "later")
+	git(t, root, "worktree", "add", "-q", "-b", "later", later, "feature")
+	second := strings.NewReplacer(`"G-260101-00001"`, `"G-260101-00003"`, "title: First", "title: Second").Replace(work)
+	write(t, later, "grove/G-260101-00003-second.md", strings.Replace(second, "%s", "active", 1))
+	write(t, later, "later.txt", "later\n")
+	git(t, later, "add", "-A")
+	git(t, later, "commit", "-qm", "feat: second")
+	c3 := git(t, later, "rev-parse", "HEAD")
+	if _, err := update.Apply(later, update.Request{ID: "G-260101-00003", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c3}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	for dir, id := range map[string]string{wt: "G-260101-00001", later: "G-260101-00003"} {
+		if _, err := update.Approve(dir, id, "Yes.", update.Owner, now); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(string) {}); err != nil {
+		t.Fatal(err)
+	}
+	head := tipOf(t, root, "main")
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "which main already holds delivered, while later is behind it; merge main into later") || tipOf(t, root, "main") != head {
+		t.Fatal(err)
+	}
+}
+
+// TestIntegrateCarriedWorkOnOneBranch: two works accepted for different
+// candidates on one branch cannot be delivered apart, so each refusal says
+// to hand both off as one candidate, and that recovery delivers both.
+func TestIntegrateCarriedWorkOnOneBranch(t *testing.T) {
+	t.Parallel()
+	root, wt, _ := fixture(t, true)
+	second := strings.NewReplacer(`"G-260101-00001"`, `"G-260101-00003"`, "title: First", "title: Second").Replace(work)
+	write(t, wt, "grove/G-260101-00003-second.md", strings.Replace(second, "%s", "active", 1))
+	write(t, wt, "later.txt", "later\n")
+	git(t, wt, "add", "-A")
+	git(t, wt, "commit", "-qm", "feat: second")
+	c3 := git(t, wt, "rev-parse", "HEAD")
+	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00003", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c3}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.Approve(wt, "G-260101-00003", "Yes.", update.Owner, now); err != nil {
+		t.Fatal(err)
+	}
+	head := tipOf(t, root, "main")
+	for _, id := range []string{"G-260101-00001", "G-260101-00003"} {
+		if err := Run(Request{Root: root, ID: id}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "hand both off as one candidate") || strings.Contains(err.Error(), "first") || tipOf(t, root, "main") != head {
+			t.Fatalf("%s: %v", id, err)
+		}
+	}
+	for _, id := range []string{"G-260101-00001", "G-260101-00003"} {
+		if _, err := update.Feedback(wt, id, "Deliver them together.", now); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, id := range []string{"G-260101-00001", "G-260101-00003"} {
+		if _, err := update.Apply(wt, update.Request{ID: id, Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c3}}, Commit: true}, now, nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, id := range []string{"G-260101-00001", "G-260101-00003"} {
+		if _, err := update.Approve(wt, id, "Together.", update.Owner, now); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(string) {}); err != nil {
+		t.Fatal(err)
+	}
+	p, _ := project.Load(root, root)
+	if proofs, err := standing.Audit(context.Background(), root, "main", p.RecordDir, p.Records); err != nil || len(proofs) != 2 || !proofs[0].Proved || !proofs[1].Proved {
+		t.Fatalf("%v %+v", err, proofs)
 	}
 }
 
