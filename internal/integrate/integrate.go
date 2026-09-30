@@ -86,6 +86,10 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 			report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
 			return nil
 		}
+	} else if err != nil {
+		if s := standing.Inspect(ctx, root, p.Target, p.Records)[req.ID]; s != nil && s.State == standing.Done {
+			return fmt.Errorf("%v (%s is %s)", err, req.ID, s.Text())
+		}
 	}
 	if err != nil {
 		return err
@@ -133,11 +137,13 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		}
 		return fmt.Errorf("candidate %s on %s is shared by %s, and delivering it delivers all of them, but %s; judge each first (grove approve ID VERDICT in %s); %s is unchanged", short(r.Candidate), name, ids(group), strings.Join(waiting, ", "), where, p.Target)
 	}
-	// The squash carries every commit the branch holds, so unfinished work
-	// whose candidate it contains, such as a member reopened with a group's
-	// feedback and not handed off again, would arrive unaccepted; and other
-	// accepted work, such as work this branch was based on, would arrive
-	// accepted with no delivery naming it, which no audit could prove.
+	// The squash carries every commit the branch holds, so other work whose
+	// candidate it contains would arrive with it. The target's own copy of
+	// that work decides, as for every reader: done for this candidate, it
+	// arrived by its own delivery; done for any other, the branch is behind
+	// the target; not done, it needs its own delivery first, or, accepted on
+	// this branch alone, to go with this work as one candidate; unaccepted, it
+	// would arrive unaccepted.
 	for _, o := range branchRecords(res, from) {
 		if o.Type != "work" || o.Candidate == "" || slices.Contains(group, o) || o.Status == "done" || o.Status == "abandoned" {
 			continue
@@ -153,26 +159,28 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		if !carried || landed {
 			continue
 		}
-		if o.Status == "accepted" {
-			if standing.Each(ctx, root, p.Target, []*project.Record{o})[o].State == standing.Done {
-				continue
-			}
-			// Only another branch can deliver it alone; on this one alone, the
-			// two go together as one candidate.
-			f, _, err := accepted(ctx, root, res, o.ID, p.Target)
-			if err == nil && f != from {
-				return fmt.Errorf("delivering %s would also carry %s's candidate %s, accepted and not yet delivered to %s; integrate %s first, from %s; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, o.ID, strings.TrimPrefix(f.Ref, "refs/heads/"), p.Target)
-			}
-			return fmt.Errorf("delivering %s would also carry %s's candidate %s, accepted and not yet delivered to %s, and no other branch delivers %s without %s; reopen each with grove feedback, hand both off as one candidate and judge them again; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, o.ID, ids(group), p.Target)
+		read := []*project.Record{o}
+		if i := slices.IndexFunc(p.Records, func(t *project.Record) bool { return t.ID == o.ID }); i >= 0 {
+			read = append(read, p.Records[i])
 		}
-		// Its acceptance may have reached the target from another branch,
-		// leaving this one behind.
-		if i := slices.IndexFunc(p.Records, func(t *project.Record) bool { return t.ID == o.ID && t.Path == o.Path }); i >= 0 {
-			if t := p.Records[i]; standing.Each(ctx, root, p.Target, []*project.Record{t})[t].State == standing.Done && update.SameCommit(t.Candidate, o.Candidate) {
-				return fmt.Errorf("delivering %s would also carry %s's candidate %s, which %s already holds delivered, while %s is behind it; merge %s into %s and hand off a new candidate; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, name, p.Target, name, p.Target)
-			}
+		st := standing.Each(ctx, root, p.Target, read)
+		carry := fmt.Sprintf("delivering %s would also carry %s's candidate %s", name, o.ID, short(o.Candidate))
+		switch {
+		case st[o].State == standing.Done:
+			continue
+		case len(read) == 2 && st[read[1]].State == standing.Done:
+			return fmt.Errorf("%s, but %s already holds %s done, from candidate %s: %s is behind it; merge %s into %s and hand the work off again; %s is unchanged", carry, p.Target, o.ID, short(read[1].Candidate), name, p.Target, name, p.Target)
+		case o.Status != "accepted":
+			return fmt.Errorf("%s, which is %s without an acceptance; hand it off and judge it with %s, or move it off %s; %s is unchanged", carry, o.Status, ids(group), name, p.Target)
 		}
-		return fmt.Errorf("delivering %s would also carry %s's candidate %s, which is %s without an acceptance; hand it off and judge it with %s, or move it off %s; %s is unchanged", name, o.ID, short(o.Candidate), o.Status, ids(group), name, p.Target)
+		switch f, _, err := accepted(ctx, root, res, o.ID, p.Target); {
+		case err != nil:
+			return fmt.Errorf("%s, accepted and not yet delivered to %s; integrate %s first, which is refused now: %v; %s is unchanged", carry, p.Target, o.ID, err, p.Target)
+		case f != from:
+			return fmt.Errorf("%s, accepted and not yet delivered to %s; integrate %s first, from %s; %s is unchanged", carry, p.Target, o.ID, strings.TrimPrefix(f.Ref, "refs/heads/"), p.Target)
+		default:
+			return fmt.Errorf("%s, accepted and not yet delivered to %s, and no other branch delivers %s without %s; reopen each with grove feedback, hand them off as one candidate and judge them again; %s is unchanged", carry, p.Target, o.ID, ids(group), p.Target)
+		}
 	}
 	if others, err := versions.Others(ctx, root, r.Candidate, submitted, paths...); err != nil {
 		return err
@@ -346,7 +354,10 @@ func subject(title string) string {
 
 // accepted finds the one branch holding the record accepted, its acceptance
 // applicable. The target itself never counts: what it holds is what
-// delivery produces, not a submission. Of branches accepting the same
+// delivery produces, not a submission. Of different candidates, the one
+// containing every other is the latest acceptance, and candidates none of
+// which contains the others are refused, naming each. Of branches accepting
+// the same
 // candidate, as when later work was based on this work's branch, it delivers
 // from the one whose commits after the candidate change only the records
 // sharing it, as delivery requires, or
@@ -379,6 +390,30 @@ func accepted(ctx context.Context, root string, res *versions.Result, id, target
 	case len(ok) == 1:
 		return ok[0].Source, ok[0].Record, nil
 	case len(ok) > 1:
+		// A later acceptance of work that contains an earlier one supersedes
+		// it; acceptances that do not line up are named, not chosen between.
+		var newest []*versions.Version
+		for _, v := range ok {
+			all := true
+			for _, u := range ok {
+				in, err := ancestor(root, u.Record.Candidate, v.Record.Candidate)
+				all = all && err == nil && in
+			}
+			if all {
+				newest = append(newest, v)
+			}
+		}
+		if len(newest) == 0 {
+			var at []string
+			for _, v := range ok {
+				at = append(at, strings.TrimPrefix(v.Source.Ref, "refs/heads/")+" for "+short(v.Record.Candidate))
+			}
+			return nil, nil, fmt.Errorf("%s is accepted for candidates on several branches (%s), none containing the others; integrate needs one: merge the branches, or reopen the acceptance that no longer stands", id, strings.Join(at, ", "))
+		}
+		ok = newest
+		if len(ok) == 1 {
+			return ok[0].Source, ok[0].Record, nil
+		}
 		var clean []*versions.Version
 		for _, v := range ok {
 			var paths []string
@@ -415,7 +450,7 @@ func earliest(root string, vs []*versions.Version) *versions.Version {
 		all := true
 		for _, u := range vs {
 			in, err := ancestor(root, v.Source.Commit, u.Source.Commit)
-			all = all && err == nil && in && update.SameCommit(u.Record.Candidate, v.Record.Candidate)
+			all = all && err == nil && in
 		}
 		if all {
 			return v

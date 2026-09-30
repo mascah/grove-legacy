@@ -481,8 +481,99 @@ func TestIntegrateCarriedWorkDeliveredElsewhere(t *testing.T) {
 		t.Fatal(err)
 	}
 	head := tipOf(t, root, "main")
-	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "which main already holds delivered, while later is behind it; merge main into later") || tipOf(t, root, "main") != head {
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "but main already holds G-260101-00001 done, from candidate ") || !strings.Contains(err.Error(), "merge main into later") || tipOf(t, root, "main") != head {
 		t.Fatal(err)
+	}
+}
+
+// TestIntegrateCarriedWorkRevisedElsewhere: earlier work reopened, revised
+// and delivered from its own branch after later work was based on it. The
+// target's copy decides: the later branch is behind it and merges it, never
+// delivering the superseded candidate, and of the earlier work's two
+// acceptances, the one containing the other is the one delivered.
+func TestIntegrateCarriedWorkRevisedElsewhere(t *testing.T) {
+	t.Parallel()
+	root, wt, _ := fixture(t, true)
+	later := filepath.Join(filepath.Dir(wt), "later")
+	git(t, root, "worktree", "add", "-q", "-b", "later", later, "feature")
+	second := strings.NewReplacer(`"G-260101-00001"`, `"G-260101-00003"`, "title: First", "title: Second").Replace(work)
+	write(t, later, "grove/G-260101-00003-second.md", strings.Replace(second, "%s", "active", 1))
+	write(t, later, "later.txt", "later\n")
+	git(t, later, "add", "-A")
+	git(t, later, "commit", "-qm", "feat: second")
+	handoff := func(dir, id string) {
+		t.Helper()
+		if _, err := update.Apply(dir, update.Request{ID: id, Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: tipOf(t, dir, "HEAD")}}, Commit: true}, now, nil); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := update.Approve(dir, id, "Yes.", update.Owner, now); err != nil {
+			t.Fatal(err)
+		}
+	}
+	handoff(later, "G-260101-00003")
+	if _, err := update.Feedback(wt, "G-260101-00001", "One more case.", now); err != nil {
+		t.Fatal(err)
+	}
+	write(t, wt, "code.txt", "the change, revised\n")
+	git(t, wt, "commit", "-qam", "fix: the case")
+	handoff(wt, "G-260101-00001")
+	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(string) {}); err != nil {
+		t.Fatal(err)
+	}
+	head := tipOf(t, root, "main")
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "but main already holds G-260101-00001 done") || !strings.Contains(err.Error(), "merge main into later") {
+		t.Fatalf("the later work: %v", err)
+	}
+	var facts []string
+	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(f string) { facts = append(facts, f) }); err != nil || len(facts) != 1 || !strings.HasPrefix(facts[0], "delivered: G-260101-00001 is already done") {
+		t.Fatalf("the earlier work again: %v %q", err, facts)
+	}
+	if tipOf(t, root, "main") != head {
+		t.Fatal("main moved")
+	}
+	// The recovery the refusal names delivers the later work alone.
+	git(t, later, "merge", "-q", "-X", "theirs", "-m", "merge main", "main")
+	if _, err := update.Feedback(later, "G-260101-00003", "Take main first.", now); err != nil {
+		t.Fatal(err)
+	}
+	handoff(later, "G-260101-00003")
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err != nil {
+		t.Fatal(err)
+	}
+	if got := git(t, root, "show", "main:code.txt"); got != "the change, revised" {
+		t.Fatalf("code.txt: %q", got)
+	}
+	p, _ := project.Load(root, root)
+	if proofs, err := standing.Audit(context.Background(), root, "main", p.RecordDir, p.Records); err != nil || len(proofs) != 2 || !proofs[0].Proved || !proofs[1].Proved {
+		t.Fatalf("%v %+v", err, proofs)
+	}
+}
+
+// TestIntegrateDeliversTheLatestAcceptance: work accepted on its branch,
+// then reopened, revised and accepted again on a branch based on it, is
+// delivered from the later acceptance, never the one it superseded.
+func TestIntegrateDeliversTheLatestAcceptance(t *testing.T) {
+	t.Parallel()
+	root, wt, _ := fixture(t, true)
+	later := filepath.Join(filepath.Dir(wt), "later")
+	git(t, root, "worktree", "add", "-q", "-b", "later", later, "feature")
+	if _, err := update.Feedback(later, "G-260101-00001", "One more case.", now); err != nil {
+		t.Fatal(err)
+	}
+	write(t, later, "code.txt", "the change, revised\n")
+	git(t, later, "commit", "-qam", "fix: the case")
+	if _, err := update.Apply(later, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: tipOf(t, later, "HEAD")}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.Approve(later, "G-260101-00001", "Now right.", update.Owner, now); err != nil {
+		t.Fatal(err)
+	}
+	var facts []string
+	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(f string) { facts = append(facts, f) }); err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tipOf(t, root, "later")) {
+		t.Fatalf("%v %q", err, facts)
+	}
+	if got := git(t, root, "show", "main:code.txt"); got != "the change, revised" {
+		t.Fatalf("code.txt: %q", got)
 	}
 }
 
@@ -506,7 +597,7 @@ func TestIntegrateCarriedWorkOnOneBranch(t *testing.T) {
 	}
 	head := tipOf(t, root, "main")
 	for _, id := range []string{"G-260101-00001", "G-260101-00003"} {
-		if err := Run(Request{Root: root, ID: id}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "hand both off as one candidate") || strings.Contains(err.Error(), "first") || tipOf(t, root, "main") != head {
+		if err := Run(Request{Root: root, ID: id}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "hand them off as one candidate") || strings.Contains(err.Error(), "first") || tipOf(t, root, "main") != head {
 			t.Fatalf("%s: %v", id, err)
 		}
 	}

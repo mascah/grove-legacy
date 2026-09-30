@@ -595,11 +595,11 @@ next candidate replaces the shared one, so the next attempt selects them all
 again: `grove run` refuses a selection that leaves one out. `integrate` of
 any of them delivers the commit, and so all of them: it refuses, naming
 them, until every one is accepted, and its delivery names each. It also
-refuses a delivery that would carry the candidate of other unfinished work
-on the branch that no acceptance covers, or of other accepted work the
-target lacks, such as work the branch was based on: integrate that first,
-or, where only this branch holds it, reopen both and hand them off as one
-candidate.
+refuses a delivery that would carry another work's candidate unless the
+target already holds that work done for it: done for another candidate, merge
+the target first; accepted, integrate that work first, or, where only this
+branch holds it, reopen both and hand them off as one candidate; otherwise
+hand it off with this work or move it off the branch.
 
 A further commit on the branch after the handoff is a new candidate, which
 `approve` and `integrate` refuse until `candidate` names it: set it and reconsider, since

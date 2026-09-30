@@ -67,20 +67,23 @@ conflicting files.
 `integrate ID` runs in the target's clean checkout and delivers the one
 branch holding the work accepted, its acceptance applicable, as one squash
 commit ([G-260929-gm3m4](../grove/G-260929-gm3m4-clean-main-history-with.md)).
-Where several branches accept the same candidate, as when later work was
-based on this work's branch, it delivers from the one whose commits after
-the candidate change only the records sharing it, or among several such, the
-one every other contains; otherwise several are refused.
+Where several branches accept it, it delivers the latest acceptance, the
+candidate containing every other, and refuses candidates none of which
+contains the others; of branches accepting that candidate, as when later work
+was based on this work's branch, it takes the one whose commits after the
+candidate change only the records sharing it, or among several such, the one
+every other contains.
 It reads the branch tip once, the submitted commit S, and refuses before
 anything changes: a branch lacking the candidate, a later commit changing
 more than the records, a shared candidate whose members are not all
-accepted, a squash that would carry the candidate of other unfinished work
-on the branch, such as a member reopened by feedback and not handed off
-again, or already delivered while the branch is behind the target, which
-merges the target first, or of other accepted work the target lacks, such as
-work the branch was based on, which is integrated first from its own branch,
-or, where only this branch can deliver it, reopened and handed off with this
-work as one candidate, a conflict, which `git merge-tree` predicts in objects only and
+accepted, and a squash that would carry another work's candidate. The
+target's own copy of that work decides: done for that candidate, it arrived
+by its own delivery and nothing is refused; done for another, the branch is
+behind the target and merges it first; not done and accepted, it is
+integrated first from its own branch, or, where only this branch can deliver
+it, reopened and handed off with this work as one candidate; unaccepted, it
+is handed off and judged with this work or moved off the branch. It also
+refuses a conflict, which `git merge-tree` predicts in objects only and
 names with the next action, work whose standing is
 [unknown](#standing), and a delivery that would change nothing. Then it
 

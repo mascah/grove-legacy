@@ -71,8 +71,11 @@ submission a clone lacks cannot be audited there. Reverting the delivery
 commit reverts its record too, so the work reads as it did before and can be
 delivered again; a later code change that leaves the record does not undo it. A branch kept after its delivery merges the target before its next
 one. Each accepted candidate is its own delivery, since the audit proves one
-candidate per squash: a branch carrying other accepted work the target lacks
-waits for that work's delivery from its own branch, or, where no other
-branch can deliver it alone, the two are reopened and handed off as one
-candidate. A `done` status from schema 3 is kept by `grove migrate` as that
+candidate per squash, and the target's own copy of any other work a branch
+carries decides: done for that candidate, it came by its own delivery; done
+for another, the branch merges the target first; accepted and not done, that
+work is delivered first from its own branch, or, where no other branch can
+deliver it alone, the two are reopened and handed off as one candidate. Of
+several acceptances of one work, the candidate containing the others is the
+latest and is the one delivered. A `done` status from schema 3 is kept by `grove migrate` as that
 schema's claim and never presented as proved.
