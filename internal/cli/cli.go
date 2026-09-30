@@ -551,7 +551,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		}
 		// The audit reads the target's history and refs/grove, which no
 		// reading does (G-260930-gj9d7): only on request.
-		proofs, err := standing.Audit(context.Background(), p.Root, p.Target, p.Records)
+		proofs, err := standing.Audit(context.Background(), p.Root, p.Target, p.RecordDir, p.Records)
 		if err != nil {
 			report(errOut, fmt.Errorf("deliveries could not be audited: %v", err))
 			return 1

@@ -144,12 +144,21 @@ func Build(ctx context.Context, root string, ids []string, opts Options) (*Bundl
 		return nil, err
 	}
 	defer dir.Close()
-	first, err := assemble(ctx, dir, root, ids, opts)
+	// The target's copies are read once, for both passes: the confirmation
+	// is of this checkout, and a target moving meanwhile is no change here.
+	var st map[string]*standing.Standing
+	standings := func(p *project.Project) map[string]*standing.Standing {
+		if st == nil {
+			st = standing.Inspect(ctx, p.Root, p.Target, p.Records)
+		}
+		return st
+	}
+	first, err := assemble(ctx, dir, root, ids, opts, standings)
 	if err != nil {
 		return nil, err
 	}
 	betweenReads()
-	second, err := assemble(ctx, dir, root, ids, opts)
+	second, err := assemble(ctx, dir, root, ids, opts, standings)
 	if err != nil {
 		return nil, fmt.Errorf("the context could not be read a second time to confirm it (%w); rerun to read it again", err)
 	}
@@ -196,7 +205,7 @@ func difference(a, b *Bundle) string {
 	return "Git state or record relationships"
 }
 
-func assemble(ctx context.Context, dir *os.Root, root string, ids []string, opts Options) (*Bundle, error) {
+func assemble(ctx context.Context, dir *os.Root, root string, ids []string, opts Options, standings func(*project.Project) map[string]*standing.Standing) (*Bundle, error) {
 	p, ds := project.Load(root, root)
 	if len(ds) != 0 {
 		lines := make([]string, len(ds))
@@ -257,7 +266,7 @@ func assemble(ctx context.Context, dir *os.Root, root string, ids []string, opts
 			scope = append(scope, r)
 		}
 	}
-	st := standing.Inspect(ctx, p.Root, p.Target, p.Records)
+	st := standings(p)
 	text := func(id string) string {
 		if s := st[id]; s != nil {
 			return s.Text()

@@ -75,7 +75,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if err != nil {
 		return err
 	}
-	from, r, err := accepted(res, req.ID, p.Target)
+	from, r, err := accepted(root, res, req.ID, p.Target)
 	if errors.As(err, new(noBranch)) {
 		// No branch holds the work at all: the target's own record may
 		// say why.
@@ -135,9 +135,11 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	}
 	// The squash carries every commit the branch holds, so unfinished work
 	// whose candidate it contains, such as a member reopened with a group's
-	// feedback and not handed off again, would arrive unaccepted.
+	// feedback and not handed off again, would arrive unaccepted; and other
+	// accepted work, such as work this branch was based on, would arrive
+	// accepted with no delivery naming it, which no audit could prove.
 	for _, o := range branchRecords(res, from) {
-		if o.Type != "work" || o.Candidate == "" || slices.Contains(group, o) || o.Status == "done" || o.Status == "abandoned" || o.Status == "accepted" {
+		if o.Type != "work" || o.Candidate == "" || slices.Contains(group, o) || o.Status == "done" || o.Status == "abandoned" {
 			continue
 		}
 		carried, err := ancestor(root, o.Candidate, submitted)
@@ -148,7 +150,11 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		if err != nil {
 			return err
 		}
-		if carried && !landed {
+		if carried && !landed && o.Status == "accepted" {
+			if standing.Each(ctx, root, p.Target, []*project.Record{o})[o].State != standing.Done {
+				return fmt.Errorf("delivering %s would also carry %s's candidate %s, accepted and not yet delivered to %s; integrate %s first; %s is unchanged", name, o.ID, short(o.Candidate), p.Target, o.ID, p.Target)
+			}
+		} else if carried && !landed {
 			return fmt.Errorf("delivering %s would also carry %s's candidate %s, which is %s without an acceptance; hand it off and judge it with %s, or move it off %s; %s is unchanged", name, o.ID, short(o.Candidate), o.Status, ids(group), name, p.Target)
 		}
 	}
@@ -324,8 +330,10 @@ func subject(title string) string {
 
 // accepted finds the one branch holding the record accepted, its acceptance
 // applicable. The target itself never counts: what it holds is what
-// delivery produces, not a submission.
-func accepted(res *versions.Result, id, target string) (*versions.Source, *project.Record, error) {
+// delivery produces, not a submission. Branches accepting the same
+// candidate, as when later work was based on this work's branch, deliver
+// from the one every other contains, which carries nothing more.
+func accepted(root string, res *versions.Result, id, target string) (*versions.Source, *project.Record, error) {
 	var judged, ok []*versions.Version
 	for i := range res.Groups {
 		if res.Groups[i].ID != id {
@@ -353,6 +361,9 @@ func accepted(res *versions.Result, id, target string) (*versions.Source, *proje
 	case len(ok) == 1:
 		return ok[0].Source, ok[0].Record, nil
 	case len(ok) > 1:
+		if v := earliest(root, ok); v != nil {
+			return v.Source, v.Record, nil
+		}
 		return nil, nil, fmt.Errorf("%s is accepted on several branches (%s); integrate needs one", id, names(ok))
 	case len(judged) != 0:
 		v := judged[0]
@@ -363,6 +374,22 @@ func accepted(res *versions.Result, id, target string) (*versions.Source, *proje
 		return nil, nil, fmt.Errorf("%s is in review on %s but not accepted, or its acceptance no longer applies: run grove approve %s VERDICT in %s first", id, names(judged), id, where)
 	}
 	return nil, nil, noBranch(id)
+}
+
+// earliest is the one of vs, all accepting the same candidate, whose branch
+// tip every other contains, or nil.
+func earliest(root string, vs []*versions.Version) *versions.Version {
+	for _, v := range vs {
+		all := true
+		for _, u := range vs {
+			in, err := ancestor(root, v.Source.Commit, u.Source.Commit)
+			all = all && err == nil && in && update.SameCommit(u.Record.Candidate, v.Record.Candidate)
+		}
+		if all {
+			return v
+		}
+	}
+	return nil
 }
 
 // noBranch is accepted's answer when no branch holds the work in review or

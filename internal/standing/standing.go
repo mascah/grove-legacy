@@ -208,19 +208,25 @@ func (p *Proof) Text() string {
 	return "not proved: " + p.Why
 }
 
-// Audit proves, for each work record in records, the delivery of the target
-// tip's own copy when that copy's acceptance applies: the target contains
-// its candidate, or a squash delivery on the target names it and verifies.
-// It walks the target's history and reads refs/grove, so it runs only when
-// a person asks (grove check --deliveries), never on a reading.
-func Audit(ctx context.Context, root, target string, records []*project.Record) ([]*Proof, error) {
+// Audit proves the delivery of every work record the target tip holds under
+// recordDir, the project-relative record root, whose acceptance applies: the
+// target contains its candidate, or a squash delivery on the target names it
+// and verifies. records are the checkout's, which with the target's may
+// change after a candidate. It walks the target's history and reads
+// refs/grove, so it runs only when a person asks (grove check --deliveries),
+// never on a reading.
+func Audit(ctx context.Context, root, target, recordDir string, records []*project.Record) ([]*Proof, error) {
 	if target == "" {
 		return nil, errors.New("no target is configured in grove.yaml")
 	}
+	listed, err := run(ctx, root, nil, "ls-tree", "-r", "-z", "--name-only", "refs/heads/"+target, "--", "./"+cmp.Or(recordDir, "."))
+	if err != nil {
+		return nil, fmt.Errorf("the target branch %s cannot be read here", target)
+	}
 	var paths []string
-	for _, r := range records {
-		if r.Type == "work" && !slices.Contains(paths, r.Path) {
-			paths = append(paths, r.Path)
+	for _, p := range strings.Split(listed, "\x00") {
+		if strings.HasSuffix(p, ".md") {
+			paths = append(paths, p)
 		}
 	}
 	_, copies := read(ctx, root, target, paths)
@@ -229,8 +235,11 @@ func Audit(ctx context.Context, root, target string, records []*project.Record) 
 	}
 	var open []*project.Record
 	for _, p := range paths {
-		if t := copies[p]; t != nil && Of(t).State == Unknown {
-			open = append(open, t)
+		if t := copies[p]; t != nil {
+			records = append(records, t)
+			if t.Type == "work" && Of(t).State == Unknown {
+				open = append(open, t)
+			}
 		}
 	}
 	if len(open) == 0 {

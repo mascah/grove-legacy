@@ -279,7 +279,11 @@ func TestIntegrateRefusesWhatIsNotReadyToDeliver(t *testing.T) {
 	t.Run("two branches", func(t *testing.T) {
 		t.Parallel()
 		root, wt, _ := fixture(t, true)
+		// Two branches that each moved on: neither holds only the other's.
 		git(t, wt, "branch", "feature2")
+		git(t, root, "update-ref", "refs/heads/feature2", git(t, root, "commit-tree", "feature2^{tree}", "-p", "feature2", "-m", "chore: elsewhere"))
+		write(t, wt, "grove/G-260101-00001-first.md", string(record(t, wt).Source)+"\n## Next\n\nNoted.\n")
+		git(t, wt, "commit", "-qam", "docs: next")
 		refused(t, root, false, "G-260101-00001 is accepted on several branches (feature, feature2); integrate needs one")
 	})
 	t.Run("arrived some other way", func(t *testing.T) {
@@ -391,6 +395,46 @@ func TestIntegrateCleanupRetainsTheSubmittedTip(t *testing.T) {
 	}
 }
 
+// TestIntegrateDeliversCarriedWorkFirst: work accepted on a branch based on
+// another accepted branch would carry that work in its squash with no
+// delivery naming it, so it is refused until the earlier work is delivered,
+// which comes from its own branch, the one the later branch contains.
+func TestIntegrateDeliversCarriedWorkFirst(t *testing.T) {
+	t.Parallel()
+	root, wt, _ := fixture(t, true)
+	later := filepath.Join(filepath.Dir(wt), "later")
+	git(t, root, "worktree", "add", "-q", "-b", "later", later, "feature")
+	second := strings.NewReplacer(`"G-260101-00001"`, `"G-260101-00003"`, "title: First", "title: Second").Replace(work)
+	write(t, later, "grove/G-260101-00003-second.md", strings.Replace(second, "%s", "active", 1))
+	write(t, later, "later.txt", "later\n")
+	git(t, later, "add", "-A")
+	git(t, later, "commit", "-qm", "feat: second")
+	c3 := git(t, later, "rev-parse", "HEAD")
+	if _, err := update.Apply(later, update.Request{ID: "G-260101-00003", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c3}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.Approve(later, "G-260101-00003", "Yes.", update.Owner, now); err != nil {
+		t.Fatal(err)
+	}
+	var facts []string
+	say := func(f string) { facts = append(facts, f) }
+	head := tipOf(t, root, "main")
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err == nil || !strings.Contains(err.Error(), "would also carry G-260101-00001's candidate") || !strings.Contains(err.Error(), "integrate G-260101-00001 first") || tipOf(t, root, "main") != head {
+		t.Fatalf("%v %q", err, facts)
+	}
+	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, say); err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tipOf(t, root, "feature")) {
+		t.Fatalf("the earlier work, from its own branch: %v %q", err, facts)
+	}
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err != nil {
+		t.Fatalf("the later work: %v %q", err, facts)
+	}
+	p, _ := project.Load(root, root)
+	proofs, err := standing.Audit(context.Background(), root, "main", p.RecordDir, p.Records)
+	if err != nil || len(proofs) != 2 || !proofs[0].Proved || !proofs[1].Proved {
+		t.Fatalf("%v %+v %+v", err, proofs[0], proofs[len(proofs)-1])
+	}
+}
+
 // TestIntegrateUnderAPolicy attributes the delivery in its message and
 // reports its revert.
 func TestIntegrateUnderAPolicy(t *testing.T) {
@@ -484,7 +528,7 @@ func TestIntegrateLeavesAnAlteredDeliveryToTheAudit(t *testing.T) {
 		t.Fatalf("%v %q", err, facts)
 	}
 	p, _ := project.Load(root, root)
-	proofs, err := standing.Audit(context.Background(), root, "main", p.Records)
+	proofs, err := standing.Audit(context.Background(), root, "main", p.RecordDir, p.Records)
 	if err != nil || len(proofs) != 1 || proofs[0].Proved || !strings.Contains(proofs[0].Why, "is not what merging") {
 		t.Fatalf("%v %+v", err, proofs)
 	}

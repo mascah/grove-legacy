@@ -96,7 +96,7 @@ func audit(t *testing.T, root string) map[string]*Proof {
 	if len(ds) != 0 {
 		t.Fatal(ds)
 	}
-	proofs, err := Audit(context.Background(), root, p.Target, p.Records)
+	proofs, err := Audit(context.Background(), root, p.Target, p.RecordDir, p.Records)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -485,5 +485,30 @@ func TestAuditTransport(t *testing.T) {
 	git(t, root, "clone", "-q", "--depth", "1", "file://"+root, shallow)
 	if p := audit(t, shallow)["G-260101-00003"]; p.Proved || !p.Unauditable {
 		t.Fatalf("shallow: %+v", p)
+	}
+}
+
+// TestAuditReadsTheTargetsRecords: a record added after the candidate, as a
+// sibling's or a review's, is allowed because the target holds it, even
+// audited from a checkout that lacks it.
+func TestAuditReadsTheTargetsRecords(t *testing.T) {
+	t.Parallel()
+	root := fixture(t)
+	git(t, root, "checkout", "-q", "-b", "work")
+	write(t, root, "code.txt", "new\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "feat: code")
+	c := git(t, root, "rev-parse", "HEAD")
+	write(t, root, "grove/G-260101-00009.md", work("G-260101-00009", "proposed", ""))
+	accept(t, root, "G-260101-00001", c)
+	sub := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "main")
+	squash(t, root, sub, "Grove-Work: G-260101-00001\nGrove-Candidate: "+c+"\nGrove-Submitted: "+sub)
+	git(t, root, "reset", "-q", "--hard", "main")
+	if err := os.Remove(filepath.Join(root, "grove/G-260101-00009.md")); err != nil {
+		t.Fatal(err)
+	}
+	if p := audit(t, root)["G-260101-00001"]; p == nil || !p.Proved {
+		t.Fatalf("%+v", p)
 	}
 }
