@@ -10,10 +10,12 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/mascah/grove"
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
+	"github.com/mascah/grove/internal/update"
 )
 
 const defaultConfig = "schema_version: 4\nrecords: grove\nbrief: grove/brief.md\n"
@@ -255,6 +257,44 @@ func checkInit(root string, out, errOut io.Writer) int {
 	if failed != 0 {
 		fmt.Fprintf(errOut, "grove: %d entrypoints are missing or unusable with this grove; nothing was written.\n"+
 			"Run grove init, commit what it wrote, and start new sessions; a worktree holds its own branch's copy.\n", failed)
+		return 1
+	}
+	return 0
+}
+
+// runMigrate previews, or with --commit applies, the schema 3 to 4
+// migration of the project found as every command finds it.
+func runMigrate(cwd string, a invocation, out, errOut io.Writer) int {
+	root, d := project.Discover(cwd, a.project)
+	if d != nil {
+		report(errOut, errors.New(d.String()))
+		return 1
+	}
+	fmt.Fprintf(errOut, "Project: %s\n", visible(root))
+	var m *update.Migration
+	var commit string
+	var err error
+	if a.request.Commit {
+		m, commit, err = update.Migrate(root, time.Now())
+	} else {
+		m, err = update.PlanMigration(root)
+	}
+	if m != nil {
+		for _, c := range append(m.Changes, m.Kept...) {
+			fmt.Fprintf(out, "%s  %s -> %s  %s\n", c.ID, c.From, c.To, visible(c.Why))
+		}
+		for _, problem := range m.Problems {
+			fmt.Fprintf(out, "reconcile: %s\n", visible(problem))
+		}
+		fmt.Fprintf(out, "%d accepted, %d kept as schema 3's done claim, %d unchanged\n", len(m.Changes), len(m.Kept), m.Unchanged)
+	}
+	if err != nil {
+		report(errOut, err)
+		return 1
+	}
+	if commit != "" {
+		fmt.Fprintf(out, "migrated at commit %s; the way back is refs/grove/schema-3/%s\n", commit, m.Branch)
+	} else if len(m.Problems) != 0 {
 		return 1
 	}
 	return 0

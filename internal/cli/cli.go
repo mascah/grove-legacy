@@ -29,7 +29,7 @@ import (
 
 const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"       grove [--project DIR] list [--status VALUE]... | show ID [--json] | brief [--json] | check\n" +
-	"       grove [--project DIR] init [--check]\n" +
+	"       grove [--project DIR] init [--check] | migrate [--commit]\n" +
 	"       grove guide work|shape|review|model [--entrypoint N] [--part NAME] | version\n" +
 	"       grove [--project DIR] new TYPE TITLE [--slug SLUG]\n" +
 	"       grove [--project DIR] update ID [--expect REVISION] (--set FIELD=VALUE | --unset FIELD)... [--commit]\n" +
@@ -72,6 +72,11 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             unrevised (no entrypoint revision), incompatible (a revision this binary\n" +
 	"             does not serve), missing, custom (unmarked, not judged) or conflict; exit 1 if\n" +
 	"             any is unrevised, incompatible, missing or a conflict.\n" +
+	"  migrate    Convert a schema 3 project to schema 4: prints each work record whose\n" +
+	"             status changes or keeps schema 3's done claim, and what must be reconciled\n" +
+	"             first. --commit, in a checkout without uncommitted project changes, records\n" +
+	"             refs/grove/schema-3/BRANCH at HEAD, writes grove.yaml and the records, and\n" +
+	"             commits them; exit 1 with nothing written if anything needs reconciling.\n" +
 	"  guide      Print the work, shaping or review guide, or the record model they cite,\n" +
 	"             that this binary carries; the generated entrypoints read the guides from\n" +
 	"             here, so the workflow version is the binary's. --entrypoint N is how an\n" +
@@ -255,6 +260,8 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		return writeResult(out, errOut, source)
 	case "init":
 		return runInit(cwd, a, out, errOut)
+	case "migrate":
+		return runMigrate(cwd, a, out, errOut)
 	}
 	p, ds := project.Load(cwd, a.project)
 	if p != nil {
@@ -743,8 +750,8 @@ func parseArgs(args []string) (a invocation, err error) {
 	if a.request.Expect != "" && a.command != "update" && a.command != "run" {
 		return a, fmt.Errorf("--expect applies only to update and run")
 	}
-	if (a.request.Commit || len(fields) != 0) && a.command != "update" {
-		return a, fmt.Errorf("--set, --unset, and --commit apply only to update")
+	if len(fields) != 0 && a.command != "update" || a.request.Commit && a.command != "update" && a.command != "migrate" {
+		return a, fmt.Errorf("--set and --unset apply only to update, and --commit to update and migrate")
 	}
 	if a.dryRun && a.command != "run" && a.command != "sweep" {
 		return a, fmt.Errorf("--dry-run applies only to run and sweep")
@@ -763,7 +770,7 @@ func parseArgs(args []string) (a invocation, err error) {
 	}
 	switch a.command {
 	case "":
-	case "list", "check", "brief", "init", "version", "sweep":
+	case "list", "check", "brief", "init", "version", "sweep", "migrate":
 		if len(positional) != 1 {
 			err = fmt.Errorf("%s takes no positional arguments", a.command)
 		}

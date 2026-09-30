@@ -159,7 +159,7 @@ func parseConfig(source []byte, schema int, checkRoot func(string) error) (confi
 	switch {
 	case !ok, version == schema:
 	case version == Schema3:
-		config.problem("schema_version", "3 is the previous schema: grove migrate previews this project's conversion to 4, and grove migrate --write applies it")
+		config.problem("schema_version", "3 is the previous schema: grove migrate previews this project's conversion to 4, and grove migrate --commit applies it")
 	default:
 		config.problem("schema_version", fmt.Sprintf("unsupported version %d; expected %d", version, schema))
 	}
