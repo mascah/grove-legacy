@@ -92,7 +92,10 @@ It writes no record: the delivered record is the branch's, accepted.
 Rerun after an interruption, it finds the delivery through the same
 verifier and goes on to cleanup, never a second commit. `--cleanup` removes
 the worktree only where Git agrees and it holds no ignored files, and the
-branch only while its tip is still S. The retained ref keeps S from
+branch only where nothing is lost: after a squash while its tip is still S,
+and after an ordinary merge when the target contains its tip, since a merge
+of the candidate alone leaves the handoff and acceptance on the branch. The
+retained ref keeps S from
 garbage collection and is local: to take the evidence to another clone,
 push or fetch `refs/grove/*` with the branches. A clone without S reads
 the delivery as unknown, never as done.
@@ -118,7 +121,13 @@ after a rewrite is not done; a later revert does not undo one. A branch kept
 after a squash delivery continues from it: where the earlier submitted tip
 replaces the branch's merge base with the target, its next submission is
 merged, predicted and verified from that tip, and otherwise, as after the
-branch merged the target, from Git's own merge base. Every consumer reads this
+branch merged the target or where the two have several merge bases, from
+Git's own. `integrate` finds that tip among the local
+`refs/grove/submitted/` refs, so a clone that lacks them merges from Git's
+own merge base, and the verifier accepts either. A claim whose submitted tip
+shares no history with its parent is judged by the same rule, merged from an
+empty base. One reading starts a fixed number of Git processes, whatever the
+number of deliveries, records and versions of them. Every consumer reads this
 one verifier: `list`, `show`, `deps`, `context`, `run`, the sweep and the
 board. A `done` record is schema 3's claim, kept by migration and labelled
 so, never as verified.

@@ -551,13 +551,15 @@ disposition:
   target unchanged, predicted before anything is written with the files and
   the next action named. It writes no record, prints acceptance, retained
   evidence, delivery, verified done and cleanup as separate facts, and with
-  `--cleanup` removes the worktree and branch where Git agrees. The board's
-  detail of the record offers the same as `a`, `f` and `i`. The retained
+  `--cleanup` removes the worktree and branch where Git agrees and no
+  commit would be lost. The board's detail of the record offers the same
+  as `a`, `f` and `i`. The retained
   refs are local: push or fetch `refs/grove/*` with the target so another
   clone verifies the delivery; a clone lacking the retained tip reads it as
   unknown, never done. `grove feedback` on the target reopens delivered
   work, and a branch kept after its delivery may continue: its next delivery
-  merges from the earlier submission.
+  merges from the earlier submission where that replaces the branch's merge
+  base with the target, and otherwise as Git merges it.
 - **A schema 3 claim on a rewritten target:** rewriting the target once
   work is integrated, as a rebase onto a remote does, gives its commits new
   hashes. A squash delivery survives that through its retained evidence. A
