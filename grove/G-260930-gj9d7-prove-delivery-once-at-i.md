@@ -4,8 +4,8 @@ type: decision
 title: "Prove delivery once, at integrate, and read Done from the target's record"
 status: accepted
 created: "2026-09-30T16:20:33Z"
-updated: "2026-09-30T16:27:32Z"
-relates_to: ["G-260930-2qa4a", "G-260929-gm3m4", "G-260930-44q35", "G-260921-3qgsf", "G-260930-84fnb"]
+updated: "2026-09-30T20:22:11Z"
+relates_to: ["G-260930-2qa4a", "G-260929-gm3m4", "G-260930-44q35", "G-260921-3qgsf", "G-260930-84fnb", "G-260930-tcc9w"]
 ---
 
 ## Decision
@@ -41,8 +41,12 @@ re-proving on every read.
   reports done, scoped to that commit.
 - **Audit.** Re-proving past deliveries is `grove check --deliveries`, run
   on purpose.
-- **Continuation.** A branch kept after its delivery merges the target
-  before its next one, as any branch does; there is no special merge base.
+- **Continuation (amended 2026-09-30).** This originally allowed another
+  delivery after merging the target into a kept branch. The owner replaced
+  that clause in [G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md):
+  a squashed workspace's execution role ends; another delivery starts fresh.
+  Implementation of the narrower boundary is proposed. The cheap reading
+  and optional audit decisions above remain in force.
 - **What Grove leaves in a repository.** One squash commit per delivery,
   with its trailers, and one local ref per delivery under
   `refs/grove/submitted/`, which only the audit reads. Nothing a teammate

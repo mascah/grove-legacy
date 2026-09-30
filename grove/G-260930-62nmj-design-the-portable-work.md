@@ -4,10 +4,10 @@ type: work
 title: "Design the portable workflow journey and contracts"
 status: accepted
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T13:18:01Z"
+updated: "2026-09-30T20:22:13Z"
 kind: investigation
 size: large
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260928-vdhf0", "G-260923-tnn5e", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260921-sth8q", "G-260930-npw49", "G-260930-84fnb", "G-260930-y6fyy", "G-260930-2qa4a"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260928-vdhf0", "G-260923-tnn5e", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260921-sth8q", "G-260930-npw49", "G-260930-84fnb", "G-260930-y6fyy", "G-260930-2qa4a", "G-260930-tcc9w"]
 candidate: "f376a6dab7a5999560b25adaacb93d919c36e7a8"
 approved: "f376a6dab7a5999560b25adaacb93d919c36e7a8"
 approved_by: owner
@@ -115,17 +115,17 @@ delivered before reporting local delivery ready.
 
 ## Next
 
-Design accepted and delivered on main; use the accepted pages as the
-implementation baseline. The first implementation assignment is
-$grove-work G-260929-gm3m4, for
-[local delivery and the shared lifecycle redesign](G-260929-gm3m4-clean-main-history-with.md).
-Its Next names the planning units, schema/migration choices and verification
-cases. Technical field spelling and package layout remain implementation
-choices within the accepted contracts.
+The design at f376a6d remains an accepted historical artifact. On 2026-09-30
+the owner reconsidered its delivery and execution boundaries in
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md). Review the
+reconciled [contracts](G-260930-84fnb-portable-workflow-contra.md) and
+[experience](G-260930-npw49-portable-workflow-experi.md) before assigning
+new implementation; this accepted record does not pretend the old candidate
+approved later writing. Its original evidence is preserved above.
 
-Implementation work remains proposed and unassigned. Design acceptance
-supplies its prerequisite; it does not launch implementation, paid trials,
-adopter changes, a merge or a push. The current schema 3 lifecycle is used
-to record this closure until the selected replacement is implemented.
+The milestone owns the changed membership, dependency graph and adopter hold.
+Local delivery G-260929-gm3m4 is already delivered; new bounded workspace and
+sequence work address the selected changes without reopening that migration.
+No implementation, paid trial or adopter migration is assigned here.
 
 Migrated to schema 4, 2026-09-30: status done with approval of its candidate became status accepted by owner.

@@ -3,8 +3,8 @@ id: "G-260930-npw49"
 type: page
 title: "Portable workflow experience design"
 created: "2026-09-30T01:31:25Z"
-updated: "2026-09-30T03:18:01Z"
-relates_to: ["G-260930-62nmj", "G-260930-84fnb", "G-260930-60c3d", "G-260930-e8jj7", "G-260930-2qa4a"]
+updated: "2026-09-30T20:22:07Z"
+relates_to: ["G-260930-62nmj", "G-260930-84fnb", "G-260930-60c3d", "G-260930-e8jj7", "G-260930-2qa4a", "G-260930-tcc9w"]
 ---
 
 ## Status and scope
@@ -19,8 +19,11 @@ contracts at commit f376a6dab7a5999560b25adaacb93d919c36e7a8 and said:
 
 The [brief](brief.md) remains the direction owner. This page owns interaction
 examples; the [contracts design](G-260930-84fnb-portable-workflow-contra.md)
-owns mechanics. These accepted sketches establish the intended journey;
-actual terminal behavior still needs implementation and evaluation. Exact
+owns mechanics. The original sketches were accepted at f376a6d. This revision applies the
+owner's selected 2026-09-30 boundaries in
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md); exact preparation
+and recovery mechanics in the contracts remain proposed design for review.
+Actual terminal behavior still needs implementation and evaluation. Exact
 keys, spacing and command spelling remain implementation details. Completion
 follows the [derived-Done decision](G-260930-2qa4a-derive-done-from-recorde.md).
 
@@ -37,7 +40,8 @@ support those actions and remain available through Details.
 
 There is no fixed wizard the person must approve at every phase. Grove
 continues within the assignment until it reaches its bound, needs a real
-decision, cannot continue, or has a result ready for judgment.
+decision, or cannot continue. Applicable policy can supply approval and
+delivery, including configured LLM judgment, without a per-item human act.
 
 ## 1. Adopt an existing project
 
@@ -78,7 +82,9 @@ limits do and do not bound. Choosing a repository check does not execute
 untrusted project commands during discovery.
 
 Delivery offers local integration and the supported hosted path. A
-local-only user never has to configure a remote or hosting account.
+local-only user never has to configure a remote or hosting account. Setup
+also exposes approval authority and the optional configured LLM judge;
+enabling a provider does not itself delegate judgment or integration.
 
 ## 2. Shape and authorize work
 
@@ -123,9 +129,30 @@ Delivery        Local → main; requires my approval
 This example describes different kinds of limits rather than promising a
 particular harness version supports them. Real UI uses the capability probe.
 
-The default milestone path works one bounded change. Existing selected
-chains remain supported and visibly name their shared review boundary.
-Parallel fan-out is not added to the primary path.
+For several selected items, Start exposes the delivery boundary:
+
+~~~text
+Start selected work: A → B → C
+
+Deliver         Separately (default)              [Together]
+Progression     Continue selected work after each delivery
+Approval        Configured policy + LLM judge
+Limits          One aggregate allowance for this selection
+Workspace       Clean up after delivery           [Keep]
+
+Separate: A is reviewed and delivered before B starts.
+Together: all selected items must finish before one combined delivery.
+
+[Start]  [Change settings]  [Cancel]
+~~~
+
+Mode and actual authority are explicit: without delegated approval, the
+preview says it waits for the owner at each delivery. Both modes implement
+members sequentially; parallel fan-out is outside this milestone. Existing
+assignments keep the boundary they were launched with. Preparation explains
+when committed proposal records will be admitted from another source and
+reports input conflicts before spending, without asking the user to choose
+execution worktree paths.
 
 ## 3. Leave and return
 
@@ -177,8 +204,10 @@ The answer is durably recorded with attribution. The pending assignment's
 scope does not expand automatically. A consequential answer can create a
 decision and a revised plan; changed scope is brought back to the owner.
 
-After answering, the primary action is Continue with the existing settings
-and checkpoint. The user may change harness/model/effort at this boundary.
+After answering, the primary action is Continue with the existing settings,
+remaining authority/limits and checkpoint. Completed deliveries stay done;
+continuation never resets the selection's budget or restarts those items.
+The user may change harness/model/effort at this boundary.
 It is a supported continuation, not a raw "restart the prompt" action.
 
 ```text
@@ -205,7 +234,9 @@ first reconciles those changes within the user's mandate.
 
 Discuss opens the selected harness on the chosen work and returns to the
 same refreshed view when it exits. It explains whether it is resuming a
-native session or opening a fresh one from project context.
+native session or opening a fresh one from project context. A delivered
+workspace kept for inspection is not offered as an implementation resume;
+new or reopened work gets a fresh workspace from the target.
 
 For an actively owned worktree, the user sees Stop and discuss, Wait, or a
 supported read-only inspection path. The UI does not start a second writer.
@@ -251,15 +282,26 @@ rather than silently resolving into previously approved code.
 
 A non-clean independent review presents its findings and the appropriate
 feedback/continue action. Successful tests cannot hide an unmet acceptance
-item or a requirement for the owner's judgment.
+item or a requirement for the owner's judgment. When configured policy and
+the LLM judge accept the candidate, the result names that authority and its
+evidence, then proceeds to delivery. A judge wait explains which acceptance
+item or missing evidence needs attention; a failed call is not approval.
 
 ## 7. Deliver and understand the outcome
 
-Local delivery shows the resulting main commit, retained candidate evidence
-and any remaining cleanup. Once Grove verifies delivery of the accepted
-result, it shows Done. Optional cleanup and local cache updates are separate;
-a crash after target advance is recovered by inspection, without another
-code merge or a post-delivery status commit.
+Local delivery shows the resulting main commit and retained candidate
+evidence. It verifies the delivery once, then ordinary views read Done from
+the accepted record on the target. Cleanup runs automatically when safe,
+unless Keep was selected. Additional files/commits or a live owner preserve
+the workspace and explain why. This does not undo Done. A crash after target
+advance is recovered by inspecting the receipt, without another code merge
+or post-delivery status commit.
+
+For separate mode the same view then shows "A delivered; starting B" from
+the updated target, within the authorized selection and remaining limits.
+Each delivery gets a fresh workspace. A kept completed workspace is for
+inspection; repeated delivery from it is unsupported. Native sessions are
+optional, and project context carries continuity after cleanup.
 
 The hosted variant shows the PR and host requirements:
 
@@ -275,31 +317,36 @@ Next                Wait for checks and host approval
 [Refresh]  [Inspect evidence]
 ```
 
-An external merge can establish Done once Grove verifies correspondence
-with the currently accepted candidate and target. A closed-unmerged PR
-cannot. The same result is available through CLI and agent context.
+An external merge of the prepared submission is reconciled through the same
+delivery operation. Normal reading uses the accepted record on the remote
+target; a closed-unmerged PR or merged label alone cannot establish Done.
+The same standing is available through CLI and agent context. Verification
+and optional audit results are shown separately, not claimed by every read.
 
 ```text
 Hide completed tasks                                           Done
 
 Accepted result     Delivered to origin/main
 Delivery            PR #42 · resulting commit D   [Open]
-Evidence            Candidate, approval and delivery verified
+Approval            Accepted by configured policy · judgment available
 Target checked      origin/main at T · just refreshed
+Workspace           Cleaned up · evidence retained
 
-[Inspect evidence]  [Clean up workspace]
+[Inspect evidence]  [Audit delivery]
 ```
 
 There is no follow-up completion PR. The record states acceptance, and
 Grove checks Git to establish delivery. Source details distinguish the raw
 record from the derived result without requiring users to learn the schema.
 
-If the host cannot be reached, show the last verified target revision and
-"remote freshness unknown". If correspondence cannot be established, show
-"Accepted · delivery unknown", name the missing evidence and offer a
-refresh or evidence-recovery action. Do not offer another code delivery
-until reconciliation establishes what happened. A change to the candidate
-or its governed requirements invalidates old acceptance for current work.
+If the host cannot be reached, show standing as of the last observed target
+revision and "remote freshness unknown". If no target can be read, show
+"Accepted · delivery unknown" and offer refresh. A fresh clone missing
+historical audit objects still reads Done from the target's accepted record;
+only an explicit evidence inspection/audit reports those objects missing.
+Never present missing evidence as a successful proof or as a reason to redo
+delivered work. A changed candidate or its governed requirements invalidates
+old acceptance for current work.
 
 The [contracts design](G-260930-84fnb-portable-workflow-contra.md) owns the
 exact source, evidence, readiness and mutation rules. Direct Markdown reads,
@@ -320,7 +367,10 @@ either unfinished implementation or proof of Done.
 | Changed candidate | Judge the updated result; old approval cannot authorize it |
 | Target moved | Verify the new integration result; explain conflicts |
 | Host unavailable | Show last observed state and retry inspection |
-| Merge succeeded, process interrupted | Reconstruct Done from retained evidence; do not merge again |
+| Merge succeeded, process interrupted | Read Done from the target receipt and reconcile sequence progress; do not merge again |
+| Cleanup cannot remove a workspace | Preserve it, explain why, and retain delivered standing |
+| Kept delivered workspace selected for implementation | Explain that new execution starts fresh from the target |
+| Missing historical audit objects | Keep normal standing; explain recovery when inspection/audit is requested |
 
 ## Proposed adoption evaluation
 
@@ -331,7 +381,10 @@ beliefs about authority/completion, time to recover context, and whether they
 would keep using Grove. Deterministic fixtures exercise recovery states;
 real bounded harness trials establish behavior beyond mocks.
 
-The owner accepted these sketches. The actual terminal implementation still
-needs their judgment. A changed visual arrangement is acceptable when it preserves the journey
+The original sketches and the new product boundaries have owner acceptance;
+this reconciled written revision is presented for review. Each implementing
+boundary includes a small local walkthrough before dependent work builds on
+it; the external cohort is not the first usability check. The actual terminal
+implementation still needs the owner's judgment. A changed visual arrangement is acceptable when it preserves the journey
 and improves those outcomes. Exact keys, spacing and command spelling are
 implementation design details, not settled by this page.

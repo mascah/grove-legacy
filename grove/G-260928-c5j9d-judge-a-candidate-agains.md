@@ -4,11 +4,11 @@ type: work
 title: "Judge a candidate against its record under the policy with a delegated LLM"
 status: proposed
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-30T01:16:10Z"
+updated: "2026-09-30T20:22:05Z"
 kind: feature
 size: medium
-depends_on: ["G-260928-dtrnw", "G-260930-60c3d"]
-relates_to: ["G-260928-d8py6", "G-260925-5wrn8", "G-260925-wh9ax", "G-260926-a8vyj", "G-260921-btyck", "G-260921-rz7bn", "G-260928-y2p5h", "G-260930-e8jj7", "G-260930-60c3d"]
+depends_on: ["G-260928-dtrnw", "G-260928-n4f1q"]
+relates_to: ["G-260928-d8py6", "G-260925-5wrn8", "G-260925-wh9ax", "G-260926-a8vyj", "G-260921-btyck", "G-260921-rz7bn", "G-260928-y2p5h", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-tcc9w"]
 ---
 
 ## Outcome
@@ -25,22 +25,25 @@ and the owner writes the policy that enables it.
 
 ## Portable milestone framing
 
-On 2026-09-29 the owner selected [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md). This remains proposed
-work outside [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md).
-Delegated judgment reduces supervision once the complete workflow exposes
-reliable acceptance, evidence and authority. G-260928-d8py6's accepted intent
-remains; this deferral does not revoke it.
+On 2026-09-30 the owner explicitly brought this judge into
+[G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md), superseding its
+2026-09-29 deferral, in
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md). The workflow
+must demonstrate bounded unattended judgment and progression as part of
+the milestone. This remains a separately configured policy condition, not
+the implementing or reviewing session accepting its own work.
 
-Depends on [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md): the owner selected demonstration of the
-complete usable loop before this investment. It also consumes the resulting
-provider, review, delivery and policy presentation contracts;
-building against the current interfaces would risk redoing that integration.
-The existing prerequisite G-260928-dtrnw supplies sweep triggers and remains in depends_on.
+Depends on [G-260928-n4f1q](G-260928-n4f1q-review-a-candidate-as-a.md) for
+portable roles and independently attributed candidate evidence, and on
+[G-260928-dtrnw](G-260928-dtrnw-run-sweep-from-a-finishi.md) for existing
+policy triggers. It no longer depends on completing the entire milestone.
+The [sequence work](G-260930-yfh91-continue-an-authorized-s.md) consumes its
+approve/wait result; this judge never launches arbitrary subsequent work.
 
-The technical design below is a dated proposal. At assignment, reconcile it
-with the delivered portable contracts and capability-specific limits;
-select the judgment's provider and resource limit explicitly for that role,
-rather than silently inheriting the implementation harness.
+The technical proposal below is reconciled against the shared
+[contracts](G-260930-84fnb-portable-workflow-contra.md). Recheck provider
+capabilities at implementation and choose the judgment's provider and
+effective limit explicitly. Do not silently inherit implementation settings.
 
 ## Constraints
 
@@ -68,22 +71,25 @@ Observed 2026-09-28 at main `6fbb888`:
 
 Proposed design, labelled proposed:
 
-- A `judge:` mapping under `policy.approve` with `model`, `effort` and
-  `budget` per judgment, all required to enable it; absent, the policy is
-  as today. Its provider and effective resource limit follow the portable role
-  contract, explicitly configured and reported; there is no silent fallback
-  to an implementation harness.
+- A `judge:` mapping under `policy.approve` with explicitly selected
+  provider, model, effort and an effective per-call resource limit; exact
+  spelling follows the portable role contract. Absent, the policy is as
+  today. No silent fallback to implementation settings and no claim that a
+  time limit is a monetary cap.
 - One headless call with structured output that reads the record's outcome,
   constraints and acceptance, its plan, every review of the candidate, the
   record's Evidence and the diff against the target, and returns
   `{verdict: approve|wait, acceptance: [{item, met|not met|needs owner,
   evidence}], reasons}`. `wait` whenever an item needs a human, an item is
   not met, or the candidate exceeds the record's scope.
-- Its input and output are kept with the attempt's files and quoted in the
-  delegated verdict (`judgment J: approve, 4 of 4 acceptance items met`); a
-  wait appends the reasons to the record as a paragraph the board shows.
+- Before approval, commit the judgment's input revisions, structured verdict,
+  per-member acceptance reasons and evidence references as a validated
+  supplemental artifact. The delegated verdict names it (`judgment J:
+  approve, 4 of 4 acceptance items met`); a wait records its reasons where
+  the board shows them. Raw provider logs can remain with the attempt.
   `sweep` lists `judge` as an act and `--dry-run` says it would run and
-  its cap; its spend counts in the sweep's aggregate budget.
+  its cap; usage also counts toward the selection's aggregate limits when it owns
+  the operation. A new candidate, retry or delivery cannot reset that allowance.
 - Kept deterministic and unchanged: `never`, `verify`, the review's closing
   line, the clean merge.
 
@@ -100,19 +106,27 @@ from the owner's verdicts.
    the reasons appended and visible on the board.
 2. A judgment that fails, times out, exceeds its budget or returns malformed
    output is a wait with that reason; it never approves.
-3. The judgment's input and output are retained, printable by `grove attempt`
-   or a listing, and attributed to the policy revision.
-4. Spend is bounded per call and counted in the aggregate budget; dry run
-   states it.
-5. A real-provider trial on this repository's next few candidates compares
-   the judgment's verdicts with the owner's, reported in a review record,
-   under a budget the owner names at assignment.
+3. Judgment input revisions, verdict, per-item reasons and evidence references
+   remain in committed project evidence after automatic workspace cleanup and
+   transfer. Raw provider logs may remain local. The judgment is inspectable
+   and attributed to the actual candidate and policy revision; changed
+   candidate or acceptance cannot inherit it.
+4. Effective limits are enforced per call and across the owning selection;
+   dry run states their kind, scope and known gaps. Usage that the provider
+   cannot report is not zero and cannot silently reset the allowance.
+5. A bounded real-provider trial compares the judge's verdicts with the
+   owner's for an eligible candidate, a needs-human acceptance and an unmet
+   criterion, under an assigned usage mandate. It includes both a single
+   member and a combined candidate judged per member. These observations
+   precede sequence work consuming the judge; they are not deferred until
+   the final adoption trial.
 6. Record model (`policy.approve.judge`), `docs/commands.md` (Sweep),
    `docs/board.md` and the Policy term say so.
 
 ## Next
 
-Needs [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md) and the existing prerequisite named above.
-At assignment, reconcile the dated mechanism with the delivered contracts,
-retain the original bounded-trial acceptance, and record the owner's
-execution mandate. This record is not a milestone member or assigned work.
+Needs the declared independent-review and policy-trigger prerequisites.
+Implement the configured judge under the reconciled contracts, then present
+the bounded comparison with owner judgment before the sequence work consumes
+it. It is now a milestone member; no implementation or paid call is assigned
+by that inclusion.

@@ -4,11 +4,11 @@ type: work
 title: "Review candidates independently on the chosen harness"
 status: proposed
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-30T03:18:02Z"
+updated: "2026-09-30T20:22:08Z"
 kind: feature
 size: medium
 depends_on: ["G-260928-y2p5h"]
-relates_to: ["G-260928-917h8", "G-260924-5b6pz", "G-260921-rz7bn", "G-260925-5wrn8", "G-260924-3bapc", "G-260928-c5j9d", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-gwnb1", "G-260930-62nmj", "G-260930-84fnb", "G-260930-2qa4a"]
+relates_to: ["G-260928-917h8", "G-260924-5b6pz", "G-260921-rz7bn", "G-260925-5wrn8", "G-260924-3bapc", "G-260928-c5j9d", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-gwnb1", "G-260930-62nmj", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-tcc9w"]
 ---
 
 ## Outcome
@@ -37,7 +37,10 @@ controlled disposable environment rather than mutation of the candidate.
 Grove records work/examined/provenance and preserves failures without
 inventing a clean review. Independent review informs approval; delegated
 approval judgment is [G-260928-c5j9d](G-260928-c5j9d-judge-a-candidate-agains.md)'s
-separate outcome outside the milestone.
+separate outcome inside the milestone under
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md). Review is per
+delivery group: one member in separate mode, the shared candidate in together
+mode. It does not choose the grouping or authorize the next delivery.
 
 ## Observed evidence
 

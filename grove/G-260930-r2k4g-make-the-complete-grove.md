@@ -4,11 +4,11 @@ type: work
 title: "Make the complete Grove workflow usable without coaching"
 status: proposed
 created: "2026-09-30T01:05:46Z"
-updated: "2026-09-30T03:18:04Z"
+updated: "2026-09-30T20:22:09Z"
 kind: feature
 size: large
 depends_on: ["G-260930-gwnb1", "G-260929-04svs", "G-260930-4742q"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-npw49", "G-260930-84fnb", "G-260930-2qa4a"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-npw49", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-tcc9w"]
 ---
 
 ## Outcome
@@ -20,7 +20,9 @@ attention and what can happen next from the product itself.
 
 Owner direction: [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md); milestone: [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md).
 This work owns the assembled onboarding, CLI/TUI experience and adoption
-instructions. Runtime guarantees belong to the component records it consumes.
+instructions. Runtime guarantees and usable previews/waits belong to the
+component records it consumes; their early local walkthroughs cannot be
+postponed to this item.
 
 ## Scope and constraints
 
@@ -55,15 +57,22 @@ inspecting and unchanged waits do not launch work.
 1. Starting with an ordinary existing repository and the adoption
    instructions, a new user can configure either supported harness, checks,
    limits and either supported delivery path, with actionable diagnostics
-   for missing or unsupported capabilities.
+   for missing or unsupported capabilities. Approval policy and the LLM
+   judge expose their actual authority and effective limits.
 2. The primary journey covers creating/shaping work, authorizing a bounded
    assignment, leaving and returning, answering, stopping/continuing,
    judging and delivering. The user need not select internal paths,
-   lookup native session IDs or understand record frontmatter.
+   lookup native session IDs or understand record frontmatter. A selection
+   defaults to separate delivery, explicitly offers together mode and Keep,
+   shows aggregate limits, and progresses under policy without per-item
+   relaunch. Human waits preserve completed deliveries and remaining work.
 3. CLI and TUI consume the shared standing already delivered by the local
    contract and agree with agent context about current work, waits, candidate
-   changes, evidence and actions. Accepted-but-undelivered, verified Done and
-   unknown delivery/freshness are understandable. Raw source is inspectable
+   changes, evidence and actions. Accepted-but-undelivered, Done at an
+   observed target, unknown delivery/freshness and optional audit availability
+   are understandable and distinct. Missing audit objects do not reopen Done.
+   Automatic cleanup and a preserved workspace explain their outcome;
+   implementation from a kept delivered workspace routes to a fresh one. Raw source is inspectable
    without being misrepresented as the derived result; no completion PR or
    independent UI status store is added.
 4. A result/catch-up view explains changed behavior, decisions, checks,

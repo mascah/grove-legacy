@@ -4,78 +4,54 @@ type: term
 title: "Integration"
 status: settled
 created: "2026-09-21T05:01:57Z"
-updated: "2026-09-30T03:18:06Z"
-relates_to: ["G-260921-vr8a8", "G-260921-jatts", "G-260921-btyck", "G-260930-e8jj7", "G-260929-gm3m4", "G-260930-4742q", "G-260930-2qa4a"]
+updated: "2026-09-30T20:22:12Z"
+relates_to: ["G-260921-vr8a8", "G-260921-jatts", "G-260921-btyck", "G-260930-e8jj7", "G-260929-gm3m4", "G-260930-4742q", "G-260930-2qa4a", "G-260930-tcc9w"]
 formerly: "T-007"
 ---
 
 ## Meaning
 
-An approved [candidate](G-260921-jatts-candidate.md) becoming part of the project's
-configured target, such as a merge into the main branch, shown by Git
-ancestry rather than by a status.
+An accepted [candidate](G-260921-jatts-candidate.md)'s result reaching the
+project's configured target. It follows
+[approval](G-260921-btyck-approval.md) and establishes delivery for
+[work](G-260921-vr8a8-work.md). Approval, passing checks and provider success
+are separate facts; none alone is integration.
 
-Since G-260921-9wkjt, done means exactly this for work with a `candidate`: `update`
-writes done only where that commit is already an ancestor of HEAD. A done
-record without a candidate is older and claims its outcome only in its own
-branch; it may never have been merged, and it keeps that meaning.
+An ordinary merge can retain the candidate's identity. A squash transforms
+it, so the delivery operation establishes correspondence with the accepted
+result and retains the original candidate and judgment evidence. Trailers
+locate that evidence; they are not proof by themselves.
 
-Since G-260921-jwk4e, `grove integrate` performs it from the target's checkout: a
-plain merge of the one branch holding an approved candidate, aborted on
-conflict, then done written and committed there, with the branch and its
-worktree removed only on request and only where Git agrees. Since G-260925-h8rj5,
-a conflict is predicted with `git merge-tree` in objects only and refused
-before the merge starts, naming the files; the abort remains for what the
-prediction cannot see.
+## Relationship to standing
 
-## Relationships
+Schema 4 records acceptance and derives completion.
+[Standing](G-260930-44q35-standing.md) reads the target's accepted copy of
+the record cheaply, under the trust boundary selected in
+[G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md). Delivery is
+proved when made and optionally audited later. Missing historical evidence
+limits the audit, not ordinary Done. Manual target metadata can make a false
+receipt; the owner currently accepts that limit and requires supported
+operations to prevent it.
 
-Follows [approval](G-260921-btyck-approval.md). Completes implementation
-[work](G-260921-vr8a8-work.md) under the target lifecycle.
+Reverting a delivery including its record restores the earlier standing.
+A later code-only change that leaves that receipt does not erase historical
+delivery; corrective work is explicit. Legacy schema 3 claims retain their
+historical meaning without fabricated evidence.
 
-## Selected redesign, 2026-09-29
+## Selected delivery boundary
 
-The owner selected [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md), reopening the ancestry-only
-representation for squash and hosted delivery. The current mechanism above
-remains implemented; [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md)
-and [G-260930-4742q](G-260930-4742q-deliver-accepted-work-th.md) must reconcile this term and the lifecycle contract when
-they deliver verified correspondence between an approved candidate and a
-transformed integrated result. An unverified trailer or work status alone
-will not establish integration.
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md) selects one
+workspace for a delivery, containing one item by default or an explicitly
+combined group. Members of a group are judged against their own acceptance;
+external prerequisites are delivered before execution. After delivery the
+workspace is retired and normally cleaned up safely, with optional retention
+for inspection. A subsequent delivery uses a fresh target-based workspace;
+repeated delivery from an old squashed branch is unsupported in this selected
+workflow.
 
-## Selected completion contract, 2026-09-29
-
-The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
-record candidate acceptance and derive Done from its target delivery,
-with a redesigned work record that does not remain misleadingly in review.
-This changes representation, not the distinction between approval and
-integration.
-
-## Schema 4, 2026-09-30
-
-[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) implements it and
-supersedes the mechanism in Meaning above. `grove integrate` retains the
-branch's tip under `refs/grove/submitted/`, writes that tip merged onto the
-target's tip as one commit with the target tip as its only parent and a
-Conventional Commit message whose trailers name the work, the candidate and
-the retained tip, fast-forwards the target to it, and writes no record.
-Before it reports done, it proves that one commit: its trailers, parent and
-exact tree match the retained submission. Done is derived, amended by
-[G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md): accepted work
-is done when the target tip's own copy of its record is accepted for the
-same candidate, which only a delivery brings there, and reading proves
-nothing again. `grove check --deliveries` audits every delivery on request:
-the target contains the candidate, or a commit on it matches the retained
-submission; a forged or altered delivery is not proved there, and one whose
-submission a clone lacks cannot be audited there. Reverting the delivery
-commit reverts its record too, so the work reads as it did before and can be
-delivered again; a later code change that leaves the record does not undo it. A branch kept after its delivery merges the target before its next
-one. Each accepted candidate is its own delivery, since the audit proves one
-candidate per squash, and the target's own copy of any other work a branch
-carries decides: done for that candidate, it came by its own delivery; done
-for another, the branch merges the target first; accepted and not done, that
-work is delivered first from its own branch, or, where no other branch can
-deliver it alone, the two are reopened and handed off as one candidate. Of
-several acceptances of one work, the candidate containing the others is the
-latest and is the one delivered. A `done` status from schema 3 is kept by `grove migrate` as that
-schema's claim and never presented as proved.
+The [contracts design](G-260930-84fnb-portable-workflow-contra.md) owns the
+proposed mechanics. [Command documentation](../docs/commands.md) describes
+implemented behavior: G-260929-gm3m4 delivered schema 4 and local squash;
+G-260930-0s29t owns the pending workspace/cleanup changes and G-260930-4742q
+the hosted path. Historical ancestry-only mechanisms and kept-branch
+recoveries remain in Git history, not a second definition here.

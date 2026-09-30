@@ -1,7 +1,8 @@
 # Grove brief
 
-Direction reconciled 2026-09-29 (owner's local date), through
-[G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md). This is the single current source of product intent.
+Direction reconciled 2026-09-30 (owner's local date), through
+[G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md) and
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md). This is the single current source of product intent.
 Work records own acceptance, progress and next actions; the
 [record model](../docs/record-model.md) owns the implemented contract.
 Selected direction below includes capabilities still proposed as work.
@@ -132,11 +133,11 @@ once, when it is made, and again only by an audit someone runs. Squash and
 external integration are proved against retained evidence; status, an ID or
 an unproved trailer is insufficient.
 
-Today the CLI still enforces candidate ancestry and writes done on the
-target. The selected redesign requires a deliberate migration; it is not
-implemented behavior. Research/design needs acceptance and delivery evidence
-appropriate to its Git artifact; older done records retain their historical
-meaning without fabricated approval or candidate evidence.
+Schema 4 now implements recorded acceptance, cheap derived completion and
+local squash delivery with retained optional audit evidence. Research/design
+uses an accepted Git artifact; older done records retain their historical
+meaning without fabricated approval or candidate evidence. Missing audit
+objects in a fresh clone do not reopen delivered work.
 
 An explicit standing policy may delegate bounded conflict resolution,
 approval and integration under written conditions
@@ -144,8 +145,26 @@ approval and integration under written conditions
 The accepted option of bounded delegated LLM approval
 ([G-260928-d8py6](G-260928-d8py6-a-standing-policy-may-de.md)) remains.
 Such acts are attributed to policy and evidence; everything outside its
-authority awaits human judgment. Parallel launch and delegated judgment
-remain proposals outside the selected adoption milestone.
+authority awaits human judgment. The owner brought the LLM approval judge
+inside the milestone in G-260930-tcc9w so unattended progression is evaluated
+as part of the product. Parallel launch remains outside it.
+
+A selected set defaults to separate deliveries, with an explicit option to
+deliver together. Separate work is reviewed, approved and delivered before
+dependent work begins from the updated target. Together work shares one
+candidate and delivery, with acceptance judged per member. One authorized
+launch can progress through its selected deliveries under policy and
+aggregate limits without manual relaunch between them. It adds no work or
+authority and pauses when the mandate or a necessary human decision requires.
+
+Each delivery starts in a fresh target-based workspace with external
+prerequisites delivered. Proposal records can be admitted without inheriting
+unmerged implementation. Interrupted work and review fixes resume before
+delivery; afterward the workspace's execution role ends. Repeated delivery
+from an old squashed branch is unsupported. Cleanup is automatic when safe,
+with an option to keep the workspace for inspection and with evidence and
+additional work preserved. Context continuity relies on durable project
+facts rather than a permanent branch or native session.
 
 Interactive and unattended use share the workflow while exposing human
 availability, authority and resource bounds. Unattended shaping publishes
@@ -208,11 +227,15 @@ another adoption test without its own work record at that time.
 The 2026-09-23 preview work on evaluations, Attempts and distribution is
 historical preparation, not evidence of the new milestone's completion.
 
-At main c8fa070ef9ff, inspection showed a Go CLI/TUI, Git-backed records,
+At main 18ba791, inspection showed schema 4, a Go CLI/TUI, Git-backed records,
 shared guides, a Grove-owned Claude attempt runner, candidate-bound judgment,
-local merge integration and deterministic policy sweeps. The portable
-contracts, second execution provider, squash/hosted delivery and assembled
-adoption experience are still proposed work.
+local squash integration, cheap standing, optional delivery audit and
+deterministic policy sweeps. Multi-item runs still deliver together and
+cleanup is opt-in. The new selection/workspace boundaries, automatic
+progression, second provider, LLM judge, hosted path and assembled experience
+remain proposed work. Small local trials belong with the implementing
+boundaries, ahead of their dependent work; a final polished experience is
+not the first test of the architecture.
 
 The predecessor is uninstalled. The archived application at
 grove-archive-2026-09-18, last commit be40e46, remains historical, with no

@@ -4,11 +4,11 @@ type: work
 title: "Prove a complete workflow across harnesses and local delivery"
 status: proposed
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T03:18:03Z"
+updated: "2026-09-30T20:22:06Z"
 kind: feature
 size: large
-depends_on: ["G-260928-y2p5h", "G-260928-n4f1q", "G-260929-gm3m4"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260928-pqhyg", "G-260928-kehya", "G-260930-2qa4a"]
+depends_on: ["G-260928-y2p5h", "G-260928-n4f1q", "G-260929-gm3m4", "G-260930-yfh91"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260928-pqhyg", "G-260928-kehya", "G-260930-2qa4a", "G-260930-tcc9w"]
 ---
 
 ## Outcome
@@ -24,7 +24,9 @@ Owner direction: [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md); m
 
 This work owns the connective implementation for durable continuation and
 the executable end-to-end trial. It consumes provider execution, separate
-review and local delivery rather than implementing them again. Preserve
+review, LLM policy judgment and selection progression rather than implementing
+them again. It is the combined cross-harness proof, not the first trial of
+workspace or sequence behavior. Preserve
 the live mandate, acceptance, answered questions, relevant decisions,
 checkout/revisions, completed work, verification and next action in context
 a fresh supported harness can use.
@@ -47,14 +49,19 @@ write scope. Headless shaping does not execute these trials.
   harnesses and the execution boundary.
 - [G-260928-n4f1q](G-260928-n4f1q-review-a-candidate-as-a.md) supplies
   attributable independent review on the chosen harness.
-- [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) supplies local
-  delivery and verified correspondence for a squashed candidate.
+- [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) supplies the
+  delivered schema, cheap standing, squash delivery and optional audit.
+- [G-260930-yfh91](G-260930-yfh91-continue-an-authorized-s.md) supplies both
+  delivery modes, automatic progression and their exercised recovery. Its
+  prerequisites include workspace lifecycle and the LLM policy judge.
 
 ## Acceptance
 
-1. The assigned scenario reaches a reviewed, accepted, locally delivered
-   change with an auditable link from mandate to candidate to delivered
-   result. Record all interventions, provider/model/effort, effective
+1. Assigned scenarios exercise separate delivery by default and explicit
+   together mode, reaching reviewed, accepted, locally delivered results
+   with retained evidence. At least one selection progresses across separate
+   deliveries under configured LLM policy judgment without a manual relaunch,
+   and one encounters and resumes after necessary human intervention. Record all interventions, provider/model/effort, effective
    limits, reported usage and capability gaps.
 2. Another supported harness continues at a checkpoint without reconstructing
    instructions from the original conversation. Both directions and a
@@ -69,7 +76,10 @@ write scope. Headless shaping does not execute these trials.
    start from both direct Markdown and tool-provided context: after acceptance
    and delivery they inspect the common standing, avoid assuming acceptance
    alone means Done, and do not restart already delivered work. Include a
-   fresh clone and missing-evidence case; record confusion as a failure.
+   fresh clone missing audit objects: ordinary Done remains usable and the
+   optional audit reports unavailable evidence. Exercise automatic cleanup,
+   Keep and refusal to execute again on a squashed branch. Record confusion
+   as a failure; no audit is added to ordinary reading to hide it.
 5. A linked report distinguishes deterministic checks, observed agent
    behavior and owner judgment. It recommends concrete retention,
    refactoring or replacement based on this journey. Any further work

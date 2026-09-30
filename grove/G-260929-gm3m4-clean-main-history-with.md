@@ -4,11 +4,11 @@ type: work
 title: "Deliver accepted work locally with clean history and retained evidence"
 status: accepted
 created: "2026-09-29T16:15:25Z"
-updated: "2026-09-30T19:15:35Z"
+updated: "2026-09-30T20:22:12Z"
 kind: feature
 size: large
 depends_on: ["G-260930-62nmj"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-4742q", "G-260930-r2k4g", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-gj9d7"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-4742q", "G-260930-r2k4g", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-gj9d7", "G-260930-tcc9w"]
 candidate: "b59f3de066bb41c5e97367c0f9b83b5e2a7e9f1d"
 approved: "b59f3de066bb41c5e97367c0f9b83b5e2a7e9f1d"
 approved_by: owner
@@ -246,18 +246,20 @@ work decides, and the latest of several acceptances is delivered
 
 ## Next
 
-Handoff, 2026-09-30: in review, candidate the commit before this handoff on
-branch `worktree-G-260929-gm3m4`, fast-forwarded into `main` at the owner's
-instruction after seven independent reviews
-([G-260930-c0g5p](G-260930-c0g5p-review-of-g-260929-gm3m4.md)); the last
-fix, `e144aa6`, is unreviewed by the owner's choice. Why the work churned:
-[G-260930-4mykk](G-260930-4mykk-churn-review-g-260929-gm3m4.md).
+Accepted by the owner at b59f3de and present on main. Its implementation and
+review evidence above remain historical facts, including the last fix's
+independent-review limit. Do not rerun or silently expand this completed item.
 
-Next: the owner's judgment (`grove approve G-260929-gm3m4 VERDICT` or
-`grove feedback`); acceptance 7's real-agent evaluation; migrating the
-other adopting repositories with `grove migrate`. A small follow-up, if the
-owner wants no refs at all: stop retaining `refs/grove/submitted/`, at the
-cost of the audit proving squash deliveries only while their branches
-exist.
+On 2026-09-30 the owner paused adopter migrations and selected narrower
+delivery boundaries in
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md).
+[G-260930-0s29t](G-260930-0s29t-use-one-fresh-workspace.md) owns workspace
+retirement/cleanup and removal of repeated squashed-branch delivery;
+[G-260930-yfh91](G-260930-yfh91-continue-an-authorized-s.md) owns the two
+selection modes and automatic progression. Cheap standing and retained
+optional audit evidence remain selected. The
+[milestone](G-260930-60c3d-complete-the-portable-gr.md) owns the migration
+hold and remaining journey evidence. The earlier suggestion to drop all
+retained refs is not selected: the owner chose evidence to survive cleanup.
 
 Verdict on candidate b59f3de, 2026-09-30: approved

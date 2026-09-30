@@ -4,11 +4,11 @@ type: work
 title: "Run bounded work through portable Claude and Codex execution"
 status: proposed
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-30T03:17:59Z"
+updated: "2026-09-30T20:22:04Z"
 kind: feature
 size: large
-relates_to: ["G-260928-vdhf0", "G-260928-917h8", "G-260923-tnn5e", "G-260924-59f5k", "G-260925-42j50", "G-260925-04ccr", "G-260925-3pj9a", "G-260925-p2k54", "G-260923-895zb", "G-260928-kehya", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-gwnb1", "G-260930-84fnb", "G-260930-2qa4a"]
-depends_on: ["G-260930-62nmj", "G-260929-gm3m4"]
+relates_to: ["G-260928-vdhf0", "G-260928-917h8", "G-260923-tnn5e", "G-260924-59f5k", "G-260925-42j50", "G-260925-04ccr", "G-260925-3pj9a", "G-260925-p2k54", "G-260923-895zb", "G-260928-kehya", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-gwnb1", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-tcc9w"]
+depends_on: ["G-260930-62nmj", "G-260929-gm3m4", "G-260930-0s29t"]
 ---
 
 ## Outcome
@@ -37,6 +37,10 @@ for the two-provider contract are in scope. A provider's successful exit
 does not claim reviewed or accepted work. Separate review belongs to
 [G-260928-n4f1q](G-260928-n4f1q-review-a-candidate-as-a.md); complete durable
 handoff and the combined trial belong to [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md).
+Selection progression across deliveries belongs to
+[G-260930-yfh91](G-260930-yfh91-continue-an-authorized-s.md); do not build a
+second orchestrator inside either provider. One provider execution serves
+the current delivery group, with common operations owning the next launch.
 
 Provider capabilities are explicit. Unsupported and unreported are distinct
 from zero or success. A time limit is not a dollar cap, and permission modes
@@ -96,13 +100,17 @@ would pre-empt that design and risk redoing the runner.
 Also depends on [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md):
 it replaces the work record contract and the shared standing used by
 internal/attempt selection, facts and resolution, plus context and policy.
-Those callers currently branch on raw status. Refactoring the provider
-boundary against the old lifecycle would duplicate that migration. Consume
-the delivered standing API and keep acceptance/delivery out of provider events.
+That migration is delivered; consume its cheap standing API and keep
+acceptance/delivery out of provider events.
+
+Also depends on [G-260930-0s29t](G-260930-0s29t-use-one-fresh-workspace.md):
+it changes workspace admission and lifetime before this extraction touches
+the same launch/selection code. Repeated execution on an old squashed branch
+is not behavior to preserve; before-delivery continuation remains required.
 
 ## Acceptance
 
-1. Both providers execute a bounded selection in a Grove-owned worktree.
+1. Both providers execute a bounded delivery group in a Grove-owned worktree.
    Dry run and inspection explain provider, model/effort, effective
    permissions and limits, entrypoint compatibility and resume behavior.
    CLI and TUI read the same execution facts.
@@ -125,13 +133,12 @@ the delivered standing API and keep acceptance/delivery out of provider events.
 
 ## Next
 
-Needs the design and local-delivery prerequisites. At assignment, plan
-provider extraction/replacement against their delivered standing and accepted
-assignment/capability contracts, retaining meaningful lifecycle regressions.
-Recheck the dated provider observations before relying on flags or features.
-
-The [contracts design](G-260930-84fnb-portable-workflow-contra.md) specifies
-the accepted boundaries. Completion is selected by
-[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md); the owner accepted
-the full design at f376a6d, recorded in the design prerequisite. No new
-schema or provider API is implemented yet.
+Needs the declared design, delivered local integration and workspace
+prerequisites. Plan extraction against the reconciled
+[contracts](G-260930-84fnb-portable-workflow-contra.md) and
+[G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md). Preserve
+ownership, limits, source safety and pre-delivery continuation; do not retain
+obsolete kept-branch execution merely because a test covers it. The workspace
+prerequisite's local walkthrough must establish its boundary before extraction.
+Recheck dated provider observations before relying on flags or capabilities.
+This remains proposed and unassigned.

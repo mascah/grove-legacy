@@ -2,11 +2,20 @@
 id: "G-260925-wc2pz"
 type: decision
 title: "Review an explicitly selected set of work together, on one shared candidate"
-status: accepted
+status: superseded
 created: "2026-09-25T23:22:15Z"
-updated: "2026-09-25T23:22:27Z"
-relates_to: ["G-260925-7c8g9", "G-260925-80w3a", "G-260925-t70h8", "G-260921-jatts", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e"]
+updated: "2026-09-30T20:22:03Z"
+relates_to: ["G-260925-7c8g9", "G-260925-80w3a", "G-260925-t70h8", "G-260921-jatts", "G-260921-btyck", "G-260921-3qgsf", "G-260923-tnn5e", "G-260930-tcc9w"]
 ---
+
+## Superseded boundary, 2026-09-30
+
+The owner selected both modes, with separate delivery as default and together
+explicit, in [G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md).
+The original decision below explains current assignments and the combined
+mode's provenance; it no longer requires every future selection to share a
+candidate. Existing assignments keep their recorded boundary until completed.
+New behavior is proposed until its implementing work lands.
 
 ## Decision
 

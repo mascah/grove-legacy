@@ -4,10 +4,10 @@ type: work
 title: "Enter and resume interactive work on the selected harness"
 status: proposed
 created: "2026-09-29T03:04:23Z"
-updated: "2026-09-30T01:16:08Z"
+updated: "2026-09-30T20:22:10Z"
 kind: feature
 size: medium
-relates_to: ["G-260928-y50a4", "G-260923-tnn5e", "G-260928-kehya", "G-260928-y2p5h", "G-260919-k7b8j", "G-260921-sth8q", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-r2k4g"]
+relates_to: ["G-260928-y50a4", "G-260923-tnn5e", "G-260928-kehya", "G-260928-y2p5h", "G-260919-k7b8j", "G-260921-sth8q", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-r2k4g", "G-260930-tcc9w"]
 depends_on: ["G-260930-gwnb1"]
 ---
 
@@ -97,7 +97,10 @@ for each supported version.
 ## Dependencies
 
 Depends on [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md): it consumes the exercised durable handoff and
-provider/session boundaries, including safe recovery. This replaces the
+provider/session boundaries, including safe recovery and workspace retirement.
+An old delivered workspace is inspection-only; native resume cannot make it
+an implementation source. New or reopened work uses a fresh target-based
+workspace with durable context, even when its old native session still exists. This replaces the
 earlier assumption that a separate Claude-only session store could be built
 without ordering it against the runner changes.
 

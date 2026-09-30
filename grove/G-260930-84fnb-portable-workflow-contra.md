@@ -3,33 +3,32 @@ id: "G-260930-84fnb"
 type: page
 title: "Portable workflow contracts and refactoring design"
 created: "2026-09-30T01:31:26Z"
-updated: "2026-09-30T16:28:30Z"
-relates_to: ["G-260930-62nmj", "G-260930-npw49", "G-260930-y6fyy", "G-260930-e8jj7", "G-260930-2qa4a", "G-260930-gj9d7"]
+updated: "2026-09-30T20:22:06Z"
+relates_to: ["G-260930-62nmj", "G-260930-npw49", "G-260930-y6fyy", "G-260930-e8jj7", "G-260930-2qa4a", "G-260930-gj9d7", "G-260930-tcc9w"]
 ---
 
 ## Status and ownership
 
-Accepted architecture baseline for
-[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md). On 2026-09-29
-(owner's local date), the owner reviewed this design and the experience
-sketches at commit f376a6dab7a5999560b25adaacb93d919c36e7a8 and said:
-"I've reviewed the designs and I accept them."
+The owner accepted the original written architecture and experience design
+at f376a6d on 2026-09-29 (local date). On 2026-09-30 they reconsidered its
+delivery and execution scope after the local-delivery implementation and
+selected [G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md).
+This revision reconciles those selected boundaries. Preparation, recovery
+and interface details below are proposed implementation design for review;
+the owner's decisions do not claim those details have been implemented.
 
-The [experience design](G-260930-npw49-portable-workflow-experi.md) owns the
-screens; the [brief](brief.md) owns direction. Existing code is observed at
-main 9b5c5a55f355. Acceptance establishes the implementation baseline; it does
-not claim the new behavior is implemented. Field spelling, package names
-and examples remain illustrative where the design says so. The current
-schema 3 contract stays in force until its planned migration is delivered.
+The [brief](brief.md) owns direction, this page owns contracts and component
+responsibilities, and the [experience design](G-260930-npw49-portable-workflow-experi.md)
+owns interaction examples. The [milestone](G-260930-60c3d-complete-the-portable-gr.md)
+owns membership, readiness and trials. Shipped command/model documentation
+describes current behavior until replacement code is delivered.
 
-The owner selected derived completion with a redesigned record contract in
-[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md), resolving
-[G-260930-y6fyy](G-260930-y6fyy-should-completion-be-der.md). The design below
-implements that choice on paper and now has the owner's acceptance.
-Technical field spelling and package layout can be settled in the
-implementing item's plan within these contracts. Descriptions labelled
-proposed below describe intended implementation, subject to the explicit
-trial and reconsideration criteria; they are not unresolved owner gates.
+Observed at main 18ba791: schema 4, recorded acceptance, cheap derived Done,
+local squash delivery and optional audit are implemented. A multi-item run
+still has one shared candidate; cleanup is opt-in; kept branches can be
+delivered again after merging the target. Automatic progression across
+separate deliveries and the LLM judge are not implemented. These are the
+specific gaps to change, not reasons to repeat the lifecycle migration.
 
 ## Approach and alternatives
 
@@ -82,9 +81,11 @@ considered only with concrete implementations and demand.
 An assignment is an explicit mandate bound to the work it authorizes.
 The durable representation records:
 
-- selected work IDs and input revisions, dependency order and available base;
+- selected work IDs and input revisions, dependency order and delivery mode;
+- target/base, group membership, cleanup preference and available inputs;
 - outcome/acceptance context revision and the operation's authority;
-- activity boundary, selected role settings and effective resource limits;
+- activity boundary, selected role settings and aggregate resource limits;
+- permission to continue across deliveries and applicable approval policy;
 - repository/checkout identity and any applicable policy revision;
 - who authorized it and how the operation can safely be retried.
 
@@ -112,6 +113,61 @@ A capability or permission change between preview and launch fails visibly.
 Configuration in an untrusted working branch cannot silently broaden a
 standing target policy. Changing the mandate creates a new attributed
 revision; an agent cannot expand its authority by editing its own record.
+
+### Delivery boundaries and execution base
+
+The assignment chooses one of two modes, visible before launch:
+
+| Mode | Delivery boundary | Progression |
+| --- | --- | --- |
+| Separate (default) | One selected work item per candidate/delivery | Review, approve and deliver it, then start the next ready member from the updated target |
+| Together (explicit) | The selected members share a candidate, judged per member | Implement in dependency order on one workspace and deliver the completed group once |
+
+Both modes use the same work, review, approval and delivery operations.
+There is no arbitrary grouping language, automatic regrouping or splitting
+of unfinished code. Existing assignments keep their recorded shared boundary;
+an older attempt without a mode is not silently reinterpreted as separate.
+Preview makes the changed default explicit for new assignments.
+
+Every new delivery workspace starts from the current configured target.
+Prerequisites outside that delivery group must already be delivered into
+that base. Members of a together group may build on earlier members'
+unmerged changes. Independently managed unmerged implementation branches
+are not execution bases. Read-only inspection of such branches stays usable.
+
+**Proposal admission (proposed mechanism).** Selected records may exist only
+on a shaping branch. Preview names their committed source revisions and the
+bounded set of record/knowledge inputs needed to make them valid. Preparation
+copies those exact snapshots into the fresh target-based workspace, keeping
+IDs and paths and recording source provenance; it never merges the source
+branch or imports its code, configuration, harness instructions or unrelated
+records. Required non-record documents are named and reviewed as assignment
+inputs, not taken through a whole-directory exemption. A differing target
+copy, changed source, unresolved relationship or dependency on excluded code
+requires reconciliation before launch. Uncommitted files remain with their
+current writer. Admission is part of the candidate branch, so it requires no
+separate metadata-only target commit or PR. Checks validate the resulting
+project before any agent spends. Implement and trial this bounded admission
+path rather than solving every possible branch transplant.
+
+**Workspace lifetime.** Before delivery, resume, review fixes and conflict
+resolution reuse the same workspace. After delivery, that workspace is
+retired from execution; repeated delivery from a squashed branch is
+explicitly unsupported. A reopened work item gets a new execution identity
+and workspace from the updated target, retaining its earlier evidence.
+Names must not collide with a kept workspace for the same work ID. A kept
+workspace is inspectable; later edits remain visible and preserved but do
+not make it eligible for another delivery. No special continuation merge
+base or automatic repair of such a branch is required.
+
+Cleanup is automatic unless the assignment says keep. It runs only after
+delivery is observed, required evidence is retained, and no owner can still
+write. Delete only the exact completed branch/worktree when its tip has not
+changed and it contains no additional committed, dirty or untracked work.
+Replaced paths and uncertain ownership are preserved with a reason. Cleanup
+failure never undoes Done or by itself blocks a safe fresh next workspace.
+Receipt/ownership checks run at the mutation boundary, not by adding a
+history walk to ordinary reads.
 
 ## Contract 2: checkpoint and continuation
 
@@ -147,6 +203,41 @@ Cross-provider continuation uses the durable checkpoint, never a foreign
 native session ID. Stable planning and implementation may remain in one
 session; role switches and independent review establish explicit boundaries.
 
+### One authorized selection across deliveries
+
+An on-demand owner advances the finite selected set through implementation,
+independent review, applicable delegated judgment, delivery and cleanup.
+It remains useful without the terminal open; no resident service or reboot
+survival guarantee is added. The owner may invoke existing bounded repair
+operations only under their written authority and limits.
+
+In separate mode, delivery is the boundary that releases dependent work.
+The owner re-reads target and selected inputs before starting the next fresh
+workspace. It does not require another launch from the human when policy
+permits progression. In together mode, every selected member must be complete
+before the combined candidate is deliverable, including members not yet
+started. A blocked member therefore holds the group's delivery; other ready
+members may still execute one at a time. No partial group is delivered and
+unfinished code is never automatically separated. Changing membership needs
+a reconciled owner mandate. In separate mode, a question or failure holds
+its dependent members while other ready selected members may proceed.
+Stop or aggregate resource exhaustion ends further launch for the selection.
+
+Persist the selected mode, inputs, authority, progress and remaining limits
+before crossing process boundaries. Work records and target standing own
+acceptance and delivery; the local operation journal coordinates launches,
+not another work status. Recovery inspects these facts before resuming,
+including target advance just before a crash. It cannot duplicate an owner,
+redo a delivered member or reset the spending allowance. Missing accounting
+or authority waits explicitly. A fresh clone can continue from transferred
+project checkpoints after a fresh execution mandate; private logs never
+silently convey remaining authority or an invented budget.
+
+Unchanged waits and inspection start nothing. A human answer or acceptance
+can be followed by an explicit Continue under the remaining mandate.
+Automatic waking while no owner is running is not promised. Additional work,
+changed grouping or expanded authority requires a new/reconciled mandate.
+
 ## Contract 3: review and approval
 
 A candidate is an exact commit C with the mandate/context used to judge it.
@@ -173,6 +264,19 @@ whole record root from candidate freshness. A changed outcome, acceptance,
 plan constraint, executable file or configuration may require a new candidate
 or renewed judgment. Artifact-only updates must not permit arbitrary code
 or instruction changes to enter under approval of C.
+
+### Delegated approval judgment
+
+The LLM judge is part of this milestone, per G-260930-tcc9w. It is a
+separately configured and bounded policy condition, distinct from both the
+implementer and independent review. It receives the exact candidate,
+acceptance/context, reviews and verification evidence, and returns an
+attributable structured approve/wait verdict with reasons per acceptance
+item. It cannot waive checks, prohibited paths, host policy or an acceptance
+item reserved for the human. A changed input invalidates the judgment.
+Failed, incomplete or malformed judgment waits; it never becomes approval.
+The selection's aggregate limits include these calls. No configured policy
+means the assignment waits for human approval instead of manufacturing it.
 
 ## Contract 4: delivery and transformed identity
 
@@ -206,10 +310,13 @@ Concrete hosted sequence:
    and approval requirements without claiming they are Grove approval.
 3. If the head changes, reconcile it; if the target changes, reverify the
    integration result. Do not silently transfer old approval to new code.
-4. Observe the merged commit D and verify content correspondence. A merge
-   performed by someone else uses the same reconciliation operation.
-5. Report delivered, waiting, rejected, or evidence unavailable. A merged PR
-   label alone is insufficient.
+4. Observe the merged commit D and the configured remote target. Supported
+   delivery verifies the prepared result; another person's merge of that
+   prepared submission uses the same idempotent reconciliation operation.
+5. Report acceptance, delivery standing, remote freshness and verification
+   separately. A merged PR label alone is insufficient. Routine subsequent
+   reading uses the target's accepted record, not a new proof of history;
+   missing audit objects affect audit availability, not Done.
 
 Use the full predicted Git tree for the final verification where possible,
 including the submitted metadata. Special metadata fields need an explicitly
@@ -232,18 +339,15 @@ accepted. Git supplies the observed delivery fact. Done is derived from
 applicable acceptance plus its delivery, without a mandatory done
 commit or follow-up completion PR. Delivery is proved once, when it is
 made, and again only by an audit a person runs; reading does not re-prove
-it. The semantic contract below is proposed
-for implementing that decision; it is not schema 3 syntax.
+it. This boundary is implemented in schema 4 and retained by the owner's
+2026-09-30 decision; execution changes consume it without another migration.
 
-**Persisted facts.** Represent the work's preparation/implementation phase,
-the exact candidate, and acceptance or withdrawal with its authority and
-acceptance-context identity. Accepted is an explicit recorded fact that
-remains true before and after delivery. Awaiting judgment only describes a
-candidate without applicable acceptance. Remove the overloaded persisted
-work status that currently purports to describe the entire lifecycle; do
-not retain status=review on accepted work. Other record types keep their
-own distinct statuses. The implementation plan specifies serialization and
-schema revision, with validation rejecting contradictory combinations.
+**Persisted facts.** Keep schema 4's preparation/implementation phase,
+exact candidate and attributable acceptance/context. Accepted remains true
+before and after delivery; awaiting judgment describes a candidate without
+applicable acceptance. Other record types retain their distinct statuses.
+The shipped record model owns field spelling and validation; this design
+does not create a second schema specification or require another revision.
 
 Acceptance binds the outcome, acceptance criteria and relevant constraints,
 not the hash of a mutable file containing its own acceptance. Supplementary
@@ -252,8 +356,8 @@ Changing candidate or governed requirements withdraws applicability; it
 cannot inherit Done from an old candidate. Historical judgments remain
 inspectable. Explicit abandonment and feedback retain their authority rules.
 
-**Observed facts.** An acceptance reaches the target only through a
-delivery, so the observation is the target tip's own copy of the record, at
+**Observed facts.** Supported operations carry acceptance to the target
+with its delivery. Normal reading trusts the target tip's record, at
 the same path: accepted for the same candidate, or not. It names the target
 and the tip examined. Hosted mode names the configured remote target, not an
 ahead-of-remote local branch called main. The observation is read from Git
@@ -280,9 +384,10 @@ as done. The audit proves each delivery from the retained evidence on
 request; a shallow clone or a missing retained object is reported there as
 not auditable, never as proof.
 
-**One result for all consumers.** A shared read operation returns recorded
-facts, effective standing, target/source revisions,
-freshness, wait reasons and permitted next actions. CLI list/show/context,
+**One result for all consumers.** Shared standing returns recorded facts,
+effective standing and target/source revisions without an audit. Operations
+add their freshness checks, wait reasons and permitted actions; observing
+Done is not a claim that an audit just ran. CLI list/show/context,
 JSON output, board, dependency checks, attempt launch/continue, approval,
 policy sweep, integration and cleanup use it. Raw source remains available
 and clearly labelled; effective state is never substituted into original
@@ -331,8 +436,9 @@ experience item improves presentation without postponing shared correctness.
 
 **Required examples.** Exercise accepted-before-delivery, ordinary and squash
 delivery, an external merge, a crash just after target advance, moved target,
-changed candidate/requirements, feedback after delivery, shared candidates,
-missing evidence, shallow/fresh clones, stale worktrees and policy actions.
+changed candidate/requirements, reopening in a fresh workspace, shared
+candidates, refused reuse of a squashed branch, missing audit evidence,
+shallow/fresh clones, stale worktrees and policy actions.
 Both tool and raw-file entry paths must avoid duplicate work and false Done.
 Research/design work uses an accepted Git artifact candidate delivered to the
 target; its acceptance evidence is judged for that deliverable, not inferred
@@ -340,34 +446,33 @@ from whether code changed. Legacy completion is handled by migration below.
 
 ### Retention, fresh clones and reversals
 
-Pin the candidate and its review/approval evidence under durable Git refs
-before deleting execution branches. Proposed implementation uses ordinary
-evidence branches with a Grove-managed namespace so transport can use
-standard Git; exact names and transfer policy remain design details.
-A local ref alone is not a remote backup and is not automatically available
-to another clone. Publishing evidence is an explicit part of authorized
-hosted delivery; local export/clone instructions must include retained refs.
+Keep the existing one local ref per delivery under refs/grove/submitted/.
+It retains the submitted tip, original candidate and review/approval
+evidence through ordinary garbage collection and cleanup. It is evidence,
+not a live work branch. Normal reading never enumerates it. Authorized
+hosted delivery owns transfer of required evidence; a local ref is not a
+remote backup. Export/fetch instructions name what a deep inspection needs.
 
-Retained evidence refs must be identified as evidence sources, not competing
-live work branches that can resurrect an earlier phase on the combined board.
-Keep them inspectable. Verified delivery correspondence may connect equivalent
-submitted and integrated records; it cannot make the target authoritative over
-a genuine later edit or erase divergent feedback. Test the current view after
-squash, branch cleanup, retained-ref transfer and reopening on another branch.
+A fresh clone reads Done without those refs. Missing or shallow evidence
+is reported as unavailable when someone requests inspection/audit, never as
+a successful proof or as grounds to restart completed work. No silent
+fetch, push or paid operation occurs on inspection. Manual edits that put
+an accepted record on the target can misstate ordinary Done; the owner
+accepted this trust boundary, with checks at supported mutations and an
+optional audit. Do not compensate with a historical verifier on every read.
 
-Retain these refs through ordinary garbage collection. Show missing evidence
-when a user or host removes them; a trailer cannot recreate deleted objects.
-Core inspection reads local objects and never silently fetches or pushes.
+The current view still uses ancestry and exact source observations to
+preserve real later edits and divergence. Retired workspaces and retained
+evidence do not acquire execution authority from that view. Source selection
+and execution eligibility are distinct; do not hide later user edits merely
+because their workspace was delivered.
 
-Delivery is a historical fact at D, with current target reachability checked
-separately. A force-rewritten target that no longer contains D cannot support
-a claim of current delivery. As amended by
-[G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md), done is what
-the target's record says: reverting D reverts the record with the code, so
-the work reads as it did before delivery and can be delivered again, while a
-later code revert that leaves the record does not erase that a delivery
-occurred; link any new corrective work rather than reimplementing it. Arbitrary later
-semantic regression cannot be inferred from a commit message alone.
+Reverting a delivery commit also reverts its accepted record, so standing
+returns to the earlier state. A subsequent execution starts fresh from the
+target; it does not resume the old squashed branch. A later code-only revert
+that keeps the record leaves the historical delivery recorded; corrective
+work is explicit. Arbitrary semantic regression cannot be inferred from a
+message or tracked as a permanent history verification obligation.
 
 ## Contract 5: capabilities and failure semantics
 
@@ -411,71 +516,72 @@ cannot prove.
 
 ## Refactoring map and implementation ownership
 
-| Existing area | Proposed treatment | Work owner |
+| Area/outcome | Treatment | Work owner |
 | --- | --- | --- |
-| internal/repo, create, record parser and revision/write-lock tests | Retain safety behavior; change the work record contract and migration explicitly | Local delivery |
-| internal/versions and deps | Retain batched reads, ancestry and exact-source checks; share delivery relation instead of duplicating ancestry-only completion checks | Local delivery |
-| internal/attempt | Separate provider protocol/session from common process/worktree ownership; replace APIs as needed | Portable execution |
-| internal/handoff and work guide | Preserve staged retrieval; expose truthful recorded and derived standing now, then add structured continuation | Local delivery for standing; complete local proof for continuation |
-| update review operations and review guide | Bind candidate/context, independent findings and approval; allow only controlled later artifacts | Independent review and local delivery under the accepted design |
-| internal/integrate, update completion, sweep | Share prepare/verify/deliver/reconcile; preserve policy authority and failure facts | Local delivery, then hosted delivery through that contract |
-| internal/tui Backend and CLI adapters | Consume common standing/actions as part of the lifecycle change; later rebuild primary views and setup | Local delivery for correctness; cohesive experience for the assembled UX |
-| init and entrypoint templates | Preserve conflict-safe adoption; add capability/settings guidance through shared setup operations | Cohesive experience |
-| evals and regression fixtures | Keep mechanical regressions; add cross-harness continuation and independent-adoption evidence | Complete local proof and milestone |
+| Schema 4 acceptance, cheap standing, local squash, optional audit | Retain the delivered contract and focused regressions; no second migration | G-260929-gm3m4 (delivered) |
+| Execution bases, proposal admission, workspace retirement, cleanup | Narrow to the selected supported paths; remove repeated squash delivery and carried-branch recoveries | G-260930-0s29t |
+| Provider command/events, capabilities, ownership and limits | Extract common operations and exercise Claude and Codex on the narrowed workspace contract | G-260928-y2p5h |
+| Independent review operation | Bind exact candidate and preserve complete/incomplete evidence | G-260928-n4f1q |
+| Delegated acceptance judgment | Add configured, bounded LLM policy condition; move inside the milestone | G-260928-c5j9d |
+| Finite selected sequence, both delivery modes, operation recovery | Coordinate existing operations, authority and remaining limits; expose mode and waits in current CLI/TUI | G-260930-yfh91 |
+| Durable cross-harness checkpoint and assembled local proof | Complete portable handoff and test both modes, human intervention and fresh-clone continuation | G-260930-gwnb1 |
+| Protected hosted delivery | Consume the exercised local contract; keep host waits and audit availability distinct from reading Done | G-260930-4742q |
+| Interactive entry and assembled experience | Consume the exercised operations; native resume stays optional after workspace cleanup | G-260929-04svs and G-260930-r2k4g |
 
-Local delivery also adapts lifecycle callers in internal/attempt, preserving
-the existing Claude execution behavior. Portable execution depends on that
-item because its selection, attempt reporting, resolution and context would
-otherwise be refactored against a disappearing status contract. Independent
-review follows portable execution. These orders are encoded in depends_on;
-no unrecorded parallel assignment is implied. The first implementation
-result remains observable local delivery, not an isolated framework refactor.
+The workspace follow-up depends on delivered local integration; provider
+extraction depends on that follow-up because both affect workspace creation
+and selection. Review uses portable execution; the judge uses its role and
+independent evidence. Sequence progression consumes all of them. The complete
+local proof consumes the sequence before hosted delivery and the assembled
+experience. Work records' depends_on fields own this order.
+
+Each new boundary needs a small demonstrable local journey in its own
+acceptance. Workspace work demonstrates safe delivery/cleanup with the
+existing runner; sequence work demonstrates automatic progression and an
+actual wait before the final hosted/UI work. The complete local trial is
+additional evidence, not the first time anyone sees these mechanisms work.
+If a trial invalidates a contract, reconcile it before its dependents build.
+Do not hand the whole application migration to another catch-all item.
 
 ## Migration and verification
 
-Existing schemas and CLI contracts remain in force during design.
-Implementation must provide an explicit versioned migration if new fields
-or lifecycle semantics require it. Show a dry run, preserve IDs/paths and
-historical evidence, retain a recoverable Git reference, and refuse ambiguous
-conversion. Migration does not require a promise to read every old schema
-forever; old commits remain inspectable with their corresponding CLI.
+Schema 4 is already delivered in this checkout. Preserve IDs, paths,
+existing approval provenance and recoverable history. Current commands and
+old assignments keep their documented meaning until replacement code lands;
+the new default never silently changes an in-progress combined selection.
+New operation metadata needs explicit versioning where its interpretation
+changes, not an assumed project-wide schema bump.
 
-Migration classifies records before writing. Proposed/active/abandoned
-retain their meaning; review without approval becomes awaiting judgment;
-review with valid approval becomes recorded acceptance. Existing done with
-complete applicable approval and delivery evidence can be proved by the audit.
-Older done records without that evidence retain an explicitly labelled
-historical completion claim and the original provenance. Do not invent a
-candidate or acceptance, silently reopen them, or present them as freshly
-verified under the new guarantee. Preserve their existing dependency
-semantics, including branch/base constraints, in a bounded migration case;
-new records cannot create that legacy exemption. Ambiguous data is reported
-for reconciliation rather than guessed.
+Schema 3 migration remains the implemented one-way conversion with a dry
+run and recoverable ref. Older completion claims keep their historical
+meaning, never fabricated candidate evidence. Old snapshots remain readable
+with the binary of their time; mixed-schema branches use deliberate
+reconciliation. The owner has paused adopter migrations while this design
+is reconciled; the milestone owns that hold and its release.
 
-Migration does not rewrite Git history or every old branch. Old snapshots
-remain readable with their matching binary; unsupported mixed-schema live
-branches are refused with a deliberate migration/rebase path. Change the
-schema contract explicitly rather than relabel schema 3 in place. Update
-the repository policy, shipped model/guides, init entrypoint revision where
-needed, filters and CLI/JSON consumers in the same delivering item. The
-current repository policy remains in force until that implementation lands.
-Existing native sessions remain local and optional; a missing session
-cannot invalidate committed work.
+Retain source/revision safety, Git environment isolation, locks, duplicate
+owners, target movement, terminal restoration and policy bounds. Replace
+tests that require repeated delivery from squashed branches or automatic
+carried-work recovery with clear refusal and fresh-workspace cases. Combined
+groups stay supported. Do not weaken candidate, authority or data retention
+checks in order to shorten a review.
 
-Retain meaningful regressions for source replacement, stale writes,
-environment isolation, lock contention, duplicate owners, stop escalation,
-target movement, candidate groups, terminal restoration and policy bounds.
-Reconsider tests that merely freeze Claude argument bytes, a particular
-package layout or ancestry-only completion after the owner accepts the
-replacement contract.
+Use a bounded state table over mode, delivery reached/not reached, owner
+alive/lost, workspace clean/changed, approval applicable/stale and target
+readable/unreadable. Include both crash sides of target advance, safe retry,
+keep, cleanup refusal, aggregate limit accounting, changed proposal inputs,
+LLM wait/failure and missing audit objects. Excluded workflows need a clear
+refusal and preserved work, not a growing catalogue of automatic repairs.
 
-Add behavioral assertions for changed mandate, missing checkpoint, unanswered
-question, fresh-clone continuation, stale approval, altered delivery claims,
-supplemental metadata abuse, cleanup/GC retention and external squash merge.
-Run deterministic tests before bounded real-provider trials, and record
-which conclusions require actual agent behavior or the owner's judgment.
+Tests establish mechanics. Real bounded trials establish agent behavior and
+owner comprehension; configuration, repository scope and paid usage require
+their own assignment. Compare direct Markdown and tool-mediated entry paths,
+including a fresh clone without audit objects. Users must understand Done
+without restarting work or being taught evidence-ref plumbing.
 
-The complete local proof consumes the provider, review and local-delivery
-work under their declared dependencies. Its evidence determines whether
-these boundaries are workable; any substantial redesign is recorded and
-reconciled before dependent work relies on it.
+Reconcile shipped guides, command/model documentation, entrypoint revisions
+where needed and the actual primary controls within each implementing
+item. The later experience item does not own correctness of today's mode
+preview or waits. Review the whole written amendment before assigning new
+implementation; record unresolved product choices rather than burying them
+inside an implementation plan.

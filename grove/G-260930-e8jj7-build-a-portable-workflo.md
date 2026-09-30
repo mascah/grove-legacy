@@ -4,8 +4,8 @@ type: decision
 title: "Build a portable workflow product through selective redesign"
 status: accepted
 created: "2026-09-30T01:05:19Z"
-updated: "2026-09-30T01:16:04Z"
-relates_to: ["G-260930-60c3d", "G-260928-vdhf0", "G-260923-tnn5e", "G-260921-3qgsf", "G-260921-gtydy"]
+updated: "2026-09-30T20:22:10Z"
+relates_to: ["G-260930-60c3d", "G-260928-vdhf0", "G-260923-tnn5e", "G-260921-3qgsf", "G-260921-gtydy", "G-260930-tcc9w"]
 ---
 
 ## Decision
@@ -46,10 +46,12 @@ current product-direction document; that work owns acceptance and progress.
   its present code shape or byte-for-byte command composition is not a
   product requirement. [G-260923-tnn5e](G-260923-tnn5e-run-attempts-as-a-grove.md)'s
   on-demand process ownership remains the starting constraint.
-- Defer investment in parallel launch and delegated approval judgment
-  until the complete loop is demonstrated. Their accepted intent remains.
-  A universal workflow builder, public plugin SDK, new git host, schedules
-  and fleet management are outside this milestone.
+- The original 2026-09-29 decision deferred parallel launch and delegated
+  approval judgment. On 2026-09-30 the owner amended that scope in
+  [G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md): the LLM judge
+  is included so unattended progression is tested in the complete workflow.
+  Parallel launch remains deferred. A universal workflow builder, public
+  plugin SDK, new git host, schedules and fleet management remain outside.
 
 ## Alternatives
 
