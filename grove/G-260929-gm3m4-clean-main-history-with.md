@@ -242,15 +242,16 @@ work decides, and the latest of several acceptances is delivered
 
 ## Next
 
-Checkpoint, 2026-09-30: the owner's redesign is implemented and verified on
-branch `worktree-G-260929-gm3m4` in
-`.claude/worktrees/worktree-G-260929-gm3m4`, base `556f362`; nothing is
-merged or pushed and no command is running. The work stays active.
+Handoff, 2026-09-30: in review, candidate the commit before this handoff on
+branch `worktree-G-260929-gm3m4`, fast-forwarded into `main` at the owner's
+instruction after seven independent reviews
+([G-260930-c0g5p](G-260930-c0g5p-review-of-g-260929-gm3m4.md)); the last
+fix, `e144aa6`, is unreviewed by the owner's choice. Why the work churned:
+[G-260930-4mykk](G-260930-4mykk-churn-review-g-260929-gm3m4.md).
 
-Next: an independent review of the redesign (from `9c9fed2` to the branch
-tip), then the handoff; acceptance 7's real-agent evaluation; and the
-owner's judgment of representative history (`grove integrate ID` in a
-trial target's checkout, then `git log --oneline main`). A small follow-up,
-if the owner wants no refs at all: stop retaining `refs/grove/submitted/`,
-at the cost of the audit proving squash deliveries only while their
-branches exist.
+Next: the owner's judgment (`grove approve G-260929-gm3m4 VERDICT` or
+`grove feedback`); acceptance 7's real-agent evaluation; migrating the
+other adopting repositories with `grove migrate`. A small follow-up, if the
+owner wants no refs at all: stop retaining `refs/grove/submitted/`, at the
+cost of the audit proving squash deliveries only while their branches
+exist.
