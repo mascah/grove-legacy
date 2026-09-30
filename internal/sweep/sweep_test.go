@@ -458,7 +458,7 @@ func TestAnAttemptsOwnerIntegratesItsCandidateInsideThePolicy(t *testing.T) {
 			t.Fatalf("missing %q in sweep.log:\n%s", want, joined)
 		}
 	}
-	if r := record(t, root); r.Status != "done" || !update.Delegated(r) || !strings.Contains(string(r.Source), "attempt "+v.Launch.Attempt+" produced it") {
+	if r := record(t, root); r.Status != "accepted" || !update.Delegated(r) || !strings.Contains(string(r.Source), "attempt "+v.Launch.Attempt+" produced it") {
 		t.Fatalf("record on main:\n%s", r.Source)
 	}
 	if facts := strings.Join(attempt.Facts(v, func(s string) string { return s }), "\n"); !strings.Contains(facts, "Sweep: ") {
@@ -550,7 +550,7 @@ func TestAnAttemptsOwnerLeavesWhatThePolicyDoesNotName(t *testing.T) {
 		if len(v.Sweep) < 2 || !strings.Contains(v.Sweep[0], "waiting for another sweep of this repository to end") || !strings.Contains(v.Sweep[len(v.Sweep)-1], "G-260101-00001: done: ") {
 			t.Fatalf("sweep.log %q", v.Sweep)
 		}
-		if r := record(t, root); r.Status != "done" {
+		if r := record(t, root); r.Status != "accepted" {
 			t.Fatalf("record on main:\n%s", r.Source)
 		}
 	})

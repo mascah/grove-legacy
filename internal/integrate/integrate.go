@@ -11,6 +11,7 @@
 package integrate
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -19,6 +20,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
@@ -78,22 +81,36 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if err != nil {
 		return err
 	}
-	if s := here[req.ID]; s != nil && s.State == standing.Done {
-		if s.Legacy {
-			return fmt.Errorf("%s is done under schema 3 here; there is nothing to deliver", req.ID)
-		}
-		report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
-		from, _, _ := accepted(res, req.ID, p.Target)
-		if !req.Cleanup || from == nil {
-			return nil
-		}
-		return cleanup(root, req.Cwd, strings.TrimPrefix(from.Ref, "refs/heads/"), s.Submitted, worktreeOf(res, from.Ref), report)
-	}
 	from, r, err := accepted(res, req.ID, p.Target)
 	if err != nil {
+		// No branch holds an acceptance to deliver: the target's own
+		// record may say why.
+		switch s := here[req.ID]; {
+		case s != nil && s.State == standing.Done && s.Legacy:
+			return fmt.Errorf("%s is done under schema 3 here; there is nothing to deliver", req.ID)
+		case s != nil && s.State == standing.Done:
+			report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
+			return nil
+		}
 		return err
 	}
 	name, submitted := strings.TrimPrefix(from.Ref, "refs/heads/"), from.Commit
+	// The branch's own acceptance decides, never the target's copy: work
+	// reopened and accepted again on a kept branch is a new delivery.
+	mine, err := standing.Each(ctx, root, p.Target, append(branchRecords(res, from), p.Records...))
+	if err != nil {
+		return err
+	}
+	switch s := mine[r]; s.State {
+	case standing.Done:
+		report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
+		if !req.Cleanup {
+			return nil
+		}
+		return cleanup(root, req.Cwd, name, cmp.Or(s.Submitted, submitted), worktreeOf(res, from.Ref), report)
+	case standing.Unknown:
+		return fmt.Errorf("%s's delivery cannot be decided (%s); nothing was delivered", req.ID, s.Why)
+	}
 	if _, err := repo.Git(root, "merge-base", "--is-ancestor", r.Candidate, submitted); err != nil {
 		return fmt.Errorf("branch %s does not contain candidate %s, which it names; repair the record before integrating", name, r.Candidate)
 	}
@@ -147,6 +164,16 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if req.Expect != "" && before != req.Expect {
 		return fmt.Errorf("%s moved from %s, where the merge was verified, to %s; nothing was delivered and %s stays accepted", p.Target, short(req.Expect), short(before), req.ID)
 	}
+	// A branch kept after an earlier squash delivery merges from what was
+	// delivered, as the verifier checks it.
+	base, err := standing.Base(ctx, root, before, submitted)
+	if err != nil {
+		return err
+	}
+	merge := []string{"merge-tree", "--write-tree", "--no-messages", before, submitted}
+	if base != "" {
+		merge = slices.Insert(merge, 3, "--merge-base="+base)
+	}
 	// A conflict is refused before anything is written (G-260925-h8rj5):
 	// merge-tree performs it in objects only and names the files.
 	ms, err := versions.PredictContext(ctx, root, before, []string{submitted})
@@ -171,11 +198,16 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		return fmt.Errorf("the submitted tip %s could not be retained: %v; nothing was delivered", short(submitted), err)
 	}
 	report("retained: " + standing.Ref(submitted))
-	tree, err := repo.Git(root, "merge-tree", "--write-tree", "--no-messages", before, submitted)
+	tree, err := repo.Git(root, merge...)
 	if err != nil {
 		return fmt.Errorf("the delivery of %s into %s could not be prepared: %v; nothing was delivered", name, p.Target, err)
 	}
-	message, err := Message(root, p.RecordDir, before, r.Candidate, submitted, group, req.Policy)
+	if current, err := repo.Git(root, "rev-parse", before+"^{tree}"); err != nil {
+		return err
+	} else if strings.TrimSpace(current) == strings.TrimSpace(tree) {
+		return fmt.Errorf("%s at %s already holds everything %s would deliver, yet no delivery of %s verifies there; inspect it with grove show %s", p.Target, short(before), name, req.ID, req.ID)
+	}
+	message, err := Message(root, p.RecordDir, cmp.Or(base, before), r.Candidate, submitted, group, req.Policy)
 	if err != nil {
 		return err
 	}
@@ -254,10 +286,8 @@ func Message(root, records, base, candidate, submitted string, group []*project.
 	if breaking {
 		kind += "!"
 	}
-	title := group[0].Title
-	title = strings.ToLower(title[:1]) + title[1:]
 	var b strings.Builder
-	fmt.Fprintf(&b, "%s: %s\n\n", kind, title)
+	fmt.Fprintf(&b, "%s: %s\n\n", kind, subject(group[0].Title))
 	for _, m := range group {
 		fmt.Fprintf(&b, "- %s %s\n", m.ID, m.Title)
 	}
@@ -274,6 +304,16 @@ func Message(root, records, base, candidate, submitted string, group []*project.
 	}
 	fmt.Fprintf(&b, "Grove-Candidate: %s\nGrove-Submitted: %s\n", strings.TrimSpace(full), submitted)
 	return b.String(), nil
+}
+
+// subject is a title as a commit subject: lowercase first, unless its first
+// word is an acronym.
+func subject(title string) string {
+	first, n := utf8.DecodeRuneInString(title)
+	if next, _ := utf8.DecodeRuneInString(title[n:]); n == len(title) || unicode.IsUpper(next) {
+		return title
+	}
+	return string(unicode.ToLower(first)) + title[n:]
 }
 
 // accepted finds the one branch holding the record accepted, its acceptance

@@ -4,6 +4,7 @@ package update
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -134,7 +135,7 @@ func Apply(root string, req Request, now time.Time, fault Fault) (Result, error)
 	if err := unchanged(r, next, changes); err != nil {
 		return Result{}, err
 	}
-	if err := derived(r, next); err != nil {
+	if err := derived(root, p.Target, r, next); err != nil {
 		return Result{}, err
 	}
 	records := slices.Clone(p.Records)
@@ -326,15 +327,27 @@ func plan(r *project.Record, req Request) ([]change, error) {
 // survives only as schema 3's claim, which migration kept. An acceptance
 // context an update writes must be the record's own, so a hand-written
 // acceptance cannot claim other requirements than the ones it sits beside.
-func derived(before, after *project.Record) error {
+func derived(root, target string, before, after *project.Record) error {
 	if after.Type != "work" {
 		return nil
 	}
-	// A done record is schema 3's claim, kept by migration with its
-	// dependency semantics: naming the rewritten copy its target holds stays
-	// a correction of that claim (G-260928-4qv1m), and never makes one.
 	if after.Status == "done" && before.Status != "done" {
 		return errors.New("done is derived in schema 4, from an acceptance and its verified delivery, and no update writes it: grove approve records the acceptance, and grove integrate delivers it")
+	}
+	// A done record is schema 3's claim, kept by migration with its
+	// dependency semantics: naming the rewritten copy its target holds stays
+	// a correction of that claim (G-260928-4qv1m), made where that copy is,
+	// and never invents one.
+	if after.Status == "done" && after.Candidate != before.Candidate {
+		if before.Candidate == "" || after.Candidate == "" {
+			return errors.New("a done record's candidate is schema 3's evidence: it may name the rewritten copy of the one it has, never be added or removed")
+		}
+		if branch, err := Branch(root); err != nil || target == "" || branch != target {
+			return fmt.Errorf("a done record's candidate is corrected on the target %s, which holds the copy; this checkout is on %s", cmp.Or(target, "(none configured)"), cmp.Or(branch, "no branch"))
+		}
+		if on, err := isAncestor(root, after.Candidate, "HEAD"); err != nil || !on {
+			return fmt.Errorf("candidate %s is not in this checkout's HEAD, so it names no copy the target holds", after.Candidate)
+		}
 	}
 	if after.ApprovedContext != "" && after.ApprovedContext != before.ApprovedContext {
 		if want := project.AcceptanceContext(after); after.ApprovedContext != want {

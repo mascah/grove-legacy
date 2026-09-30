@@ -65,9 +65,9 @@ type Sweep struct {
 	Policy       *project.Policy
 	Attribution  string // "policy grove.yaml sha256:…"
 	Items        []Item
-	prefix       string                        // the project's directory in the repository, "" or ending in /
-	records      string                        // the record root, project-relative
-	here         map[string]*standing.Standing // the target's own records' standing
+	prefix       string                                 // the project's directory in the repository, "" or ending in /
+	records      string                                 // the record root, project-relative
+	here         map[*project.Record]*standing.Standing // every record read
 }
 
 // Plan reads every candidate in review on a branch other than the target, or
@@ -103,7 +103,17 @@ func PlanContext(ctx context.Context, root string, only ...string) (*Sweep, erro
 	if err != nil {
 		return nil, err
 	}
-	here, err := standing.Inspect(ctx, p.Root, p.Target, p.Records)
+	// Each candidate's own record decides, never the target's copy, which
+	// may be an earlier acceptance of reopened work.
+	read := slices.Clone(p.Records)
+	for _, g := range res.Groups {
+		for _, v := range g.Versions {
+			if v.Source.Kind == "committed" && v.Record != nil && v.Record.Type == "work" {
+				read = append(read, v.Record)
+			}
+		}
+	}
+	here, err := standing.Each(ctx, p.Root, p.Target, read)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +172,7 @@ func (s *Sweep) plan(ctx context.Context, res *versions.Result, p *project.Proje
 	}
 	// Delivered is what the verifier every consumer reads says, whatever
 	// the branch still holds.
-	if st := s.here[r.ID]; st != nil && st.State == standing.Done {
+	if st := s.here[r]; st != nil && st.State == standing.Done {
 		it.Act, it.Why = Skip, st.Text()
 		return it
 	}
@@ -574,8 +584,21 @@ func (s *Sweep) verify(it Item) error {
 		return err
 	}
 	defer repo.Git(s.Root, "worktree", "remove", "--force", wt)
-	// --no-commit leaves the merged tree in the worktree without an identity.
-	if _, err := repo.Git(wt, "merge", "-q", "--no-commit", "--no-ff", it.tip); err != nil {
+	// The tree integrate would deliver, from the earlier squash delivery the
+	// tip continues if any, checked out without a commit or an identity.
+	args := []string{"merge-tree", "--write-tree", "--no-messages", it.merge.Target, it.tip}
+	base, err := standing.Base(context.Background(), s.Root, it.merge.Target, it.tip)
+	if err != nil {
+		return err
+	}
+	if base != "" {
+		args = slices.Insert(args, 3, "--merge-base="+base)
+	}
+	tree, err := repo.Git(s.Root, args...)
+	if err != nil {
+		return fmt.Errorf("the merge failed: %v", err)
+	}
+	if _, err := repo.Git(wt, "read-tree", "-u", "--reset", strings.TrimSpace(tree)); err != nil {
 		return fmt.Errorf("the merge failed: %v", err)
 	}
 	drop := append([]string{}, repo.GitLocation...)

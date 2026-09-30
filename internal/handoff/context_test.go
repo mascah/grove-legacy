@@ -580,7 +580,11 @@ func TestTextPrintsEveryFact(t *testing.T) {
 	}
 	for _, r := range b.Records {
 		state := map[bool]string{false: "listed", true: "included"}[r.Included]
-		want = append(want, "  "+strings.Join([]string{r.ID, r.Type, r.Status, state, strings.Join(r.Roles, "; ")}, "  ")+"\n", strconv.Quote(r.Title))
+		status := r.Status
+		if status == "done" {
+			status = "done (schema 3 claim)"
+		}
+		want = append(want, "  "+strings.Join([]string{r.ID, r.Type, status, state, strings.Join(r.Roles, "; ")}, "  ")+"\n", strconv.Quote(r.Title))
 		if !sources[r.Path] { // an included record's path and revision are on its source line
 			want = append(want, "  "+r.Path+"  "+r.Revision+"\n")
 		}

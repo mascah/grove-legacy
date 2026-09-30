@@ -206,7 +206,8 @@ func readFile(t *testing.T, root, name string) string {
 
 // TestStandingRejectsForgedDeliveries covers claims the trailers make and Git
 // does not support: a tree that is not the merge, code after the candidate,
-// a record not accepted there, and a submitted tip that is not here.
+// a record not accepted there, and a submitted tip that is not here. Each is
+// unknown, never done.
 func TestStandingRejectsForgedDeliveries(t *testing.T) {
 	t.Parallel()
 	root := fixture(t)
@@ -236,7 +237,9 @@ func TestStandingRejectsForgedDeliveries(t *testing.T) {
 		git(t, root, "reset", "-q", "--hard", "main")
 		// The live record claims the acceptance, as a copied file would.
 		write(t, root, "grove/G-260101-00001.md", git(t, root, "show", good+":grove/G-260101-00001.md")+"\n")
-		if s := inspect(t, root)["G-260101-00001"]; s.State != Accepted || !strings.Contains(s.Why, tc.want) {
+		// Not done, and not proof of none either: unknown, so nothing
+		// delivers it again before someone reconciles the claim.
+		if s := inspect(t, root)["G-260101-00001"]; s.State != Unknown || !strings.Contains(s.Why, tc.want) {
 			t.Errorf("%s: %+v", name, s)
 		}
 		git(t, root, "update-ref", "refs/heads/main", base)
@@ -248,5 +251,46 @@ func TestStandingRejectsForgedDeliveries(t *testing.T) {
 	write(t, root, "grove/G-260101-00001.md", git(t, root, "show", good+":grove/G-260101-00001.md")+"\n")
 	if s := inspect(t, root)["G-260101-00001"]; s.State != Unknown || !strings.Contains(s.Why, "fetch refs/grove/*") {
 		t.Errorf("missing submitted tip: %+v", s)
+	}
+}
+
+// TestStandingGroupAndTransport covers a group whose member is later
+// reopened and given another candidate, which leaves its sibling done, and
+// the transport: a clone without the retained evidence reads unknown until
+// it fetches refs/grove/*.
+func TestStandingGroupAndTransport(t *testing.T) {
+	t.Parallel()
+	root := fixture(t)
+	write(t, root, "grove/G-260101-00003.md", work("G-260101-00003", "active", ""))
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "second")
+	git(t, root, "checkout", "-q", "-b", "work")
+	write(t, root, "code.txt", "both\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "feat: both")
+	c := git(t, root, "rev-parse", "HEAD")
+	accept(t, root, "G-260101-00001", c)
+	accept(t, root, "G-260101-00003", c)
+	sub := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "main")
+	d := squash(t, root, sub, "Grove-Work: G-260101-00001\nGrove-Work: G-260101-00003\nGrove-Candidate: "+c+"\nGrove-Submitted: "+sub)
+	git(t, root, "reset", "-q", "--hard", "main")
+	git(t, root, "update-ref", Ref(sub), sub)
+	git(t, root, "branch", "-D", "work")
+	// The first member is reopened with another candidate.
+	write(t, root, "grove/G-260101-00001.md", work("G-260101-00001", "review", "candidate: \""+d+"\"\n"))
+	git(t, root, "commit", "-qam", "reopen first")
+	st := inspect(t, root)
+	if s := st["G-260101-00003"]; s.State != Done || s.Delivered != d {
+		t.Fatalf("the sibling of a reopened member: %+v", s)
+	}
+	clone := filepath.Join(t.TempDir(), "clone")
+	git(t, root, "clone", "-q", "--no-local", root, clone)
+	if s := inspect(t, clone)["G-260101-00003"]; s.State != Unknown || !strings.Contains(s.Why, "refs/grove") {
+		t.Fatalf("a clone without the evidence: %+v", s)
+	}
+	git(t, clone, "fetch", "-q", "origin", "refs/grove/*:refs/grove/*")
+	if s := inspect(t, clone)["G-260101-00003"]; s.State != Done || s.Delivered != d {
+		t.Fatalf("after fetching refs/grove/*: %+v", s)
 	}
 }

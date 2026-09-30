@@ -44,7 +44,10 @@ func Text(b *Bundle) []byte {
 			}
 		}
 		status := cmp.Or(r.Status, "-")
-		if r.Standing != "" && r.Standing != r.Status && r.Status != "done" {
+		switch {
+		case r.Type == "work" && r.Status == "done":
+			status = "done (schema 3 claim)"
+		case r.Standing != "" && r.Standing != r.Status:
 			status += " (" + r.Standing + ")"
 		}
 		line("  %s", inert(strings.Join([]string{r.ID, r.Type, status, state, strings.Join(r.Roles, "; ")}, "  "), false))

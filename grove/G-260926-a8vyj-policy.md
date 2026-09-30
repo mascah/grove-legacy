@@ -28,4 +28,6 @@ A delegated [approval](G-260921-btyck-approval.md) is approval by someone the ow
 delegated to, which that term already allows. A [review](G-260921-rz7bn-review.md)
 stays evidence: the policy reads its closing line, `Open findings: none`,
 and the review gives no verdict. [Integration](G-260921-3qgsf-integration.md) under
-a policy is the ordinary merge and `done`, preceded by the verification.
+a policy is the ordinary squash delivery, preceded by the verification, and
+the acceptance it records names the policy's revision as its authority
+(schema 4, [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md)).

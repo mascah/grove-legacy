@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 	"path"
 	"regexp"
 	"strings"
@@ -195,12 +196,13 @@ func Each(ctx context.Context, root, target string, records []*project.Record) (
 			}
 		}
 	}
-	if err := verify(ctx, root, prefix, records, pending); err != nil {
+	if err := verify(ctx, root, prefix, records, pending, &bases{claims: claims}); err != nil {
 		return nil, err
 	}
-	// A record is done by any verified claim; otherwise a claim whose
-	// submitted tip is missing leaves it unknown, and claims that all fail
-	// are no delivery at all.
+	// A record is done by any verified claim; otherwise a claim that is
+	// missing its submitted tip, or that fails, leaves it unknown: the claim
+	// is not a delivery, but nor is its failure proof of none, so nothing
+	// may deliver it again until someone reconciles it.
 	for _, r := range open {
 		s := out[r]
 		var missing, failed string
@@ -220,8 +222,7 @@ func Each(ctx context.Context, root, target string, records []*project.Record) (
 		case missing != "":
 			s.Why = missing
 		default:
-			absent(s, complete)
-			s.Why = strings.TrimPrefix(s.Why+"; "+failed, "; ")
+			s.Why = "a delivery claim on " + s.Target + " names this candidate but does not verify: " + failed + "; reconcile it before delivering again"
 		}
 	}
 	return out, nil
@@ -289,11 +290,11 @@ func deliveries(ctx context.Context, root, tip string) ([]delivery, error) {
 }
 
 // verify decides each claimed delivery from Git objects: the submitted tip
-// is present; the candidate is its ancestor; only the group's records change
+// is present; the candidate is its ancestor; only records change
 // between them; the record there is accepted for the candidate; and the
 // claimed commit's first parent merged with the submitted tip gives exactly
 // the claimed commit's tree.
-func verify(ctx context.Context, root, prefix string, records []*project.Record, checks []*check) error {
+func verify(ctx context.Context, root, prefix string, records []*project.Record, checks []*check, earlier *bases) error {
 	if len(checks) == 0 {
 		return nil
 	}
@@ -352,11 +353,12 @@ func verify(ctx context.Context, root, prefix string, records []*project.Record,
 		if c.why != "" {
 			continue
 		}
+		// Records may change after the candidate, the group's handoff and
+		// acceptance among them; what the records say later cannot matter,
+		// so any record read counts, never only those naming it now.
 		allowed := map[string]bool{}
 		for _, o := range records {
-			if o.Type == "work" && sameCommit(o.Candidate, c.candidate) {
-				allowed[path.Join(prefix, o.Path)] = true
-			}
+			allowed[path.Join(prefix, o.Path)] = true
 		}
 		for _, f := range changed[i] {
 			if !allowed[f] {
@@ -372,12 +374,105 @@ func verify(ctx context.Context, root, prefix string, records []*project.Record,
 			continue
 		}
 		if trees[i] != c.delivery.tree {
-			c.why = "delivery " + short(c.delivery.commit) + " is not what merging " + short(c.delivery.submitted) + " into its parent gives"
-			continue
+			ok, err := earlier.rebased(ctx, root, c.delivery)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				c.why = "delivery " + short(c.delivery.commit) + " is not what merging " + short(c.delivery.submitted) + " into its parent gives"
+				continue
+			}
 		}
 		c.ok = true
 	}
 	return nil
+}
+
+// Base is the submitted tip of the newest squash delivery reachable from
+// tip that submitted contains and whose tree verifies, or "": a branch kept
+// after a squash delivery continues from what was delivered, so its next
+// submission merges from there, not from where it first left the target.
+func Base(ctx context.Context, root, tip, submitted string) (string, error) {
+	claims, err := deliveries(ctx, root, tip)
+	if err != nil {
+		return "", err
+	}
+	return (&bases{claims: claims}).of(ctx, root, tip, submitted)
+}
+
+// bases finds and checks the earlier deliveries a later one merged from.
+type bases struct {
+	claims   []delivery
+	verified map[string]bool // by delivery commit: its tree is its merge
+}
+
+// of is the newest claim that parent contains, whose submitted tip
+// submitted contains, and whose tree verifies.
+// ponytail: two ancestry checks per earlier claim, newest first, until one
+// holds; bounded by the deliveries on the target, and only reached for a
+// submission that continues after an earlier squash.
+func (b *bases) of(ctx context.Context, root, parent, submitted string) (string, error) {
+	for _, d := range b.claims {
+		if d.submitted == submitted {
+			continue
+		}
+		if on, err := ancestor(ctx, root, d.commit, parent); err != nil || !on {
+			continue
+		}
+		if on, err := ancestor(ctx, root, d.submitted, submitted); err != nil || !on {
+			continue
+		}
+		ok, err := b.tree(ctx, root, d)
+		if err != nil {
+			return "", err
+		}
+		if ok {
+			return d.submitted, nil
+		}
+	}
+	return "", nil
+}
+
+// tree reports whether d's tree is its submitted tip merged onto its
+// parent, from where they split or from the delivery it continued.
+func (b *bases) tree(ctx context.Context, root string, d delivery) (bool, error) {
+	if ok, seen := b.verified[d.commit]; seen {
+		return ok, nil
+	}
+	if b.verified == nil {
+		b.verified = map[string]bool{}
+	}
+	b.verified[d.commit] = false // a cycle proves nothing
+	trees, err := mergeTrees(ctx, root, 1, []byte(d.parent+" "+d.submitted+"\n"))
+	if err != nil {
+		return false, err
+	}
+	ok := trees[0] == d.tree
+	if !ok {
+		ok, err = b.rebased(ctx, root, d)
+	}
+	b.verified[d.commit] = ok
+	return ok, err
+}
+
+// rebased reports whether d's tree is its submitted tip merged onto its
+// parent from the earlier delivery it continues.
+func (b *bases) rebased(ctx context.Context, root string, d delivery) (bool, error) {
+	base, err := b.of(ctx, root, d.parent, d.submitted)
+	if err != nil || base == "" {
+		return false, err
+	}
+	trees, err := mergeTrees(ctx, root, 1, []byte(base+" -- "+d.parent+" "+d.submitted+"\n"))
+	return err == nil && trees[0] == d.tree, err
+}
+
+func ancestor(ctx context.Context, root, commit, of string) (bool, error) {
+	_, err := repo.GitContext(ctx, root, "merge-base", "--is-ancestor", commit, of)
+	var exit *exec.ExitError
+	if errors.As(err, &exit) && exit.ExitCode() == 1 {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 // resolve maps each name to its full commit, or "" when the object is not
@@ -408,7 +503,7 @@ func resolve(ctx context.Context, root string, names []string) (map[string]strin
 // to its submitted tip, in one git diff-tree. Each group starts with the
 // submitted tip's own ID, which is how the groups are told apart.
 func diffTree(ctx context.Context, root string, checks []*check, in []byte) ([][]string, error) {
-	out, err := run(ctx, root, in, "diff-tree", "--stdin", "-r", "--name-only", "-z")
+	out, err := run(ctx, root, in, "diff-tree", "--stdin", "--always", "-r", "--name-only", "-z")
 	if err != nil {
 		return nil, err
 	}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/versions"
 )
 
@@ -90,7 +91,14 @@ func Feedback(root, id, text string, now time.Time) (Result, error) {
 		}
 	}
 	if err := holdsCandidate(root, r, nil); err != nil {
-		return Result{}, err
+		// A squash delivery never puts the candidate in the target, so
+		// delivered work reopens where its delivery is.
+		if !deliveredHere(root, p, r) {
+			return Result{}, err
+		}
+		if err := clean(root, r); err != nil {
+			return Result{}, err
+		}
 	}
 	reopen := func(o *project.Record, line string) (Result, error) {
 		req := Request{ID: o.ID, Expect: project.Revision(o.Source), Commit: true, Set: []Field{{"status", "active"}}, Append: line}
@@ -191,6 +199,19 @@ func holdsCandidate(root string, r *project.Record, group []*project.Record) err
 		return fmt.Errorf("commits after candidate %s change %s: the tip %s is a new candidate; set candidate=%s, review it, then judge that", short(r.Candidate), strings.Join(others, ", "), short(tip), short(tip))
 	}
 	return nil
+}
+
+// deliveredHere reports accepted work whose verified delivery HEAD holds.
+func deliveredHere(root string, p *project.Project, r *project.Record) bool {
+	if r.Status != "accepted" {
+		return false
+	}
+	st, err := standing.Each(context.Background(), root, p.Target, p.Records)
+	if err != nil || st[r].State != standing.Done || st[r].Legacy {
+		return false
+	}
+	on, err := isAncestor(root, st[r].Delivered, "HEAD")
+	return err == nil && on
 }
 
 // clean refuses a record whose file differs from HEAD in this checkout.

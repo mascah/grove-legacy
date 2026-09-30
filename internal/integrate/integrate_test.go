@@ -353,3 +353,66 @@ func TestMessageTypes(t *testing.T) {
 		t.Fatalf("%v\n%s", err, m)
 	}
 }
+
+// TestIntegrateDeliversReopenedWorkAgain: the branch's own acceptance
+// decides, so work reopened and accepted again on a kept branch is a second
+// delivery, never "already done" from the target's earlier copy; feedback
+// after a squash runs on the target, which never holds the candidate; and a
+// delivery claim that no longer verifies is refused, never delivered twice.
+func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
+	t.Parallel()
+	root, wt, _ := fixture(t, true)
+	if _, err := run(t, root, root, false); err != nil {
+		t.Fatal(err)
+	}
+	d1 := tipOf(t, root, "main")
+	if _, err := update.Feedback(wt, "G-260101-00001", "More.", now); err != nil {
+		t.Fatal(err)
+	}
+	write(t, wt, "code.txt", "the change, more\n")
+	git(t, wt, "commit", "-qam", "fix: more")
+	c2 := git(t, wt, "rev-parse", "HEAD")
+	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c2}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.Approve(wt, "G-260101-00001", "Now.", update.Owner, now); err != nil {
+		t.Fatal(err)
+	}
+	facts, err := run(t, root, root, false)
+	if err != nil || !strings.HasPrefix(facts[len(facts)-1], "done: G-260101-00001 is done: squashed as ") || git(t, root, "show", "main:code.txt") != "the change, more" {
+		t.Fatalf("the second acceptance: %v %q", err, facts)
+	}
+	if git(t, root, "rev-parse", "main^") != d1 || !strings.HasPrefix(git(t, root, "log", "-1", "--format=%s", "main"), "fix: first") {
+		t.Fatal("the second delivery is one commit on the first")
+	}
+	// Feedback on the target after the squash reopens the work there.
+	if _, err := update.Feedback(root, "G-260101-00001", "Once more.", now); err != nil {
+		t.Fatalf("feedback after delivery: %v", err)
+	}
+	if r := record(t, root); r.Status != "active" || r.Approved != "" {
+		t.Fatalf("reopened: %+v", r)
+	}
+}
+
+// TestIntegrateRefusesAnAlteredDelivery: once a delivery claim stops
+// verifying, as after an amend, the work's delivery is unknown and nothing
+// is delivered again.
+func TestIntegrateRefusesAnAlteredDelivery(t *testing.T) {
+	t.Parallel()
+	root, _, _ := fixture(t, true)
+	if _, err := run(t, root, root, false); err != nil {
+		t.Fatal(err)
+	}
+	write(t, root, "extra.txt", "amended in\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-q", "--amend", "--no-edit")
+	refused(t, root, false, "delivery cannot be decided (a delivery claim on main names this candidate but does not verify")
+}
+
+func TestSubject(t *testing.T) {
+	for title, want := range map[string]string{"First": "first", "README drift": "README drift", "Élargir le widget": "élargir le widget", "X": "X", "": ""} {
+		if got := subject(title); got != want {
+			t.Errorf("subject(%q) = %q, want %q", title, got, want)
+		}
+	}
+}

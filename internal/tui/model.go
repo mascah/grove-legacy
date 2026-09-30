@@ -370,7 +370,7 @@ func (m *Model) inspect() tea.Cmd {
 			var records []*project.Record
 			for _, g := range res.Groups {
 				for _, v := range g.Versions {
-					if v.Record != nil && v.Record.Status == "accepted" {
+					if v.Record != nil && v.Record.Type == "work" { // every record, since any may change after a candidate
 						records = append(records, v.Record)
 					}
 				}

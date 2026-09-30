@@ -18,8 +18,9 @@ changed behavior, decisions, open issues, and checks before any diff.
 
 A review is evidence, never a verdict by itself: it is not
 [approval](G-260921-btyck-approval.md), and a self-check is not an independent review.
-The word also names the work status between active and done, in which a
-candidate awaits human judgment; say "review record" or "Review status" when
+The word also names the work status between active and accepted, in which a
+candidate awaits human judgment, and the standing of accepted work whose
+acceptance no longer applies; say "review record" or "Review status" when
 the difference matters.
 
 ## Relationships

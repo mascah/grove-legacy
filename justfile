@@ -21,15 +21,19 @@ clean-merged:
     #!/usr/bin/env bash
     # Safe by construction: `git worktree remove` without --force refuses a worktree with
     # changes or untracked files, and `git branch -d` refuses a branch that is not merged.
-    # A branch grove integrate squashed counts as merged only while its tip is the
-    # retained submission a commit on main names, and is deleted only at that tip.
+    # A branch grove integrate squashed counts as merged only while its tip is a
+    # retained submission and a commit on main is exactly that tip merged onto its
+    # one parent, as grove's verifier checks; it is deleted only at that tip. A
+    # delivery that continued an earlier one is left to `grove integrate --cleanup`.
     set -euo pipefail
     git worktree prune
     current=$(git branch --show-current)
     squashed() {
-        local tip; tip=$(git rev-parse "refs/heads/$1")
-        git rev-parse -q --verify "refs/grove/submitted/$tip" >/dev/null \
-            && [ -n "$(git log main -1 --format=%H --fixed-strings --grep="Grove-Submitted: $tip")" ]
+        local tip d; tip=$(git rev-parse "refs/heads/$1")
+        git rev-parse -q --verify "refs/grove/submitted/$tip" >/dev/null || return 1
+        d=$(git log main -1 --format=%H --fixed-strings --grep="Grove-Submitted: $tip")
+        [ -n "$d" ] && [ "$(git rev-list --no-walk --count "$d^@")" = 1 ] \
+            && [ "$(git merge-tree --write-tree "$d^" "$tip" 2>/dev/null)" = "$(git rev-parse "$d^{tree}")" ]
     }
     branches=$( { git for-each-ref --format='%(refname:short)' --merged main refs/heads
         for b in $(git for-each-ref --format='%(refname:short)' --no-merged main refs/heads); do

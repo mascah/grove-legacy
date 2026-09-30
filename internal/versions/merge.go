@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"os/exec"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/mascah/grove/internal/repo"
+	delivery "github.com/mascah/grove/internal/standing"
 )
 
 // Merge predicts what merging a commit into the target would do now (G-260925-h8rj5),
@@ -120,6 +122,14 @@ func resolveCommits(ctx context.Context, root string, names ...string) (prefix s
 // files from root, whose prefix in the repository turns them into paths
 // from its top.
 func predict(ctx context.Context, root, prefix, ours, base, commit string) (m Merge, tree string, err error) {
+	return merge(ctx, root, prefix, ours, base, commit, "")
+}
+
+// merge is predict from a given merge base, or Git's own when from is "". A
+// conflict from Git's base is asked again from the earlier squash delivery
+// the commit continues, if any, as integrate delivers it and the verifier
+// checks it; a merge that is clean only from Git's base needs no more.
+func merge(ctx context.Context, root, prefix, ours, base, commit, from string) (m Merge, tree string, err error) {
 	m = Merge{Commit: commit, Conflicts: []string{}}
 	switch base {
 	case commit:
@@ -131,7 +141,11 @@ func predict(ctx context.Context, root, prefix, ours, base, commit string) (m Me
 	}
 	// Exit 1 is Git's answer, a conflict, with the files on stdout, which
 	// GitContext drops on failure.
-	cmd := repo.Command(ctx, root, "merge-tree", "--write-tree", "--name-only", "--no-messages", "-z", ours, commit)
+	args := []string{"merge-tree", "--write-tree", "--name-only", "--no-messages", "-z", ours, commit}
+	if from != "" {
+		args = slices.Insert(args, 5, "--merge-base="+from)
+	}
+	cmd := repo.Command(ctx, root, args...)
 	cmd.WaitDelay = repo.WaitDelay(ctx)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -145,6 +159,15 @@ func predict(ctx context.Context, root, prefix, ours, base, commit string) (m Me
 		return m, "", fmt.Errorf("git merge-tree: %s", cmp.Or(strings.TrimSpace(stderr.String()), err.Error()))
 	}
 	fields := strings.Split(strings.TrimSuffix(string(out), "\x00"), "\x00")
+	if conflict && from == "" {
+		delivered, err := delivery.Base(ctx, root, ours, commit)
+		if err != nil {
+			return m, "", err
+		}
+		if delivered != "" {
+			return merge(ctx, root, prefix, ours, base, commit, delivered)
+		}
+	}
 	if conflict {
 		m.Outcome = "conflict"
 		for _, f := range fields[1:] {

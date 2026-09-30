@@ -57,7 +57,9 @@ command, and `--help` needs no project.
 the body's last paragraph. Authority is who ran the command, never what the
 verdict says. `feedback ID TEXT` appends `Feedback on candidate X,
 DATE: TEXT`, and each other member of the group it reopens gets `Reopened
-with ID's feedback on candidate X, DATE`; nothing earlier is removed.
+with ID's feedback on candidate X, DATE`; nothing earlier is removed. It
+runs in a checkout holding the candidate, or, for work already delivered,
+in one holding the delivery, such as the target's after a squash.
 `resolve ID` is that feedback, generated, naming the target commit and the
 conflicting files.
 
@@ -103,9 +105,12 @@ paragraphs changed), `accepted` (applicable, not delivered), `done`,
 configured target contains its candidate, or contains a commit whose
 trailers name it and the retained submission, whose parent is on the
 target, and whose tree is exactly the submission merged onto that parent.
-A delivery commit that is forged or altered is not done, and one whose
-submitted tip this repository lacks is unknown; nor is one the target no longer contains after a
-rewrite, while a later revert does not undo it. Every consumer reads this
+A delivery commit that is forged or altered, or whose submitted tip this
+repository lacks, leaves the work unknown, never done, so nothing delivers
+it again until someone reconciles it. A delivery the target no longer
+contains after a rewrite is not done; a later revert does not undo one. A
+branch kept after a squash delivery continues from it: its next submission
+is merged, predicted and verified from the earlier submitted tip. Every consumer reads this
 one verifier: `list`, `show`, `deps`, `context`, `run`, the sweep and the
 board. A `done` record is schema 3's claim, kept by migration and labelled
 so, never as verified.

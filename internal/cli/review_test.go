@@ -144,7 +144,17 @@ func TestIntegrateCommand(t *testing.T) {
 	if code != 0 || out != want {
 		t.Fatalf("code=%d stderr=%s\nout:\n%s\nwant:\n%s", code, stderr, out, want)
 	}
-	if src := showJSON(t, root, "G-260101-00001")["source"].(string); !strings.Contains(src, "status: accepted\n") || !strings.Contains(src, "approved: \""+candidate+"\"\n") {
+	// The two entry paths agree: a reader of the raw file sees an acceptance
+	// with its authority, never a stored done; the tools add the verified
+	// delivery beside it.
+	shown := showJSON(t, root, "G-260101-00001")
+	if src := shown["source"].(string); !strings.Contains(src, "status: accepted\n") || !strings.Contains(src, "approved: \""+candidate+"\"\n") || !strings.Contains(src, "approved_by: owner\n") {
 		t.Fatalf("record on main:\n%s", src)
+	}
+	if st, _ := shown["standing"].(map[string]any); st["state"] != "done" || st["delivered"] != head {
+		t.Fatalf("standing: %v", shown["standing"])
+	}
+	if _, out, _ := run("list"); !strings.Contains(out, "G-260101-00001  work      accepted  done      ") {
+		t.Fatalf("list:\n%s", out)
 	}
 }
