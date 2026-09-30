@@ -82,9 +82,9 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		return err
 	}
 	from, r, err := accepted(res, req.ID, p.Target)
-	if err != nil {
-		// No branch holds an acceptance to deliver: the target's own
-		// record may say why.
+	if errors.As(err, new(noBranch)) {
+		// No branch holds the work at all: the target's own record may
+		// say why.
 		switch s := here[req.ID]; {
 		case s != nil && s.State == standing.Done && s.Legacy:
 			return fmt.Errorf("%s is done under schema 3 here; there is nothing to deliver", req.ID)
@@ -92,6 +92,8 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 			report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
 			return nil
 		}
+	}
+	if err != nil {
 		return err
 	}
 	name, submitted := strings.TrimPrefix(from.Ref, "refs/heads/"), from.Commit
@@ -109,7 +111,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		}
 		return cleanup(root, req.Cwd, name, cmp.Or(s.Submitted, submitted), worktreeOf(res, from.Ref), report)
 	case standing.Unknown:
-		return fmt.Errorf("%s's delivery cannot be decided (%s); nothing was delivered", req.ID, s.Why)
+		return fmt.Errorf("%s's delivery cannot be decided (%s); nothing was delivered. Fetch refs/grove/* where a submitted tip is missing; otherwise grove feedback %s reopens it for a candidate %s contains or a new one", req.ID, s.Why, req.ID, p.Target)
 	}
 	if _, err := repo.Git(root, "merge-base", "--is-ancestor", r.Candidate, submitted); err != nil {
 		return fmt.Errorf("branch %s does not contain candidate %s, which it names; repair the record before integrating", name, r.Candidate)
@@ -205,7 +207,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if current, err := repo.Git(root, "rev-parse", before+"^{tree}"); err != nil {
 		return err
 	} else if strings.TrimSpace(current) == strings.TrimSpace(tree) {
-		return fmt.Errorf("%s at %s already holds everything %s would deliver, yet no delivery of %s verifies there; inspect it with grove show %s", p.Target, short(before), name, req.ID, req.ID)
+		return fmt.Errorf("%s at %s already holds everything %s would deliver, yet no delivery of %s verifies there: it arrived some other way. Nothing was delivered; to reconcile, grove feedback %s reopens it, and a candidate %s contains, handed off and accepted, is done by ancestry", p.Target, short(before), name, req.ID, req.ID, p.Target)
 	}
 	message, err := Message(root, p.RecordDir, cmp.Or(base, before), r.Candidate, submitted, group, req.Policy)
 	if err != nil {
@@ -356,7 +358,15 @@ func accepted(res *versions.Result, id, target string) (*versions.Source, *proje
 		}
 		return nil, nil, fmt.Errorf("%s is in review on %s but not accepted, or its acceptance no longer applies: run grove approve %s VERDICT in %s first", id, names(judged), id, where)
 	}
-	return nil, nil, fmt.Errorf("no branch holds %s accepted; nothing to integrate", id)
+	return nil, nil, noBranch(id)
+}
+
+// noBranch is accepted's answer when no branch holds the work in review or
+// accepted.
+type noBranch string
+
+func (id noBranch) Error() string {
+	return "no branch holds " + string(id) + " accepted; nothing to integrate"
 }
 
 // branchRecords is every record the committed source holds.

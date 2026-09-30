@@ -71,8 +71,10 @@ anything changes: a branch lacking the candidate, a later commit changing
 more than the records, a shared candidate whose members are not all
 accepted, a squash that would carry the candidate of other unfinished work
 on the branch, such as a member reopened by feedback and not handed off
-again, and a conflict, which `git merge-tree` predicts in objects only and
-names with the next action. Then it
+again, a conflict, which `git merge-tree` predicts in objects only and
+names with the next action, work whose delivery is
+[unknown](#standing), and a delivery that would change nothing, since the
+target already holds the result some other way. Then it
 
 1. retains S as `refs/grove/submitted/S`, the evidence, before the target
    moves;
@@ -107,10 +109,16 @@ trailers name it and the retained submission, whose parent is on the
 target, and whose tree is exactly the submission merged onto that parent.
 A delivery commit that is forged or altered, or whose submitted tip this
 repository lacks, leaves the work unknown, never done, so nothing delivers
-it again until someone reconciles it. A delivery the target no longer
-contains after a rewrite is not done; a later revert does not undo one. A
-branch kept after a squash delivery continues from it: its next submission
-is merged, predicted and verified from the earlier submitted tip. Every consumer reads this
+it again until someone reconciles it: fetch `refs/grove/*` where the tip is
+missing; otherwise, as for work whose result reached the target without a
+delivery Grove can verify, `feedback` reopens it, and a candidate the target
+contains, such as the target commit holding the result, handed off and
+accepted again is done by ancestry. A delivery the target no longer contains
+after a rewrite is not done; a later revert does not undo one. A branch kept
+after a squash delivery continues from it: where the earlier submitted tip
+replaces the branch's merge base with the target, its next submission is
+merged, predicted and verified from that tip, and otherwise, as after the
+branch merged the target, from Git's own merge base. Every consumer reads this
 one verifier: `list`, `show`, `deps`, `context`, `run`, the sweep and the
 board. A `done` record is schema 3's claim, kept by migration and labelled
 so, never as verified.

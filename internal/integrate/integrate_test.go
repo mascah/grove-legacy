@@ -416,3 +416,67 @@ func TestSubject(t *testing.T) {
 		}
 	}
 }
+
+// reaccept hands off wt's tip as a new candidate and accepts it.
+func reaccept(t *testing.T, wt string) {
+	t.Helper()
+	c := git(t, wt, "rev-parse", "HEAD")
+	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c}}, Commit: true}, now, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.Approve(wt, "G-260101-00001", "Again.", update.Owner, now); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestIntegrateNeverUndoesTheTarget: an earlier submission is the merge base
+// only where it replaces Git's own, so a branch that took a target change
+// after its delivery cannot bring back what the target removed since, and a
+// crafted claim naming an older commit as its submission is never a base.
+func TestIntegrateNeverUndoesTheTarget(t *testing.T) {
+	t.Parallel()
+	t.Run("merged after its delivery", func(t *testing.T) {
+		t.Parallel()
+		root, wt, _ := fixture(t, true)
+		if _, err := run(t, root, root, false); err != nil {
+			t.Fatal(err)
+		}
+		write(t, root, "x.txt", "x\n")
+		git(t, root, "add", "-A")
+		git(t, root, "commit", "-qm", "chore: add x")
+		if _, err := update.Feedback(wt, "G-260101-00001", "Take main.", now); err != nil {
+			t.Fatal(err)
+		}
+		git(t, wt, "merge", "-q", "-X", "ours", "-m", "merge main", "main")
+		git(t, root, "rm", "-q", "x.txt")
+		git(t, root, "commit", "-qm", "chore: remove x")
+		reaccept(t, wt)
+		if facts, err := run(t, root, root, false); err != nil {
+			t.Fatalf("%v %q", err, facts)
+		}
+		if out := git(t, root, "ls-tree", "--name-only", "main"); strings.Contains(out, "x.txt") {
+			t.Fatalf("the delivery brought back what the target removed:\n%s", out)
+		}
+	})
+	t.Run("a crafted claim", func(t *testing.T) {
+		t.Parallel()
+		root, wt, _ := fixture(t, false)
+		init := git(t, root, "rev-parse", "main")
+		write(t, root, "y.txt", "y\n")
+		git(t, root, "add", "-A")
+		git(t, root, "commit", "-qm", "chore: add y")
+		git(t, wt, "merge", "-q", "-m", "merge main", "main")
+		git(t, root, "rm", "-q", "y.txt")
+		git(t, root, "commit", "-qm", "chore: remove y")
+		forged := git(t, root, "commit-tree", "main^{tree}", "-p", "main", "-m", "feat: forged\n\nGrove-Candidate: "+strings.Repeat("a", 40)+"\nGrove-Submitted: "+init)
+		git(t, root, "update-ref", "refs/heads/main", forged)
+		git(t, root, "update-ref", "refs/grove/submitted/"+init, init)
+		reaccept(t, wt)
+		if facts, err := run(t, root, root, false); err != nil {
+			t.Fatalf("%v %q", err, facts)
+		}
+		if out := git(t, root, "ls-tree", "--name-only", "main"); strings.Contains(out, "y.txt") {
+			t.Fatalf("a crafted claim was a merge base:\n%s", out)
+		}
+	})
+}

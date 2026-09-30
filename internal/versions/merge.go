@@ -121,15 +121,10 @@ func resolveCommits(ctx context.Context, root string, names ...string) (prefix s
 // objects only. tree is the merged tree of a clean merge. merge-tree names
 // files from root, whose prefix in the repository turns them into paths
 // from its top.
+// A commit that continues an earlier squash delivery merges from that
+// delivery's submitted tip, as integrate delivers it and the verifier
+// checks it.
 func predict(ctx context.Context, root, prefix, ours, base, commit string) (m Merge, tree string, err error) {
-	return merge(ctx, root, prefix, ours, base, commit, "")
-}
-
-// merge is predict from a given merge base, or Git's own when from is "". A
-// conflict from Git's base is asked again from the earlier squash delivery
-// the commit continues, if any, as integrate delivers it and the verifier
-// checks it; a merge that is clean only from Git's base needs no more.
-func merge(ctx context.Context, root, prefix, ours, base, commit, from string) (m Merge, tree string, err error) {
 	m = Merge{Commit: commit, Conflicts: []string{}}
 	switch base {
 	case commit:
@@ -142,6 +137,10 @@ func merge(ctx context.Context, root, prefix, ours, base, commit, from string) (
 	// Exit 1 is Git's answer, a conflict, with the files on stdout, which
 	// GitContext drops on failure.
 	args := []string{"merge-tree", "--write-tree", "--name-only", "--no-messages", "-z", ours, commit}
+	from, err := delivery.Base(ctx, root, ours, commit)
+	if err != nil {
+		return m, "", err
+	}
 	if from != "" {
 		args = slices.Insert(args, 5, "--merge-base="+from)
 	}
@@ -159,15 +158,6 @@ func merge(ctx context.Context, root, prefix, ours, base, commit, from string) (
 		return m, "", fmt.Errorf("git merge-tree: %s", cmp.Or(strings.TrimSpace(stderr.String()), err.Error()))
 	}
 	fields := strings.Split(strings.TrimSuffix(string(out), "\x00"), "\x00")
-	if conflict && from == "" {
-		delivered, err := delivery.Base(ctx, root, ours, commit)
-		if err != nil {
-			return m, "", err
-		}
-		if delivered != "" {
-			return merge(ctx, root, prefix, ours, base, commit, delivered)
-		}
-	}
 	if conflict {
 		m.Outcome = "conflict"
 		for _, f := range fields[1:] {

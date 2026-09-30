@@ -389,10 +389,16 @@ func verify(ctx context.Context, root, prefix string, records []*project.Record,
 }
 
 // Base is the submitted tip of the newest squash delivery reachable from
-// tip that submitted contains and whose tree verifies, or "": a branch kept
-// after a squash delivery continues from what was delivered, so its next
-// submission merges from there, not from where it first left the target.
+// tip that the next submission continues, or "": a branch kept after a
+// squash delivery continues from what was delivered, so its next submission
+// merges from there, not from where it first left the target. Only a
+// retained submission submitted contains and tip lacks can be one, which
+// one for-each-ref rules out on the ordinary path.
 func Base(ctx context.Context, root, tip, submitted string) (string, error) {
+	retained, err := repo.GitContext(ctx, root, "for-each-ref", "--format=%(objectname)", "--merged="+submitted, "--no-merged="+tip, "refs/grove/submitted/")
+	if err != nil || strings.TrimSpace(retained) == "" {
+		return "", err
+	}
 	claims, err := deliveries(ctx, root, tip)
 	if err != nil {
 		return "", err
@@ -406,20 +412,31 @@ type bases struct {
 	verified map[string]bool // by delivery commit: its tree is its merge
 }
 
-// of is the newest claim that parent contains, whose submitted tip
-// submitted contains, and whose tree verifies.
-// ponytail: two ancestry checks per earlier claim, newest first, until one
-// holds; bounded by the deliveries on the target, and only reached for a
-// submission that continues after an earlier squash.
+// of is the newest claim that parent contains whose tree verifies and whose
+// submitted tip descends from Git's own merge base of parent and submitted
+// and is contained in submitted: it replaces that fork point, and nothing
+// the branch took from the target since is older than it, so merging from
+// it can neither undo the target's later changes nor skip the branch's.
+// ponytail: one ancestry check per earlier claim among the branch's own
+// commits, newest first; bounded by the deliveries that branch continues.
 func (b *bases) of(ctx context.Context, root, parent, submitted string) (string, error) {
+	fork, err := repo.GitContext(ctx, root, "merge-base", parent, submitted)
+	if err != nil {
+		return "", nil // unrelated histories have nothing to continue
+	}
+	own, err := lines(ctx, root, nil, "rev-list", "--ancestry-path", submitted, "^"+strings.TrimSpace(fork))
+	if err != nil {
+		return "", err
+	}
+	after := map[string]bool{}
+	for _, c := range own {
+		after[c] = true
+	}
 	for _, d := range b.claims {
-		if d.submitted == submitted {
+		if d.submitted == submitted || !after[d.submitted] {
 			continue
 		}
 		if on, err := ancestor(ctx, root, d.commit, parent); err != nil || !on {
-			continue
-		}
-		if on, err := ancestor(ctx, root, d.submitted, submitted); err != nil || !on {
 			continue
 		}
 		ok, err := b.tree(ctx, root, d)
