@@ -57,10 +57,13 @@ applies whatever that record's status; a rule naming none is this file's own.
   before the first release beyond `grove migrate`'s one-way conversion from
   3; inspect an old commit with the CLI in that commit (G-260921-ebsby,
   G-260921-r491p, G-260930-2qa4a).
-- Done is derived, never written: `internal/standing` is the one verifier
-  of an acceptance's delivery, and every consumer reads it; `integrate`
-  delivers as one squash commit with retained evidence under
-  `refs/grove/submitted/` (G-260930-2qa4a, G-260929-gm3m4).
+- Done is derived, never written: `internal/standing` reads it for every
+  consumer from the target tip's own copy of the record, one `git cat-file`
+  and none on the board, and never walks history, trailers or `refs/grove`
+  on a read; `integrate` delivers as one squash commit, proves that commit,
+  and retains evidence under `refs/grove/submitted/`, which only
+  `check --deliveries` reads (G-260930-2qa4a, G-260930-gj9d7,
+  G-260929-gm3m4).
 - `new` and `convert` issue `G-YYMMDD-xxxxx` from the UTC date and a random
   tail with no shared state, drawing again while a local ref or worktree
   holds the ID; it is the only ID form; and `new` and `update` serialize
@@ -136,7 +139,7 @@ applies whatever that record's status; a rule naming none is this file's own.
   to set `work` and a review's `examined`.
 - Work runs `proposed`, `active`, `review`, `accepted`, and an
   implementation ends in `review` with its `candidate` commit. Done is
-  derived from the acceptance and its verified delivery to `main`, and no
+  derived from the acceptance and its delivery to `main`, and no
   `update` writes it; a `done` status is schema 3's claim. Never backfill a
   candidate on a `done` record that has none (G-260921-9wkjt,
   G-260930-2qa4a).

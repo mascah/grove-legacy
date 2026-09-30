@@ -45,8 +45,12 @@ target: main
 ```
 
 - `target` is that branch: `integrate` delivers accepted work onto it as
-  one squash commit, done is read from what it contains, `resolve` and
-  `sweep` need it, and the board marks work not yet on it. A project at
+  one squash commit, done is read from its copy of each accepted record,
+  `resolve` and `sweep` need it, and the board marks work not yet on it.
+  Each delivery leaves that commit and one local ref,
+  `refs/grove/submitted/…`, which only `grove check --deliveries` reads;
+  nothing else is added to your history, and a clone needs nothing extra
+  fetched for Grove to read it. A project at
   schema 3 converts with `grove migrate` ([Migrate](docs/commands.md#migrate)).
 - `run:` sets `grove run`'s defaults (`budget`, `permission_mode`, `model`,
   `effort`); without it, every launch passes `--budget` and
@@ -71,7 +75,8 @@ To upgrade, run the same `go install` line, then `grove init --check` and
 
 ## The loop
 
-Work runs `proposed`, `active`, `review`, `done`.
+Work runs `proposed`, `active`, `review`, `accepted`, and reads as done
+once it is delivered.
 
 1. **Brief.** `grove/brief.md` says what the project is for and the direction
    you have chosen. Write it, or let shaping develop it.

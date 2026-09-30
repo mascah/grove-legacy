@@ -12,7 +12,8 @@ work record that delivered it.
 
 `list`, `show`, `brief` and `check` read the selected checkout's live files,
 uncommitted records included, name the project on stderr, and change
-nothing. They load the whole record set before resolving relationships; a
+nothing; work's [standing](#standing) also reads the target's copy of each
+accepted record. They load the whole record set before resolving relationships; a
 concurrent direct edit can invalidate a read, since the reader promises no
 transactional snapshot. `--project DIR` can come before or after the
 command, and `--help` needs no project.
@@ -72,9 +73,8 @@ more than the records, a shared candidate whose members are not all
 accepted, a squash that would carry the candidate of other unfinished work
 on the branch, such as a member reopened by feedback and not handed off
 again, a conflict, which `git merge-tree` predicts in objects only and
-names with the next action, work whose delivery is
-[unknown](#standing), and a delivery that would change nothing, since the
-target already holds the result some other way. Then it
+names with the next action, work whose standing is
+[unknown](#standing), and a delivery that would change nothing. Then it
 
 1. retains S as `refs/grove/submitted/S`, the evidence, before the target
    moves;
@@ -85,52 +85,68 @@ target already holds the result some other way. Then it
    `Grove-Candidate: C` and `Grove-Submitted: S`;
 3. fast-forwards the target to it, so a target that moved meanwhile is
    refused, never overwritten;
-4. reads the standing again and reports each member done only once it
-   verifies.
+4. proves that one commit, as [`check --deliveries`](#auditing-deliveries)
+   would, and reports each member done only once it is proved and the
+   target's copy of its record reads done.
 
 It writes no record: the delivered record is the branch's, accepted.
-Rerun after an interruption, it finds the delivery through the same
-verifier and goes on to cleanup, never a second commit. `--cleanup` removes
+Rerun after an interruption, it reads the delivery as every command does,
+from the target's copy of the record, and goes on to cleanup, never a
+second commit. A branch kept after its delivery merges the target before
+its next one, as any branch does; its earlier delivery is not a merge base,
+and what conflicts is refused and resolved as any conflict is. `--cleanup` removes
 the worktree only where Git agrees and it holds no ignored files, and the
 branch only where nothing is lost: after a squash while its tip is still S,
 and after an ordinary merge when the target contains its tip, since a merge
-of the candidate alone leaves the handoff and acceptance on the branch. The
-retained ref keeps S from
-garbage collection and is local: to take the evidence to another clone,
-push or fetch `refs/grove/*` with the branches. A clone without S reads
-the delivery as unknown, never as done.
+of the candidate alone leaves the handoff and acceptance on the branch;
+integrating such work delivers it as usual, which brings the acceptance
+over. Before it deletes a branch at S, cleanup writes the retained ref if it
+is missing.
+
+What Grove leaves in a repository is one squash commit per delivery, with
+the message and trailers above, and one local ref per delivery,
+`refs/grove/submitted/S`, which keeps S from garbage collection and which
+only the audit reads. Nothing needs fetching for Grove to read a clone
+correctly; to audit deliveries in another clone, push or fetch
+`refs/grove/*` with the branches.
 
 ### Standing
 
-Done is derived, never written. A work record's standing is `proposed`,
-`active`, `review` (awaiting judgment, or an acceptance that no longer
-applies, since the title or body outside `## Next` and Grove's own
-paragraphs changed), `accepted` (applicable, not delivered), `done`,
-`abandoned`, or `unknown` with a reason. Accepted work is done when the
-configured target contains its candidate, or contains a commit whose
-trailers name it and the retained submission, whose parent is on the
-target, and whose tree is exactly the submission merged onto that parent.
-A delivery commit that is forged or altered, or whose submitted tip this
-repository lacks, leaves the work unknown, never done, so nothing delivers
-it again until someone reconciles it: fetch `refs/grove/*` where the tip is
-missing; otherwise, as for work whose result reached the target without a
-delivery Grove can verify, `feedback` reopens it, and a candidate the target
-contains, such as the target commit holding the result, handed off and
-accepted again is done by ancestry. A delivery the target no longer contains
-after a rewrite is not done; a later revert does not undo one. A branch kept
-after a squash delivery continues from it: where the earlier submitted tip
-replaces the branch's merge base with the target, its next submission is
-merged, predicted and verified from that tip, and otherwise, as after the
-branch merged the target or where the two have several merge bases, from
-Git's own. `integrate` finds that tip among the local
-`refs/grove/submitted/` refs, so a clone that lacks them merges from Git's
-own merge base, and the verifier accepts either. A claim whose submitted tip
-shares no history with its parent is judged by the same rule, merged from an
-empty base. One reading starts a fixed number of Git processes, whatever the
-number of deliveries, records and versions of them. Every consumer reads this
-one verifier: `list`, `show`, `deps`, `context`, `run`, the sweep and the
-board. A `done` record is schema 3's claim, kept by migration and labelled
-so, never as verified.
+Done is derived, never written
+([G-260930-gj9d7](../grove/G-260930-gj9d7-prove-delivery-once-at-i.md)). A
+work record's standing is `proposed`, `active`, `review` (awaiting judgment,
+or an acceptance that no longer applies, since the title or body outside
+`## Next` and Grove's own paragraphs changed), `accepted` (applicable, not
+delivered), `done`, `abandoned`, or `unknown` when the target cannot be
+read. An applicable acceptance is done when the configured target tip's own
+copy of the record, at the same path, is accepted for the same candidate;
+an acceptance reaches the target only through a delivery, so nothing else
+is read: no history, trailers or `refs/grove`. Work accepted again on a
+kept branch for another candidate awaits delivery; work reopened on the
+target reads as its record says. A reading starts one Git process, a `git
+cat-file` of the target's copies, whatever the history, branches,
+deliveries or versions, and the board none, since it already holds every
+branch's records. `list`, `show`, `deps`, `context`, `run`, `feedback`,
+`resolve`, the sweep and the board read this. A `done` record is schema 3's
+claim, kept by migration and labelled so.
+
+The trade is that an acceptance written on the target by hand, rather than
+delivered, reads as done; only an audit notices.
+
+### Auditing deliveries
+
+`check --deliveries` also proves, from Git, the delivery of every work
+record the target holds accepted, for the records the checkout reads: the
+target contains its candidate, or a commit on the target whose trailers
+name the candidate and a submitted tip S, where S is present, contains the
+candidate, changes only records after it, holds the record accepted for
+it, and merged onto the commit's parent gives exactly the commit's tree.
+Each record prints as `proved`, `not proved` with the reason (a forged or
+altered delivery, or an acceptance no delivery names), or `cannot be
+audited here` (the candidate or S is missing, as in a clone without
+`refs/grove/*`, or the history is shallow); a summary line follows, and
+the exit is 1 when any is not proved. It walks the target's history and
+reads `refs/grove`, so it runs only on request; plain `check` does not.
 
 ## Versions
 

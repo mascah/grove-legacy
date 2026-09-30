@@ -30,7 +30,7 @@ Follows review, precedes integration.
 ## Selected completion contract, 2026-09-29
 
 The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
-record candidate acceptance and derive Done from verified target delivery,
+record candidate acceptance and derive Done from its target delivery,
 with a redesigned work record that does not remain misleadingly in review.
 This changes representation, not the distinction between approval and
 integration.
@@ -45,4 +45,6 @@ and `approved_context`, the digest of the record's title and body outside
 `## Next` and Grove's own appended paragraphs. A changed candidate or a
 changed context makes the acceptance no longer apply, and the work reads as
 in review again. `grove feedback` withdraws all three. Approval is still
-not delivery: accepted work is done only once its delivery is verified.
+not delivery: accepted work is done only once the target's own copy of the
+record holds that acceptance, which only a delivery brings there
+([G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md)).

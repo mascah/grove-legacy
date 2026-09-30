@@ -4,11 +4,11 @@ type: work
 title: "Deliver accepted work locally with clean history and retained evidence"
 status: active
 created: "2026-09-29T16:15:25Z"
-updated: "2026-09-30T13:09:30Z"
+updated: "2026-09-30T16:32:25Z"
 kind: feature
 size: large
 depends_on: ["G-260930-62nmj"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-4742q", "G-260930-r2k4g", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260930-84fnb", "G-260930-2qa4a"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-4742q", "G-260930-r2k4g", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-gj9d7"]
 ---
 
 ## Outcome
@@ -33,8 +33,10 @@ delivered as its approved group without duplicating the code change.
 Preserve exact review/approval attribution and verification of the result
 against the actual target. A squash changes commit identity. The design
 must establish correspondence between approved candidate, integration
-inputs and resulting content, retain the evidence objects, and make
-completion, dependency delivery and cleanup use that same fact.
+inputs and resulting content, retain the evidence objects, prove that
+correspondence when a delivery is made and on audit, and make completion,
+dependency delivery and cleanup read the same fact: the target's own copy
+of the accepted record.
 
 A work ID, a matching patch or unverified trailers alone are insufficient
 authority to close work. Changed candidates or targets require appropriate
@@ -42,8 +44,13 @@ reconsideration/reverification. Partial failure after integration must be
 recoverable without a second delivery or destruction of evidence.
 
 The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
-record acceptance and derive Done from verified delivery, using a redesigned
-record contract. This item owns that schema/migration change and the shared
+record acceptance and derive Done from its delivery, using a redesigned
+record contract. They amended it with
+[G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md): a delivery is
+proved once, when it is made, and again only by an audit a person runs;
+reading costs what it did before, whatever the history, branches or
+deliveries, and leaves nothing in a repository beyond one squash commit and
+one local ref per delivery. This item owns that schema/migration change and the shared
 standing and delivery operations. It must remove misleading permanent review
 state, not add a board-only override. No mandatory post-delivery done commit
 or follow-up completion PR is part of the selected path.
@@ -57,10 +64,11 @@ this correctness work. Preserve current Claude execution while its caller
 contract changes; provider extraction follows through the declared edge.
 
 Carry acceptance and discoverable delivery inputs in the prepared submission;
-retain candidate and evidence before target advance. Inspection must derive
-completion from those facts after a crash or an external merge without a
-second delivery. Dependencies also check the execution base contains the
-delivered result. Unknown evidence waits without spending an attempt.
+retain candidate and evidence before target advance. Reading derives
+completion from the target's record after a crash or an external merge
+without a second delivery. Dependencies also check that the execution
+base's copy of the record holds the target's acceptance. An unreadable
+target waits without spending an attempt.
 
 Message formatting remains an implementation design detail within useful
 Conventional Commit history; deriving a type from the current kind field is
@@ -110,21 +118,26 @@ mechanisms and lifecycle contracts change.
    outcome removes; the owner judges representative main/changelog output.
 2. Review, approval and verification are bound to the candidate and actual
    integration inputs. A moved target or altered candidate cannot use
-   stale evidence; forged or mismatched delivery claims are rejected.
+   stale evidence; forged or mismatched delivery claims are rejected where
+   a delivery is proved: at delivery and by audit.
 3. Recorded acceptance is truthful before and after delivery; the redesigned
    work contract no longer declares permanent review or requires a stored
    done transition. CLI list/show/context and JSON, board, dependency/base
    readiness, attempt guards, policy integration and cleanup consume the same
-   verified standing. Raw source remains distinguishable from observed facts.
-   Unknown or stale evidence cannot authorize duplicate work or false Done.
+   standing, read from the target's own copy of the record; a delivery is
+   proved at delivery and by audit, never on a read. Raw source remains
+   distinguishable from observed facts. An unreadable target or a stale
+   acceptance cannot authorize duplicate work or Done; an acceptance
+   written on the target by hand reads as done until an audit reports it.
 4. Refusal and recovery tests cover dirty targets, conflicts, shared groups,
    target movement, changed acceptance/candidate, external delivery, failure
    just after target advance and safe retry. Done is reconstructed without a
    completion commit. Reopening invalidates old completion for current work.
 5. Candidate, review, approval and correspondence evidence survive cleanup
    and ordinary garbage collection. An ordinary fresh-clone transport path
-   is documented and exercised; missing evidence and shallow history report
-   unknown rather than success. Evidence refs do not masquerade as current
+   is documented and exercised; missing evidence and shallow history make
+   the audit report a delivery it cannot prove here, never success, and
+   reading needs no evidence. Evidence refs do not masquerade as current
    work branches or conceal real post-delivery edits. Neither a ref name nor
    a trailer is proof.
 6. A dry-run and explicit versioned migration preserve IDs, paths, original

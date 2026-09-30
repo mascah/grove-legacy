@@ -30,4 +30,5 @@ receives it as one squash commit, not the candidate itself: the commit's
 trailers name the candidate and the submitted tip, retained under
 `refs/grove/submitted/`, and its tree must be exactly that tip merged onto
 the commit's parent, which is what shows the integrated result is the
-candidate that was accepted.
+candidate that was accepted. `grove integrate` proves that once, as it makes
+the commit, and `grove check --deliveries` again on request.

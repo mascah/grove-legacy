@@ -25,8 +25,9 @@ Work runs Proposed → Active → Review → Accepted → Done, with Abandoned o
 by an explicit human decision. An assignment sets `active` when
 implementation starts (step 5) and ends by handing a candidate commit into
 `review` (step 8). `grove approve` records the acceptance. Done is never
-written: it is derived from the target verifiably containing the accepted
-candidate's delivery, the standing `grove list` and `grove show` print. A
+written: it is derived from the target's own copy of the record being
+accepted for the same candidate, which only a delivery brings there, the
+standing `grove list` and `grove show` print. A
 status saying otherwise is not delivery, and `done` is the previous
 schema's claim. Preparation,
 independent review, waiting and a failed attempt are facts recorded in the
@@ -550,19 +551,19 @@ disposition:
   work, the candidate and that retained tip. A conflict is refused with the
   target unchanged, predicted before anything is written with the files and
   the next action named. It writes no record, prints acceptance, retained
-  evidence, delivery, verified done and cleanup as separate facts, and with
-  `--cleanup` removes the worktree and branch where Git agrees and no
-  commit would be lost. The board's detail of the record offers the same
-  as `a`, `f` and `i`. The retained
-  refs are local: push or fetch `refs/grove/*` with the target so another
-  clone verifies the delivery; a clone lacking the retained tip reads it as
-  unknown, never done. `grove feedback` on the target reopens delivered
-  work, and a branch kept after its delivery may continue: its next delivery
-  merges from the earlier submission where that replaces the branch's merge
-  base with the target, and otherwise as Git merges it.
+  evidence, delivery, done with that commit proved, and cleanup as separate
+  facts, and with `--cleanup` removes the worktree and branch where Git
+  agrees and no commit would be lost. The board's detail of the record
+  offers the same as `a`, `f` and `i`. The retained refs are local and only
+  `grove check --deliveries`, an audit run on request, reads them; push or
+  fetch `refs/grove/*` with the target to audit another clone. `grove
+  feedback` on the target reopens delivered work, and a branch kept after
+  its delivery merges the target before its next handoff, as any branch
+  does.
 - **A schema 3 claim on a rewritten target:** rewriting the target once
   work is integrated, as a rebase onto a remote does, gives its commits new
-  hashes. A squash delivery survives that through its retained evidence. A
+  hashes. A squash delivery survives that, since the target keeps its
+  record's acceptance. A
   `done` record from the previous schema still names the old candidate: a
   branch kept after its integration diverges from the target and its commits
   are rewritten copies, so nothing needs merging, and the board's detail,

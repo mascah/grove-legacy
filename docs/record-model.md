@@ -56,8 +56,9 @@ worktree.
 Without `--project DIR`, the nearest `grove.yaml` upward from the current
 directory is used, the search stopping at the Git checkout root, or the
 filesystem root outside Git. `--project DIR` names the directory holding it.
-Reading needs no Git, and `list`, `show` and `check` read only the selected
-checkout's live files.
+Reading records needs no Git: `list`, `show` and `check` read the selected
+checkout's live files, and work's standing reads only the target's own copy
+of each accepted record.
 
 ### Folders and files
 
@@ -150,8 +151,7 @@ prerequisite is not delivered.
 
 Proposed → Active → Review → Accepted, with Abandoned by explicit human
 decision. Done is derived, never stored: an applicable acceptance plus its
-verified delivery to the target, the standing every command and the board
-read. `check` and `update` enforce:
+delivery to the target, the standing every command and the board read. `check` and `update` enforce:
 
 - `review` requires `candidate`. Records on one branch sharing a
   `candidate` are one group, handed off, reopened and delivered together.
@@ -167,10 +167,13 @@ feedback, reopenings, delivery and migration notes). An acceptance applies
 while it equals `approved_context`; any other edit makes it stale, and the
 work awaits judgment again.
 
-At the target's tip, an applicable acceptance whose candidate or verified
-squash delivery the tip contains is done; one absent from a complete
-history awaits delivery; a shallow history or a missing object retained
-under `refs/grove/` is unknown.
+An applicable acceptance is done when the target tip's own copy of the
+record, at the same path, is accepted for the same candidate, and otherwise
+awaits delivery; it is unknown only when the target cannot be read. An
+acceptance reaches the target only through a delivery, so reading consults
+nothing else. `integrate` proves each delivery as it makes it, and
+`check --deliveries` proves them again on request, from the delivery
+commits and the submitted tips retained under `refs/grove/submitted/`.
 
 `approve`, `feedback`, `integrate`, `resolve` and `sweep` act on this
 lifecycle as `grove --help` describes.

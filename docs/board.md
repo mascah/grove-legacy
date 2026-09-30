@@ -32,7 +32,9 @@ in the earliest of their statuses, marked `⑂ 2 states`, and its detail says
 which states exist and where, until one side takes the other's change, by a
 merge or an edit, or the branch holding one is deleted (see [Rewritten
 copies](#rewritten-copies)). Accepted work sits in Review until its
-[standing](commands.md#standing) verifies its delivery, then in Done; a
+[standing](commands.md#standing) says the target holds the acceptance, then
+in Done, judged from the target branch's records the board already read,
+with no Git process of its own; a
 Review or Done card whose candidate is accepted is marked `accepted`, or
 `accepted under policy` for an acceptance `grove sweep` gave, and one whose
 acceptance no longer applies `acceptance no longer applies`
@@ -79,7 +81,7 @@ shows only after a re-read.
 ## Record detail
 
 Enter on a card opens the record's detail: a boxed header with the ID,
-status (`done · accepted, delivered as D` once delivered), title, planning
+status (`done · accepted, delivered to TARGET` once delivered), title, planning
 fields, candidate and, once it is accepted, who accepted it (`accepted`, or
 `accepted under policy` for an acceptance `grove sweep` gave), standing
 against the target, the places holding its current
@@ -380,8 +382,8 @@ and nothing about whether another branch contains it.
 ## Rewritten copies
 
 A squash delivery writes the branch's record onto the target unchanged, so
-nothing diverges and a rewrite of the target leaves the retained submission
-to verify against. What follows is schema 3's done, which schema 4 keeps as
+nothing diverges, and a rewrite of the target keeps the acceptance on it,
+which is what reads done. What follows is schema 3's done, which schema 4 keeps as
 a claim. Rewriting the target after a branch was integrated, as a rebase of `main`
 onto a remote does, gives the branch's commits new hashes there. The
 record's `done` on the target and its `review` on the kept branch then both

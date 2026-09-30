@@ -46,7 +46,7 @@ will not establish integration.
 ## Selected completion contract, 2026-09-29
 
 The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
-record candidate acceptance and derive Done from verified target delivery,
+record candidate acceptance and derive Done from its target delivery,
 with a redesigned work record that does not remain misleadingly in review.
 This changes representation, not the distinction between approval and
 integration.
@@ -59,10 +59,15 @@ branch's tip under `refs/grove/submitted/`, writes that tip merged onto the
 target's tip as one commit with the target tip as its only parent and a
 Conventional Commit message whose trailers name the work, the candidate and
 the retained tip, fast-forwards the target to it, and writes no record.
-Done is derived: accepted work is done when the target contains its
-candidate, or a commit whose trailers, parent and exact tree match the
-retained submission. A forged or altered delivery, or one a rewrite of the
-target dropped, is not done, and one whose submission a clone lacks is
-unknown there; a later revert does not undo
-it. A `done` status from schema 3 is kept by `grove migrate` as that
-schema's claim and never presented as verified.
+Before it reports done, it proves that one commit: its trailers, parent and
+exact tree match the retained submission. Done is derived, amended by
+[G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md): accepted work
+is done when the target tip's own copy of its record is accepted for the
+same candidate, which only a delivery brings there, and reading proves
+nothing again. `grove check --deliveries` audits every delivery on request:
+the target contains the candidate, or a commit on it matches the retained
+submission; a forged or altered delivery is not proved there, and one whose
+submission a clone lacks cannot be audited there. A later revert does not
+undo it. A branch kept after its delivery merges the target before its next
+one. A `done` status from schema 3 is kept by `grove migrate` as that
+schema's claim and never presented as proved.

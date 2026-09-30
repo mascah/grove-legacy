@@ -164,11 +164,22 @@ stored `done` was a second account of a fact Git holds, which a branch, a
 hand edit or a stale checkout could contradict, and an agent reading the raw
 file could not tell it from delivery. The acceptance is what a person
 decides, so it is recorded, with its authority and the context it judged;
-delivery is what Git shows, so it is derived, by one verifier every command
-reads. Squash delivery keeps the target's history one commit per accepted
-outcome, and the retained submission ref and trailers are what keep that
-verifiable after the branch is gone or the target is rewritten
-([G-260929-gm3m4](../grove/G-260929-gm3m4-clean-main-history-with.md)).
+delivery is what Git shows, so it is derived. Squash delivery keeps the
+target's history one commit per accepted outcome, and the retained
+submission ref and trailers are what keep it provable after the branch is
+gone ([G-260929-gm3m4](../grove/G-260929-gm3m4-clean-main-history-with.md)).
+
+The proof is made once, when `integrate` delivers, and again only when a
+person runs `check --deliveries`
+([G-260930-gj9d7](../grove/G-260930-gj9d7-prove-delivery-once-at-i.md)).
+Reading takes the target's own copy of the record as the delivery fact,
+since only a delivery puts an acceptance there: re-proving every delivery
+on every read cost more Git work with every year of history and every kept
+branch, and Grove has to stay cheap in repositories with thousands of
+commits and branches it did not make. What that gives up is noticing, by
+itself, an acceptance written on the target by hand. For the same reason a
+branch kept after its delivery merges the target like any other, rather
+than delivering from its earlier submission as a merge base.
 A done record without a candidate asserts only that its outcome was reached
 in its own branch context, as its Evidence says; it is not proof of a merge,
 and its prerequisites' delivery is established by Git ancestry or observed

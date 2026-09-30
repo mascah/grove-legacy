@@ -98,7 +98,7 @@ not required. Inspect actual repository state before trusting a checkpoint.
 The workflow still moves from Proposed through Active and Review to Done,
 with Abandoned an explicit human choice. Under the selected redesigned
 record contract, acceptance is recorded distinctly and Done is derived from
-that acceptance plus verified delivery. The stored facts must remain
+that acceptance plus its delivery. The stored facts must remain
 truthful before and after integration; a permanent review field with a
 contradictory computed Done label is insufficient. Preparation,
 implementation and independent review are activities; process state,
@@ -123,10 +123,14 @@ target. The owner selected
 [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md): derive Done with
 a redesigned record contract, without mandatory post-delivery completion
 commits or PRs. Raw records communicate acceptance; Git/Grove establishes
-delivery with evidence and freshness. Every lifecycle consumer must use
-that same result, and unknown evidence cannot mean success. Squash and
-external integration require verified correspondence and retained evidence.
-Status, an ID or an unverified trailer is insufficient.
+delivery. Every lifecycle consumer uses that same result, and a target that
+cannot be read cannot mean success. As
+[G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md) amends it,
+reading takes the target's own copy of the record as that result, at a
+cost that does not grow with history or branches, and delivery is proved
+once, when it is made, and again only by an audit someone runs. Squash and
+external integration are proved against retained evidence; status, an ID or
+an unproved trailer is insufficient.
 
 Today the CLI still enforces candidate ancestry and writes done on the
 target. The selected redesign requires a deliberate migration; it is not

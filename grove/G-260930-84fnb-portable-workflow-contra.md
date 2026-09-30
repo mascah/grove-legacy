@@ -3,8 +3,8 @@ id: "G-260930-84fnb"
 type: page
 title: "Portable workflow contracts and refactoring design"
 created: "2026-09-30T01:31:26Z"
-updated: "2026-09-30T03:18:01Z"
-relates_to: ["G-260930-62nmj", "G-260930-npw49", "G-260930-y6fyy", "G-260930-e8jj7", "G-260930-2qa4a"]
+updated: "2026-09-30T16:28:30Z"
+relates_to: ["G-260930-62nmj", "G-260930-npw49", "G-260930-y6fyy", "G-260930-e8jj7", "G-260930-2qa4a", "G-260930-gj9d7"]
 ---
 
 ## Status and ownership
@@ -223,13 +223,16 @@ It must not contain its own final commit hash. Trailers can locate that
 descriptor; they are not proof. Exact serialization and proof fixtures are
 part of the local-delivery implementation plan.
 
-### Completion representation: recorded acceptance and verified delivery
+### Completion representation: recorded acceptance and its delivery
 
-Selected model: [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md).
+Selected model: [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md),
+amended by [G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md).
 The record owns what was proposed, worked on, offered for judgment and
 accepted. Git supplies the observed delivery fact. Done is derived from
-applicable acceptance plus verified delivery, without a mandatory done
-commit or follow-up completion PR. The semantic contract below is proposed
+applicable acceptance plus its delivery, without a mandatory done
+commit or follow-up completion PR. Delivery is proved once, when it is
+made, and again only by an audit a person runs; reading does not re-prove
+it. The semantic contract below is proposed
 for implementing that decision; it is not schema 3 syntax.
 
 **Persisted facts.** Represent the work's preparation/implementation phase,
@@ -249,33 +252,36 @@ Changing candidate or governed requirements withdraws applicability; it
 cannot inherit Done from an old candidate. Historical judgments remain
 inspectable. Explicit abandonment and feedback retain their authority rules.
 
-**Observed facts.** A delivery observation names the repository and target,
-target tip examined, delivered commit, candidate/acceptance correspondence,
-retained evidence and any missing or stale inputs. Hosted mode names the
-configured remote target, not an ahead-of-remote local branch called main.
-The observation is reproducible from Git evidence, not a second editable
-lifecycle in a database or cache. Local observations are current only for
-the examined tip; remote observations also name their last refresh and
-whether remote freshness is known.
+**Observed facts.** An acceptance reaches the target only through a
+delivery, so the observation is the target tip's own copy of the record, at
+the same path: accepted for the same candidate, or not. It names the target
+and the tip examined. Hosted mode names the configured remote target, not an
+ahead-of-remote local branch called main. The observation is read from Git
+in one step whatever the history, not a second editable lifecycle in a
+database or cache. Local observations are current only for the examined
+tip; remote observations also name their last refresh and whether remote
+freshness is known.
 
-| Current recorded facts | Delivery evidence at examined target | Presented standing/action |
+| Current recorded facts | The target's copy at the examined tip | Presented standing/action |
 | --- | --- | --- |
-| Proposed or active; no accepted candidate | None applicable | Proposed or active, with execution/question facts |
+| Proposed or active; no accepted candidate | Any | Proposed or active, with execution/question facts |
 | Candidate offered; no applicable acceptance | Any | Awaiting judgment; code presence cannot supply approval |
-| Accepted candidate | Verified absent | Ready or waiting to deliver; show any known host wait |
-| Accepted candidate | Verified corresponding result reachable | Done at the named target revision |
-| Accepted candidate | Missing, stale or ambiguous evidence | Accepted; delivery unknown, inspect/refresh evidence |
-| Explicitly abandoned | Any historical evidence | Abandoned; history remains inspectable |
+| Accepted candidate | Absent, or not accepted for that candidate | Ready or waiting to deliver; show any known host wait |
+| Accepted candidate | Accepted for the same candidate | Done at the named target revision |
+| Accepted candidate | The target cannot be read | Accepted; delivery unknown |
+| Explicitly abandoned | Any | Abandoned; history remains inspectable |
 
 A received approval alone does not establish Done. A local target can be
 checked without a network; an offline hosted view may report Done as of the
-last verified revision with freshness unknown, never assert present remote
+last read revision with freshness unknown, never assert present remote
 state. An operation needing current delivery must refresh explicitly or
-wait. Absence can only be asserted from a sufficiently complete inspected
-history; a shallow clone or missing retained objects yields unknown.
+wait. The accepted trade: an acceptance written on the target by hand reads
+as done. The audit proves each delivery from the retained evidence on
+request; a shallow clone or a missing retained object is reported there as
+not auditable, never as proof.
 
 **One result for all consumers.** A shared read operation returns recorded
-facts, effective standing, evidence references, target/source revisions,
+facts, effective standing, target/source revisions,
 freshness, wait reasons and permitted next actions. CLI list/show/context,
 JSON output, board, dependency checks, attempt launch/continue, approval,
 policy sweep, integration and cleanup use it. Raw source remains available
@@ -292,8 +298,9 @@ cannot silently select whichever copy makes an action possible.
 
 **Readiness and mutation.** Current applicable acceptance and delivery must
 both be established to satisfy a new completion prerequisite. Execution also
-checks that the chosen base contains the delivered result; delivery to the
-target does not make an older worktree ready. Unknown waits, and a stale
+checks that the chosen base's own copy of the record is accepted for the
+same candidate as the target's; delivery to the target does not make an
+older worktree ready. Unknown waits, and a stale
 previous acceptance cannot satisfy a reopened prerequisite. Preview is
 read-only; mutation rechecks the relevant record revisions, target, evidence
 and ownership before effects. Inspecting or retrying cannot duplicate
@@ -302,18 +309,18 @@ implementation or integration already accounted for by those facts.
 **Local and hosted closure.** Record acceptance and retain its evidence
 before delivery; carry the accepted record and stable delivery descriptor
 in the prepared submission. The target update then contains everything
-needed to discover and verify correspondence. The containing commit supplies
+needed to discover and audit correspondence. The containing commit supplies
 its eventual delivery identity; a descriptor never embeds its own hash.
 The final submitted tip and resulting tree may be retained outside that
 descriptor to avoid a self-reference. Verify the complete prepared result,
 including controlled supplementary metadata, against the delivered tree.
 No broad record-directory exclusion is allowed.
 
-If delivery succeeds and the process dies, inspection reconstructs Done
-from the target and retained inputs. A cache or cleanup failure does not
-require another target commit. An external merge uses the same verifier;
-insufficient transferred evidence produces an explicit unknown and an
-evidence-recovery path, never a fabricated correspondence. A closed-unmerged
+If delivery succeeds and the process dies, reading finds Done in the
+target's copy of the record. A cache or cleanup failure does not require
+another target commit. An external merge reads the same way; the audit
+proves it, and insufficient transferred evidence is reported there as not
+auditable with an evidence-recovery path, never a fabricated correspondence. A closed-unmerged
 PR, successful provider exit or unverified trailer cannot close work.
 
 The local-delivery item owns this record redesign and every existing
@@ -433,7 +440,7 @@ forever; old commits remain inspectable with their corresponding CLI.
 Migration classifies records before writing. Proposed/active/abandoned
 retain their meaning; review without approval becomes awaiting judgment;
 review with valid approval becomes recorded acceptance. Existing done with
-complete applicable approval and delivery evidence can use the new verifier.
+complete applicable approval and delivery evidence can be proved by the audit.
 Older done records without that evidence retain an explicitly labelled
 historical completion claim and the original provenance. Do not invent a
 candidate or acceptance, silently reopen them, or present them as freshly
