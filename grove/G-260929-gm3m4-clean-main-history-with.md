@@ -2,13 +2,14 @@
 id: "G-260929-gm3m4"
 type: work
 title: "Deliver accepted work locally with clean history and retained evidence"
-status: active
+status: review
 created: "2026-09-29T16:15:25Z"
-updated: "2026-09-30T16:32:25Z"
+updated: "2026-09-30T19:14:26Z"
 kind: feature
 size: large
 depends_on: ["G-260930-62nmj"]
 relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-4742q", "G-260930-r2k4g", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-gj9d7"]
+candidate: "b59f3de066bb41c5e97367c0f9b83b5e2a7e9f1d"
 ---
 
 ## Outcome
