@@ -434,10 +434,13 @@ func cleanup(root, cwd, name, submitted, worktree string, report func(string)) e
 		report(fmt.Sprintf("cleanup: kept %s: %s", what, reason))
 	}
 	// Only a branch nothing is lost by deleting: after a squash, one still at
-	// the submitted tip, which the evidence ref retains, since one that moved
-	// on holds a later edit; after an ordinary merge, which retains nothing,
-	// one whose tip the target contains, since a merge of the candidate alone
-	// leaves the handoff and acceptance after it on the branch only.
+	// the submitted tip, since one that moved on holds a later edit, and only
+	// once the evidence ref retains it, written here before anything is
+	// removed, since a clone that fetched the branch without refs/grove
+	// verifies the delivery from the branch alone; after an ordinary merge,
+	// which retains nothing, one whose tip the target contains, since a merge
+	// of the candidate alone leaves the handoff and acceptance after it on the
+	// branch only.
 	tip, err := repo.Git(root, "rev-parse", "-q", "--verify", "refs/heads/"+name)
 	tip = strings.TrimSpace(tip)
 	if err == nil && submitted == "" {
@@ -446,6 +449,11 @@ func cleanup(root, cwd, name, submitted, worktree string, report func(string)) e
 			return errors.New("cleanup incomplete; the integration stands")
 		}
 		submitted = tip
+	} else if err == nil && tip == submitted {
+		if _, err := repo.Git(root, "update-ref", standing.Ref(submitted), submitted); err != nil {
+			keep("worktree and branch "+name, "its tip "+short(tip)+" could not be retained under "+standing.Ref(submitted)+": "+err.Error())
+			return errors.New("cleanup incomplete; the integration stands")
+		}
 	}
 	if err != nil || tip != submitted {
 		keep("worktree and branch "+name, "the branch is not at a tip that a squash delivery retained")

@@ -362,6 +362,26 @@ func TestIntegrateCleanupAfterAnOrdinaryMerge(t *testing.T) {
 	})
 }
 
+// TestIntegrateCleanupRetainsTheSubmittedTip: a clone with the branch but not
+// refs/grove verifies a squash delivery from the branch alone, so cleanup
+// retains the submitted tip before it deletes the branch that held it.
+func TestIntegrateCleanupRetainsTheSubmittedTip(t *testing.T) {
+	t.Parallel()
+	root, _, _ := fixture(t, true)
+	submitted := tipOf(t, root, "feature")
+	if _, err := run(t, root, root, false); err != nil {
+		t.Fatal(err)
+	}
+	git(t, root, "update-ref", "-d", "refs/grove/submitted/"+submitted)
+	facts, err := run(t, root, root, true)
+	if err != nil || !slices.Contains(facts, "cleanup: deleted branch feature") {
+		t.Fatalf("%v %q", err, facts)
+	}
+	if held, _ := repo.Git(root, "rev-parse", "-q", "--verify", "refs/grove/submitted/"+submitted); strings.TrimSpace(held) != submitted {
+		t.Fatalf("the branch was deleted with nothing retaining %s", submitted)
+	}
+}
+
 // TestIntegrateUnderAPolicy attributes the delivery in its message and
 // reports its revert.
 func TestIntegrateUnderAPolicy(t *testing.T) {
