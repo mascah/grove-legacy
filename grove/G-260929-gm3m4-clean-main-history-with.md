@@ -2,9 +2,9 @@
 id: "G-260929-gm3m4"
 type: work
 title: "Deliver accepted work locally with clean history and retained evidence"
-status: proposed
+status: active
 created: "2026-09-29T16:15:25Z"
-updated: "2026-09-30T03:18:02Z"
+updated: "2026-09-30T13:09:30Z"
 kind: feature
 size: large
 depends_on: ["G-260930-62nmj"]
