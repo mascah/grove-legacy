@@ -227,7 +227,11 @@ commit trims; the two packages then passed on rerun (`.` and
 Review: [G-260930-c0g5p](G-260930-c0g5p-review-of-g-260929-gm3m4.md): three
 rounds, the owner's review, a fix round and a re-review at `9c9fed2`, Open
 findings: 3, of which the redesign removes the cause of two and `6b7ab0b`
-fixes the third. The redesign itself is unreviewed.
+fixes the third. The redesign's review: `2cb7bdd`, 5 findings, fixed in
+`f1fa1b7` and `aaf2d5a`; `aaf2d5a`, 2 findings on carried work, fixed in
+`a4453d1` (`TestIntegrateDeliversCarriedWorkFirst`,
+`TestIntegrateCarriedWorkDeliveredElsewhere`,
+`TestIntegrateCarriedWorkOnOneBranch`).
 
 ## Next
 
