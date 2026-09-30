@@ -201,17 +201,10 @@ func holdsCandidate(root string, r *project.Record, group []*project.Record) err
 	return nil
 }
 
-// deliveredHere reports accepted work whose verified delivery HEAD holds.
+// deliveredHere reports accepted work the target holds accepted for the same
+// candidate, which only a delivery brings there.
 func deliveredHere(root string, p *project.Project, r *project.Record) bool {
-	if r.Status != "accepted" {
-		return false
-	}
-	st, err := standing.Each(context.Background(), root, p.Target, p.Records)
-	if err != nil || st[r].State != standing.Done || st[r].Legacy {
-		return false
-	}
-	on, err := isAncestor(root, st[r].Delivered, "HEAD")
-	return err == nil && on
+	return r.Status == "accepted" && standing.Each(context.Background(), root, p.Target, []*project.Record{r})[r].State == standing.Done
 }
 
 // clean refuses a record whose file differs from HEAD in this checkout.

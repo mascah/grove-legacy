@@ -39,8 +39,8 @@ type Item struct {
 	Unlocks   []string `json:"unlocks"`   // unfinished work whose depends_on names it
 	NeededBy  []string `json:"needed_by"` // outside: the rows that need it
 	Delivery  string   `json:"delivery"`  // what Deliver found; "" until it runs
-	// Standing is what the record says and what its delivery evidence says
-	// (G-260930-2qa4a), when the caller judged it; nil otherwise.
+	// Standing is what the record says and whether the target holds its
+	// acceptance (G-260930-2qa4a), when the caller judged it; nil otherwise.
 	Standing *standing.Standing `json:"standing"`
 	// Merge is what merging a candidate in review into the target would do,
 	// when Deliver could predict it (G-260925-h8rj5).
@@ -284,13 +284,13 @@ func build(records []*project.Record, rows, selected []string, st map[string]*st
 func (v *View) Deliver(target string, contains func(commit, ref string) (bool, error), copies func(commit, ref string) ([]string, error), predict func(commits []string) ([]versions.Merge, error)) {
 	for i := range v.Items {
 		it := &v.Items[i]
-		c, label := it.Candidate, "candidate"
+		c := it.Candidate
 		where := func() string {
 			in, err := contains(c, "HEAD")
 			if err != nil {
-				return label + " " + short(c) + " cannot be read here"
+				return "candidate " + short(c) + " cannot be read here"
 			}
-			text := label + " " + short(c) + map[bool]string{true: " in HEAD", false: " not in HEAD"}[in]
+			text := "candidate " + short(c) + map[bool]string{true: " in HEAD", false: " not in HEAD"}[in]
 			if !in && it.Status == "done" {
 				if y := copyOf(copies, c, "HEAD"); y != "" {
 					text += " (HEAD holds " + short(y) + ", a rewritten copy)"
@@ -325,10 +325,6 @@ func (v *View) Deliver(target string, contains func(commit, ref string) (bool, e
 			}
 		case it.Status == "accepted" && it.Standing != nil:
 			it.Delivery = it.Standing.Text()
-			if it.Standing.State == standing.Done {
-				c, label = it.Standing.Delivered, "delivery"
-				it.Delivery += "; " + where()
-			}
 		case it.Status == "accepted":
 			it.Delivery = "accepted; delivery not examined"
 		case it.Status == "done" && c != "":

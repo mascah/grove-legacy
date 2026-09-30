@@ -392,8 +392,8 @@ func (m *Model) detailHead(v *versions.Version, w int) []string {
 		first, title = g.ID+" · deleted", "The current state removes this record; v lists the places that still hold an older copy."
 	case r.Type == "work":
 		first, title = g.ID+" · "+r.Status, r.Title
-		if r.Status == "accepted" && m.place(r) == doneColumn { // derived from its verified delivery
-			first = g.ID + " · done · accepted, delivered as " + short7(m.standing[r].Delivered)
+		if r.Status == "accepted" && m.place(r) == doneColumn { // derived: the target holds its acceptance
+			first = g.ID + " · done · accepted, delivered to " + m.standing[r].Target
 		}
 		if i := m.place(r); i >= 0 {
 			accent = accents[i].Bold(true)

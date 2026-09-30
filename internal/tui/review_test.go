@@ -600,7 +600,7 @@ func TestStandingLineNamesWhoApproved(t *testing.T) {
 		}
 		g := m.group()
 		v := m.shown(g)
-		m.standing = map[*project.Record]*standings.Standing{v.Record: {State: standings.Done, Target: "main", Delivered: "d0d0d0d"}}
+		m.standing = map[*project.Record]*standings.Standing{v.Record: {State: standings.Done, Target: "main"}}
 		if got := m.detailMeta(g, v); !strings.Contains(got, want) {
 			t.Fatalf("done standing line lacks %q: %s", want, got)
 		}
@@ -776,7 +776,7 @@ func TestReviewCardsShowApprovalAndConflicts(t *testing.T) {
 	done.Record.Candidate = "abcdef1"
 	accept(done.Record, "owner")
 	m := open(t, &fake{res: result(fx.main, fx.sources(), done)}, 160, 36)
-	m.standing = map[*project.Record]*standings.Standing{done.Record: {State: standings.Done, Target: "main", Delivered: "d0d0d0d"}}
+	m.standing = map[*project.Record]*standings.Standing{done.Record: {State: standings.Done, Target: "main"}}
 	if s := plain(m); !onRow(s, "W-001", "accepted") {
 		t.Fatalf("a Done card keeps its approval:\n%s", s)
 	}

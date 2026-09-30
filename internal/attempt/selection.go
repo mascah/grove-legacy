@@ -82,10 +82,10 @@ func selectionOf(p *project.Project, ids []string, until string, contains func(c
 	if err != nil {
 		return nil, err
 	}
-	// A prerequisite accepted in this checkout is delivered only when the
-	// target holds it verified and the base holds that delivery
-	// (G-260930-2qa4a); an unreadable standing waits like unknown evidence.
-	st, _ := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
+	// A prerequisite accepted in this checkout is delivered, and in the base,
+	// when the target holds it accepted for the same candidate
+	// (G-260930-gj9d7); an unreadable target waits.
+	st := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
 	v, err := deps.Preview(p.Records, ids, st)
 	if err != nil {
 		return nil, err
@@ -113,17 +113,7 @@ func selectionOf(p *project.Project, ids []string, until string, contains func(c
 			}
 			o.Delivery, wait = text, "needs "+it.ID+", which is "+text
 		case it.Status == "accepted":
-			d := st[it.ID].Delivered
-			switch in, _, err := contains(d); {
-			case err != nil:
-				o.Delivery = st[it.ID].Text() + ", but that cannot be read here"
-				wait = "needs " + it.ID + ", whose delivery " + short(d) + " cannot be read here"
-			case in:
-				o.Delivery = "delivered: " + st[it.ID].Text() + ", in the base"
-			default:
-				o.Delivery = st[it.ID].Text() + ", not in the base"
-				wait = "needs " + it.ID + ", delivered as " + short(d) + ", which the base lacks: start from " + st[it.ID].Target
-			}
+			o.Delivery = st[it.ID].Text() + ", in the base"
 		case it.Status == "done" && it.Candidate == "":
 			o.Delivery = "done without a candidate: delivery unrecorded"
 		case it.Status == "done":

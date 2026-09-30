@@ -15,8 +15,6 @@ import (
 	"github.com/mascah/grove/internal/attempt"
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/integrate"
-	"github.com/mascah/grove/internal/project"
-	standings "github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/sweep"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
@@ -104,9 +102,6 @@ func Live() Backend {
 				ids = append(ids, o.ID)
 			}
 			return append(facts, "next: continue there with /grove-work "+strings.Join(ids, " ")), nil
-		},
-		Standing: func(ctx context.Context, root, target string, records []*project.Record) (map[*project.Record]*standings.Standing, error) {
-			return standings.Each(ctx, root, target, records)
 		},
 		Integrate: func(_ context.Context, root, id string, cleanup bool) ([]string, error) {
 			var facts []string

@@ -113,10 +113,7 @@ func PlanContext(ctx context.Context, root string, only ...string) (*Sweep, erro
 			}
 		}
 	}
-	here, err := standing.Each(ctx, p.Root, p.Target, read)
-	if err != nil {
-		return nil, err
-	}
+	here := standing.Each(ctx, p.Root, p.Target, read)
 	s := &Sweep{Root: p.Root, Target: p.Target, Policy: p.Policy, Attribution: "policy grove.yaml " + project.Revision(p.Config), prefix: res.Prefix, records: p.RecordDir, here: here}
 	found := map[string][]*versions.Version{}
 	var ids []string // in the groups' order, by ID
@@ -170,7 +167,7 @@ func (s *Sweep) plan(ctx context.Context, res *versions.Result, p *project.Proje
 		}
 		return wait("shares its candidate with %s; a shared candidate waits for the owner", strings.Join(others, ", "))
 	}
-	// Delivered is what the verifier every consumer reads says, whatever
+	// Delivered is what the target's own copy of the record says, whatever
 	// the branch still holds.
 	if st := s.here[r]; st != nil && st.State == standing.Done {
 		it.Act, it.Why = Skip, st.Text()
@@ -584,21 +581,8 @@ func (s *Sweep) verify(it Item) error {
 		return err
 	}
 	defer repo.Git(s.Root, "worktree", "remove", "--force", wt)
-	// The tree integrate would deliver, from the earlier squash delivery the
-	// tip continues if any, checked out without a commit or an identity.
-	args := []string{"merge-tree", "--write-tree", "--no-messages", it.merge.Target, it.tip}
-	base, err := standing.Base(context.Background(), s.Root, it.merge.Target, it.tip)
-	if err != nil {
-		return err
-	}
-	if base != "" {
-		args = slices.Insert(args, 3, "--merge-base="+base)
-	}
-	tree, err := repo.Git(s.Root, args...)
-	if err != nil {
-		return fmt.Errorf("the merge failed: %v", err)
-	}
-	if _, err := repo.Git(wt, "read-tree", "-u", "--reset", strings.TrimSpace(tree)); err != nil {
+	// --no-commit leaves the merged tree in the worktree without an identity.
+	if _, err := repo.Git(wt, "merge", "-q", "--no-commit", "--no-ff", it.tip); err != nil {
 		return fmt.Errorf("the merge failed: %v", err)
 	}
 	drop := append([]string{}, repo.GitLocation...)

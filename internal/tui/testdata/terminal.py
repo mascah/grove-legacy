@@ -464,7 +464,7 @@ def review_and_integrate(root, wt, base):
     s.send(b"n")
     s.expect("Integration of G-260101-00001", mark)
     s.expect("delivery: squash commit", mark)
-    s.expect("done: G-260101-00001 is done: squashed as", mark)
+    s.expect("done: G-260101-00001 is done: delivered to main, proved: squashed as", mark)
     mark = s.expect("The board has been re-read.", mark)  # Esc waits for the re-read
     s.send(ESC)
     s.expect("· done", mark)

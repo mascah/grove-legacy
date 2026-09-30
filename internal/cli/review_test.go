@@ -94,7 +94,7 @@ func TestIntegrateUsage(t *testing.T) {
 	t.Parallel()
 	for _, args := range [][]string{
 		{"integrate"}, {"integrate", "G-260101-00001", "extra"}, {"integrate", "G-260101-00001", "--cleanup", "--cleanup"},
-		{"integrate", "G-260101-00001", "--json"}, {"integrate", "G-260101-00001", "--commit"}, {"list", "--cleanup"}, {"update", "G-260101-00001", "--set", "status=done", "--cleanup"},
+		{"integrate", "G-260101-00001", "--json"}, {"integrate", "G-260101-00001", "--commit"}, {"list", "--cleanup"}, {"list", "--deliveries"}, {"check", "--deliveries", "--deliveries"}, {"update", "G-260101-00001", "--set", "status=done", "--cleanup"},
 	} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, t.TempDir(), &out, &errOut); code != 2 || out.Len() != 0 || !strings.Contains(errOut.String(), "Usage:") {
@@ -139,22 +139,26 @@ func TestIntegrateCommand(t *testing.T) {
 	want := "acceptance: candidate " + candidate[:7] + " of G-260101-00001 accepted by owner on branch feature at " + tip[:7] + " (Verdict on candidate " + candidate[:7] + ", " + today() + ": Yes)\n" +
 		"retained: refs/grove/submitted/" + tip + "\n" +
 		"delivery: squash commit " + head[:7] + " on main (was " + before[:7] + ")\n" +
-		"done: G-260101-00001 is done: squashed as " + head[:7] + " on main\n" +
+		"done: G-260101-00001 is done: delivered to main, proved: squashed as " + head[:7] + " from submitted tip " + tip[:7] + "\n" +
 		"cleanup: deleted branch feature\n"
 	if code != 0 || out != want {
 		t.Fatalf("code=%d stderr=%s\nout:\n%s\nwant:\n%s", code, stderr, out, want)
 	}
 	// The two entry paths agree: a reader of the raw file sees an acceptance
-	// with its authority, never a stored done; the tools add the verified
-	// delivery beside it.
+	// with its authority, never a stored done; the tools add beside it that
+	// the target holds that acceptance.
 	shown := showJSON(t, root, "G-260101-00001")
 	if src := shown["source"].(string); !strings.Contains(src, "status: accepted\n") || !strings.Contains(src, "approved: \""+candidate+"\"\n") || !strings.Contains(src, "approved_by: owner\n") {
 		t.Fatalf("record on main:\n%s", src)
 	}
-	if st, _ := shown["standing"].(map[string]any); st["state"] != "done" || st["delivered"] != head {
+	if st, _ := shown["standing"].(map[string]any); st["state"] != "done" || st["tip"] != head {
 		t.Fatalf("standing: %v", shown["standing"])
 	}
 	if _, out, _ := run("list"); !strings.Contains(out, "G-260101-00001  work      accepted  done      ") {
 		t.Fatalf("list:\n%s", out)
+	}
+	// The audit, on request only, proves the delivery from Git.
+	if code, out, _ := run("check", "--deliveries"); code != 0 || !strings.Contains(out, "G-260101-00001: proved: squashed as "+head[:7]+" from submitted tip "+tip[:7]+"\n") || !strings.HasSuffix(out, "Deliveries to main: 1 proved, 0 not proved, 0 cannot be audited here\n") {
+		t.Fatalf("check --deliveries: code=%d\n%s", code, out)
 	}
 }

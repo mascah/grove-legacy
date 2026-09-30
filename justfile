@@ -23,8 +23,7 @@ clean-merged:
     # changes or untracked files, and `git branch -d` refuses a branch that is not merged.
     # A branch grove integrate squashed counts as merged only while its tip is a
     # retained submission and a commit on main is exactly that tip merged onto its
-    # one parent, as grove's verifier checks; it is deleted only at that tip. A
-    # delivery that continued an earlier one is left to `grove integrate --cleanup`.
+    # one parent, as `grove check --deliveries` proves it; it is deleted only at that tip.
     set -euo pipefail
     git worktree prune
     current=$(git branch --show-current)

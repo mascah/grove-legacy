@@ -156,7 +156,7 @@ func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 	var facts []string
 	s.Run(now, func(f string) { facts = append(facts, f) })
 	joined := strings.Join(facts, "\n")
-	for _, want := range []string{"G-260101-00001: verified: the merge of", "G-260101-00001: approved under policy grove.yaml sha256:", "G-260101-00001: delivery: squash commit ", "G-260101-00001: done: G-260101-00001 is done: squashed as "} {
+	for _, want := range []string{"G-260101-00001: verified: the merge of", "G-260101-00001: approved under policy grove.yaml sha256:", "G-260101-00001: delivery: squash commit ", "G-260101-00001: done: G-260101-00001 is done: delivered to main, proved: squashed as "} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("missing %q in:\n%s", want, joined)
 		}

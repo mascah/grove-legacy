@@ -56,11 +56,7 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 		}
 	}
 	if r.Status == "accepted" {
-		st, err := standing.Each(context.Background(), p.Root, p.Target, branchRecords(res, from))
-		if err != nil {
-			return nil, err
-		}
-		if s := st[r]; s.State == standing.Done {
+		if s := standing.Each(context.Background(), p.Root, p.Target, []*project.Record{r})[r]; s.State == standing.Done {
 			return nil, fmt.Errorf("%s is %s; there is nothing to resolve", id, s.Text())
 		}
 	}

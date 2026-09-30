@@ -14,7 +14,7 @@ func TestIntegrateDeliversTheInspectedCommitUnderAPrefix(t *testing.T) {
 	root, _, candidate := fixture(t, true, "sub")
 	git(t, root, "tag", "feature", "main") // a tag of the branch's name
 	facts, err := run(t, root, root, false)
-	if err != nil || len(facts) != 4 || !strings.HasPrefix(facts[3], "done: G-260101-00001 is done: squashed as ") {
+	if err != nil || len(facts) != 4 || !strings.HasPrefix(facts[3], "done: G-260101-00001 is done: delivered to main, proved: squashed as ") {
 		t.Fatalf("%v; facts %q", err, facts)
 	}
 	if r := record(t, root); r.Status != "accepted" || r.Candidate != candidate {

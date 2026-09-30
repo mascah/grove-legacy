@@ -257,7 +257,7 @@ func assemble(ctx context.Context, dir *os.Root, root string, ids []string, opts
 			scope = append(scope, r)
 		}
 	}
-	st, _ := standing.Inspect(ctx, p.Root, p.Target, p.Records)
+	st := standing.Inspect(ctx, p.Root, p.Target, p.Records)
 	text := func(id string) string {
 		if s := st[id]; s != nil {
 			return s.Text()

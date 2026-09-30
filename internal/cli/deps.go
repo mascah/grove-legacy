@@ -20,7 +20,7 @@ import (
 // versions, an inspection that could not read every source still prints and
 // exits 1.
 func runDeps(p *project.Project, a invocation, out, errOut io.Writer) int {
-	st, _ := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
+	st := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
 	v := deps.Overview(p.Records, false, st)
 	if len(a.ids) != 0 {
 		var err error

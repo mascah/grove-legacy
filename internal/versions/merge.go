@@ -8,11 +8,9 @@ import (
 	"fmt"
 	"os/exec"
 	"path"
-	"slices"
 	"strings"
 
 	"github.com/mascah/grove/internal/repo"
-	delivery "github.com/mascah/grove/internal/standing"
 )
 
 // Merge predicts what merging a commit into the target would do now (G-260925-h8rj5),
@@ -121,9 +119,6 @@ func resolveCommits(ctx context.Context, root string, names ...string) (prefix s
 // objects only. tree is the merged tree of a clean merge. merge-tree names
 // files from root, whose prefix in the repository turns them into paths
 // from its top.
-// A commit that continues an earlier squash delivery merges from that
-// delivery's submitted tip, as integrate delivers it and the verifier
-// checks it.
 func predict(ctx context.Context, root, prefix, ours, base, commit string) (m Merge, tree string, err error) {
 	m = Merge{Commit: commit, Conflicts: []string{}}
 	switch base {
@@ -136,15 +131,7 @@ func predict(ctx context.Context, root, prefix, ours, base, commit string) (m Me
 	}
 	// Exit 1 is Git's answer, a conflict, with the files on stdout, which
 	// GitContext drops on failure.
-	args := []string{"merge-tree", "--write-tree", "--name-only", "--no-messages", "-z", ours, commit}
-	from, err := delivery.Base(ctx, root, ours, commit)
-	if err != nil {
-		return m, "", err
-	}
-	if from != "" {
-		args = slices.Insert(args, 5, "--merge-base="+from)
-	}
-	cmd := repo.Command(ctx, root, args...)
+	cmd := repo.Command(ctx, root, "merge-tree", "--write-tree", "--name-only", "--no-messages", "-z", ours, commit)
 	cmd.WaitDelay = repo.WaitDelay(ctx)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr

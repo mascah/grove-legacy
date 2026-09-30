@@ -1,10 +1,14 @@
-// Package standing derives each work record's standing (G-260930-2qa4a): what
-// its record says, and whether an acceptance it holds was delivered to the
-// target, from Git evidence read at the target's tip. Done is never read
-// from a status: an applicable acceptance is done when the tip contains its
-// candidate, or a squash delivery of it that Git verifies. Missing or
-// insufficient evidence is unknown, never done. Nothing here writes, fetches
-// or pushes; every consumer that decides from completion reads this result.
+// Package standing derives each work record's standing (G-260930-2qa4a,
+// G-260930-gj9d7): what its record says, and whether an acceptance it holds
+// reached the target. Done is never read from a status. An acceptance
+// reaches the target only through a delivery, so an applicable acceptance is
+// done when the target tip's own copy of the record, at the same path, is
+// accepted for the same candidate, and otherwise awaits delivery. A reading
+// consults nothing else, no history, trailers or refs/grove, so it costs the
+// same however old the repository is and however many branches or
+// deliveries it has. integrate proves each delivery once, as it makes it
+// (Prove), and Audit proves them again when a person asks. Nothing here
+// writes, fetches or pushes.
 package standing
 
 import (
@@ -13,10 +17,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os/exec"
 	"path"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/mascah/grove/internal/project"
@@ -29,9 +33,9 @@ const (
 	Proposed  = "proposed"
 	Active    = "active"
 	Review    = "review"
-	Accepted  = "accepted" // accepted, verified not yet delivered
+	Accepted  = "accepted" // accepted, not yet on the target
 	Done      = "done"
-	Unknown   = "unknown" // accepted; delivery could not be established either way
+	Unknown   = "unknown" // accepted; the target could not be read
 	Abandoned = "abandoned"
 )
 
@@ -41,26 +45,19 @@ type Standing struct {
 	Recorded string `json:"recorded"` // the record's own status, as its file says
 	State    string `json:"state"`
 	Legacy   bool   `json:"legacy,omitempty"` // done is schema 3's claim, not verified
-	// Target and Tip are the branch and commit delivery was judged at.
+	// Target and Tip are the branch and commit the acceptance was judged at.
 	Target string `json:"target,omitempty"`
 	Tip    string `json:"tip,omitempty"`
-	// Delivered is the target's commit holding the result: the candidate
-	// for an ordinary merge, or the squash commit.
-	Delivered string `json:"delivered,omitempty"`
-	// Submitted is the tip a squash delivered, retained under Ref.
-	Submitted string `json:"submitted,omitempty"`
-	Why       string `json:"why,omitempty"`
+	Why    string `json:"why,omitempty"`
 }
 
-// Text is the standing as one phrase: "done at 1234567 on main".
+// Text is the standing as one phrase: "done: delivered to main".
 func (s *Standing) Text() string {
 	switch {
 	case s.Legacy:
 		return "done (schema 3 claim)"
-	case s.State == Done && s.Submitted != "":
-		return "done: squashed as " + short(s.Delivered) + " on " + s.Target
 	case s.State == Done:
-		return "done: " + s.Target + " contains " + short(s.Delivered)
+		return "done: delivered to " + s.Target
 	case s.State == Accepted:
 		return "accepted, awaiting delivery to " + s.Target
 	case s.State == Unknown:
@@ -74,13 +71,13 @@ func (s *Standing) Text() string {
 }
 
 // Ref retains a squash delivery's submitted tip, and with it the candidate
-// and its review and acceptance, through cleanup and garbage collection.
-// It is outside refs/heads, so it is evidence, never a work branch.
+// and its review and acceptance, through cleanup and garbage collection,
+// for Audit alone. It is outside refs/heads, so it is evidence, never a
+// work branch.
 func Ref(submitted string) string { return "refs/grove/submitted/" + submitted }
 
-// Of is a record's standing from its file alone, before any delivery is
-// examined: an accepted record whose acceptance applies stays Unknown until
-// Inspect judges it.
+// Of is a record's standing from its file alone, before the target is read:
+// an accepted record whose acceptance applies stays Unknown until Judge.
 func Of(r *project.Record) *Standing {
 	s := &Standing{ID: r.ID, Recorded: r.Status, State: r.Status}
 	switch r.Status {
@@ -97,65 +94,177 @@ func Of(r *project.Record) *Standing {
 	return s
 }
 
-// Inspect judges every work record in records, the project whose files sit
-// under root, at the target branch's tip in root's repository. It returns
-// one Standing per work record, by ID. An error is only a failure to read
-// Git at all; each record's own unknowns are in its Standing.
-func Inspect(ctx context.Context, root, target string, records []*project.Record) (map[string]*Standing, error) {
-	each, err := Each(ctx, root, target, records)
-	if err != nil {
-		return nil, err
-	}
-	out := map[string]*Standing{}
-	for r, s := range each {
-		out[r.ID] = s
-	}
-	return out, nil
-}
-
-// Each is Inspect by record rather than ID, for records drawn from several
-// versions of the same work, such as a board's branches and checkouts.
-func Each(ctx context.Context, root, target string, records []*project.Record) (map[*project.Record]*Standing, error) {
+// Judge is the standing of every work record in records against copies,
+// the target tip's own records by project-relative path, read at commit
+// tip; nil copies means the target could not be read. It starts no process,
+// for a caller that already holds the target's records, as the board does.
+func Judge(target, tip string, copies map[string]*project.Record, records []*project.Record) map[*project.Record]*Standing {
 	out := map[*project.Record]*Standing{}
-	var open []*project.Record // applicable acceptances
 	for _, r := range records {
 		if r.Type != "work" {
 			continue
 		}
 		s := Of(r)
 		out[r] = s
-		if s.State == Unknown {
-			s.Target = target
-			open = append(open, r)
+		if s.State != Unknown {
+			continue
+		}
+		s.Target, s.Tip = target, tip
+		switch t := copies[r.Path]; {
+		case target == "":
+			s.Why = "no target is configured in grove.yaml"
+		case copies == nil:
+			s.Why = "the target branch " + target + " cannot be read here"
+		case t != nil && t.ID == r.ID && t.Status == "accepted" && sameCommit(t.Candidate, r.Candidate):
+			s.State, s.Why = Done, ""
+		default:
+			s.State, s.Why = Accepted, ""
+		}
+	}
+	return out
+}
+
+// Each is Judge with the target's copies read from root's repository, in one
+// git cat-file whatever the number of records or versions of them, and none
+// when no acceptance applies. Records may be drawn from several versions of
+// the same work.
+func Each(ctx context.Context, root, target string, records []*project.Record) map[*project.Record]*Standing {
+	var paths []string
+	for _, r := range records {
+		if r.Type == "work" && Of(r).State == Unknown && !slices.Contains(paths, r.Path) {
+			paths = append(paths, r.Path)
+		}
+	}
+	if target == "" || len(paths) == 0 {
+		return Judge(target, "", nil, records)
+	}
+	tip, copies := read(ctx, root, target, paths)
+	return Judge(target, tip, copies, records)
+}
+
+// Inspect is Each by ID, for the records of one version of the project.
+func Inspect(ctx context.Context, root, target string, records []*project.Record) map[string]*Standing {
+	out := map[string]*Standing{}
+	for r, s := range Each(ctx, root, target, records) {
+		out[r.ID] = s
+	}
+	return out
+}
+
+// read is the target tip's commit and its own record at each of paths, in
+// one git cat-file; a path the target lacks, or holds unparsable, has no
+// copy. Copies are nil when the target branch cannot be read.
+func read(ctx context.Context, root, target string, paths []string) (string, map[string]*project.Record) {
+	var in bytes.Buffer
+	fmt.Fprintf(&in, "refs/heads/%s^{commit}\n", target)
+	for _, p := range paths {
+		// ponytail: a path holding a newline misreads; record paths never do.
+		fmt.Fprintf(&in, "refs/heads/%s:./%s\n", target, p)
+	}
+	out, err := run(ctx, root, in.Bytes(), "cat-file", "--batch")
+	if err != nil {
+		return "", nil
+	}
+	objects, err := batch(out, len(paths)+1)
+	if err != nil || objects[0].kind != "commit" {
+		return "", nil
+	}
+	copies := map[string]*project.Record{}
+	for i, p := range paths {
+		if o := objects[i+1]; o.kind == "blob" {
+			if r, ds := project.ParseRecord(p, o.data); len(ds) == 0 {
+				copies[p] = r
+			}
+		}
+	}
+	return objects[0].id, copies
+}
+
+// Proof is what Audit or Prove found of one record the target holds
+// accepted: proved by the target containing the candidate or by a squash
+// delivery Git verifies, not proved, or not auditable in this clone.
+type Proof struct {
+	ID          string `json:"id"`
+	Proved      bool   `json:"proved"`
+	Unauditable bool   `json:"unauditable,omitempty"` // the evidence is not in this clone
+	// Delivered is the target's commit holding the result: the candidate
+	// for an ordinary merge, or the squash commit, whose submitted tip is
+	// Submitted.
+	Delivered string `json:"delivered,omitempty"`
+	Submitted string `json:"submitted,omitempty"`
+	Why       string `json:"why,omitempty"`
+}
+
+// Text is the proof as one phrase.
+func (p *Proof) Text() string {
+	switch {
+	case p.Proved && p.Submitted != "":
+		return "proved: squashed as " + short(p.Delivered) + " from submitted tip " + short(p.Submitted)
+	case p.Proved:
+		return "proved: the target contains candidate " + short(p.Delivered)
+	case p.Unauditable:
+		return "cannot be audited here: " + p.Why
+	}
+	return "not proved: " + p.Why
+}
+
+// Audit proves, for each work record in records, the delivery of the target
+// tip's own copy when that copy's acceptance applies: the target contains
+// its candidate, or a squash delivery on the target names it and verifies.
+// It walks the target's history and reads refs/grove, so it runs only when
+// a person asks (grove check --deliveries), never on a reading.
+func Audit(ctx context.Context, root, target string, records []*project.Record) ([]*Proof, error) {
+	if target == "" {
+		return nil, errors.New("no target is configured in grove.yaml")
+	}
+	var paths []string
+	for _, r := range records {
+		if r.Type == "work" && !slices.Contains(paths, r.Path) {
+			paths = append(paths, r.Path)
+		}
+	}
+	_, copies := read(ctx, root, target, paths)
+	if copies == nil {
+		return nil, fmt.Errorf("the target branch %s cannot be read here", target)
+	}
+	var open []*project.Record
+	for _, p := range paths {
+		if t := copies[p]; t != nil && Of(t).State == Unknown {
+			open = append(open, t)
 		}
 	}
 	if len(open) == 0 {
-		return out, nil
+		return nil, nil
 	}
-	unknown := func(why string) (map[*project.Record]*Standing, error) {
-		for _, r := range open {
-			out[r].Why = why
-		}
-		return out, nil
-	}
-	if target == "" {
-		return unknown("no target is configured in grove.yaml")
-	}
-	_, _, prefix, err := repo.IdentifyContext(ctx, root)
-	if err != nil {
-		return unknown("not in a readable Git repository")
-	}
-	// Git work here is a fixed number of processes, whatever the number of
-	// deliveries, records or versions of them: one rev-parse, one log, one
-	// cat-file and one rev-list, then one per batch in verify. Only a
-	// delivery whose tree is not the plain merge costs more (bases).
 	head, err := repo.GitContext(ctx, root, "rev-parse", "--is-shallow-repository", "--verify", "-q", "refs/heads/"+target+"^{commit}")
 	f := strings.Fields(head)
 	if err != nil || len(f) != 2 {
-		return unknown("the target branch " + target + " cannot be read here")
+		return nil, fmt.Errorf("the target branch %s cannot be read here", target)
 	}
-	complete, tip := f[0] == "false", f[1]
-	claims, err := deliveries(ctx, root, tip)
+	claims, err := deliveries(ctx, root, f[1])
+	if err != nil {
+		return nil, err
+	}
+	return prove(ctx, root, f[1], f[0] == "false", open, records, claims)
+}
+
+// Prove proves the one squash commit delivered, which integrate just made,
+// for members, the target's copies of what it delivered: scoped to that
+// commit and the branch it came from, with no walk of the target's history.
+// records are every record read, any of which may change after a candidate.
+func Prove(ctx context.Context, root, delivered string, members, records []*project.Record) ([]*Proof, error) {
+	claims, err := deliveries(ctx, root, "--no-walk", delivered)
+	if err != nil {
+		return nil, err
+	}
+	return prove(ctx, root, delivered, true, members, records, claims)
+}
+
+// prove decides each of open, the target's accepted copies, at tip from
+// claims, the delivery claims found there; complete is false in a shallow
+// clone, which cannot show a delivery absent.
+func prove(ctx context.Context, root, tip string, complete bool, open, records []*project.Record, claims []delivery) ([]*Proof, error) {
+	_, _, prefix, err := repo.IdentifyContext(ctx, root)
 	if err != nil {
 		return nil, err
 	}
@@ -189,74 +298,62 @@ func Each(ctx context.Context, root, target string, records []*project.Record) (
 	}
 	var pending []*check
 	mine := map[*project.Record][]*check{}
-	shared := map[string]*check{} // one check per claim, record ID and path
-	for _, r := range open {
-		s := out[r]
-		s.Tip = tip
+	proofs := make([]*Proof, len(open))
+	for i, r := range open {
+		p := &Proof{ID: r.ID}
+		proofs[i] = p
 		c := full[r.Candidate]
 		_, off := graph[c]
 		switch {
 		case c == "":
-			s.Why = "candidate " + short(r.Candidate) + " is not in this repository; fetch the branch or the refs/grove evidence that holds it"
+			p.Unauditable, p.Why = true, "candidate "+short(r.Candidate)+" is not in this repository; fetch the branch or the refs/grove evidence that holds it"
 		case !off:
-			s.State, s.Delivered, s.Why = Done, c, ""
+			p.Proved, p.Delivered = true, c
 		default:
 			for _, d := range claims {
-				if d.candidate != c {
-					continue
+				if d.candidate == c {
+					k := &check{record: r, candidate: c, delivery: d}
+					pending = append(pending, k)
+					mine[r] = append(mine[r], k)
 				}
-				key := d.commit + "\x00" + r.ID + "\x00" + r.Path
-				if shared[key] == nil {
-					shared[key] = &check{record: r, candidate: c, delivery: d}
-					pending = append(pending, shared[key])
-				}
-				mine[r] = append(mine[r], shared[key])
 			}
-			if len(mine[r]) == 0 {
-				absent(s, complete)
+			switch {
+			case len(mine[r]) != 0:
+			case complete:
+				p.Why = "no delivery on the target names candidate " + short(r.Candidate) + ", yet the target's record is accepted for it"
+			default:
+				p.Unauditable, p.Why = true, "this clone's history is shallow, so the target may hold a delivery it cannot see; fetch the full history"
 			}
 		}
 	}
-	if err := verify(ctx, root, prefix, records, pending, full, graph, &bases{claims: claims, verified: map[string]bool{}}); err != nil {
+	if err := verify(ctx, root, prefix, records, pending, full, graph); err != nil {
 		return nil, err
 	}
-	// A record is done by any verified claim; otherwise a claim that is
-	// missing its submitted tip, or that fails, leaves it unknown: the claim
-	// is not a delivery, but nor is its failure proof of none, so nothing
-	// may deliver it again until someone reconciles it.
-	for _, r := range open {
-		s := out[r]
+	// Proved by any verified claim; otherwise a claim missing its submitted
+	// tip cannot be audited here, and one that fails is not proof.
+	for i, r := range open {
+		p := proofs[i]
 		var missing, failed string
-		for _, p := range mine[r] {
+		for _, k := range mine[r] {
 			switch {
-			case s.State == Done:
-			case p.ok:
-				s.State, s.Delivered, s.Submitted, s.Why = Done, p.delivery.commit, p.delivery.submitted, ""
-			case p.missing:
-				missing = cmp.Or(missing, p.why)
+			case p.Proved:
+			case k.ok:
+				p.Proved, p.Delivered, p.Submitted = true, k.delivery.commit, k.delivery.submitted
+			case k.missing:
+				missing = cmp.Or(missing, k.why)
 			default:
-				failed = cmp.Or(failed, p.why)
+				failed = cmp.Or(failed, k.why)
 			}
 		}
 		switch {
-		case s.State != Unknown || missing == "" && failed == "":
+		case p.Proved || missing == "" && failed == "":
 		case missing != "":
-			s.Why = missing
+			p.Unauditable, p.Why = true, missing
 		default:
-			s.Why = "a delivery claim on " + s.Target + " names this candidate but does not verify: " + failed + "; reconcile it before delivering again"
+			p.Why = "a delivery claim names this candidate but does not verify: " + failed
 		}
 	}
-	return out, nil
-}
-
-// absent is an acceptance whose delivery the tip does not hold: accepted,
-// awaiting delivery, only when the history examined is complete.
-func absent(s *Standing, complete bool) {
-	if complete {
-		s.State, s.Why = Accepted, ""
-	} else {
-		s.Why = "this clone's history is shallow, so the target may hold a delivery it cannot see; fetch the full history"
-	}
+	return proofs, nil
 }
 
 // delivery is a commit on the target whose message claims a squash delivery.
@@ -265,23 +362,23 @@ type delivery struct {
 	candidate, submitted string
 }
 
-// check is one claimed delivery of one record, shared by every version of
-// it with the same ID and path.
+// check is one claimed delivery of one record.
 type check struct {
 	record    *project.Record
 	candidate string
 	delivery  delivery
 	ok        bool
-	missing   bool // the submitted tip is absent: unknown, not absent
+	missing   bool // the submitted tip is absent: not auditable, not failed
 	why       string
 }
 
 var hexCommit = regexp.MustCompile("^[0-9a-f]{40}([0-9a-f]{24})?$")
 
-// deliveries lists the commits reachable from tip whose trailers name a
+// deliveries lists the commits git log revs lists whose trailers name a
 // candidate and a submitted tip. The trailers only locate: verify decides.
-func deliveries(ctx context.Context, root, tip string) ([]delivery, error) {
-	out, err := repo.GitContext(ctx, root, "log", "-z", "--fixed-strings", "--grep=Grove-Submitted: ", "--format=%H%x1f%P%x1f%T%x1f%(trailers:only,unfold)", tip)
+func deliveries(ctx context.Context, root string, revs ...string) ([]delivery, error) {
+	args := append([]string{"log", "-z", "--fixed-strings", "--grep=Grove-Submitted: ", "--format=%H%x1f%P%x1f%T%x1f%(trailers:only,unfold)"}, revs...)
+	out, err := repo.GitContext(ctx, root, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -318,8 +415,8 @@ func deliveries(ctx context.Context, root, tip string) ([]delivery, error) {
 // the claimed commit's tree. full resolves each submitted tip and graph is
 // unmerged's. Each batch is one process holding only the checks still
 // passing: a claim already failed is never merged or read, so nothing it
-// names can fail every record's reading.
-func verify(ctx context.Context, root, prefix string, records []*project.Record, checks []*check, full map[string]string, graph map[string][]string, earlier *bases) error {
+// names can fail every record's audit.
+func verify(ctx context.Context, root, prefix string, records []*project.Record, checks []*check, full map[string]string, graph map[string][]string) error {
 	failed := func(c *check) bool { return c.why != "" }
 	for _, c := range checks {
 		switch d := c.delivery; {
@@ -364,12 +461,16 @@ func verify(ctx context.Context, root, prefix string, records []*project.Record,
 	for _, c := range live {
 		fmt.Fprintf(&blobs, "%s:%s\n", c.delivery.submitted, path.Join(prefix, c.record.Path))
 	}
-	sources, err := catBlobs(ctx, root, len(live), blobs.Bytes())
+	out, err := run(ctx, root, blobs.Bytes(), "cat-file", "--batch")
+	if err != nil {
+		return err
+	}
+	sources, err := batch(out, len(live))
 	if err != nil {
 		return err
 	}
 	for i, c := range live {
-		if at, ds := project.ParseRecord(c.record.Path, sources[i]); sources[i] == nil || len(ds) != 0 || at.ID != c.record.ID || at.Status != "accepted" || !sameCommit(at.Approved, c.candidate) {
+		if at, ds := project.ParseRecord(c.record.Path, sources[i].data); sources[i].kind != "blob" || len(ds) != 0 || at.ID != c.record.ID || at.Status != "accepted" || !sameCommit(at.Approved, c.candidate) {
 			c.why = "the record at submitted tip " + short(c.delivery.submitted) + " is not accepted for candidate " + short(c.candidate)
 		}
 	}
@@ -385,19 +486,8 @@ func verify(ctx context.Context, root, prefix string, records []*project.Record,
 		return err
 	}
 	for i, c := range live {
-		// A delivery's tree is judged once, however many records it holds.
-		d := c.delivery
-		ok, seen := earlier.verified[d.commit]
-		if !seen {
-			if ok = trees[i] == d.tree; !ok {
-				if ok, err = earlier.rebased(ctx, root, d); err != nil {
-					return err
-				}
-			}
-			earlier.verified[d.commit] = ok
-		}
-		if !ok {
-			c.why = "delivery " + short(d.commit) + " is not what merging " + short(d.submitted) + " into its parent gives"
+		if trees[i] != c.delivery.tree {
+			c.why = "delivery " + short(c.delivery.commit) + " is not what merging " + short(c.delivery.submitted) + " into its parent gives"
 			continue
 		}
 		c.ok = true
@@ -409,9 +499,9 @@ func verify(ctx context.Context, root, prefix string, records []*project.Record,
 // parents, in one git rev-list: a head missing from it is on the target, and
 // every path from a head to a commit in it stays in it.
 // ponytail: the ^tip walk stops by commit date, so clock skew past Git's
-// slop can list a commit the tip holds, which then reads as awaiting
-// delivery or unknown, never done; merge-base --is-ancestor per candidate
-// is exact if that is ever seen.
+// slop can list a commit the tip holds, which an audit then reports not
+// proved, never proved; merge-base --is-ancestor per candidate is exact if
+// that is ever seen.
 func unmerged(ctx context.Context, root, tip string, heads []string) (map[string][]string, error) {
 	var in bytes.Buffer
 	for _, h := range heads {
@@ -448,111 +538,6 @@ func contains(graph map[string][]string, head, commit string) bool {
 		}
 	}
 	return false
-}
-
-// Base is the submitted tip of the newest squash delivery reachable from
-// tip that the next submission continues, or "": a branch kept after a
-// squash delivery continues from what was delivered, so its next submission
-// merges from there, not from where it first left the target. Only a
-// retained submission submitted contains and tip lacks can be one, which
-// one for-each-ref rules out on the ordinary path.
-func Base(ctx context.Context, root, tip, submitted string) (string, error) {
-	retained, err := repo.GitContext(ctx, root, "for-each-ref", "--format=%(objectname)", "--merged="+submitted, "--no-merged="+tip, "refs/grove/submitted/")
-	if err != nil || strings.TrimSpace(retained) == "" {
-		return "", err
-	}
-	claims, err := deliveries(ctx, root, tip)
-	if err != nil {
-		return "", err
-	}
-	return (&bases{claims: claims, verified: map[string]bool{}}).of(ctx, root, tip, submitted)
-}
-
-// bases finds and checks the earlier deliveries a later one merged from.
-type bases struct {
-	claims   []delivery
-	verified map[string]bool // by delivery commit: its tree is its merge
-}
-
-// of is the newest claim that parent contains whose tree verifies and whose
-// submitted tip descends from Git's own merge base of parent and submitted
-// and is contained in submitted: it replaces that fork point, and nothing
-// the branch took from the target since is older than it, so merging from
-// it can neither undo the target's later changes nor skip the branch's.
-// ponytail: one ancestry check per earlier claim among the branch's own
-// commits, newest first; bounded by the deliveries that branch continues.
-func (b *bases) of(ctx context.Context, root, parent, submitted string) (string, error) {
-	// Unrelated histories have nothing to continue, and several best merge
-	// bases (a criss-cross) are left to Git's own merge: the earlier
-	// submission cannot be shown to replace them all.
-	out, err := repo.GitContext(ctx, root, "merge-base", "--all", parent, submitted)
-	fork := strings.Fields(out)
-	if err != nil || len(fork) != 1 {
-		return "", nil
-	}
-	own, err := lines(ctx, root, nil, "rev-list", "--ancestry-path", submitted, "^"+fork[0])
-	if err != nil {
-		return "", err
-	}
-	after := map[string]bool{}
-	for _, c := range own {
-		after[c] = true
-	}
-	for _, d := range b.claims {
-		if d.submitted == submitted || !after[d.submitted] {
-			continue
-		}
-		if on, err := ancestor(ctx, root, d.commit, parent); err != nil || !on {
-			continue
-		}
-		ok, err := b.tree(ctx, root, d)
-		if err != nil {
-			return "", err
-		}
-		if ok {
-			return d.submitted, nil
-		}
-	}
-	return "", nil
-}
-
-// tree reports whether d's tree is its submitted tip merged onto its
-// parent, from where they split or from the delivery it continued.
-func (b *bases) tree(ctx context.Context, root string, d delivery) (bool, error) {
-	if ok, seen := b.verified[d.commit]; seen {
-		return ok, nil
-	}
-	b.verified[d.commit] = false // a cycle proves nothing
-	trees, err := mergeTrees(ctx, root, 1, []byte(d.parent+" "+d.submitted+"\n"))
-	if err != nil {
-		return false, err
-	}
-	ok := trees[0] == d.tree
-	if !ok {
-		ok, err = b.rebased(ctx, root, d)
-	}
-	b.verified[d.commit] = ok
-	return ok, err
-}
-
-// rebased reports whether d's tree is its submitted tip merged onto its
-// parent from the earlier delivery it continues.
-func (b *bases) rebased(ctx context.Context, root string, d delivery) (bool, error) {
-	base, err := b.of(ctx, root, d.parent, d.submitted)
-	if err != nil || base == "" {
-		return false, err
-	}
-	trees, err := mergeTrees(ctx, root, 1, []byte(base+" -- "+d.parent+" "+d.submitted+"\n"))
-	return err == nil && trees[0] == d.tree, err
-}
-
-func ancestor(ctx context.Context, root, commit, of string) (bool, error) {
-	_, err := repo.GitContext(ctx, root, "merge-base", "--is-ancestor", commit, of)
-	var exit *exec.ExitError
-	if errors.As(err, &exit) && exit.ExitCode() == 1 {
-		return false, nil
-	}
-	return err == nil, err
 }
 
 // resolve maps each name to its full commit, or "" when the object is not
@@ -626,29 +611,31 @@ func mergeTrees(ctx context.Context, root string, n int, in []byte) ([]string, e
 	return trees, nil
 }
 
-// catBlobs reads each blob, nil where it is missing, in one git cat-file.
-func catBlobs(ctx context.Context, root string, n int, in []byte) ([][]byte, error) {
-	out, err := run(ctx, root, in, "cat-file", "--batch")
-	if err != nil {
-		return nil, err
-	}
+// object is one git cat-file --batch answer; kind is "" where it is missing.
+type object struct {
+	id, kind string
+	data     []byte
+}
+
+// batch parses n answers of git cat-file --batch.
+func batch(out string, n int) ([]object, error) {
 	data := []byte(out)
-	blobs := make([][]byte, n)
+	objects := make([]object, n)
 	for i := 0; i < n && len(data) != 0; i++ {
 		header, rest, _ := bytes.Cut(data, []byte("\n"))
+		data = rest
 		f := strings.Fields(string(header))
-		if len(f) != 3 || f[1] != "blob" {
-			data = rest
-			continue
+		if len(f) != 3 || !hexCommit.MatchString(f[0]) {
+			continue // "NAME missing" or "NAME ambiguous"
 		}
-		var size int
-		if _, err := fmt.Sscanf(f[2], "%d", &size); err != nil || size > len(rest) {
+		size, err := strconv.Atoi(f[2])
+		if err != nil || size >= len(rest) {
 			return nil, errors.New("git cat-file --batch: unexpected output")
 		}
-		blobs[i] = rest[:size]
-		data = rest[min(size+1, len(rest)):]
+		objects[i] = object{f[0], f[1], rest[:size]}
+		data = rest[size+1:]
 	}
-	return blobs, nil
+	return objects, nil
 }
 
 func run(ctx context.Context, root string, in []byte, args ...string) (string, error) {

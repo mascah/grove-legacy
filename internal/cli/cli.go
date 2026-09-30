@@ -30,7 +30,7 @@ import (
 )
 
 const usage = "Usage: grove [--project DIR] [--json]\n" +
-	"       grove [--project DIR] list [--status VALUE]... | show ID [--json] | brief [--json] | check\n" +
+	"       grove [--project DIR] list [--status VALUE]... | show ID [--json] | brief [--json] | check [--deliveries]\n" +
 	"       grove [--project DIR] init [--check] | migrate [--commit]\n" +
 	"       grove guide work|shape|review|model [--entrypoint N] [--part NAME] | version\n" +
 	"       grove [--project DIR] new TYPE TITLE [--slug SLUG]\n" +
@@ -57,14 +57,21 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             Needs a terminal on stdin and stderr; stdout may be redirected. Reads only.\n" +
 	"  list       List records in the selected checkout; --status VALUE, repeatable, keeps\n" +
 	"             only records in any given status (a value outside the vocabulary is refused);\n" +
-	"             STANDING is work's derived standing, done only from verified delivery\n" +
+	"             STANDING is work's derived standing, done when the target's own copy of\n" +
+	"             the record is accepted for the same candidate\n" +
 	"  show ID    Print the complete Markdown source for a record, and for work its\n" +
-	"             standing on stderr (done only from verified delivery); --json prints\n" +
+	"             standing on stderr (done as list says); --json prints\n" +
 	"             {id, path, revision, source} instead, with standing for work and\n" +
 	"             approved_by (owner or policy) when accepted\n" +
 	"  brief      Print the project brief that grove.yaml names with brief: PATH;\n" +
 	"             --json prints {path, revision, source}. context never adds it by itself.\n" +
-	"  check      Validate configuration, records, and relationships\n" +
+	"  check      Validate configuration, records, and relationships. --deliveries also\n" +
+	"             audits every work record the target holds accepted, from Git: the target\n" +
+	"             contains its candidate, or a squash delivery there names it and is exactly\n" +
+	"             that candidate's branch merged onto its parent, the branch kept under\n" +
+	"             refs/grove/submitted/; prints each as proved, not proved, or cannot be\n" +
+	"             audited here (evidence this clone lacks); exit 1 if any is not proved.\n" +
+	"             Reading never audits: it costs only what --deliveries asks for.\n" +
 	"  init       Set up the Git checkout at --project DIR (default: the current directory,\n" +
 	"             which must be the checkout's top): grove.yaml, the record root, a\n" +
 	"             placeholder brief, the grove-work and grove-shape entrypoints for Claude\n" +
@@ -103,7 +110,7 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             Lists are JSON arrays such as '[\"G-260925-7k2qm\"]'; priority is 1-5. A plan or\n" +
 	"             review names its work with work=[...]; a review's examined is a Git commit,\n" +
 	"             as is work's candidate, required in review and accepted. No update makes\n" +
-	"             work done, which is derived from its acceptance and verified delivery.\n" +
+	"             work done, which is derived from its acceptance and its delivery.\n" +
 	"             update accepts type=TYPE with whatever else the new type requires in the\n" +
 	"             same update; the ID and path never change.\n" +
 	"  approve    Record the owner's acceptance of a work record in review, in a checkout of\n" +
@@ -128,10 +135,11 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             fast-forwarded to it. No record is written: done is derived. A candidate\n" +
 	"             shared by a group delivers the group, refused unless every member is\n" +
 	"             accepted. Prints one line per fact as it holds: acceptance, retained,\n" +
-	"             delivery, verified done, and with --cleanup the worktree and branch removed,\n" +
-	"             or kept with the reason. Every refusal, a predicted conflict included, comes\n" +
-	"             before the target moves; nothing undoes a delivery. A rerun after one only\n" +
-	"             cleans up.\n" +
+	"             delivery, done with that one commit proved, and with --cleanup the worktree\n" +
+	"             and branch removed, or kept with the reason. Every refusal, a predicted\n" +
+	"             conflict included, comes before the target moves; nothing undoes a delivery.\n" +
+	"             A rerun after one only cleans up. A branch kept after its delivery merges the\n" +
+	"             target before its next one, as any branch does.\n" +
 	"  resolve    For a work record in review whose candidate conflicts with the target, from\n" +
 	"             any checkout: record feedback naming the target commit and the conflicting\n" +
 	"             files, committed in the branch's checkout, and start one attempt there, as run\n" +
@@ -473,7 +481,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		table := tabwriter.NewWriter(&buffer, 0, 4, 2, ' ', 0)
 		// STATUS is the file's; STANDING is derived for work from its
 		// acceptance and delivery evidence (G-260930-2qa4a).
-		st, _ := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
+		st := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
 		fmt.Fprintln(table, "ID\tTYPE\tSTATUS\tSTANDING\tTITLE")
 		for _, r := range p.Records {
 			if a.statuses != nil && !slices.Contains(a.statuses, r.Status) {
@@ -500,13 +508,8 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 				// bytes, which print as they are.
 				var s *standing.Standing
 				if r.Type == "work" {
-					// An unreadable standing is said, and the source still prints.
-					st, err := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
-					text := fmt.Sprintf("could not be read: %v", err)
-					if s = st[r.ID]; s != nil {
-						text = s.Text()
-					}
-					if _, err := fmt.Fprintf(errOut, "Standing: %s\n", visible(text)); err != nil {
+					s = standing.Each(context.Background(), p.Root, p.Target, []*project.Record{r})[r]
+					if _, err := fmt.Fprintf(errOut, "Standing: %s\n", visible(s.Text())); err != nil {
 						return 1
 					}
 				}
@@ -542,7 +545,35 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		}
 		return writeResult(out, errOut, source)
 	case "check":
-		return writeResult(out, errOut, fmt.Appendf(nil, "OK: %d records\n", len(p.Records)))
+		result := fmt.Appendf(nil, "OK: %d records\n", len(p.Records))
+		if !a.deliveries {
+			return writeResult(out, errOut, result)
+		}
+		// The audit reads the target's history and refs/grove, which no
+		// reading does (G-260930-gj9d7): only on request.
+		proofs, err := standing.Audit(context.Background(), p.Root, p.Target, p.Records)
+		if err != nil {
+			report(errOut, fmt.Errorf("deliveries could not be audited: %v", err))
+			return 1
+		}
+		code, counts := 0, [3]int{}
+		for _, proof := range proofs {
+			switch {
+			case proof.Proved:
+				counts[0]++
+			case proof.Unauditable:
+				counts[2]++
+			default:
+				counts[1]++
+				code = 1
+			}
+			result = fmt.Appendf(result, "%s: %s\n", proof.ID, visible(proof.Text()))
+		}
+		result = fmt.Appendf(result, "Deliveries to %s: %d proved, %d not proved, %d cannot be audited here\n", p.Target, counts[0], counts[1], counts[2])
+		if written := writeResult(out, errOut, result); written != 0 {
+			return written
+		}
+		return code
 	default:
 		panic("validated command not handled")
 	}
@@ -551,7 +582,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 type invocation struct {
 	project, command, id, kind, title, slug, source string
 	entrypoint, part                                string // guide
-	help, json, cleanup, check, dryRun              bool
+	help, json, cleanup, check, dryRun, deliveries  bool
 	request                                         update.Request
 	convert                                         update.ConvertRequest
 	ids                                             []string // context
@@ -729,6 +760,13 @@ func parseArgs(args []string) (a invocation, err error) {
 			a.check = true
 			continue
 		}
+		if arg == "--deliveries" {
+			if a.deliveries {
+				return a, fmt.Errorf("--deliveries may only be supplied once")
+			}
+			a.deliveries = true
+			continue
+		}
 		if arg == "--cleanup" {
 			if a.cleanup {
 				return a, fmt.Errorf("--cleanup may only be supplied once")
@@ -794,6 +832,9 @@ func parseArgs(args []string) (a invocation, err error) {
 	}
 	if a.cleanup && a.command != "integrate" {
 		return a, fmt.Errorf("--cleanup applies only to integrate")
+	}
+	if a.deliveries && a.command != "check" {
+		return a, fmt.Errorf("--deliveries applies only to check")
 	}
 	if a.check && a.command != "init" {
 		return a, fmt.Errorf("--check applies only to init")

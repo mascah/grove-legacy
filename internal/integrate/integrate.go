@@ -1,17 +1,17 @@
 // Package integrate delivers an accepted candidate to the configured target
 // as one squash commit (G-260929-gm3m4), a sequence of separately reported
 // facts: acceptance found, evidence retained, delivery made or refused,
-// standing verified, cleanup done or kept. Every refusal happens before the
+// delivery proved, cleanup done or kept. Every refusal happens before the
 // target moves, and nothing after the delivery undoes it; no record is
-// written, since Done is derived from the acceptance and the delivery
-// (G-260930-2qa4a). A candidate shared by several work records on its branch
-// (G-260925-wc2pz) is delivered as their group: every member must be
-// accepted. Rerun after an interruption, it finds a delivery already made
-// through the same verifier and goes on to cleanup, never a second commit.
+// written, since Done is derived from the acceptance the delivery brings to
+// the target (G-260930-2qa4a, G-260930-gj9d7). A candidate shared by several
+// work records on its branch (G-260925-wc2pz) is delivered as their group:
+// every member must be accepted. Rerun after an interruption, it reads a
+// delivery already made as every reader does, from the target's copy of the
+// record, and goes on to cleanup, never a second commit.
 package integrate
 
 import (
-	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -75,17 +75,11 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if err != nil {
 		return err
 	}
-	// A delivery already made, as by an interrupted run or someone else,
-	// is found by the verifier every consumer uses: only cleanup remains.
-	here, err := standing.Inspect(ctx, root, p.Target, p.Records)
-	if err != nil {
-		return err
-	}
 	from, r, err := accepted(res, req.ID, p.Target)
 	if errors.As(err, new(noBranch)) {
 		// No branch holds the work at all: the target's own record may
 		// say why.
-		switch s := here[req.ID]; {
+		switch s := standing.Inspect(ctx, root, p.Target, p.Records)[req.ID]; {
 		case s != nil && s.State == standing.Done && s.Legacy:
 			return fmt.Errorf("%s is done under schema 3 here; there is nothing to deliver", req.ID)
 		case s != nil && s.State == standing.Done:
@@ -97,21 +91,29 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		return err
 	}
 	name, submitted := strings.TrimPrefix(from.Ref, "refs/heads/"), from.Commit
-	// The branch's own acceptance decides, never the target's copy: work
-	// reopened and accepted again on a kept branch is a new delivery.
-	mine, err := standing.Each(ctx, root, p.Target, append(branchRecords(res, from), p.Records...))
-	if err != nil {
-		return err
-	}
-	switch s := mine[r]; s.State {
+	// The branch's own acceptance decides, read against the target's copy as
+	// every reader reads it: a delivery already made, as by an interrupted
+	// run or someone else, leaves only cleanup, and work reopened and
+	// accepted again on a kept branch is a new delivery.
+	switch s := standing.Each(ctx, root, p.Target, []*project.Record{r})[r]; s.State {
 	case standing.Done:
 		report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
 		if !req.Cleanup {
 			return nil
 		}
-		return cleanup(root, req.Cwd, name, s.Submitted, worktreeOf(res, from.Ref), report)
+		// The squash commit whose submitted tip is the branch's, if one is.
+		// ponytail: walks the target's first parents until it finds one, only
+		// for a cleanup of work already delivered.
+		d, err := repo.Git(root, "log", "-1", "--first-parent", "--format=%H", "--fixed-strings", "--grep=Grove-Submitted: "+submitted, "HEAD")
+		if err != nil {
+			return err
+		}
+		if strings.TrimSpace(d) == "" {
+			submitted = ""
+		}
+		return cleanup(root, req.Cwd, name, submitted, worktreeOf(res, from.Ref), report)
 	case standing.Unknown:
-		return fmt.Errorf("%s's delivery cannot be decided (%s); nothing was delivered. Fetch refs/grove/* where a submitted tip is missing; otherwise grove feedback %s reopens it for a candidate %s contains or a new one", req.ID, s.Why, req.ID, p.Target)
+		return fmt.Errorf("%s's delivery cannot be decided (%s); nothing was delivered", req.ID, s.Why)
 	}
 	if _, err := repo.Git(root, "merge-base", "--is-ancestor", r.Candidate, submitted); err != nil {
 		return fmt.Errorf("branch %s does not contain candidate %s, which it names; repair the record before integrating", name, r.Candidate)
@@ -166,16 +168,6 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if req.Expect != "" && before != req.Expect {
 		return fmt.Errorf("%s moved from %s, where the merge was verified, to %s; nothing was delivered and %s stays accepted", p.Target, short(req.Expect), short(before), req.ID)
 	}
-	// A branch kept after an earlier squash delivery merges from what was
-	// delivered, as the verifier checks it.
-	base, err := standing.Base(ctx, root, before, submitted)
-	if err != nil {
-		return err
-	}
-	merge := []string{"merge-tree", "--write-tree", "--no-messages", before, submitted}
-	if base != "" {
-		merge = slices.Insert(merge, 3, "--merge-base="+base)
-	}
 	// A conflict is refused before anything is written (G-260925-h8rj5):
 	// merge-tree performs it in objects only and names the files.
 	ms, err := versions.PredictContext(ctx, root, before, []string{submitted})
@@ -192,16 +184,16 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 			name, p.Target, conflict, p.Target, short(before), req.ID, req.ID, p.Target, short(before), where, p.Target)
 	}
 	if ms[0].Outcome == "integrated" {
-		return fmt.Errorf("%s already holds %s at %s, yet the acceptance of %s is not verified as delivered there; inspect it with grove show %s", p.Target, name, short(before), req.ID, req.ID)
+		return fmt.Errorf("%s already holds %s at %s, yet its own copy of %s is not accepted for candidate %s: it changed there since; inspect it with grove show %s", p.Target, name, short(before), req.ID, short(r.Candidate), req.ID)
 	}
-	tree, err := repo.Git(root, merge...)
+	tree, err := repo.Git(root, "merge-tree", "--write-tree", "--no-messages", before, submitted)
 	if err != nil {
 		return fmt.Errorf("the delivery of %s into %s could not be prepared: %v; nothing was delivered", name, p.Target, err)
 	}
 	if current, err := repo.Git(root, "rev-parse", before+"^{tree}"); err != nil {
 		return err
 	} else if strings.TrimSpace(current) == strings.TrimSpace(tree) {
-		return fmt.Errorf("%s at %s already holds everything %s would deliver, yet no delivery of %s verifies there: it arrived some other way. Nothing was delivered; to reconcile, grove feedback %s reopens it, and a candidate %s contains, handed off and accepted, is done by ancestry", p.Target, short(before), name, req.ID, req.ID, p.Target)
+		return fmt.Errorf("%s at %s already holds everything %s would deliver, yet its own copy of %s is not accepted for candidate %s. Nothing was delivered; inspect it with grove show %s", p.Target, short(before), name, req.ID, short(r.Candidate), req.ID)
 	}
 	// The evidence is retained before the target moves, so a delivery that
 	// succeeds can always be verified, whatever happens to the branch; and
@@ -210,7 +202,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		return fmt.Errorf("the submitted tip %s could not be retained: %v; nothing was delivered", short(submitted), err)
 	}
 	report("retained: " + standing.Ref(submitted))
-	message, err := Message(root, p.RecordDir, cmp.Or(base, before), r.Candidate, submitted, group, req.Policy)
+	message, err := Message(root, p.RecordDir, before, r.Candidate, submitted, group, req.Policy)
 	if err != nil {
 		return err
 	}
@@ -228,25 +220,33 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if req.Policy != "" {
 		report(fmt.Sprintf("delivered under %s; to reverse it: git revert %s", req.Policy, delivered))
 	}
-	// Reconcile: the delivery counts only once the verifier every consumer
-	// reads says so.
+	// The one commit just made is proved as an audit proves it, and each
+	// member then reads done as every reader reads it.
 	after, ds := project.Load(root, root)
 	if len(ds) != 0 {
 		return fmt.Errorf("delivered as %s, but the project there does not load: %s", short(delivered), diagnostics(ds))
 	}
-	verified, err := standing.Inspect(ctx, root, p.Target, after.Records)
-	if err != nil {
-		return fmt.Errorf("delivered as %s, but its standing could not be read: %v; rerun grove integrate %s to verify it", short(delivered), err, req.ID)
-	}
+	var members []*project.Record
 	for _, m := range group {
-		s := verified[m.ID]
-		if s == nil {
+		i := slices.IndexFunc(after.Records, func(o *project.Record) bool { return o.ID == m.ID && o.Type == "work" })
+		if i < 0 {
 			return fmt.Errorf("delivered as %s, but %s is not a work record there; inspect it before anything else", short(delivered), m.ID)
 		}
-		if s.State != standing.Done {
-			return fmt.Errorf("delivered as %s, but %s is not verified done there (%s); inspect it before anything else", short(delivered), m.ID, s.Text())
+		members = append(members, after.Records[i])
+	}
+	proofs, err := standing.Prove(ctx, root, delivered, members, after.Records)
+	if err != nil {
+		return fmt.Errorf("delivered as %s, but it could not be proved: %v; grove check --deliveries audits it", short(delivered), err)
+	}
+	read := standing.Each(ctx, root, p.Target, members)
+	for i, m := range members {
+		if !proofs[i].Proved {
+			return fmt.Errorf("delivered as %s, but %s is %s; inspect it before anything else", short(delivered), m.ID, proofs[i].Text())
 		}
-		report(fmt.Sprintf("done: %s is %s", m.ID, s.Text()))
+		if s := read[m]; s.State != standing.Done {
+			return fmt.Errorf("delivered as %s, but %s reads %s there; inspect it before anything else", short(delivered), m.ID, s.Text())
+		}
+		report(fmt.Sprintf("done: %s is %s, %s", m.ID, read[m].Text(), proofs[i].Text()))
 	}
 	if !req.Cleanup {
 		return nil

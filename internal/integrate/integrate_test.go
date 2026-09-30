@@ -12,6 +12,7 @@ import (
 
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/update"
 )
 
@@ -131,8 +132,8 @@ func tipOf(t *testing.T, root, branch string) string {
 // TestIntegrateSquashesAndRetainsEvidence covers delivery (G-260929-gm3m4):
 // one squash commit on the target with a Conventional Commit message and the
 // trailers that locate its evidence, the submitted tip retained, no record
-// commit, the verifier's done, and cleanup that deletes only what the
-// evidence ref keeps.
+// commit, the one commit proved and each member read done, and cleanup that
+// deletes only what the evidence ref keeps.
 func TestIntegrateSquashesAndRetainsEvidence(t *testing.T) {
 	t.Parallel()
 	root, wt, candidate := fixture(t, true)
@@ -146,7 +147,7 @@ func TestIntegrateSquashesAndRetainsEvidence(t *testing.T) {
 		"acceptance: candidate " + candidate[:7] + " of G-260101-00001 accepted by owner on branch feature at " + submitted[:7] + " (Verdict on candidate " + candidate[:7] + ", 2026-09-22: Ship it.)",
 		"retained: refs/grove/submitted/" + submitted,
 		"delivery: squash commit " + d[:7] + " on main (was " + before[:7] + ")",
-		"done: G-260101-00001 is done: squashed as " + d[:7] + " on main",
+		"done: G-260101-00001 is done: delivered to main, proved: squashed as " + d[:7] + " from submitted tip " + submitted[:7],
 		"cleanup: removed worktree " + wt,
 		"cleanup: deleted branch feature",
 	}
@@ -166,9 +167,9 @@ func TestIntegrateSquashesAndRetainsEvidence(t *testing.T) {
 	if r := record(t, root); r.Status != "accepted" || r.Approved != candidate || git(t, root, "status", "--porcelain") != "" {
 		t.Fatalf("the target holds the accepted record as submitted and nothing else: %+v", r)
 	}
-	// Rerun, as after an interruption: the verifier finds the delivery.
+	// Rerun, as after an interruption: the target's record says delivered.
 	facts, err = run(t, root, root, true)
-	if err != nil || len(facts) != 1 || facts[0] != "delivered: G-260101-00001 is already done: squashed as "+d[:7]+" on main" || tipOf(t, root, "main") != d {
+	if err != nil || len(facts) != 1 || facts[0] != "delivered: G-260101-00001 is already done: delivered to main" || tipOf(t, root, "main") != d {
 		t.Fatalf("rerun: %v %q", err, facts)
 	}
 }
@@ -186,7 +187,7 @@ func TestIntegrateRecoversAfterTheTargetAdvanced(t *testing.T) {
 	write(t, wt, "grove/G-260101-00001-first.md", string(record(t, wt).Source)+"\n## Next\n\nA later edit.\n")
 	git(t, wt, "commit", "-qam", "docs: later")
 	facts, err := run(t, root, root, true)
-	if err == nil || tipOf(t, root, "main") != d || !strings.Contains(strings.Join(facts, "\n"), "cleanup: kept worktree and branch feature: the branch is not at a tip that a squash delivery retained") {
+	if err == nil || tipOf(t, root, "main") != d || !strings.Contains(strings.Join(facts, "\n"), "cleanup: kept worktree and branch feature: the target does not contain its tip") {
 		t.Fatalf("%v %q", err, facts)
 	}
 }
@@ -286,9 +287,15 @@ func TestIntegrateRefusesWhatIsNotReadyToDeliver(t *testing.T) {
 		root, _, _ := fixture(t, true)
 		git(t, root, "checkout", "feature", "--", ":/")
 		git(t, root, "commit", "-qm", "chore: copy feature")
-		refused(t, root, false, "main at "+tipOf(t, root, "main")[:7]+" already holds everything feature would deliver, yet no delivery of G-260101-00001 verifies there")
+		head := tipOf(t, root, "main")
+		// The acceptance came with the copy, so it reads delivered: only the
+		// audit could say how it got there.
+		facts, err := run(t, root, root, false)
+		if err != nil || len(facts) != 1 || facts[0] != "delivered: G-260101-00001 is already done: delivered to main" || tipOf(t, root, "main") != head {
+			t.Fatalf("%v %q", err, facts)
+		}
 		if out, _ := repo.Git(root, "for-each-ref", "refs/grove/"); out != "" {
-			t.Fatalf("a refusal retained evidence: %s", out)
+			t.Fatalf("evidence was retained for no delivery: %s", out)
 		}
 	})
 	t.Run("nothing accepted", func(t *testing.T) {
@@ -332,10 +339,11 @@ func TestIntegrateCleanupKeepsWhatGitOrTheSessionHolds(t *testing.T) {
 	}
 }
 
-// TestIntegrateCleanupAfterAnOrdinaryMerge: work done because the target
-// contains its candidate has nothing retained under refs/grove, so its branch
-// goes only when the target contains the tip too; a merge of the candidate
-// alone keeps the branch, and with it the handoff and acceptance.
+// TestIntegrateCleanupAfterAnOrdinaryMerge: work merged whole has its
+// acceptance on the target and nothing retained under refs/grove, so its
+// branch goes because the target contains the tip; a merge of the candidate
+// alone leaves the acceptance off the target, so the work is delivered as
+// usual, which brings the acceptance over and retains the branch's tip.
 func TestIntegrateCleanupAfterAnOrdinaryMerge(t *testing.T) {
 	t.Parallel()
 	t.Run("tip contained", func(t *testing.T) {
@@ -353,18 +361,19 @@ func TestIntegrateCleanupAfterAnOrdinaryMerge(t *testing.T) {
 		tip := tipOf(t, root, "feature")
 		git(t, root, "merge", "-q", "--no-ff", "-m", "merge the candidate", candidate)
 		facts, err := run(t, root, root, true)
-		if err == nil || !strings.Contains(err.Error(), "cleanup incomplete; the integration stands") || !slices.Contains(facts, "cleanup: kept worktree and branch feature: the target does not contain its tip "+tip[:7]+", whose commits nothing else retains") {
+		if err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tip) || !slices.Contains(facts, "cleanup: removed worktree "+wt) || !slices.Contains(facts, "cleanup: deleted branch feature") {
 			t.Fatalf("%v %q", err, facts)
 		}
-		if _, err := os.Stat(wt); err != nil || tipOf(t, root, "feature") != tip {
-			t.Fatal("the worktree and branch holding the acceptance were not kept")
+		if r := record(t, root); r.Status != "accepted" || r.Approved != candidate {
+			t.Fatalf("the acceptance did not arrive: %+v", r)
 		}
 	})
 }
 
-// TestIntegrateCleanupRetainsTheSubmittedTip: a clone with the branch but not
-// refs/grove verifies a squash delivery from the branch alone, so cleanup
-// retains the submitted tip before it deletes the branch that held it.
+// TestIntegrateCleanupRetainsTheSubmittedTip: a rerun whose submitted tip
+// nothing retains, as in a clone that fetched the branch without refs/grove,
+// retains it before it deletes the branch that held it, so the audit can
+// still prove the delivery.
 func TestIntegrateCleanupRetainsTheSubmittedTip(t *testing.T) {
 	t.Parallel()
 	root, _, _ := fixture(t, true)
@@ -417,9 +426,9 @@ func TestMessageTypes(t *testing.T) {
 // TestIntegrateDeliversReopenedWorkAgain: the branch's own acceptance
 // decides, so work reopened on a kept branch is refused while in review and
 // is a second delivery once accepted again, never "already done" from the
-// target's earlier copy; feedback
-// after a squash runs on the target, which never holds the candidate; and a
-// delivery claim that no longer verifies is refused, never delivered twice.
+// target's earlier copy. The kept branch conflicts with its own earlier
+// delivery until it merges the target, as any branch does; feedback after a
+// squash runs on the target, which never holds the candidate.
 func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
 	t.Parallel()
 	root, wt, _ := fixture(t, true)
@@ -432,6 +441,8 @@ func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
 	}
 	write(t, wt, "code.txt", "the change, more\n")
 	git(t, wt, "commit", "-qam", "fix: more")
+	// What was delivered is the branch's own, so its side wins.
+	git(t, wt, "merge", "-q", "-X", "ours", "-m", "merge main", "main")
 	c2 := git(t, wt, "rev-parse", "HEAD")
 	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c2}}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
@@ -441,10 +452,10 @@ func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
 		t.Fatal(err)
 	}
 	facts, err := run(t, root, root, false)
-	if err != nil || !strings.HasPrefix(facts[len(facts)-1], "done: G-260101-00001 is done: squashed as ") || git(t, root, "show", "main:code.txt") != "the change, more" {
+	if err != nil || !strings.HasPrefix(facts[len(facts)-1], "done: G-260101-00001 is done: delivered to main, proved: squashed as ") || git(t, root, "show", "main:code.txt") != "the change, more" {
 		t.Fatalf("the second acceptance: %v %q", err, facts)
 	}
-	if git(t, root, "rev-parse", "main^") != d1 || !strings.HasPrefix(git(t, root, "log", "-1", "--format=%s", "main"), "fix: first") {
+	if git(t, root, "rev-parse", "main^") != d1 || !strings.HasPrefix(git(t, root, "log", "-1", "--format=%s", "main"), "feat: first") {
 		t.Fatal("the second delivery is one commit on the first")
 	}
 	// Feedback on the target after the squash reopens the work there.
@@ -456,10 +467,10 @@ func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
 	}
 }
 
-// TestIntegrateRefusesAnAlteredDelivery: once a delivery claim stops
-// verifying, as after an amend, the work's delivery is unknown and nothing
-// is delivered again.
-func TestIntegrateRefusesAnAlteredDelivery(t *testing.T) {
+// TestIntegrateLeavesAnAlteredDeliveryToTheAudit: a delivery amended after
+// the fact still reads done, since the target holds the acceptance, and is
+// never delivered again; only the audit, on request, says it is not proved.
+func TestIntegrateLeavesAnAlteredDeliveryToTheAudit(t *testing.T) {
 	t.Parallel()
 	root, _, _ := fixture(t, true)
 	if _, err := run(t, root, root, false); err != nil {
@@ -468,7 +479,15 @@ func TestIntegrateRefusesAnAlteredDelivery(t *testing.T) {
 	write(t, root, "extra.txt", "amended in\n")
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-q", "--amend", "--no-edit")
-	refused(t, root, false, "delivery cannot be decided (a delivery claim on main names this candidate but does not verify")
+	head := tipOf(t, root, "main")
+	if facts, err := run(t, root, root, false); err != nil || len(facts) != 1 || tipOf(t, root, "main") != head {
+		t.Fatalf("%v %q", err, facts)
+	}
+	p, _ := project.Load(root, root)
+	proofs, err := standing.Audit(context.Background(), root, "main", p.Records)
+	if err != nil || len(proofs) != 1 || proofs[0].Proved || !strings.Contains(proofs[0].Why, "is not what merging") {
+		t.Fatalf("%v %+v", err, proofs)
+	}
 }
 
 func TestSubject(t *testing.T) {

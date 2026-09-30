@@ -374,7 +374,7 @@ func TestBoardReviewWorkflow(t *testing.T) {
 	s.press("y")
 	s.want("Also delete branch feature and remove its worktree? y/n   (")
 	s.press("n")
-	s.want("Integration of G-260101-00001", "acceptance: candidate "+short+" of G-260101-00001 accepted by owner on branch feature at ", "delivery: squash commit ", "done: G-260101-00001 is done: squashed as ")
+	s.want("Integration of G-260101-00001", "acceptance: candidate "+short+" of G-260101-00001 accepted by owner on branch feature at ", "delivery: squash commit ", "done: G-260101-00001 is done: delivered to main, proved: squashed as ")
 	if got := gitIn(t, root, "show", "HEAD:docs/records/work/renamed.md"); !strings.Contains(got, "status: accepted") || !strings.Contains(got, "approved: \""+candidate+"\"") {
 		t.Fatalf("main's record after integration:\n%s", got)
 	}
@@ -382,6 +382,6 @@ func TestBoardReviewWorkflow(t *testing.T) {
 		t.Fatal("n should keep the worktree")
 	}
 	s.press("esc")
-	s.want("G-260101-00001 · done · accepted, delivered as ", "candidate "+short+" · accepted · on main")
+	s.want("G-260101-00001 · done · accepted, delivered to main", "candidate "+short+" · accepted · on main")
 	s.lacks("a approve")
 }

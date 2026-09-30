@@ -130,7 +130,7 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 	rs := append(backlog(), work("S-40", "accepted"), work("S-41", "accepted"), work("S-20", "done"), work("S-21", "done"), work("S-22", "done"), work("S-30", "proposed", "S-20", "S-21", "S-22", "S-07", "S-40", "S-41"))
 	rs[len(rs)-6].Candidate, rs[len(rs)-5].Candidate = "4040404", "4141414"
 	st := map[string]*standing.Standing{
-		"S-40": {ID: "S-40", Recorded: "accepted", State: standing.Done, Target: "main", Delivered: "4040d0d", Submitted: "4040505"},
+		"S-40": {ID: "S-40", Recorded: "accepted", State: standing.Done, Target: "main"},
 		"S-41": {ID: "S-41", Recorded: "accepted", State: standing.Accepted, Target: "main"},
 	}
 	rs[len(rs)-4].Candidate = "2020202"                                    // in HEAD, not on main
@@ -146,7 +146,7 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 			return false, errors.New("bad object")
 		case commit == "7777777bbbb" || commit == "2222222":
 			return false, nil
-		case commit == "2020202", commit == "4040d0d":
+		case commit == "2020202":
 			return ref == "HEAD", nil
 		}
 		return true, nil
@@ -171,7 +171,7 @@ func TestDeliverExplainsEachStatus(t *testing.T) {
 		"S-20": "schema 3's done claim; candidate 2020202 in HEAD, not on main",
 		"S-21": "schema 3's done claim; candidate 2121212 cannot be read here",
 		"S-22": "schema 3's done claim; candidate 2222222 not in HEAD (HEAD holds abcdefa, a rewritten copy), not on main",
-		"S-40": "done: squashed as 4040d0d on main; delivery 4040d0d in HEAD, not on main",
+		"S-40": "done: delivered to main",
 		"S-41": "accepted, awaiting delivery to main",
 		"S-30": "awaiting implementation",
 	}

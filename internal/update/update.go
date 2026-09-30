@@ -322,7 +322,7 @@ func plan(r *project.Record, req Request) ([]change, error) {
 }
 
 // derived enforces schema 4's completion contract (G-260930-2qa4a): Done is
-// derived from an acceptance and its verified delivery, never written, so
+// derived from an acceptance and its delivery to the target, never written, so
 // no update newly writes done or changes a done record's candidate; done
 // survives only as schema 3's claim, which migration kept. An acceptance
 // context an update writes must be the record's own, so a hand-written
@@ -332,7 +332,7 @@ func derived(root, target string, before, after *project.Record) error {
 		return nil
 	}
 	if after.Status == "done" && before.Status != "done" {
-		return errors.New("done is derived in schema 4, from an acceptance and its verified delivery, and no update writes it: grove approve records the acceptance, and grove integrate delivers it")
+		return errors.New("done is derived in schema 4, from an acceptance and its delivery to the target, and no update writes it: grove approve records the acceptance, and grove integrate delivers it")
 	}
 	// A done record is schema 3's claim, kept by migration with its
 	// dependency semantics: naming the rewritten copy its target holds stays

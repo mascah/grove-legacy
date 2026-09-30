@@ -89,12 +89,12 @@ func TestGroupIntegratesOnlyWhenEveryMemberIsApproved(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Integrating either member delivers the group: one squash commit
-	// naming both, each verified done, no record commit.
+	// naming both, each proved and done, no record commit.
 	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(f string) { facts = append(facts, f) }); err != nil {
 		t.Fatalf("%v %q", err, facts)
 	}
 	if len(facts) != 6 || !strings.Contains(facts[0], "of G-260101-00001 accepted") || !strings.Contains(facts[1], "of G-260101-00003 accepted") || !strings.HasPrefix(facts[3], "delivery: squash commit ") ||
-		!strings.HasPrefix(facts[4], "done: G-260101-00001 is done: squashed as ") || !strings.HasPrefix(facts[5], "done: G-260101-00003 is done: squashed as ") {
+		!strings.HasPrefix(facts[4], "done: G-260101-00001 is done: delivered to main, proved: squashed as ") || !strings.HasPrefix(facts[5], "done: G-260101-00003 is done: delivered to main, proved: squashed as ") {
 		t.Fatalf("%q", facts)
 	}
 	for id, r := range records(t, root) {

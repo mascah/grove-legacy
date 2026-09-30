@@ -52,10 +52,6 @@ type Backend struct {
 	Approve   func(ctx context.Context, root, id, verdict string) ([]string, error)
 	Feedback  func(ctx context.Context, root, id, text string) ([]string, error)
 	Integrate func(ctx context.Context, root, id string, cleanup bool) ([]string, error)
-	// Standing judges the records read at the target's tip (G-260930-2qa4a),
-	// which places accepted work in Review or Done; nil leaves every
-	// accepted card in Review, its delivery unexamined.
-	Standing func(ctx context.Context, root, target string, records []*project.Record) (map[*project.Record]*standings.Standing, error)
 	// Attempts lists the attempts in the repository's attempts directory,
 	// starting no process, and Attempt reads one in root with the end of its
 	// activity (G-260921-7trd7); nil leaves attempts out. Launch starts one and Stop
@@ -132,17 +128,13 @@ type card struct {
 }
 
 // meta is a card's last line: what a glance at the board needs beyond the
-// title. Done work shows when it was last written and its candidate, or
-// the commit that delivered it.
+// title. Done work shows when it was last written and its candidate.
 func (m *Model) meta(r *project.Record) string {
 	if r == nil {
 		return ""
 	}
 	var parts []string
-	if st := m.standing[r]; st != nil && st.State == standings.Done && !st.Legacy {
-		return "done · " + short7(st.Delivered)
-	}
-	if r.Status == "done" {
+	if st := m.standing[r]; r.Status == "done" || st != nil && st.State == standings.Done {
 		if r.Updated != nil {
 			parts = append(parts, "done "+r.Updated.Format("2006-01-02"))
 		}
@@ -366,18 +358,8 @@ func (m *Model) inspect() tea.Cmd {
 	return m.read("inspect", func(ctx context.Context, gen int) tea.Msg {
 		res, err := m.backend.Inspect(ctx, m.root, "")
 		var st map[*project.Record]*standings.Standing
-		if err == nil && m.backend.Standing != nil {
-			var records []*project.Record
-			for _, g := range res.Groups {
-				for _, v := range g.Versions {
-					if v.Record != nil && v.Record.Type == "work" { // every record, since any may change after a candidate
-						records = append(records, v.Record)
-					}
-				}
-			}
-			// Standing that cannot be read leaves accepted work in Review,
-			// never Done.
-			st, _ = m.backend.Standing(ctx, m.root, res.Target, records)
+		if err == nil && res != nil {
+			st = judge(res)
 		}
 		return inspectMsg{gen, res, st, err}
 	})
@@ -1295,6 +1277,36 @@ func (m *Model) earliest(states [][]*versions.Version) *project.Record {
 		}
 	}
 	return rec
+}
+
+// judge is the standing of every work record read (G-260930-gj9d7), against
+// the target branch's own records, which the inspection already holds, so
+// it starts no process. Without a readable target accepted work stays in
+// Review, never Done.
+func judge(res *versions.Result) map[*project.Record]*standings.Standing {
+	var t *versions.Source
+	for _, s := range res.Sources {
+		if res.Target != "" && s.Kind == "committed" && s.Ref == "refs/heads/"+res.Target {
+			t = s
+		}
+	}
+	var copies map[string]*project.Record
+	tip := ""
+	if t != nil {
+		copies, tip = map[string]*project.Record{}, t.Commit
+	}
+	var records []*project.Record
+	for _, g := range res.Groups {
+		for _, v := range g.Versions {
+			if v.Record != nil && v.Record.Type == "work" {
+				records = append(records, v.Record)
+				if v.Source == t {
+					copies[v.Record.Path] = v.Record
+				}
+			}
+		}
+	}
+	return standings.Judge(res.Target, tip, copies, records)
 }
 
 // place is the board column of a work record: its status's, except that
