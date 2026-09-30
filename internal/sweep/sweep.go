@@ -29,6 +29,7 @@ import (
 	"github.com/mascah/grove/internal/integrate"
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
 )
@@ -64,8 +65,9 @@ type Sweep struct {
 	Policy       *project.Policy
 	Attribution  string // "policy grove.yaml sha256:…"
 	Items        []Item
-	prefix       string // the project's directory in the repository, "" or ending in /
-	records      string // the record root, project-relative
+	prefix       string                        // the project's directory in the repository, "" or ending in /
+	records      string                        // the record root, project-relative
+	here         map[string]*standing.Standing // the target's own records' standing
 }
 
 // Plan reads every candidate in review on a branch other than the target, or
@@ -101,7 +103,11 @@ func PlanContext(ctx context.Context, root string, only ...string) (*Sweep, erro
 	if err != nil {
 		return nil, err
 	}
-	s := &Sweep{Root: p.Root, Target: p.Target, Policy: p.Policy, Attribution: "policy grove.yaml " + project.Revision(p.Config), prefix: res.Prefix, records: p.RecordDir}
+	here, err := standing.Inspect(ctx, p.Root, p.Target, p.Records)
+	if err != nil {
+		return nil, err
+	}
+	s := &Sweep{Root: p.Root, Target: p.Target, Policy: p.Policy, Attribution: "policy grove.yaml " + project.Revision(p.Config), prefix: res.Prefix, records: p.RecordDir, here: here}
 	found := map[string][]*versions.Version{}
 	var ids []string // in the groups' order, by ID
 	for _, g := range res.Groups {
@@ -110,7 +116,7 @@ func PlanContext(ctx context.Context, root string, only ...string) (*Sweep, erro
 		}
 		for i := range g.Versions {
 			v := &g.Versions[i]
-			if v.Source.Kind == "committed" && v.Source.Ref != "refs/heads/"+p.Target && v.Record != nil && v.Record.Type == "work" && v.Record.Status == "review" && v.Record.Candidate != "" {
+			if v.Source.Kind == "committed" && v.Source.Ref != "refs/heads/"+p.Target && v.Record != nil && v.Record.Type == "work" && (v.Record.Status == "review" || v.Record.Status == "accepted") && v.Record.Candidate != "" {
 				if found[g.ID] == nil {
 					ids = append(ids, g.ID)
 				}
@@ -154,6 +160,12 @@ func (s *Sweep) plan(ctx context.Context, res *versions.Result, p *project.Proje
 		}
 		return wait("shares its candidate with %s; a shared candidate waits for the owner", strings.Join(others, ", "))
 	}
+	// Delivered is what the verifier every consumer reads says, whatever
+	// the branch still holds.
+	if st := s.here[r.ID]; st != nil && st.State == standing.Done {
+		it.Act, it.Why = Skip, st.Text()
+		return it
+	}
 	ms, err := versions.PredictContext(ctx, s.Root, "refs/heads/"+s.Target, []string{it.tip})
 	if err != nil {
 		return wait("its merge into %s could not be predicted: %v", s.Target, err)
@@ -162,12 +174,12 @@ func (s *Sweep) plan(ctx context.Context, res *versions.Result, p *project.Proje
 		it.Act, it.Why = Skip, it.merge.Text(s.Target)
 		return it
 	}
-	if r.Approved != "" {
+	if r.Status == "accepted" {
 		who := "the owner"
 		if update.Delegated(r) {
 			who = "the policy"
 		}
-		return wait("approved by %s; integrating it is the owner's: grove integrate %s", who, r.ID)
+		return wait("accepted by %s; delivering it is the owner's: grove integrate %s", who, r.ID)
 	}
 	for _, q := range records {
 		if q.Type == "question" && q.Status == "open" && slices.Contains(q.Blocks, r.ID) {

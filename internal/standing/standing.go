@@ -100,14 +100,28 @@ func Of(r *project.Record) *Standing {
 // one Standing per work record, by ID. An error is only a failure to read
 // Git at all; each record's own unknowns are in its Standing.
 func Inspect(ctx context.Context, root, target string, records []*project.Record) (map[string]*Standing, error) {
+	each, err := Each(ctx, root, target, records)
+	if err != nil {
+		return nil, err
+	}
 	out := map[string]*Standing{}
+	for r, s := range each {
+		out[r.ID] = s
+	}
+	return out, nil
+}
+
+// Each is Inspect by record rather than ID, for records drawn from several
+// versions of the same work, such as a board's branches and checkouts.
+func Each(ctx context.Context, root, target string, records []*project.Record) (map[*project.Record]*Standing, error) {
+	out := map[*project.Record]*Standing{}
 	var open []*project.Record // applicable acceptances
 	for _, r := range records {
 		if r.Type != "work" {
 			continue
 		}
 		s := Of(r)
-		out[r.ID] = s
+		out[r] = s
 		if s.State == Unknown {
 			s.Target = target
 			open = append(open, r)
@@ -116,9 +130,9 @@ func Inspect(ctx context.Context, root, target string, records []*project.Record
 	if len(open) == 0 {
 		return out, nil
 	}
-	unknown := func(why string) (map[string]*Standing, error) {
+	unknown := func(why string) (map[*project.Record]*Standing, error) {
 		for _, r := range open {
-			out[r.ID].Why = why
+			out[r].Why = why
 		}
 		return out, nil
 	}
@@ -160,7 +174,7 @@ func Inspect(ctx context.Context, root, target string, records []*project.Record
 	}
 	var pending []*check
 	for _, r := range open {
-		s := out[r.ID]
+		s := out[r]
 		s.Tip = tip
 		c := full[r.Candidate]
 		switch {
@@ -188,7 +202,7 @@ func Inspect(ctx context.Context, root, target string, records []*project.Record
 	// submitted tip is missing leaves it unknown, and claims that all fail
 	// are no delivery at all.
 	for _, r := range open {
-		s := out[r.ID]
+		s := out[r]
 		var missing, failed string
 		for _, p := range pending {
 			switch {

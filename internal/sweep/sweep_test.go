@@ -156,23 +156,25 @@ func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 	var facts []string
 	s.Run(now, func(f string) { facts = append(facts, f) })
 	joined := strings.Join(facts, "\n")
-	for _, want := range []string{"G-260101-00001: verified: the merge of", "G-260101-00001: approved under policy grove.yaml sha256:", "G-260101-00001: merge: fast-forward main", "G-260101-00001: done: G-260101-00001 done at commit"} {
+	for _, want := range []string{"G-260101-00001: verified: the merge of", "G-260101-00001: approved under policy grove.yaml sha256:", "G-260101-00001: delivery: squash commit ", "G-260101-00001: done: G-260101-00001 is done: squashed as "} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("missing %q in:\n%s", want, joined)
 		}
 	}
 	r := record(t, root)
-	if r.Status != "done" || !update.Delegated(r) {
+	if r.Status != "accepted" || !update.Delegated(r) || r.ApprovedBy != "policy "+strings.TrimPrefix(s.Attribution, "policy grove.yaml ") {
 		t.Fatalf("record on main:\n%s", r.Source)
 	}
 	for _, want := range []string{
 		": delegated under " + s.Attribution + ": review G-260101-00005 examined ",
 		"verification passed (grep -q change code.txt; test -f grove/G-260101-00005-review.md); no Grove attempt is recorded as producing it",
-		"Integrated under " + s.Attribution + " by fast-forwarding main from ",
 	} {
 		if !strings.Contains(string(r.Source), want) {
 			t.Fatalf("missing %q in:\n%s", want, r.Source)
 		}
+	}
+	if !strings.Contains(git(t, root, "log", "-1", "--format=%B", "main"), "Integrated under "+s.Attribution+".") {
+		t.Fatal("the delivery must name the policy")
 	}
 	if out := git(t, root, "worktree", "list", "--porcelain"); strings.Count(out, "worktree ") != 2 {
 		t.Fatalf("the verification worktree remains:\n%s", out)
@@ -230,7 +232,7 @@ func TestSweepWaitsOutsideThePolicy(t *testing.T) {
 		if _, err := update.Approve(wt, "G-260101-00001", "Mine.", update.Owner, now); err != nil {
 			t.Fatal(err)
 		}
-		if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "waits: approved by the owner; integrating it is the owner's: grove integrate G-260101-00001") {
+		if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "waits: accepted by the owner; delivering it is the owner's: grove integrate G-260101-00001") {
 			t.Fatalf("facts %q", facts)
 		}
 	})

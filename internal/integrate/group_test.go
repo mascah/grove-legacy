@@ -79,7 +79,7 @@ func TestGroupIntegratesOnlyWhenEveryMemberIsApproved(t *testing.T) {
 	main := git(t, root, "rev-parse", "HEAD")
 	var facts []string
 	err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(f string) { facts = append(facts, f) })
-	if err == nil || !strings.Contains(err.Error(), "shared by G-260101-00001, G-260101-00003, and merging it integrates all of them, but G-260101-00003 is not approved; judge each first (grove approve ID VERDICT in "+wt+")") || facts != nil {
+	if err == nil || !strings.Contains(err.Error(), "shared by G-260101-00001, G-260101-00003, and delivering it delivers all of them, but G-260101-00003 is awaiting judgment; judge each first (grove approve ID VERDICT in "+wt+")") || facts != nil {
 		t.Fatalf("%v %q", err, facts)
 	}
 	if git(t, root, "rev-parse", "HEAD") != main {
@@ -88,24 +88,25 @@ func TestGroupIntegratesOnlyWhenEveryMemberIsApproved(t *testing.T) {
 	if _, err := update.Approve(wt, "G-260101-00003", "Second too.", update.Owner, now); err != nil {
 		t.Fatal(err)
 	}
-	// Integrating either member integrates the group: one merge, done for
-	// each, each committed alone.
+	// Integrating either member delivers the group: one squash commit
+	// naming both, each verified done, no record commit.
 	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(f string) { facts = append(facts, f) }); err != nil {
 		t.Fatalf("%v %q", err, facts)
 	}
-	if len(facts) != 5 || !strings.Contains(facts[0], "of G-260101-00001 approved") || !strings.Contains(facts[1], "of G-260101-00003 approved") || !strings.HasPrefix(facts[2], "merge: ") ||
-		!strings.HasPrefix(facts[3], "done: G-260101-00001 done at commit ") || !strings.HasPrefix(facts[4], "done: G-260101-00003 done at commit ") {
+	if len(facts) != 6 || !strings.Contains(facts[0], "of G-260101-00001 accepted") || !strings.Contains(facts[1], "of G-260101-00003 accepted") || !strings.HasPrefix(facts[3], "delivery: squash commit ") ||
+		!strings.HasPrefix(facts[4], "done: G-260101-00001 is done: squashed as ") || !strings.HasPrefix(facts[5], "done: G-260101-00003 is done: squashed as ") {
 		t.Fatalf("%q", facts)
 	}
 	for id, r := range records(t, root) {
-		if r.Status != "done" || r.Candidate != candidate {
+		if r.Status != "accepted" || r.Candidate != candidate {
 			t.Fatalf("%s %+v", id, r)
 		}
 	}
-	for _, rev := range []string{"HEAD", "HEAD~1"} {
-		if files := git(t, root, "diff-tree", "--no-commit-id", "--name-only", "-r", rev); strings.Contains(files, "\n") {
-			t.Fatalf("%s touches %q", rev, files)
-		}
+	if n := git(t, root, "rev-list", "--count", main+"..HEAD"); n != "1" {
+		t.Fatalf("%s commits delivered the group", n)
+	}
+	if body := git(t, root, "log", "-1", "--format=%B"); !strings.Contains(body, "Grove-Work: G-260101-00001\nGrove-Work: G-260101-00003\n") || !strings.HasPrefix(body, "feat: first\n") {
+		t.Fatalf("message:\n%s", body)
 	}
 }
 
@@ -143,7 +144,7 @@ func TestGroupFeedbackReopensEveryMember(t *testing.T) {
 			t.Fatalf("%s touches %v", c, files)
 		}
 	}
-	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "no branch holds G-260101-00001 in review") {
+	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "no branch holds G-260101-00001 accepted") {
 		t.Fatal(err)
 	}
 }
@@ -168,7 +169,7 @@ func TestGroupRefusesToCarryAReopenedSibling(t *testing.T) {
 	}
 	main := git(t, root, "rev-parse", "HEAD")
 	err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(string) {})
-	if err == nil || !strings.Contains(err.Error(), "merging feature would also carry G-260101-00003's candidate") || !strings.Contains(err.Error(), "which is active without an approval") {
+	if err == nil || !strings.Contains(err.Error(), "delivering feature would also carry G-260101-00003's candidate") || !strings.Contains(err.Error(), "which is active without an acceptance") {
 		t.Fatal(err)
 	}
 	if git(t, root, "rev-parse", "HEAD") != main {

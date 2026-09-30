@@ -1,10 +1,13 @@
-// Package integrate merges an approved candidate into the configured target
-// and marks its work done there, as a sequence of separately reported facts
-// (G-260921-jwk4e): approval found, merge made or refused, done written, cleanup done
-// or kept. Every refusal happens before anything changes, and nothing after
-// the merge undoes it. A candidate shared by several work records on its
-// branch (G-260925-wc2pz) is integrated as their group: merging the commit merges all
-// of it, so every member must be approved, and each is marked done alone.
+// Package integrate delivers an accepted candidate to the configured target
+// as one squash commit (G-260929-gm3m4), a sequence of separately reported
+// facts: acceptance found, evidence retained, delivery made or refused,
+// standing verified, cleanup done or kept. Every refusal happens before the
+// target moves, and nothing after the delivery undoes it; no record is
+// written, since Done is derived from the acceptance and the delivery
+// (G-260930-2qa4a). A candidate shared by several work records on its branch
+// (G-260925-wc2pz) is delivered as their group: every member must be
+// accepted. Rerun after an interruption, it finds a delivery already made
+// through the same verifier and goes on to cleanup, never a second commit.
 package integrate
 
 import (
@@ -19,6 +22,7 @@ import (
 
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/update"
 	"github.com/mascah/grove/internal/versions"
 )
@@ -33,7 +37,7 @@ type Request struct {
 	// the merge against: a target at any other commit is refused unmerged.
 	Expect string
 	// Policy, when set, attributes the integration to a standing policy
-	// (G-260925-wh9ax): each done update appends it with the merge and its revert.
+	// (G-260925-wh9ax): the delivery's message names it and its revert.
 	Policy string
 }
 
@@ -42,12 +46,13 @@ type Request struct {
 // reported stand.
 func Run(req Request, now time.Time, report func(fact string)) error {
 	root := req.Root
+	ctx := context.Background()
 	p, ds := project.Load(root, root)
 	if len(ds) != 0 {
 		return fmt.Errorf("the project is not valid; fix it before integrating:\n%s", diagnostics(ds))
 	}
 	if p.Target == "" {
-		return errors.New("integration needs target: BRANCH in grove.yaml, the branch approved work is merged into")
+		return errors.New("integration needs target: BRANCH in grove.yaml, the branch accepted work is delivered to")
 	}
 	branch, err := update.Branch(root)
 	if err != nil {
@@ -59,7 +64,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if dirty, err := repo.Git(root, "status", "--porcelain", "--untracked-files=no"); err != nil {
 		return err
 	} else if dirty != "" {
-		return fmt.Errorf("the checkout of %s has uncommitted changes; commit or set them aside before merging", p.Target)
+		return fmt.Errorf("the checkout of %s has uncommitted changes; commit or set them aside before delivering", p.Target)
 	}
 	// Every record, not only this one: the branch's other members of the
 	// group are read in the same pass.
@@ -67,23 +72,37 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if err != nil {
 		return err
 	}
-	from, r, err := approved(res, req.ID, p.Target)
+	// A delivery already made, as by an interrupted run or someone else,
+	// is found by the verifier every consumer uses: only cleanup remains.
+	here, err := standing.Inspect(ctx, root, p.Target, p.Records)
 	if err != nil {
 		return err
 	}
-	name := strings.TrimPrefix(from.Ref, "refs/heads/")
-	if _, err := repo.Git(root, "merge-base", "--is-ancestor", r.Candidate, from.Commit); err != nil {
+	if s := here[req.ID]; s != nil && s.State == standing.Done {
+		if s.Legacy {
+			return fmt.Errorf("%s is done under schema 3 here; there is nothing to deliver", req.ID)
+		}
+		report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
+		from, _, _ := accepted(res, req.ID, p.Target)
+		if !req.Cleanup || from == nil {
+			return nil
+		}
+		return cleanup(root, req.Cwd, strings.TrimPrefix(from.Ref, "refs/heads/"), s.Submitted, worktreeOf(res, from.Ref), report)
+	}
+	from, r, err := accepted(res, req.ID, p.Target)
+	if err != nil {
+		return err
+	}
+	name, submitted := strings.TrimPrefix(from.Ref, "refs/heads/"), from.Commit
+	if _, err := repo.Git(root, "merge-base", "--is-ancestor", r.Candidate, submitted); err != nil {
 		return fmt.Errorf("branch %s does not contain candidate %s, which it names; repair the record before integrating", name, r.Candidate)
 	}
 	group := update.Group(branchRecords(res, from), r)
 	var waiting, paths []string
 	for _, m := range group {
 		paths = append(paths, m.Path)
-		switch {
-		case m.Status != "review":
-			waiting = append(waiting, m.ID+" is "+m.Status)
-		case !update.SameCommit(m.Approved, r.Candidate):
-			waiting = append(waiting, m.ID+" is not approved")
+		if s := standing.Of(m); m.Status != "accepted" || s.State != standing.Unknown {
+			waiting = append(waiting, m.ID+" is "+strings.TrimPrefix(s.Text(), "accepted; delivery unknown: delivery not examined"))
 		}
 	}
 	if waiting != nil {
@@ -91,16 +110,16 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		if w := worktreeOf(res, from.Ref); w != "" {
 			where = w
 		}
-		return fmt.Errorf("candidate %s on %s is shared by %s, and merging it integrates all of them, but %s; judge each first (grove approve ID VERDICT in %s); %s is unchanged", short(r.Candidate), name, ids(group), strings.Join(waiting, ", "), where, p.Target)
+		return fmt.Errorf("candidate %s on %s is shared by %s, and delivering it delivers all of them, but %s; judge each first (grove approve ID VERDICT in %s); %s is unchanged", short(r.Candidate), name, ids(group), strings.Join(waiting, ", "), where, p.Target)
 	}
-	// The merge carries every commit the branch holds, so unfinished work
+	// The squash carries every commit the branch holds, so unfinished work
 	// whose candidate it contains, such as a member reopened with a group's
-	// feedback and not handed off again, would arrive unapproved.
+	// feedback and not handed off again, would arrive unaccepted.
 	for _, o := range branchRecords(res, from) {
-		if o.Type != "work" || o.Candidate == "" || slices.Contains(group, o) || o.Status == "done" || o.Status == "abandoned" || o.Status == "review" && update.SameCommit(o.Approved, o.Candidate) {
+		if o.Type != "work" || o.Candidate == "" || slices.Contains(group, o) || o.Status == "done" || o.Status == "abandoned" || o.Status == "accepted" {
 			continue
 		}
-		carried, err := ancestor(root, o.Candidate, from.Commit)
+		carried, err := ancestor(root, o.Candidate, submitted)
 		if err != nil {
 			return err
 		}
@@ -109,16 +128,16 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 			return err
 		}
 		if carried && !landed {
-			return fmt.Errorf("merging %s would also carry %s's candidate %s, which is %s without an approval; hand it off and judge it with %s, or move it off %s; %s is unchanged", name, o.ID, short(o.Candidate), o.Status, ids(group), name, p.Target)
+			return fmt.Errorf("delivering %s would also carry %s's candidate %s, which is %s without an acceptance; hand it off and judge it with %s, or move it off %s; %s is unchanged", name, o.ID, short(o.Candidate), o.Status, ids(group), name, p.Target)
 		}
 	}
-	if others, err := versions.Others(context.Background(), root, r.Candidate, from.Commit, paths...); err != nil {
+	if others, err := versions.Others(ctx, root, r.Candidate, submitted, paths...); err != nil {
 		return err
 	} else if len(others) != 0 {
-		return fmt.Errorf("commits after candidate %s on %s change %s: the tip %s is a new candidate; approve it before integrating", short(r.Candidate), name, strings.Join(others, ", "), short(from.Commit))
+		return fmt.Errorf("commits after candidate %s on %s change %s: the tip %s is a new candidate; accept it before integrating", short(r.Candidate), name, strings.Join(others, ", "), short(submitted))
 	}
 	for _, m := range group {
-		report(fmt.Sprintf("approval: candidate %s of %s approved on branch %s at %s%s", short(r.Candidate), m.ID, name, short(from.Commit), verdict(m)))
+		report(fmt.Sprintf("acceptance: candidate %s of %s accepted by %s on branch %s at %s%s", short(r.Candidate), m.ID, m.ApprovedBy, name, short(submitted), verdict(m)))
 	}
 
 	before, err := head(root)
@@ -126,108 +145,153 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		return err
 	}
 	if req.Expect != "" && before != req.Expect {
-		return fmt.Errorf("%s moved from %s, where the merge was verified, to %s; nothing was merged and %s stays in review", p.Target, short(req.Expect), short(before), req.ID)
+		return fmt.Errorf("%s moved from %s, where the merge was verified, to %s; nothing was delivered and %s stays accepted", p.Target, short(req.Expect), short(before), req.ID)
 	}
-	// Work already done here whose branch the target holds as rewritten
-	// copies, as after a rebase of the target (G-260928-4qv1m), has nothing
-	// to merge, and its conflict, if any, is not one to resolve. Work not
-	// yet done here, such as a branch cherry-picked by hand, is merged as
-	// before, which marks it done. A read that fails leaves it to the checks
-	// below.
-	done := slices.ContainsFunc(p.Records, func(o *project.Record) bool { return o.ID == req.ID && o.Status == "done" })
-	if c, err := versions.CopiesContext(context.Background(), root, before, from.Commit); done && err == nil && c.Rewritten() {
-		return fmt.Errorf("merge of %s into %s refused: %s; nothing was merged, %s is unchanged at %s", name, p.Target, c.Text(name, p.Target, worktreeOf(res, from.Ref)), p.Target, short(before))
+	// A conflict is refused before anything is written (G-260925-h8rj5):
+	// merge-tree performs it in objects only and names the files.
+	ms, err := versions.PredictContext(ctx, root, before, []string{submitted})
+	if err != nil {
+		return fmt.Errorf("the delivery of %s into %s could not be prepared: %v; nothing was delivered", name, p.Target, err)
 	}
-	// A conflict is refused before the merge starts (G-260925-h8rj5): merge-tree
-	// performs it in objects only, against the commit that would be merged
-	// into, and names the files. A prediction that fails, as on a Git
-	// before 2.38, leaves the refusal to the merge below.
-	if ms, err := versions.PredictContext(context.Background(), root, before, []string{from.Commit}); err == nil && ms[0].Outcome == "conflict" {
+	if ms[0].Outcome == "conflict" {
 		conflict := ms[0].Text(p.Target)
 		where := worktreeOf(res, from.Ref)
 		if where == "" {
 			where = "a checkout of " + name
 		}
-		return fmt.Errorf("merge of %s into %s refused: it %s; nothing was merged, %s is unchanged at %s and %s stays in review. Next: grove resolve %s records that as feedback and starts one attempt to merge %s at %s, resolve and hand off a new candidate; or by hand, in %s, git merge %s, resolve the conflicts and commit, then hand that commit to review as the new candidate",
+		return fmt.Errorf("delivery of %s into %s refused: it %s; nothing was delivered, %s is unchanged at %s and %s stays accepted. Next: grove resolve %s records that as feedback and starts one attempt to merge %s at %s, resolve and hand off a new candidate; or by hand, in %s, git merge %s, resolve the conflicts and commit, then hand that commit to review as the new candidate",
 			name, p.Target, conflict, p.Target, short(before), req.ID, req.ID, p.Target, short(before), where, p.Target)
 	}
-	// The commit the checks above read is what is merged, not the name: the
-	// branch may move meanwhile, and a tag of the same name would win the
-	// name. Git prints its CONFLICT lines on stdout, so both streams are read.
-	if out, err := repo.Command(context.Background(), root, "merge", "--no-edit", "-m", "Merge branch '"+name+"'", from.Commit).CombinedOutput(); err != nil {
-		if _, aborted := repo.Git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD"); aborted == nil {
-			if _, err := repo.Git(root, "merge", "--abort"); err != nil {
-				return fmt.Errorf("merge of %s into %s failed and could not be aborted: %v; resolve it by hand", name, p.Target, err)
-			}
-		}
-		why := strings.TrimSpace(string(out))
-		if i := strings.Index(why, "CONFLICT"); i >= 0 {
-			why = strings.ReplaceAll(why[i:], "\n", "; ")
-		}
-		return fmt.Errorf("merge of %s into %s refused: %s; %s is unchanged at %s and %s stays in review", name, p.Target, why, p.Target, short(before), req.ID)
+	if ms[0].Outcome == "integrated" {
+		return fmt.Errorf("%s already holds %s at %s, yet the acceptance of %s is not verified as delivered there; inspect it with grove show %s", p.Target, name, short(before), req.ID, req.ID)
 	}
-	after, err := head(root)
+	// The evidence is retained before the target moves, so a delivery that
+	// succeeds can always be verified, whatever happens to the branch.
+	if _, err := repo.Git(root, "update-ref", standing.Ref(submitted), submitted); err != nil {
+		return fmt.Errorf("the submitted tip %s could not be retained: %v; nothing was delivered", short(submitted), err)
+	}
+	report("retained: " + standing.Ref(submitted))
+	tree, err := repo.Git(root, "merge-tree", "--write-tree", "--no-messages", before, submitted)
+	if err != nil {
+		return fmt.Errorf("the delivery of %s into %s could not be prepared: %v; nothing was delivered", name, p.Target, err)
+	}
+	message, err := Message(root, p.RecordDir, before, r.Candidate, submitted, group, req.Policy)
 	if err != nil {
 		return err
 	}
-	switch {
-	case after == before:
-		report(fmt.Sprintf("merge: nothing to merge; %s is already in %s at %s", name, p.Target, short(before)))
-	case after == from.Commit:
-		report(fmt.Sprintf("merge: fast-forward %s from %s to %s", p.Target, short(before), short(after)))
-	default:
-		report(fmt.Sprintf("merge: merge commit %s on %s (was %s)", short(after), p.Target, short(before)))
+	delivered, err := repo.Git(root, "commit-tree", strings.TrimSpace(tree), "-p", before, "-m", message)
+	if err != nil {
+		return fmt.Errorf("the delivery commit could not be made: %v; nothing was delivered", err)
 	}
-
-	note := ""
+	delivered = strings.TrimSpace(delivered)
+	// Only a fast-forward from the commit prepared against, so a target that
+	// moved meanwhile is refused rather than overwritten.
+	if out, err := repo.Command(ctx, root, "merge", "--ff-only", "-q", delivered).CombinedOutput(); err != nil {
+		return fmt.Errorf("%s could not be advanced to the delivery %s: %s; nothing was delivered, and the evidence stays retained", p.Target, short(delivered), strings.TrimSpace(string(out)))
+	}
+	report(fmt.Sprintf("delivery: squash commit %s on %s (was %s)", short(delivered), p.Target, short(before)))
 	if req.Policy != "" {
-		switch {
-		case after == before:
-			note = fmt.Sprintf("Integrated under %s into %s at %s, which already held it; nothing was merged.", req.Policy, p.Target, short(before))
-		case after == from.Commit:
-			note = fmt.Sprintf("Integrated under %s by fast-forwarding %s from %s to %s; to reverse it: git revert %s..%s", req.Policy, p.Target, before, after, before, after)
-		default:
-			note = fmt.Sprintf("Integrated under %s as merge %s on %s (was %s); to reverse it: git revert -m 1 %s", req.Policy, after, p.Target, before, after)
-		}
+		report(fmt.Sprintf("delivered under %s; to reverse it: git revert %s", req.Policy, delivered))
 	}
-	for i, m := range group {
-		done, err := update.Apply(root, update.Request{ID: m.ID, Set: []update.Field{{Name: "status", Value: "done"}}, Append: note, Commit: true}, now, nil)
-		if err != nil {
-			rest := ""
-			if i+1 < len(group) {
-				rest = "; then mark the rest of the group done the same way: " + ids(group[i+1:])
-			}
-			// update says whether the file was written before the commit failed.
-			return fmt.Errorf("merged as %s, but marking %s done failed: %v; once that is repaired, commit the staged record here: git commit -m 'docs(%s): set status=done' -- %s (or, if it was not written, grove update %s --set status=done --commit)%s", short(after), m.ID, err, m.ID, m.Path, m.ID, rest)
+	// Reconcile: the delivery counts only once the verifier every consumer
+	// reads says so.
+	after, ds := project.Load(root, root)
+	if len(ds) != 0 {
+		return fmt.Errorf("delivered as %s, but the project there does not load: %s", short(delivered), diagnostics(ds))
+	}
+	verified, err := standing.Inspect(ctx, root, p.Target, after.Records)
+	if err != nil {
+		return fmt.Errorf("delivered as %s, but its standing could not be read: %v; rerun grove integrate %s to verify it", short(delivered), err, req.ID)
+	}
+	for _, m := range group {
+		s := verified[m.ID]
+		if s == nil || s.State != standing.Done {
+			return fmt.Errorf("delivered as %s, but %s is not verified done there (%s); inspect it before anything else", short(delivered), m.ID, s.Text())
 		}
-		if done.Changed {
-			report(fmt.Sprintf("done: %s done at commit %s", m.ID, short(done.Commit)))
-		} else {
-			report(fmt.Sprintf("done: %s was already done here", m.ID))
-		}
+		report(fmt.Sprintf("done: %s is %s", m.ID, s.Text()))
 	}
 	if !req.Cleanup {
 		return nil
 	}
-	return cleanup(root, req.Cwd, name, worktreeOf(res, from.Ref), report)
+	return cleanup(root, req.Cwd, name, submitted, worktreeOf(res, from.Ref), report)
 }
 
-// approved finds the one branch holding the record in review with its
-// candidate approved. The target itself never counts: what it holds is what
-// integration produces, not a candidate.
-func approved(res *versions.Result, id, target string) (*versions.Source, *project.Record, error) {
-	var review, ok []*versions.Version
+// types orders Conventional Commit types from most to least significant.
+var types = []string{"feat", "fix", "perf", "refactor", "revert", "docs", "test", "build", "ci", "style", "chore"}
+
+// Message is the delivery's commit message: a Conventional Commit whose
+// type is the most significant among the candidate's own commits since the
+// target (those changing anything outside the record root, else all), "!"
+// when any is breaking, and whose subject is the first member's title; the
+// body lists the members, then the trailers that locate the evidence. It
+// never names the delivery's own commit, so nothing refers to itself.
+func Message(root, records, base, candidate, submitted string, group []*project.Record, policy string) (string, error) {
+	subjects, err := repo.Git(root, "log", "--no-merges", "--format=%s", base+".."+candidate, "--", ":/", ":(exclude)"+records)
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(subjects) == "" {
+		if subjects, err = repo.Git(root, "log", "--no-merges", "--format=%s", base+".."+candidate); err != nil {
+			return "", err
+		}
+	}
+	kind, breaking := "chore", false
+	for l := range strings.SplitSeq(subjects, "\n") {
+		prefix, _, ok := strings.Cut(l, ": ")
+		if !ok {
+			continue
+		}
+		if strings.HasSuffix(prefix, "!") {
+			breaking, prefix = true, strings.TrimSuffix(prefix, "!")
+		}
+		if i := strings.IndexByte(prefix, '('); i > 0 {
+			prefix = prefix[:i]
+		}
+		if i, j := slices.Index(types, prefix), slices.Index(types, kind); i >= 0 && i < j {
+			kind = prefix
+		}
+	}
+	if breaking {
+		kind += "!"
+	}
+	title := group[0].Title
+	title = strings.ToLower(title[:1]) + title[1:]
+	var b strings.Builder
+	fmt.Fprintf(&b, "%s: %s\n\n", kind, title)
+	for _, m := range group {
+		fmt.Fprintf(&b, "- %s %s\n", m.ID, m.Title)
+	}
+	if policy != "" {
+		fmt.Fprintf(&b, "\nIntegrated under %s.\n", policy)
+	}
+	b.WriteString("\n")
+	for _, m := range group {
+		fmt.Fprintf(&b, "Grove-Work: %s\n", m.ID)
+	}
+	full, err := repo.Git(root, "rev-parse", candidate+"^{commit}")
+	if err != nil {
+		return "", err
+	}
+	fmt.Fprintf(&b, "Grove-Candidate: %s\nGrove-Submitted: %s\n", strings.TrimSpace(full), submitted)
+	return b.String(), nil
+}
+
+// accepted finds the one branch holding the record accepted, its acceptance
+// applicable. The target itself never counts: what it holds is what
+// delivery produces, not a submission.
+func accepted(res *versions.Result, id, target string) (*versions.Source, *project.Record, error) {
+	var judged, ok []*versions.Version
 	for i := range res.Groups {
 		if res.Groups[i].ID != id {
 			continue
 		}
 		for j := range res.Groups[i].Versions {
 			v := &res.Groups[i].Versions[j]
-			if v.Source.Kind != "committed" || v.Source.Ref == "refs/heads/"+target || v.Record == nil || v.Record.Type != "work" || v.Record.Status != "review" {
+			if v.Source.Kind != "committed" || v.Source.Ref == "refs/heads/"+target || v.Record == nil || v.Record.Type != "work" || v.Record.Status != "review" && v.Record.Status != "accepted" {
 				continue
 			}
-			review = append(review, v)
-			if v.Record.Approved != "" {
+			judged = append(judged, v)
+			if standing.Of(v.Record).State == standing.Unknown {
 				ok = append(ok, v)
 			}
 		}
@@ -243,16 +307,16 @@ func approved(res *versions.Result, id, target string) (*versions.Source, *proje
 	case len(ok) == 1:
 		return ok[0].Source, ok[0].Record, nil
 	case len(ok) > 1:
-		return nil, nil, fmt.Errorf("%s is approved in review on several branches (%s); integrate needs one", id, names(ok))
-	case len(review) != 0:
-		v := review[0]
+		return nil, nil, fmt.Errorf("%s is accepted on several branches (%s); integrate needs one", id, names(ok))
+	case len(judged) != 0:
+		v := judged[0]
 		where := "its checkout"
 		if w := worktreeOf(res, v.Source.Ref); w != "" {
 			where = w
 		}
-		return nil, nil, fmt.Errorf("%s is in review on %s but not approved: run grove approve %s VERDICT in %s first", id, names(review), id, where)
+		return nil, nil, fmt.Errorf("%s is in review on %s but not accepted, or its acceptance no longer applies: run grove approve %s VERDICT in %s first", id, names(judged), id, where)
 	}
-	return nil, nil, fmt.Errorf("no branch holds %s in review; nothing to integrate", id)
+	return nil, nil, fmt.Errorf("no branch holds %s accepted; nothing to integrate", id)
 }
 
 // branchRecords is every record the committed source holds.
@@ -303,16 +367,23 @@ func verdict(r *project.Record) string {
 }
 
 // cleanup removes the branch's worktree, then the branch, through Git's own
-// refusals: a worktree with changes or untracked files and a branch the
-// target does not contain are kept. A worktree holding cwd is kept too, and
+// refusals: a worktree with changes or untracked files is kept, and so is a
+// branch no longer at the tip that was delivered. A worktree holding cwd is kept too, and
 // one holding ignored files, which git worktree remove would delete.
 // Whatever is kept is reported and makes the result an error, since the
 // caller asked for a cleanup that did not fully happen.
-func cleanup(root, cwd, name, worktree string, report func(string)) error {
+func cleanup(root, cwd, name, submitted, worktree string, report func(string)) error {
 	kept := false
 	keep := func(what, reason string) {
 		kept = true
 		report(fmt.Sprintf("cleanup: kept %s: %s", what, reason))
+	}
+	// Only a branch still at the submitted tip, which the evidence ref
+	// retains: one that moved on holds a later edit, and one delivered by
+	// an ordinary merge is left to Git's own branch -d.
+	if tip, err := repo.Git(root, "rev-parse", "-q", "--verify", "refs/heads/"+name); err != nil || submitted == "" || strings.TrimSpace(tip) != submitted {
+		keep("worktree and branch "+name, "the branch is not at a tip that a squash delivery retained")
+		return errors.New("cleanup incomplete; the integration stands")
 	}
 	if worktree != "" {
 		if rel, err := filepath.Rel(worktree, cwd); cwd != "" && err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
@@ -327,8 +398,12 @@ func cleanup(root, cwd, name, worktree string, report func(string)) error {
 			report("cleanup: removed worktree " + worktree)
 		}
 	}
-	if _, err := repo.Git(root, "branch", "-d", "--", name); err != nil {
-		keep("branch "+name, err.Error())
+	// A branch a kept worktree has checked out stays with it; update-ref
+	// deletes only at the tip checked above, should it move meanwhile.
+	if kept {
+		keep("branch "+name, "its worktree is kept")
+	} else if _, err := repo.Git(root, "update-ref", "-d", "refs/heads/"+name, submitted); err != nil {
+		keep("branch "+name, "it moved past the delivered tip "+short(submitted)+", or could not be deleted: "+err.Error())
 	} else {
 		report("cleanup: deleted branch " + name)
 	}

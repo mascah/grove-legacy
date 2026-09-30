@@ -330,7 +330,10 @@ func derived(before, after *project.Record) error {
 	if after.Type != "work" {
 		return nil
 	}
-	if after.Status == "done" && (before.Status != "done" || before.Candidate != after.Candidate) {
+	// A done record is schema 3's claim, kept by migration with its
+	// dependency semantics: naming the rewritten copy its target holds stays
+	// a correction of that claim (G-260928-4qv1m), and never makes one.
+	if after.Status == "done" && before.Status != "done" {
 		return errors.New("done is derived in schema 4, from an acceptance and its verified delivery, and no update writes it: grove approve records the acceptance, and grove integrate delivers it")
 	}
 	if after.ApprovedContext != "" && after.ApprovedContext != before.ApprovedContext {

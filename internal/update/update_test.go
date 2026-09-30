@@ -726,7 +726,7 @@ func TestUpdateNeverWritesDone(t *testing.T) {
 	refuse("G-260101-00001", "candidate: required while status is review: set candidate=COMMIT", Field{"status", "review"})
 	refuse("G-260101-00001", "done is derived in schema 4", Field{"status", "done"}, Field{"candidate", head})
 	write(t, root, "grove/work/G-260101-00005-done.md", "---\nid: \"G-260101-00005\"\ntype: work\ntitle: Done\nstatus: done\ncandidate: \""+head+"\"\n---\nBody.\n")
-	refuse("G-260101-00005", "done is derived in schema 4", Field{"candidate", "abcdef0"})
+	apply(t, root, "G-260101-00005", []Field{{"candidate", "abcdef0"}}) // naming a rewritten copy corrects the claim
 	apply(t, root, "G-260101-00005", []Field{{"title", "Renamed"}})
 	apply(t, root, "G-260101-00005", []Field{{"status", "active"}})
 	refuse("G-260101-00005", "done is derived in schema 4", Field{"status", "done"})

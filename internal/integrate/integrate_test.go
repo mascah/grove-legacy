@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
 	"github.com/mascah/grove/internal/update"
-	"github.com/mascah/grove/internal/versions"
 )
 
 const (
@@ -119,317 +119,237 @@ func refused(t *testing.T, root string, cleanup bool, want string) []string {
 	if git(t, root, "rev-parse", "HEAD") != head || string(record(t, root).Source) != string(before) || git(t, root, "status", "--porcelain", "--untracked-files=no") != "" {
 		t.Fatal("a refusal changed the target")
 	}
-	if _, err := repo.Git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD"); err == nil {
-		t.Fatal("a merge was left in progress")
-	}
 	return facts
 }
 
-func TestIntegrateFastForwardAndCleanup(t *testing.T) {
+// tipOf is a branch's commit.
+func tipOf(t *testing.T, root, branch string) string {
+	t.Helper()
+	return git(t, root, "rev-parse", branch)
+}
+
+// TestIntegrateSquashesAndRetainsEvidence covers delivery (G-260929-gm3m4):
+// one squash commit on the target with a Conventional Commit message and the
+// trailers that locate its evidence, the submitted tip retained, no record
+// commit, the verifier's done, and cleanup that deletes only what the
+// evidence ref keeps.
+func TestIntegrateSquashesAndRetainsEvidence(t *testing.T) {
 	t.Parallel()
 	root, wt, candidate := fixture(t, true)
-	before, tip := git(t, root, "rev-parse", "HEAD"), git(t, wt, "rev-parse", "HEAD")
+	before, submitted := tipOf(t, root, "main"), tipOf(t, root, "feature")
 	facts, err := run(t, root, root, true)
 	if err != nil {
 		t.Fatalf("%v; facts %q", err, facts)
 	}
-	head := git(t, root, "rev-parse", "HEAD")
+	d := tipOf(t, root, "main")
 	want := []string{
-		"approval: candidate " + candidate[:7] + " of G-260101-00001 approved on branch feature at " + tip[:7] + " (Verdict on candidate " + candidate[:7] + ", 2026-09-22: Ship it.)",
-		"merge: fast-forward main from " + before[:7] + " to " + tip[:7],
-		"done: G-260101-00001 done at commit " + head[:7],
+		"acceptance: candidate " + candidate[:7] + " of G-260101-00001 accepted by owner on branch feature at " + submitted[:7] + " (Verdict on candidate " + candidate[:7] + ", 2026-09-22: Ship it.)",
+		"retained: refs/grove/submitted/" + submitted,
+		"delivery: squash commit " + d[:7] + " on main (was " + before[:7] + ")",
+		"done: G-260101-00001 is done: squashed as " + d[:7] + " on main",
 		"cleanup: removed worktree " + wt,
 		"cleanup: deleted branch feature",
 	}
 	if strings.Join(facts, "\n") != strings.Join(want, "\n") {
 		t.Fatalf("facts:\n%s\nwant:\n%s", strings.Join(facts, "\n"), strings.Join(want, "\n"))
 	}
-	r := record(t, root)
-	if r.Status != "done" || r.Candidate != candidate || r.Approved != candidate || !strings.Contains(string(r.Source), "Verdict on candidate") {
-		t.Fatalf("record on main: %+v", r)
+	if parents := git(t, root, "log", "-1", "--format=%P", d); parents != before {
+		t.Fatalf("the delivery must have one parent, the target it was prepared on: %s", parents)
 	}
-	if files := git(t, root, "show", "--format=", "--name-only", "HEAD"); files != "grove/G-260101-00001-first.md" {
-		t.Fatalf("the done commit must hold the record alone: %q", files)
+	message := "feat: first\n\n- G-260101-00001 First\n\nGrove-Work: G-260101-00001\nGrove-Candidate: " + candidate + "\nGrove-Submitted: " + submitted
+	if got := git(t, root, "log", "-1", "--format=%B", d); got != message {
+		t.Fatalf("message:\n%s\nwant:\n%s", got, message)
 	}
-	if msg := git(t, root, "log", "-1", "--format=%s"); msg != "docs(G-260101-00001): set status=done" {
-		t.Fatalf("message: %q", msg)
+	if git(t, root, "rev-parse", d+"^{tree}") != git(t, root, "rev-parse", submitted+"^{tree}") || git(t, root, "rev-parse", "refs/grove/submitted/"+submitted) != submitted {
+		t.Fatal("the delivery must hold the submitted result, retained")
 	}
-	if _, err := os.Stat(wt); !os.IsNotExist(err) {
-		t.Fatal("the worktree remains")
+	if r := record(t, root); r.Status != "accepted" || r.Approved != candidate || git(t, root, "status", "--porcelain") != "" {
+		t.Fatalf("the target holds the accepted record as submitted and nothing else: %+v", r)
 	}
-	if git(t, root, "branch", "--list", "feature") != "" {
-		t.Fatal("the branch remains")
-	}
-	// Running again finds no candidate: the branch is gone.
-	refused(t, root, false, "no branch holds G-260101-00001 in review; nothing to integrate")
-}
-
-func TestIntegrateMergeCommitWhenTheTargetMoved(t *testing.T) {
-	t.Parallel()
-	root, _, candidate := fixture(t, true)
-	write(t, root, "notes.txt", "elsewhere\n")
-	git(t, root, "add", "-A")
-	git(t, root, "commit", "-qm", "docs: notes")
-	before := git(t, root, "rev-parse", "HEAD")
-	facts, err := run(t, root, root, false)
-	if err != nil || len(facts) != 3 {
-		t.Fatalf("%v; facts %q", err, facts)
-	}
-	merge := git(t, root, "rev-parse", "HEAD~1")
-	if facts[1] != "merge: merge commit "+merge[:7]+" on main (was "+before[:7]+")" || git(t, root, "rev-list", "--parents", "-1", merge) == merge {
-		t.Fatalf("facts %q; parents %q", facts, git(t, root, "rev-list", "--parents", "-1", merge))
-	}
-	if r := record(t, root); r.Status != "done" || r.Candidate != candidate {
-		t.Fatalf("record on main: %+v", r)
-	}
-	// A second integration has nothing to merge and nothing to close.
-	facts, err = run(t, root, root, false)
-	if err != nil || facts[1] != "merge: nothing to merge; feature is already in main at "+git(t, root, "rev-parse", "--short=7", "HEAD") || facts[2] != "done: G-260101-00001 was already done here" {
-		t.Fatalf("%v; facts %q", err, facts)
+	// Rerun, as after an interruption: the verifier finds the delivery.
+	facts, err = run(t, root, root, true)
+	if err != nil || len(facts) != 1 || facts[0] != "delivered: G-260101-00001 is already done: squashed as "+d[:7]+" on main" || tipOf(t, root, "main") != d {
+		t.Fatalf("rerun: %v %q", err, facts)
 	}
 }
 
-func TestIntegrateRefusesConflictsBeforeAnythingChanges(t *testing.T) {
-	t.Parallel()
-	t.Run("a file conflict", func(t *testing.T) {
-		t.Parallel()
-		root, wt, candidate := fixture(t, true)
-		// Predicted clean, then the target moves before the integration.
-		if ms, err := versions.PredictContext(t.Context(), root, "main", []string{candidate}); err != nil || ms[0].Outcome != "fast-forward" {
-			t.Fatalf("before the move: %v %+v", err, ms)
-		}
-		write(t, root, "code.txt", "a different change\n")
-		git(t, root, "commit", "-qam", "fix: on main")
-		moved := git(t, root, "rev-parse", "--short=7", "HEAD")
-		refs := git(t, root, "for-each-ref")
-		facts := refused(t, root, false, "merge of feature into main refused: it conflicts with main at "+moved+" in code.txt; nothing was merged, main is unchanged at "+moved+
-			" and G-260101-00001 stays in review. Next: grove resolve G-260101-00001 records that as feedback and starts one attempt to merge main at "+moved+", resolve and hand off a new candidate; or by hand, in "+wt+", git merge main, resolve the conflicts and commit, then hand that commit to review as the new candidate")
-		if len(facts) != 1 || !strings.HasPrefix(facts[0], "approval: ") {
-			t.Fatalf("facts %q", facts)
-		}
-		if git(t, root, "for-each-ref") != refs {
-			t.Fatal("a refused integration changed a ref")
-		}
-	})
-	t.Run("what prediction cannot see", func(t *testing.T) {
-		t.Parallel()
-		// The candidate adds the review record, which an untracked file in
-		// the target's checkout stands in the way of: the merge refuses it.
-		root, _, candidate := fixture(t, true)
-		write(t, root, "grove/G-260101-00005-review.md", git(t, root, "show", candidate+":grove/G-260101-00005-review.md")+"\nA local edit.\n")
-		refused(t, root, false, "merge of feature into main refused: error: The following untracked working tree files would be overwritten by merge")
-	})
-	t.Run("the record changed on the target", func(t *testing.T) {
-		t.Parallel()
-		root, _, _ := fixture(t, true)
-		write(t, root, "grove/G-260101-00001-first.md", strings.Replace(work, "%s", "abandoned", 1))
-		git(t, root, "commit", "-qam", "docs: abandon on main")
-		refused(t, root, false, "main is unchanged at")
-	})
-}
-
-func TestIntegrateRefusesWhatIsNotReadyToMerge(t *testing.T) {
-	t.Parallel()
-	t.Run("stale approval", func(t *testing.T) {
-		t.Parallel()
-		root, wt, candidate := fixture(t, true)
-		write(t, wt, "code.txt", "later\n")
-		git(t, wt, "commit", "-qam", "fix: after the handoff")
-		tip := git(t, wt, "rev-parse", "HEAD")
-		refused(t, root, false, "commits after candidate "+candidate[:7]+" on feature change code.txt: the tip "+tip[:7]+" is a new candidate; approve it before integrating")
-	})
-	t.Run("dirty target", func(t *testing.T) {
-		t.Parallel()
-		root, _, _ := fixture(t, true)
-		write(t, root, "code.txt", "edited\n")
-		head := git(t, root, "rev-parse", "HEAD")
-		if _, err := run(t, root, root, false); err == nil || !strings.Contains(err.Error(), "the checkout of main has uncommitted changes") || git(t, root, "rev-parse", "HEAD") != head {
-			t.Fatalf("%v", err)
-		}
-		write(t, root, "untracked.txt", "fine\n") // untracked files do not block a merge
-		git(t, root, "checkout", "-q", "--", "code.txt")
-		if _, err := run(t, root, root, false); err != nil {
-			t.Fatal(err)
-		}
-	})
-	t.Run("wrong branch", func(t *testing.T) {
-		t.Parallel()
-		_, wt, _ := fixture(t, true)
-		if _, err := run(t, wt, wt, false); err == nil || !strings.Contains(err.Error(), "integrate runs in the checkout of the target main; this one is on feature") {
-			t.Fatalf("%v", err)
-		}
-	})
-	t.Run("no target", func(t *testing.T) {
-		t.Parallel()
-		root, _, _ := fixture(t, true)
-		write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
-		git(t, root, "commit", "-qam", "chore: no target")
-		refused(t, root, false, "integration needs target: BRANCH in grove.yaml")
-	})
-	t.Run("unapproved", func(t *testing.T) {
-		t.Parallel()
-		root, wt, _ := fixture(t, false)
-		refused(t, root, false, "G-260101-00001 is in review on feature but not approved: run grove approve G-260101-00001 VERDICT in "+wt+" first")
-	})
-	t.Run("two branches", func(t *testing.T) {
-		t.Parallel()
-		root, _, _ := fixture(t, true)
-		git(t, root, "branch", "feature2", "feature")
-		facts := refused(t, root, false, "G-260101-00001 is approved in review on several branches (feature, feature2); integrate needs one")
-		if len(facts) != 0 {
-			t.Fatalf("facts %q", facts)
-		}
-	})
-	t.Run("not in review", func(t *testing.T) {
-		t.Parallel()
-		root, wt, _ := fixture(t, true)
-		if _, err := update.Feedback(wt, "G-260101-00001", "no", now); err != nil {
-			t.Fatal(err)
-		}
-		refused(t, root, false, "no branch holds G-260101-00001 in review")
-	})
-}
-
-func TestIntegrateCleanupKeepsWhatGitOrTheSessionHolds(t *testing.T) {
-	t.Parallel()
-	t.Run("a dirty worktree", func(t *testing.T) {
-		t.Parallel()
-		root, wt, _ := fixture(t, true)
-		write(t, wt, "scratch.txt", "not committed\n")
-		facts, err := run(t, root, root, true)
-		if err == nil || !strings.Contains(err.Error(), "cleanup incomplete; the integration stands") {
-			t.Fatalf("%v; facts %q", err, facts)
-		}
-		if len(facts) != 5 || !strings.HasPrefix(facts[3], "cleanup: kept worktree "+wt+": git worktree: ") || !strings.Contains(facts[3], "--force") ||
-			!strings.HasPrefix(facts[4], "cleanup: kept branch feature: git branch: ") {
-			t.Fatalf("facts %q", facts)
-		}
-		if r := record(t, root); r.Status != "done" {
-			t.Fatalf("the integration must stand: %+v", r)
-		}
-		if _, err := os.Stat(filepath.Join(wt, "scratch.txt")); err != nil {
-			t.Fatal("the worktree's file is gone")
-		}
-	})
-	t.Run("ignored files", func(t *testing.T) {
-		t.Parallel()
-		root, wt, _ := fixture(t, true)
-		write(t, root, ".git/info/exclude", "*.log\n")
-		write(t, wt, "junk.log", "ignored, so git worktree remove would delete it\n")
-		facts, err := run(t, root, root, true)
-		if err == nil || len(facts) != 5 || facts[3] != "cleanup: kept worktree "+wt+": it holds ignored files (junk.log); remove them or the worktree by hand" {
-			t.Fatalf("%v; facts %q", err, facts)
-		}
-		if _, err := os.Stat(filepath.Join(wt, "junk.log")); err != nil {
-			t.Fatal("the ignored file is gone")
-		}
-	})
-	t.Run("the session's directory", func(t *testing.T) {
-		t.Parallel()
-		root, wt, _ := fixture(t, true)
-		facts, err := run(t, root, filepath.Join(wt, "grove"), true)
-		if err == nil || len(facts) != 5 || facts[3] != "cleanup: kept worktree "+wt+": it holds this process's working directory" || !strings.HasPrefix(facts[4], "cleanup: kept branch feature: ") {
-			t.Fatalf("%v; facts %q", err, facts)
-		}
-	})
-}
-
-// TestIntegrateReportsADoneWriteThatFailedAfterTheMerge: the merge stands, the
-// record is not done, and the error says how to finish.
-func TestIntegrateReportsADoneWriteThatFailedAfterTheMerge(t *testing.T) {
-	t.Parallel()
-	root, wt, _ := fixture(t, true)
-	tip := git(t, wt, "rev-parse", "HEAD")
-	hooks := filepath.Join(root, "hooks")
-	write(t, root, "hooks/pre-commit", "#!/bin/sh\nexit 1\n")
-	if err := os.Chmod(filepath.Join(hooks, "pre-commit"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	git(t, root, "config", "core.hooksPath", hooks)
-	facts, err := run(t, root, root, true)
-	if err == nil || !strings.Contains(err.Error(), "merged as "+tip[:7]+", but marking G-260101-00001 done failed: ") || !strings.Contains(err.Error(), "commit the staged record here: git commit -m 'docs(G-260101-00001): set status=done' -- grove/G-260101-00001-first.md") {
-		t.Fatalf("%v; facts %q", err, facts)
-	}
-	if len(facts) != 2 || git(t, root, "rev-parse", "HEAD") != tip {
-		t.Fatalf("the merge must stand: facts %q", facts)
-	}
-	if r := record(t, root); r.Status != "done" || !strings.HasPrefix(git(t, root, "status", "--porcelain"), "M  grove/G-260101-00001-first.md") { // staged, uncommitted
-		t.Fatalf("the applied but uncommitted done write: %+v %q", r, git(t, root, "status", "--porcelain"))
-	}
-	if _, err := os.Stat(wt); err != nil {
-		t.Fatal("cleanup must not run after a failed done write")
-	}
-}
-
-func TestIntegrateUnderAPolicy(t *testing.T) {
-	t.Parallel()
-	root, _, _ := fixture(t, true)
-	before := git(t, root, "rev-parse", "HEAD")
-	write(t, root, "notes.txt", "elsewhere\n")
-	git(t, root, "add", "-A")
-	git(t, root, "commit", "-qm", "docs: notes")
-	moved := git(t, root, "rev-parse", "HEAD")
-	req := Request{Root: root, ID: "G-260101-00001", Expect: before, Policy: "policy grove.yaml sha256:x"}
-	err := Run(req, now, func(string) {})
-	if err == nil || !strings.Contains(err.Error(), "main moved from "+before[:7]+", where the merge was verified, to "+moved[:7]) || git(t, root, "rev-parse", "HEAD") != moved {
-		t.Fatalf("a moved target: %v", err)
-	}
-	req.Expect = moved
-	if err := Run(req, now, func(string) {}); err != nil {
-		t.Fatal(err)
-	}
-	merge := git(t, root, "rev-parse", "HEAD~1")
-	want := "Integrated under policy grove.yaml sha256:x as merge " + merge + " on main (was " + moved + "); to reverse it: git revert -m 1 " + merge
-	if r := record(t, root); r.Status != "done" || !strings.Contains(string(r.Source), want) {
-		t.Fatalf("record on main:\n%s", r.Source)
-	}
-}
-
-// TestIntegrateRefusesARewrittenCopy is G-260928-4qv1m's incident: integrated
-// by fast-forward, the branch kept, and main rebased onto a commit it
-// lacked, so the branch's record diverges from main's done. Every branch
-// commit has a copy on main: nothing to merge, and the refusal says how to
-// clear the branch. One commit without a copy leaves today's path.
-func TestIntegrateRefusesARewrittenCopy(t *testing.T) {
+// TestIntegrateRecoversAfterTheTargetAdvanced covers a crash between the
+// target's advance and cleanup: the rerun makes no second commit, and a
+// branch that moved past the delivered tip is kept.
+func TestIntegrateRecoversAfterTheTargetAdvanced(t *testing.T) {
 	t.Parallel()
 	root, wt, _ := fixture(t, true)
 	if _, err := run(t, root, root, false); err != nil {
 		t.Fatal(err)
 	}
-	git(t, root, "branch", "upstream", "main~5") // init, before the branch's four commits and done
-	git(t, root, "worktree", "add", "-q", filepath.Join(filepath.Dir(root), "up"), "upstream")
-	write(t, filepath.Join(filepath.Dir(root), "up"), "other.txt", "from upstream\n")
-	git(t, filepath.Join(filepath.Dir(root), "up"), "add", "-A")
-	git(t, filepath.Join(filepath.Dir(root), "up"), "commit", "-qm", "upstream")
-	git(t, root, "rebase", "-q", "upstream")
-	if record(t, root).Status != "done" {
-		t.Fatal("the rebase lost done")
+	d := tipOf(t, root, "main")
+	write(t, wt, "grove/G-260101-00001-first.md", string(record(t, wt).Source)+"\n## Next\n\nA later edit.\n")
+	git(t, wt, "commit", "-qam", "docs: later")
+	facts, err := run(t, root, root, true)
+	if err == nil || tipOf(t, root, "main") != d || !strings.Contains(strings.Join(facts, "\n"), "cleanup: kept worktree and branch feature: the branch is not at a tip that a squash delivery retained") {
+		t.Fatalf("%v %q", err, facts)
 	}
-	refs := git(t, root, "for-each-ref")
-	refused(t, root, false, "merge of feature into main refused: branch feature is a rewritten copy of work already on main: each of its 4 commits main lacks has a copy there with the same patch, as after a rebase of main, so nothing needs merging. To clear it: git worktree remove "+wt+", which also deletes that checkout's ignored files such as build output, then git branch -D feature (-D, since Git checks ancestry, not patches, and -d would refuse); nothing was merged, main is unchanged at")
-	if git(t, root, "for-each-ref") != refs || git(t, wt, "status", "--porcelain") != "" {
-		t.Fatal("a refused integration changed a ref or the branch's checkout")
-	}
-
-	write(t, wt, "grove/G-260101-00001-first.md", string(record(t, wt).Source)+"\nAfter the rebase.\n")
-	git(t, wt, "commit", "-qam", "docs: a change main lacks")
-	refused(t, root, false, "Next: grove resolve G-260101-00001")
 }
 
-// A branch whose commits main holds as copies but whose work main does not
-// hold as done, as when it was cherry-picked by hand, is integrated as
-// before: the merge marks it done (G-260928-4qv1m).
-func TestIntegrateMergesACopyNotYetDone(t *testing.T) {
+// TestIntegrateOnAMovedTarget squashes onto wherever the target is, and
+// keeps the target's own changes.
+func TestIntegrateOnAMovedTarget(t *testing.T) {
+	t.Parallel()
+	root, _, candidate := fixture(t, true)
+	write(t, root, "notes.txt", "elsewhere\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "chore: notes")
+	moved := tipOf(t, root, "main")
+	if facts, err := run(t, root, root, false); err != nil {
+		t.Fatalf("%v %q", err, facts)
+	}
+	if parent := git(t, root, "rev-parse", "main^"); parent != moved {
+		t.Fatalf("parent %s, want %s", parent, moved)
+	}
+	if got := git(t, root, "show", "main:notes.txt") + git(t, root, "show", "main:code.txt"); got != "elsewherethe change" {
+		t.Fatalf("result: %q", got)
+	}
+	if _, err := repo.Git(root, "merge-base", "--is-ancestor", candidate, "main"); err == nil {
+		t.Fatal("a squash does not make the candidate an ancestor")
+	}
+}
+
+// TestIntegrateRefusesConflictsBeforeAnythingChanges: nothing is retained,
+// committed or advanced for a conflict, and the refusal names resolve.
+func TestIntegrateRefusesConflictsBeforeAnythingChanges(t *testing.T) {
 	t.Parallel()
 	root, _, _ := fixture(t, true)
-	write(t, root, "other.txt", "main moved\n")
-	git(t, root, "add", "-A")
-	git(t, root, "commit", "-qm", "main moved")
-	git(t, root, "cherry-pick", "main..feature")
-	if record(t, root).Status != "review" {
-		t.Fatal("the cherry-pick should carry the record in review")
+	write(t, root, "code.txt", "a different change\n")
+	git(t, root, "commit", "-qam", "fix: other")
+	moved := tipOf(t, root, "main")
+	refused(t, root, false, "delivery of feature into main refused: it conflicts with main at "+moved[:7]+" in code.txt; nothing was delivered, main is unchanged at "+moved[:7]+" and G-260101-00001 stays accepted. Next: grove resolve G-260101-00001")
+	if out, _ := repo.Git(root, "for-each-ref", "refs/grove/"); out != "" {
+		t.Fatalf("a refusal retained evidence: %s", out)
 	}
-	if facts, err := run(t, root, root, false); err != nil || record(t, root).Status != "done" {
-		t.Fatalf("%v %q", err, facts)
+}
+
+// TestIntegrateRefusesWhatIsNotReadyToDeliver covers every refusal before
+// the target moves.
+func TestIntegrateRefusesWhatIsNotReadyToDeliver(t *testing.T) {
+	t.Parallel()
+	t.Run("unaccepted", func(t *testing.T) {
+		t.Parallel()
+		root, wt, _ := fixture(t, false)
+		refused(t, root, false, "G-260101-00001 is in review on feature but not accepted, or its acceptance no longer applies: run grove approve G-260101-00001 VERDICT in "+wt+" first")
+	})
+	t.Run("stale acceptance", func(t *testing.T) {
+		t.Parallel()
+		root, wt, _ := fixture(t, true)
+		write(t, wt, "grove/G-260101-00001-first.md", strings.Replace(string(record(t, wt).Source), "Body.", "A changed outcome.", 1))
+		git(t, wt, "commit", "-qam", "docs: change the outcome")
+		refused(t, root, false, "not accepted, or its acceptance no longer applies")
+	})
+	t.Run("code after the candidate", func(t *testing.T) {
+		t.Parallel()
+		root, wt, candidate := fixture(t, true)
+		write(t, wt, "code.txt", "later\n")
+		git(t, wt, "commit", "-qam", "fix: later")
+		refused(t, root, false, "commits after candidate "+candidate[:7]+" on feature change code.txt: the tip "+tipOf(t, wt, "HEAD")[:7]+" is a new candidate; accept it before integrating")
+	})
+	t.Run("dirty target", func(t *testing.T) {
+		t.Parallel()
+		root, _, _ := fixture(t, true)
+		head := tipOf(t, root, "main")
+		write(t, root, "code.txt", "edited\n")
+		if _, err := run(t, root, root, false); err == nil || !strings.Contains(err.Error(), "the checkout of main has uncommitted changes") || tipOf(t, root, "main") != head {
+			t.Fatal(err)
+		}
+	})
+	t.Run("off the target", func(t *testing.T) {
+		t.Parallel()
+		root, _, _ := fixture(t, true)
+		git(t, root, "checkout", "-q", "-b", "other")
+		refused(t, root, false, "integrate runs in the checkout of the target main; this one is on other")
+	})
+	t.Run("moved since verified", func(t *testing.T) {
+		t.Parallel()
+		root, _, _ := fixture(t, true)
+		head := tipOf(t, root, "main")
+		err := Run(Request{Root: root, ID: "G-260101-00001", Expect: strings.Repeat("a", 40)}, now, func(string) {})
+		if err == nil || !strings.Contains(err.Error(), "where the merge was verified, to "+head[:7]+"; nothing was delivered") || tipOf(t, root, "main") != head {
+			t.Fatal(err)
+		}
+	})
+	t.Run("two branches", func(t *testing.T) {
+		t.Parallel()
+		root, wt, _ := fixture(t, true)
+		git(t, wt, "branch", "feature2")
+		refused(t, root, false, "G-260101-00001 is accepted on several branches (feature, feature2); integrate needs one")
+	})
+	t.Run("nothing accepted", func(t *testing.T) {
+		t.Parallel()
+		root, wt, _ := fixture(t, true)
+		git(t, root, "worktree", "remove", "--force", wt)
+		git(t, root, "branch", "-D", "feature")
+		refused(t, root, false, "no branch holds G-260101-00001 accepted; nothing to integrate")
+	})
+}
+
+// TestIntegrateCleanupKeepsWhatGitOrTheSessionHolds: a kept worktree keeps
+// its branch too, and the delivery stands.
+func TestIntegrateCleanupKeepsWhatGitOrTheSessionHolds(t *testing.T) {
+	t.Parallel()
+	for name, tc := range map[string]struct {
+		setup func(t *testing.T, root, wt string)
+		cwd   func(root, wt string) string
+		want  string
+	}{
+		"a dirty worktree":        {func(t *testing.T, root, wt string) { write(t, wt, "scratch.txt", "not committed\n") }, func(root, wt string) string { return root }, "cleanup: kept worktree"},
+		"the session's directory": {func(*testing.T, string, string) {}, func(root, wt string) string { return wt }, "it holds this process's working directory"},
+		"ignored files": {func(t *testing.T, root, wt string) {
+			write(t, root, ".git/info/exclude", "*.log\n")
+			write(t, wt, "junk.log", "ignored\n")
+		}, func(root, wt string) string { return root }, "it holds ignored files (junk.log)"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			root, wt, _ := fixture(t, true)
+			tc.setup(t, root, wt)
+			facts, err := run(t, root, tc.cwd(root, wt), true)
+			joined := strings.Join(facts, "\n")
+			if err == nil || !strings.Contains(err.Error(), "cleanup incomplete; the integration stands") || !strings.Contains(joined, tc.want) || !strings.Contains(joined, "cleanup: kept branch feature: its worktree is kept") {
+				t.Fatalf("%v\n%s", err, joined)
+			}
+			if _, err := os.Stat(wt); err != nil {
+				t.Fatal("the worktree was removed")
+			}
+		})
+	}
+}
+
+// TestIntegrateUnderAPolicy attributes the delivery in its message and
+// reports its revert.
+func TestIntegrateUnderAPolicy(t *testing.T) {
+	t.Parallel()
+	root, _, _ := fixture(t, true)
+	var facts []string
+	if err := Run(Request{Root: root, ID: "G-260101-00001", Policy: "policy grove.yaml sha256:x"}, now, func(f string) { facts = append(facts, f) }); err != nil {
+		t.Fatal(err)
+	}
+	d := tipOf(t, root, "main")
+	if !slices.Contains(facts, "delivered under policy grove.yaml sha256:x; to reverse it: git revert "+d) || !strings.Contains(git(t, root, "log", "-1", "--format=%B"), "\nIntegrated under policy grove.yaml sha256:x.\n") {
+		t.Fatalf("%q\n%s", facts, git(t, root, "log", "-1", "--format=%B"))
+	}
+}
+
+// TestMessageTypes picks the most significant type among the candidate's
+// own commits and keeps a breaking change.
+func TestMessageTypes(t *testing.T) {
+	t.Parallel()
+	_, wt, _ := fixture(t, false)
+	base := tipOf(t, wt, "HEAD")
+	for _, subject := range []string{"docs: words", "fix(ui)!: break it", "chore: tidy"} {
+		write(t, wt, "code.txt", subject+"\n")
+		git(t, wt, "commit", "-qam", subject)
+	}
+	c := tipOf(t, wt, "HEAD")
+	m, err := Message(wt, "grove", base, c, c, []*project.Record{{ID: "G-260101-00001", Title: "Make it so"}}, "")
+	if err != nil || !strings.HasPrefix(m, "fix!: make it so\n") {
+		t.Fatalf("%v\n%s", err, m)
 	}
 }
