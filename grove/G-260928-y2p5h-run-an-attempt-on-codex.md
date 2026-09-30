@@ -1,36 +1,51 @@
 ---
 id: "G-260928-y2p5h"
 type: work
-title: "Run an attempt on Codex"
+title: "Run bounded work through portable Claude and Codex execution"
 status: proposed
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-28T19:34:02Z"
+updated: "2026-09-30T01:16:07Z"
 kind: feature
 size: large
-relates_to: ["G-260928-vdhf0", "G-260928-917h8", "G-260923-tnn5e", "G-260924-59f5k", "G-260925-42j50", "G-260925-04ccr", "G-260925-3pj9a", "G-260925-p2k54", "G-260923-895zb", "G-260928-kehya"]
+relates_to: ["G-260928-vdhf0", "G-260928-917h8", "G-260923-tnn5e", "G-260924-59f5k", "G-260925-42j50", "G-260925-04ccr", "G-260925-3pj9a", "G-260925-p2k54", "G-260923-895zb", "G-260928-kehya", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-gwnb1"]
+depends_on: ["G-260930-62nmj"]
 ---
 
 ## Outcome
 
-## Constraints
+A project's bounded work can run on Claude Code or Codex through a common
+Grove execution boundary, with its actual harness capabilities and
+configuration visible. Changing harness does not require changing the
+project's work model or learning another workflow.
 
-## Acceptance
+The owner selected two providers on 2026-09-28 in
+[G-260928-vdhf0](G-260928-vdhf0-run-attempts-on-codex-as.md), and reframed
+this work around portable adoption on 2026-09-29 in [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md).
+This record supplies execution for [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md); it no longer requires
+preserving the current command bytes or package shape.
 
-## Next
+## Scope and constraints
 
-## Outcome
+Separate provider-specific command construction, event decoding, capabilities,
+permissions, limits and native-session behavior from common ownership,
+worktree handling, duplicate-start refusal, stop and result reconciliation.
+Extract or replace code where the design warrants it. Exercise the boundary
+with both providers; a public plugin SDK and a third provider are out of scope.
 
-The owner launches an attempt on Codex the way they launch one on Claude
-Code, with `--provider codex` or a `provider:` default under `run:`, giving
-the model, effort and cap in that harness's terms; Grove owns, watches,
-stops and reconciles it as any attempt; the board and `attempt` show its
-provider, model, cost where reported, activity and final report; and a
-launch on Claude Code composes exactly what it composes today.
+Keep the shared Grove work guide and thin adapters. Necessary guide changes
+for the two-provider contract are in scope. A provider's successful exit
+does not claim reviewed or accepted work. Separate review belongs to
+[G-260928-n4f1q](G-260928-n4f1q-review-a-candidate-as-a.md); complete durable
+handoff and the combined trial belong to [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md).
 
-Decision [G-260928-vdhf0](G-260928-vdhf0-run-attempts-on-codex-as.md), the
-owner on 2026-09-28. Term: [Provider](G-260928-917h8-provider.md).
+Provider capabilities are explicit. Unsupported and unreported are distinct
+from zero or success. A time limit is not a dollar cap, and permission modes
+must not be equated by name alone. Preserve the no-default-spend mandate and
+[G-260925-04ccr](G-260925-04ccr-never-run-gpt-6-astra-un.md)'s model constraint.
+Keep usable existing project configuration through an explicit migration
+where contracts change.
 
-## Constraints
+## Observed evidence
 
 Observed 2026-09-28 at main `6fbb888`:
 
@@ -68,54 +83,41 @@ Observed 2026-09-28 at main `6fbb888`:
 - [G-260925-04ccr](G-260925-04ccr-never-run-gpt-6-astra-un.md) binds any
   default model: never gpt-6-astra unless the owner names it.
 
-Proposed design, labelled proposed:
+These are dated observations, including the earlier statement about Codex
+agent definitions; recheck supported versions and capabilities at
+implementation. They are not portable product requirements.
 
-- `--provider claude|codex` on `run` and `resolve`, `run: provider:` in
-  `grove.yaml`, recorded in `attempt.json` and shown wherever the model is
-  shown; the board's launch line takes it like any flag.
-- For Codex: `codex exec --json -C WORKTREE -m MODEL -c
-  model_reasoning_effort=EFFORT` with the permission mode mapped to a
-  sandbox and approval setting the record model documents, and the prompt
-  `$grove-work IDs --interaction headless`. Codex has no dollar budget, so
-  `--budget` is refused for it and a `--max-minutes` cap is required in its
-  place under the same no-default-spend rule; the eval runner's caps are
-  the precedent. `run:` may default the cap per provider.
-- A Codex events reader filling `Metrics`, the last message as the report,
-  the model from its events, cost where reported and otherwise "not
-  reported" with the reason.
-- The entrypoint check and `differs_from_template` cover the Codex adapter.
-- Stop and orphan handling through the same owner process; whether Codex
-  ends its turn on SIGINT is verified, and the difference documented.
+## Dependencies
 
-Out of scope: a reviewer for Codex attempts (G-260928-n4f1q); a third
-provider; guide changes for Codex, which become their own record if the
-trial shows the adapter failing.
+Depends on [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md): the accepted assignment/capability/continuation
+contracts determine this boundary. Coding directly to the old CLI shape
+would pre-empt that design and risk redoing the runner.
 
 ## Acceptance
 
-1. `grove run ID --provider codex --max-minutes N --permission-mode MODE`
-   starts a Grove-owned Codex process in the worktree; `attempts`,
-   `attempt` and the board show provider, model, cap, activity and the
-   final report; `--dry-run` prints the composed command; a fake `codex`
-   covers the lifecycle as the fake `claude` does; a launch without
-   `--provider` composes byte for byte what it composes today.
-2. Stop, orphan and interrupted states reconcile for a Codex attempt as for
-   Claude; a process that ignores SIGINT is killed after the grace period
-   and the result says so.
-3. The permission-to-sandbox mapping and the cap are in the record model
-   and `docs/commands.md`; `check` refuses an unknown provider and a budget
-   for Codex.
-4. One real `--until plan` attempt on Codex on real work, here or in
-   keyborg, under a cap the owner names at assignment, reported with cost,
-   duration, whether it stayed inside the worktree, and whether a Claude
-   implementation attempt could follow from its plan.
-5. The entrypoint revision check covers the Codex adapter.
+1. Both providers execute a bounded selection in a Grove-owned worktree.
+   Dry run and inspection explain provider, model/effort, effective
+   permissions and limits, entrypoint compatibility and resume behavior.
+   CLI and TUI read the same execution facts.
+2. Both providers have deterministic coverage for launch, duplicate refusal,
+   successful/failed exit, missing executable or incompatible entrypoint,
+   stop escalation, lost owner, partial output and reconnect. Unsupported
+   combinations fail before spending or changing the assignment.
+3. Provider-specific events preserve raw attribution and supply common
+   activity/result facts without leaking Claude-only assumptions into the
+   work model. Missing usage or cost is reported honestly.
+4. Existing Claude workflows retain their required behavior, with migration
+   for deliberate interface changes. No byte-for-byte command-preservation
+   constraint prevents a cleaner implementation.
+5. Real bounded smoke trials on both providers record versions, permission
+   behavior, effective limits, stopping and observed activity. The owner
+   supplies execution configuration and any paid usage mandate.
+6. Implemented contracts are reconciled in the owning guides, configuration
+   model and command documentation. The complete cross-provider journey is
+   tested by [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md), not inferred from these smoke trials.
 
 ## Next
 
-Assign: `/grove-work G-260928-y2p5h`. This changes the command composition
-in `internal/attempt/attempt.go`, which
-[G-260928-kehya](G-260928-kehya-resume-an-attempt-s-sess.md) also touches;
-no order is declared between them, and the owner should not launch them
-alongside each other without reading both. G-260928-n4f1q names this record
-in its `depends_on`.
+Needs [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md). At assignment, plan the extraction/replacement against
+its accepted contracts, retain meaningful lifecycle regression coverage,
+and recheck the dated provider observations.

@@ -1,41 +1,45 @@
 ---
 id: "G-260928-n4f1q"
 type: work
-title: "Review a candidate as a separately launched independent process"
+title: "Review candidates independently on the chosen harness"
 status: proposed
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-28T19:34:02Z"
+updated: "2026-09-30T01:16:08Z"
 kind: feature
 size: medium
 depends_on: ["G-260928-y2p5h"]
-relates_to: ["G-260928-917h8", "G-260924-5b6pz", "G-260921-rz7bn", "G-260925-5wrn8", "G-260924-3bapc", "G-260928-c5j9d"]
+relates_to: ["G-260928-917h8", "G-260924-5b6pz", "G-260921-rz7bn", "G-260925-5wrn8", "G-260924-3bapc", "G-260928-c5j9d", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-gwnb1"]
 ---
 
 ## Outcome
 
-## Constraints
+Work can receive an attributable independent review on the harness, model
+and effort chosen for review, regardless of the implementation harness.
+The person judging the result sees what was examined, the findings and
+verification, and any review that could not be completed.
 
-## Acceptance
+Owner intent, 2026-09-28: "codex for the plan, claude code for the
+implementation, and codex for the review." The portable adoption direction
+[G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md) makes this part of [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md).
 
-## Next
+## Scope and constraints
 
-## Outcome
+Provide a separately launched, bounded independent review through the common
+execution boundary, available to the CLI, board and work workflow.
+The working session's existing independent subagent route can remain where
+it meets the same evidence and independence requirements. No universal
+fresh-process rule is imposed on preparation and implementation.
 
-An independent review of a candidate can be launched as its own Grove-owned
-process, on a provider and model chosen for review, from the CLI, from the
-board, or by the implementing session in place of a subagent. It writes the
-review record with `examined`, and the attempt facts show which reviews ran
-that way and what they cost, so review runs at the strength and on the
-harness the owner picks, and an implementing session on any provider can
-hand off reviewed work.
+A review mandate identifies the exact candidate, outcome/acceptance,
+relevant context, previous findings and allowed verification. Isolation
+protects the implementation result; checks that require writes need a
+controlled disposable environment rather than mutation of the candidate.
+Grove records work/examined/provenance and preserves failures without
+inventing a clean review. Independent review informs approval; delegated
+approval judgment is [G-260928-c5j9d](G-260928-c5j9d-judge-a-candidate-agains.md)'s
+separate outcome outside the milestone.
 
-Owner intent, shaping conversation 2026-09-28: "codex for the plan, claude
-code for the implementation, and codex for the review"; "an orchestrator
-model, like fable, and then execution models like opus 5.5, and review
-models"; the owner chose the incremental path, where the work guide stays
-the one workflow and phases gain launchable boundaries.
-
-## Constraints
+## Observed evidence
 
 Observed 2026-09-28 at main `6fbb888`:
 
@@ -57,52 +61,38 @@ Observed 2026-09-28 at main `6fbb888`:
 - A headless session must own a long command in the foreground with a
   timeout ([G-260924-3bapc](G-260924-3bapc-headless-attempts-run-lo.md)).
 
-Proposed design, labelled proposed:
+These observations describe the earlier implementation and provider versions,
+not a lasting claim about which harness can create subagents.
 
-- `grove review ID [--commit C] [--provider P] [--model M] [--effort E]
-  [--budget USD | --max-minutes N]`: one Grove-owned process in the branch's
-  checkout, read-only for the tree (a Claude permission mode that disallows
-  edits, or `codex -s read-only`), whose prompt is the review guide with
-  what step 6 passes: checkout, commit or range, record, plan, allowed
-  commands, and prior findings for a re-review. It returns findings and the
-  closing line, as structured output where the provider supports it, and
-  Grove writes the review record with `work` and `examined` and commits it,
-  attributed to the launch. Refused when the branch's checkout is dirty, or
-  when an attempt of the work runs, unless that attempt launched it.
-- Step 6 gains the alternative: where the checkout's provider has no
-  reviewer definition, or the assignment names a review provider, dispatch
-  through `grove review` and wait for it in the foreground; the closing line
-  comes from the record it wrote.
-- `run: review:` defaults (provider, model, effort, cap) beside the launch
-  defaults; the attempt records the reviews it launched.
+## Dependencies
 
-Out of scope: replacing the subagent path where it works; a second reviewer
-definition; the delegated judgment of
-[G-260928-c5j9d](G-260928-c5j9d-judge-a-candidate-agains.md), which is not a
-review.
+Depends on [G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md):
+this launches and observes review through its provider boundary, including
+capabilities, limits and cancellation. A second review-specific runner would
+duplicate those responsibilities.
 
 ## Acceptance
 
-1. `grove review ID` on a candidate writes a `current` review record with
-   `examined` the commit, ending with the closing line, committed on the
-   branch; covered with a fake provider on both providers; refusals as
-   listed.
-2. A headless implementation attempt on Codex hands off reviewed work
-   through it: the review record exists and the policy would read it, fake
-   providers end to end.
-3. The attempt facts and the board's attempt screen list the reviews an
-   attempt launched, with provider, model and cost or cap.
-4. Work guide step 6, the review guide, `docs/commands.md` and the record
-   model (`run.review`) say so; the [review](G-260921-rz7bn-review.md) term's
-   meaning is unchanged.
-5. One real review of a real candidate on Codex and one on Claude at a
-   chosen model, which the owner compares with a subagent review of the
-   same commit, under a budget the owner names at assignment.
+1. Both providers can perform an independent review with exact candidate
+   attribution and a configured review role distinct from implementation.
+   CLI, TUI and implementing sessions can invoke the same operation.
+2. Findings, verification, provider/configuration and resource usage or its
+   absence are recorded and inspectable. Failed, interrupted or malformed
+   results remain visibly incomplete and cannot satisfy the review gate.
+3. A candidate change prevents old findings from being presented as review
+   of the new result. Concurrent changes are refused or isolated under
+   the accepted design, without a second implementation owner.
+4. The reviewer cannot modify the candidate; allowed checks and any
+   disposable test environment are explicit. Self-review is never labelled
+   independent. The person can follow a finding to its evidence.
+5. Fake-provider tests cover those boundaries. Real bounded reviews on
+   both providers of the same candidate are compared with the existing
+   subagent route under an owner-specified mandate.
+6. Review and work guides, configuration and command documentation describe
+   the delivered operation. Review's settled meaning is unchanged.
 
 ## Next
 
-Assign after [G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) is
-delivered: `/grove-work G-260928-n4f1q`. `depends_on` names it because the
-review process launches through the provider seam that record introduces
-(command composition, events reader, cap, stop); built first on Claude
-alone it would be redone on the seam.
+Needs G-260928-y2p5h. At assignment, use the accepted role and evidence
+contracts to choose the command/configuration details and isolation model.
+The combined implementation-to-review trial belongs to [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md).

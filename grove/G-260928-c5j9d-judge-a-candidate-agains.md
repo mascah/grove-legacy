@@ -4,11 +4,11 @@ type: work
 title: "Judge a candidate against its record under the policy with a delegated LLM"
 status: proposed
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T19:34:01Z"
+updated: "2026-09-30T01:16:10Z"
 kind: feature
 size: medium
-depends_on: ["G-260928-dtrnw"]
-relates_to: ["G-260928-d8py6", "G-260925-5wrn8", "G-260925-wh9ax", "G-260926-a8vyj", "G-260921-btyck", "G-260921-rz7bn", "G-260928-y2p5h"]
+depends_on: ["G-260928-dtrnw", "G-260930-60c3d"]
+relates_to: ["G-260928-d8py6", "G-260925-5wrn8", "G-260925-wh9ax", "G-260926-a8vyj", "G-260921-btyck", "G-260921-rz7bn", "G-260928-y2p5h", "G-260930-e8jj7", "G-260930-60c3d"]
 ---
 
 ## Outcome
@@ -22,6 +22,25 @@ so the owner reads reasons instead of diffs.
 Decision [G-260928-d8py6](G-260928-d8py6-a-standing-policy-may-de.md), the
 owner on 2026-09-28: "An LLM decides ideally." The design below is proposed
 and the owner writes the policy that enables it.
+
+## Portable milestone framing
+
+On 2026-09-29 the owner selected [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md). This remains proposed
+work outside [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md).
+Delegated judgment reduces supervision once the complete workflow exposes
+reliable acceptance, evidence and authority. G-260928-d8py6's accepted intent
+remains; this deferral does not revoke it.
+
+Depends on [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md): the owner selected demonstration of the
+complete usable loop before this investment. It also consumes the resulting
+provider, review, delivery and policy presentation contracts;
+building against the current interfaces would risk redoing that integration.
+The existing prerequisite G-260928-dtrnw supplies sweep triggers and remains in depends_on.
+
+The technical design below is a dated proposal. At assignment, reconcile it
+with the delivered portable contracts and capability-specific limits;
+select the judgment's provider and resource limit explicitly for that role,
+rather than silently inheriting the implementation harness.
 
 ## Constraints
 
@@ -51,9 +70,9 @@ Proposed design, labelled proposed:
 
 - A `judge:` mapping under `policy.approve` with `model`, `effort` and
   `budget` per judgment, all required to enable it; absent, the policy is
-  as today. Its provider is the target's `run:` provider once
-  [G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) lands, else
-  Claude Code.
+  as today. Its provider and effective resource limit follow the portable role
+  contract, explicitly configured and reported; there is no silent fallback
+  to an implementation harness.
 - One headless call with structured output that reads the record's outcome,
   constraints and acceptance, its plan, every review of the candidate, the
   record's Evidence and the diff against the target, and returns
@@ -93,9 +112,7 @@ from the owner's verdicts.
 
 ## Next
 
-Assign after [G-260928-dtrnw](G-260928-dtrnw-run-sweep-from-a-finishi.md)
-is delivered: `/grove-work G-260928-c5j9d`. `depends_on` names it because
-both change the sweep's per-candidate plan and the policy's keys in
-`internal/sweep` and `internal/project`; the trigger is the smaller change
-and this one extends the same loop, so building them alongside would
-conflict.
+Needs [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md) and the existing prerequisite named above.
+At assignment, reconcile the dated mechanism with the delivered contracts,
+retain the original bounded-trial acceptance, and record the owner's
+execution mandate. This record is not a milestone member or assigned work.

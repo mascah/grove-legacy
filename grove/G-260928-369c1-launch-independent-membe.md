@@ -4,20 +4,12 @@ type: work
 title: "Launch independent members of a selection as parallel attempts"
 status: proposed
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T19:34:01Z"
+updated: "2026-09-30T01:16:10Z"
 kind: feature
 size: medium
-depends_on: ["G-260928-63124"]
-relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260925-g39ga", "G-260925-h8rj5", "G-260925-5wrn8", "G-260928-c5j9d"]
+depends_on: ["G-260928-63124", "G-260930-60c3d"]
+relates_to: ["G-260925-7c8g9", "G-260925-wc2pz", "G-260925-g39ga", "G-260925-h8rj5", "G-260925-5wrn8", "G-260928-c5j9d", "G-260930-e8jj7", "G-260930-60c3d"]
 ---
-
-## Outcome
-
-## Constraints
-
-## Acceptance
-
-## Next
 
 ## Outcome
 
@@ -32,6 +24,24 @@ Owner intent, shaping conversation 2026-09-28: "chain default, parallel
 optional"; and, from keyborg, "we don't have a good handle on understanding
 what work can happen in parallel versus sequential, and how grove can manage
 that."
+
+## Portable milestone framing
+
+On 2026-09-29 the owner selected [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md). This remains proposed
+work outside [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md).
+Parallel launch increases throughput once a person can reliably understand
+and continue one complete change. Its default chain and optional independent
+attempts remain the intended behavior.
+
+Depends on [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md): the owner selected demonstration of the
+complete usable loop before this investment. It also consumes the resulting
+provider, work ownership and delivery contracts;
+building against the current interfaces would risk redoing that integration.
+The existing prerequisite G-260928-63124 supplies per-member state and remains in depends_on.
+
+The technical design below is a dated proposal. At assignment, reconcile it
+with the delivered portable contracts and capability-specific limits;
+a summed time allowance must not be presented as a monetary cap.
 
 ## Constraints
 
@@ -96,8 +106,7 @@ shared-candidate rule.
 
 ## Next
 
-Assign after [G-260928-63124](G-260928-63124-show-each-member-s-state.md) is
-delivered: `/grove-work G-260928-369c1`. `depends_on` names it because both
-change the tags a selection puts on cards and the attempt row in
-`internal/tui/attempts.go` and `model.go`; that record is the smaller change
-this one extends, so building them alongside would conflict.
+Needs [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md) and the existing prerequisite named above.
+At assignment, reconcile the dated mechanism with the delivered contracts,
+retain the original bounded-trial acceptance, and record the owner's
+execution mandate. This record is not a milestone member or assigned work.

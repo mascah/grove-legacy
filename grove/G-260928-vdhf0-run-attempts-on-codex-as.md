@@ -4,15 +4,9 @@ type: decision
 title: "Run attempts on Codex as a second provider"
 status: accepted
 created: "2026-09-28T19:28:59Z"
-updated: "2026-09-28T19:34:00Z"
-relates_to: ["G-260923-tnn5e", "G-260928-917h8", "G-260924-59f5k", "G-260925-42j50", "G-260928-y2p5h", "G-260928-n4f1q"]
+updated: "2026-09-30T01:16:11Z"
+relates_to: ["G-260923-tnn5e", "G-260928-917h8", "G-260924-59f5k", "G-260925-42j50", "G-260928-y2p5h", "G-260928-n4f1q", "G-260930-e8jj7", "G-260930-62nmj"]
 ---
-
-## Decision
-
-## Alternatives
-
-## Reconsideration
 
 ## Decision
 
@@ -53,3 +47,12 @@ Reopen when Codex cannot be capped or stopped reliably as a Grove-owned
 process, when its sandbox cannot be confined to the worktree (G-260925-42j50
 observed reads outside the clone), or when the work guide behaves
 differently enough under Codex that one workflow cannot serve both.
+
+## Clarification, 2026-09-29
+
+The owner selected [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md). The two-provider direction and
+on-demand ownership constraints stand. Substantial runner replacement and
+refactoring are permitted; preserving the existing package shape or exact
+Claude command bytes is not required. [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md) owns the proposed
+journey and contracts; the real two-provider trial tests the resulting
+boundary. No public plugin framework is selected.

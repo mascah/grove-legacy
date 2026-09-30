@@ -4,8 +4,8 @@ type: term
 title: "Integration"
 status: settled
 created: "2026-09-21T05:01:57Z"
-updated: "2026-09-21T14:23:34Z"
-relates_to: ["G-260921-vr8a8", "G-260921-jatts", "G-260921-btyck"]
+updated: "2026-09-30T01:16:11Z"
+relates_to: ["G-260921-vr8a8", "G-260921-jatts", "G-260921-btyck", "G-260930-e8jj7", "G-260929-gm3m4", "G-260930-4742q"]
 formerly: "T-007"
 ---
 
@@ -32,3 +32,13 @@ prediction cannot see.
 
 Follows [approval](G-260921-btyck-approval.md). Completes implementation
 [work](G-260921-vr8a8-work.md) under the target lifecycle.
+
+## Selected redesign, 2026-09-29
+
+The owner selected [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md), reopening the ancestry-only
+representation for squash and hosted delivery. The current mechanism above
+remains implemented; [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md)
+and [G-260930-4742q](G-260930-4742q-deliver-accepted-work-th.md) must reconcile this term and the lifecycle contract when
+they deliver verified correspondence between an approved candidate and a
+transformed integrated result. An unverified trailer or work status alone
+will not establish integration.

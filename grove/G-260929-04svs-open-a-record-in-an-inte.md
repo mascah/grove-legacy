@@ -1,32 +1,49 @@
 ---
 id: "G-260929-04svs"
 type: work
-title: "Open a record in an interactive Claude session from the board, and resume it"
+title: "Enter and resume interactive work on the selected harness"
 status: proposed
 created: "2026-09-29T03:04:23Z"
-updated: "2026-09-29T03:05:42Z"
+updated: "2026-09-30T01:16:08Z"
 kind: feature
-size: small
-relates_to: ["G-260928-y50a4", "G-260923-tnn5e", "G-260928-kehya", "G-260928-y2p5h", "G-260919-k7b8j", "G-260921-sth8q"]
+size: medium
+relates_to: ["G-260928-y50a4", "G-260923-tnn5e", "G-260928-kehya", "G-260928-y2p5h", "G-260919-k7b8j", "G-260921-sth8q", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-r2k4g"]
+depends_on: ["G-260930-gwnb1"]
 ---
 
 ## Outcome
 
-From a record's detail on the board, the owner opens an interactive Claude
-Code session in the checkout that holds the record, with the record already
-in the session's scope, and types what they want; leaving the session
-returns the board to that same detail. A later press on the same record
-resumes that session instead of starting fresh, and the owner may start a
-new one instead.
+From the work they are inspecting, a person can enter a supported
+interactive harness with the correct project context, help or continue the
+work, and return to the same Grove view. Native resume is offered where
+supported; a fresh session can use the durable handoff when it is not.
 
-Owner intent, shaping conversation 2026-09-28: "launch an interactive claude
-session from grove with the currently open item pre-populated in the input
-field like `@grove/G-260929-z5nec-implementation-writes-denied.md` and then
-I can just start typing afterwards to explain. exiting the claude process
-would return me to grove on the item that it was opened from"; "Being able
-to resume the sessions would be really helpful."
+The original owner request on 2026-09-28 was to open Claude from a record
+with that record in scope, type an instruction, return to Grove on exit,
+and resume later. The owner selected portable adoption on 2026-09-29 in
+[G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md); this proposal now serves both milestone harnesses.
 
-## Constraints
+## Scope and constraints
+
+Use the project's selected supported harness and expose capability
+differences. Do not maintain a second Claude-only provider selector or
+launch path. Bind context and any native session to the actual work and
+checkout, rechecking freshness before launch. Keep local session identifiers
+under the Git common directory; durable work must not require them.
+
+An interactive session has a present person and does not acquire the
+authority of a bounded unattended assignment merely because it was opened
+from Grove. Opening a record does not silently assign implementation, send
+an expensive initial turn, or grant integration permission. Explain any
+provider behavior that requires submitting context as a turn.
+
+Do not attach a second writer to an actively owned worktree. Use the
+accepted design's stop/wait/isolation path, and preserve unfinished work.
+The board suspends and restores the terminal, then refreshes the same work
+and explains the outcome. Exact key bindings and prompt seeding are design
+choices rather than this record's acceptance.
+
+## Observed evidence
 
 Observed 2026-09-28 at main `9a18f57`:
 
@@ -71,59 +88,39 @@ Observed 2026-09-28 at main `9a18f57`:
 - Bare `grove` opens the board and explicit subcommands stay noninteractive
   ([G-260919-k7b8j](G-260919-k7b8j-browse-a-terminal-kanban.md)); this is
   board-only, with no subcommand.
-- [G-260928-kehya](G-260928-kehya-resume-an-attempt-s-sess.md) resumes an
-  attempt's print session with `--resume`, and
-  [G-260928-y2p5h](G-260928-y2p5h-run-an-attempt-on-codex.md) reshapes the
-  attempt command for Codex. Both touch `internal/attempt`; this touches
-  `internal/tui` and a new session store, so no order is declared.
 
-Proposed design, labelled proposed:
+The earlier proposal used key c, a Claude system-prompt seed and a local
+session map. These remain design evidence, not a requirement to duplicate
+provider/session handling. Recheck the dated native-resume observations
+for each supported version.
 
-- `c` on a record's detail: the `e` refusals, then `claude` in the checkout
-  holding the shown version, on the board's terminal, with `--session-id` a
-  UUID Grove generates, `--name ID`, and `--append-system-prompt` saying the
-  session was opened from the Grove board on ID at PATH in this checkout,
-  to read it before answering, and that the person will say what they want.
-  Session variables scrubbed as attempts scrub them. The record is in scope
-  without a spent turn. The visible, editable mention the owner described
-  is not possible; the positional prompt `@PATH`, which costs one turn
-  before the owner types, is the alternative seed.
-- Grove keeps the checkout, session id and start time per record under the
-  Git common directory beside attempts (`.git/grove/sessions/ID.json`, never
-  committed). When one exists for this record in this checkout, `c`
-  prompts: Enter resumes it (`--resume UUID`), showing when it started; `n`
-  starts a new one and replaces the entry; Esc cancels. A resume Claude
-  refuses ends like any exit and the notice says so; the owner starts new.
-- After the session exits, the board re-reads as after `e`, and the notice
-  names the session and that `c` resumes it.
-- Not an [attempt](G-260921-sth8q-attempt.md): nothing under attempts, no
-  attempt record, no budget, no permission mode, no result reconciled; the
-  owner is in the session. Claude only; Codex's `codex resume` belongs to
-  the provider work.
-- `docs/board.md`: a section beside "Editing a record", the key table row,
-  and where the session store lives.
+## Dependencies
 
-Out of scope: a subcommand; forking a session (`--fork-session`); choosing
-model or effort from the board; a provider choice.
+Depends on [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md): it consumes the exercised durable handoff and
+provider/session boundaries, including safe recovery. This replaces the
+earlier assumption that a separate Claude-only session store could be built
+without ordering it against the runner changes.
 
 ## Acceptance
 
-1. `c` on a live record's detail runs the provider in the checkout holding
-   it with `--session-id`, `--name ID` and the seed; the board returns to
-   that detail and re-reads; each `e` refusal refuses `c` too and writes
-   nothing. A fake provider records its arguments; `terminal.py` covers a
-   first launch and a resume end to end, as `edit_record` does.
-2. A second `c` on the same record in the same checkout offers the resume
-   and passes `--resume` with the kept id; `n` starts fresh and replaces the
-   kept id; the store is under the Git common directory and never
-   committed.
-3. A board started inside a Claude session launches the provider with the
-   session variables scrubbed, as attempts do.
-4. `docs/board.md` says so; the owner judges in a terminal with the real
-   `claude`, including one resume.
+1. A user enters either supported interactive harness from live work with
+   its current mandate/checkpoint and relevant context, then returns to the
+   same refreshed Grove view. Commit-only, stale, ambiguous or actively
+   owned sources give an actionable wait or supported safe alternative.
+2. Native resume, fresh start and unavailable/missing sessions have clear
+   outcomes. Provider/checkout mismatch never silently resumes another
+   conversation; fresh continuation uses the durable handoff.
+3. Opening or inspecting work does not itself authorize an unattended
+   implementation or merge. Any automatically submitted turn is explicit.
+4. Local session bookkeeping is not committed or needed by a fresh clone.
+   Provider nesting/session variables are handled through the common
+   provider boundary without leaking one provider's session into another.
+5. Terminal lifecycle tests exercise first launch, resume, failure and
+   return. The owner tries both real harnesses in a terminal under an
+   explicit mandate, and documentation names capability limitations.
 
 ## Next
 
-Assign: `/grove-work G-260929-04svs`. At assignment the owner may choose
-the positional-prompt seed over the system-prompt seed, or another free key
-over `c`; neither changes the acceptance.
+Needs [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md). Implement the reviewed interactive transition against
+its handoff and provider boundaries. The final assembled experience belongs
+to [G-260930-r2k4g](G-260930-r2k4g-make-the-complete-grove.md).
