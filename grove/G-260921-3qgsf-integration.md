@@ -61,7 +61,8 @@ Conventional Commit message whose trailers name the work, the candidate and
 the retained tip, fast-forwards the target to it, and writes no record.
 Done is derived: accepted work is done when the target contains its
 candidate, or a commit whose trailers, parent and exact tree match the
-retained submission. A forged, altered or unretained delivery, or one a
-rewrite of the target dropped, is not done; a later revert does not undo
+retained submission. A forged or altered delivery, or one a rewrite of the
+target dropped, is not done, and one whose submission a clone lacks is
+unknown there; a later revert does not undo
 it. A `done` status from schema 3 is kept by `grove migrate` as that
 schema's claim and never presented as verified.

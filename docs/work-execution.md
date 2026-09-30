@@ -554,8 +554,8 @@ disposition:
   `--cleanup` removes the worktree and branch where Git agrees. The board's
   detail of the record offers the same as `a`, `f` and `i`. The retained
   refs are local: push or fetch `refs/grove/*` with the target so another
-  clone verifies the delivery; without them it reads as unknown there,
-  never done.
+  clone verifies the delivery; a clone lacking the retained tip reads it as
+  unknown, never done.
 - **A schema 3 claim on a rewritten target:** rewriting the target once
   work is integrated, as a rebase onto a remote does, gives its commits new
   hashes. A squash delivery survives that through its retained evidence. A

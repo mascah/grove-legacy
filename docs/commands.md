@@ -88,9 +88,10 @@ It writes no record: the delivered record is the branch's, accepted.
 Rerun after an interruption, it finds the delivery through the same
 verifier and goes on to cleanup, never a second commit. `--cleanup` removes
 the worktree only where Git agrees and it holds no ignored files, and the
-branch only while its tip is still S. Retained refs are local refs: to take
-the evidence to another clone, push or fetch `refs/grove/*` with the
-branches. Without it, delivery reads as unknown there, never as done.
+branch only while its tip is still S. The retained ref keeps S from
+garbage collection and is local: to take the evidence to another clone,
+push or fetch `refs/grove/*` with the branches. A clone without S reads
+the delivery as unknown, never as done.
 
 ### Standing
 
@@ -102,8 +103,8 @@ paragraphs changed), `accepted` (applicable, not delivered), `done`,
 configured target contains its candidate, or contains a commit whose
 trailers name it and the retained submission, whose parent is on the
 target, and whose tree is exactly the submission merged onto that parent.
-A delivery commit that is forged, altered, or whose submission ref is
-missing is not done; nor is one the target no longer contains after a
+A delivery commit that is forged or altered is not done, and one whose
+submitted tip this repository lacks is unknown; nor is one the target no longer contains after a
 rewrite, while a later revert does not undo it. Every consumer reads this
 one verifier: `list`, `show`, `deps`, `context`, `run`, the sweep and the
 board. A `done` record is schema 3's claim, kept by migration and labelled
