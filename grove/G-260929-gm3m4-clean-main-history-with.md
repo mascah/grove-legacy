@@ -139,33 +139,76 @@ mechanisms and lifecycle contracts change.
    Fixtures exercise direct-file and tool-mediated entry paths; the complete
    local proof additionally evaluates real agents against both paths.
 
+## Evidence
+
+Implemented on branch `worktree-G-260929-gm3m4` from base `556f362` (main),
+following [the plan](G-260930-3hcv4-plan-for-g-260929-gm3m4.md); last
+reviewed commit `0e5e8cd`. Commits: `ce12b1a` schema 4 contract, `6159f4b`
+`grove migrate`, `04edb08` this repository's records migrated, `4c2ee0c`
+standing verifier, `7466c1e` squash integrate, `a08bdae` consumers,
+`8548c07`/`48bb0c1`/`af6c8df` documents and terms, `e17ddd4` and `0e5e8cd`
+review fixes.
+
+1. One squash commit per delivery, `TYPE: title` from the candidate's own
+   commits, members listed, trailers `Grove-Work`, `Grove-Candidate`,
+   `Grove-Submitted`; a group is one commit; no record commit
+   (`TestIntegrateSquashesAndRetainsEvidence`,
+   `TestGroupIntegratesOnlyWhenEveryMemberIsApproved`). /tmp trial: main
+   read `feat: add greeting` over `chore: unrelated work on main`, with a
+   `fixup:` and a `test:` commit folded in. The owner's judgment of
+   representative history is still owed.
+2. Acceptance binds candidate and context (`approved_by`,
+   `approved_context`); a moved target, changed candidate or context, and
+   forged, altered or code-carrying claims are refused or unknown
+   (`TestStandingRejectsForgedDeliveries`,
+   `TestIntegrateRefusesAnAlteredDelivery`, `TestIntegrateNeverUndoesTheTarget`).
+   Open: review finding 1 (criss-cross base).
+3. Status `accepted`; done derived by `internal/standing`, read by list
+   (STANDING), show (stderr, JSON `standing`), deps, context, run selection,
+   facts, resolve, sweep and the board; raw file and tools compared in
+   `TestIntegrateCommand`.
+4. Dirty target, conflicts, shared groups, target movement, changed
+   acceptance, crash after advance and retry, reopen then redeliver, and
+   feedback after delivery are tested in `internal/integrate` and
+   `internal/standing`; done is reconstructed from Git alone.
+5. `refs/grove/submitted/S` survives cleanup and `gc --prune=now`; a
+   `--no-local` clone reads unknown until `git fetch origin
+   'refs/grove/*:refs/grove/*'`, and a shallow clone reads unknown
+   (`TestStandingGroupAndTransport`, `TestStandingOrdinaryMergeAndUnknowns`).
+6. `grove migrate` dry run and `--commit` with `refs/grove/schema-3/BRANCH`;
+   on a clone of main: 50 accepted, 29 kept as schema 3's claim, 190
+   unchanged, check OK. A schema 3 branch is refused with the path. Model,
+   commands, board, work guide, record design, README, CLAUDE.md,
+   `just clean-merged`, and the Work, Approval, Integration, Candidate,
+   Policy and Review terms reconciled; new term
+   [Standing](G-260930-44q35-standing.md). The entrypoint revision is
+   unchanged: the entrypoints need nothing new of the binary.
+7. Fixtures cover both entry paths; the real-agent evaluation is the
+   owner's.
+
+Verification at `0e5e8cd`: `go vet ./...` and `gofmt -l .` clean; `go run
+./cmd/grove check` OK; `go test -count=1 -timeout 120s ./...` all ok;
+`python3 internal/tui/testdata/terminal.py` all ok. One earlier full run
+failed `TestTerminal/attempt_lifecycle` on a redraw and passed on rerun.
+Known limit: verification runs one `rev-list` per delivery claim naming an
+open acceptance (about 5 ms each).
+
+Review: [G-260930-c0g5p](G-260930-c0g5p-review-of-g-260929-gm3m4.md), three
+rounds, Open findings: 4 at `0e5e8cd`, the cap reached.
+
 ## Next
 
-Ready for assignment: $grove-work G-260929-gm3m4. The owner accepted
-[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md)'s design at f376a6d,
-already on main. The completion-model question is settled in
-[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md); do not reopen it
-as an implementation preference. The
-[contracts design](G-260930-84fnb-portable-workflow-contra.md) owns its
-semantics and migration requirements.
+Checkpoint, 2026-09-30: stopped at the review cap with 4 open findings, so
+the work stays active and nothing enters review. Branch
+`worktree-G-260929-gm3m4` in `.claude/worktrees/worktree-G-260929-gm3m4`,
+base `556f362`, reviewed code at `0e5e8cd`; nothing is merged or pushed and
+no command is running.
 
-At assignment, write the implementation plan around these concrete units:
-
-- Inventory raw work-status consumers and define the versioned persisted
-  acceptance and shared standing types. Include CLI/JSON compatibility and
-  the migration dry-run before changing live project records.
-- Build deterministic acceptance/delivery fixtures and the shared verifier,
-  including current-record selection, grouped candidates, context changes,
-  source freshness, target/base reachability and conservative unknowns.
-- Connect existing operations, Claude runner guards, context and views to
-  that result; retain ownership, environment and exact-source safety tests.
-- Implement prepared local squash delivery and evidence transport/retention,
-  with atomic target checks, full-result verification and crash recovery.
-- Exercise the local journey and migration, reconcile shipped documentation
-  and repository policy, and present representative history for judgment.
-
-The plan must specify descriptor serialization without a hash cycle, retained
-ref transport, schema revision and command migration. Those are technical
-implementation choices bounded by the selected contract, not reasons to
-create another generic architecture project. No implementation is assigned
-by these preparation notes.
+Pending, for the owner: whether to allow a fourth fix round for the review's
+findings (the criss-cross merge base, the ref-dependent base prefilter,
+the ref left by the "would change nothing" refusal, and a test for the
+`noBranch` gate, with the fixes suggested there), then an independent
+re-review and the handoff; acceptance 7's real-agent evaluation; and the
+judgment of representative history (a trial repository shows it in a few
+commands: `grove integrate ID` in the target's checkout, then `git log
+--oneline main`).
