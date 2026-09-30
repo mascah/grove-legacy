@@ -500,9 +500,13 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 				// bytes, which print as they are.
 				var s *standing.Standing
 				if r.Type == "work" {
-					st, _ := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
-					s = st[r.ID]
-					if _, err := fmt.Fprintf(errOut, "Standing: %s\n", visible(s.Text())); err != nil {
+					// An unreadable standing is said, and the source still prints.
+					st, err := standing.Inspect(context.Background(), p.Root, p.Target, p.Records)
+					text := fmt.Sprintf("could not be read: %v", err)
+					if s = st[r.ID]; s != nil {
+						text = s.Text()
+					}
+					if _, err := fmt.Fprintf(errOut, "Standing: %s\n", visible(text)); err != nil {
 						return 1
 					}
 				}

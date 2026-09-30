@@ -281,6 +281,16 @@ func TestIntegrateRefusesWhatIsNotReadyToDeliver(t *testing.T) {
 		git(t, wt, "branch", "feature2")
 		refused(t, root, false, "G-260101-00001 is accepted on several branches (feature, feature2); integrate needs one")
 	})
+	t.Run("arrived some other way", func(t *testing.T) {
+		t.Parallel()
+		root, _, _ := fixture(t, true)
+		git(t, root, "checkout", "feature", "--", ":/")
+		git(t, root, "commit", "-qm", "chore: copy feature")
+		refused(t, root, false, "main at "+tipOf(t, root, "main")[:7]+" already holds everything feature would deliver, yet no delivery of G-260101-00001 verifies there")
+		if out, _ := repo.Git(root, "for-each-ref", "refs/grove/"); out != "" {
+			t.Fatalf("a refusal retained evidence: %s", out)
+		}
+	})
 	t.Run("nothing accepted", func(t *testing.T) {
 		t.Parallel()
 		root, wt, _ := fixture(t, true)
@@ -322,6 +332,36 @@ func TestIntegrateCleanupKeepsWhatGitOrTheSessionHolds(t *testing.T) {
 	}
 }
 
+// TestIntegrateCleanupAfterAnOrdinaryMerge: work done because the target
+// contains its candidate has nothing retained under refs/grove, so its branch
+// goes only when the target contains the tip too; a merge of the candidate
+// alone keeps the branch, and with it the handoff and acceptance.
+func TestIntegrateCleanupAfterAnOrdinaryMerge(t *testing.T) {
+	t.Parallel()
+	t.Run("tip contained", func(t *testing.T) {
+		t.Parallel()
+		root, wt, _ := fixture(t, true)
+		git(t, root, "merge", "-q", "--no-ff", "-m", "merge feature", "feature")
+		facts, err := run(t, root, root, true)
+		if err != nil || !slices.Contains(facts, "cleanup: removed worktree "+wt) || !slices.Contains(facts, "cleanup: deleted branch feature") {
+			t.Fatalf("%v %q", err, facts)
+		}
+	})
+	t.Run("candidate alone", func(t *testing.T) {
+		t.Parallel()
+		root, wt, candidate := fixture(t, true)
+		tip := tipOf(t, root, "feature")
+		git(t, root, "merge", "-q", "--no-ff", "-m", "merge the candidate", candidate)
+		facts, err := run(t, root, root, true)
+		if err == nil || !strings.Contains(err.Error(), "cleanup incomplete; the integration stands") || !slices.Contains(facts, "cleanup: kept worktree and branch feature: the target does not contain its tip "+tip[:7]+", whose commits nothing else retains") {
+			t.Fatalf("%v %q", err, facts)
+		}
+		if _, err := os.Stat(wt); err != nil || tipOf(t, root, "feature") != tip {
+			t.Fatal("the worktree and branch holding the acceptance were not kept")
+		}
+	})
+}
+
 // TestIntegrateUnderAPolicy attributes the delivery in its message and
 // reports its revert.
 func TestIntegrateUnderAPolicy(t *testing.T) {
@@ -355,8 +395,9 @@ func TestMessageTypes(t *testing.T) {
 }
 
 // TestIntegrateDeliversReopenedWorkAgain: the branch's own acceptance
-// decides, so work reopened and accepted again on a kept branch is a second
-// delivery, never "already done" from the target's earlier copy; feedback
+// decides, so work reopened on a kept branch is refused while in review and
+// is a second delivery once accepted again, never "already done" from the
+// target's earlier copy; feedback
 // after a squash runs on the target, which never holds the candidate; and a
 // delivery claim that no longer verifies is refused, never delivered twice.
 func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
@@ -375,6 +416,7 @@ func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
 	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c2}}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
 	}
+	refused(t, root, false, "G-260101-00001 is in review on feature but not accepted")
 	if _, err := update.Approve(wt, "G-260101-00001", "Now.", update.Owner, now); err != nil {
 		t.Fatal(err)
 	}

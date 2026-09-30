@@ -109,7 +109,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		if !req.Cleanup {
 			return nil
 		}
-		return cleanup(root, req.Cwd, name, cmp.Or(s.Submitted, submitted), worktreeOf(res, from.Ref), report)
+		return cleanup(root, req.Cwd, name, s.Submitted, worktreeOf(res, from.Ref), report)
 	case standing.Unknown:
 		return fmt.Errorf("%s's delivery cannot be decided (%s); nothing was delivered. Fetch refs/grove/* where a submitted tip is missing; otherwise grove feedback %s reopens it for a candidate %s contains or a new one", req.ID, s.Why, req.ID, p.Target)
 	}
@@ -194,12 +194,6 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	if ms[0].Outcome == "integrated" {
 		return fmt.Errorf("%s already holds %s at %s, yet the acceptance of %s is not verified as delivered there; inspect it with grove show %s", p.Target, name, short(before), req.ID, req.ID)
 	}
-	// The evidence is retained before the target moves, so a delivery that
-	// succeeds can always be verified, whatever happens to the branch.
-	if _, err := repo.Git(root, "update-ref", standing.Ref(submitted), submitted); err != nil {
-		return fmt.Errorf("the submitted tip %s could not be retained: %v; nothing was delivered", short(submitted), err)
-	}
-	report("retained: " + standing.Ref(submitted))
 	tree, err := repo.Git(root, merge...)
 	if err != nil {
 		return fmt.Errorf("the delivery of %s into %s could not be prepared: %v; nothing was delivered", name, p.Target, err)
@@ -209,6 +203,13 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	} else if strings.TrimSpace(current) == strings.TrimSpace(tree) {
 		return fmt.Errorf("%s at %s already holds everything %s would deliver, yet no delivery of %s verifies there: it arrived some other way. Nothing was delivered; to reconcile, grove feedback %s reopens it, and a candidate %s contains, handed off and accepted, is done by ancestry", p.Target, short(before), name, req.ID, req.ID, p.Target)
 	}
+	// The evidence is retained before the target moves, so a delivery that
+	// succeeds can always be verified, whatever happens to the branch; and
+	// only once nothing refuses it, so no refusal leaves a ref behind.
+	if _, err := repo.Git(root, "update-ref", standing.Ref(submitted), submitted); err != nil {
+		return fmt.Errorf("the submitted tip %s could not be retained: %v; nothing was delivered", short(submitted), err)
+	}
+	report("retained: " + standing.Ref(submitted))
 	message, err := Message(root, p.RecordDir, cmp.Or(base, before), r.Candidate, submitted, group, req.Policy)
 	if err != nil {
 		return err
@@ -239,7 +240,10 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	}
 	for _, m := range group {
 		s := verified[m.ID]
-		if s == nil || s.State != standing.Done {
+		if s == nil {
+			return fmt.Errorf("delivered as %s, but %s is not a work record there; inspect it before anything else", short(delivered), m.ID)
+		}
+		if s.State != standing.Done {
 			return fmt.Errorf("delivered as %s, but %s is not verified done there (%s); inspect it before anything else", short(delivered), m.ID, s.Text())
 		}
 		report(fmt.Sprintf("done: %s is %s", m.ID, s.Text()))
@@ -418,8 +422,9 @@ func verdict(r *project.Record) string {
 
 // cleanup removes the branch's worktree, then the branch, through Git's own
 // refusals: a worktree with changes or untracked files is kept, and so is a
-// branch no longer at the tip that was delivered. A worktree holding cwd is kept too, and
-// one holding ignored files, which git worktree remove would delete.
+// branch whose deletion would lose a commit. A worktree holding cwd is kept
+// too, and one holding ignored files, which git worktree remove would delete.
+// submitted is the tip a squash delivery retained, "" after an ordinary merge.
 // Whatever is kept is reported and makes the result an error, since the
 // caller asked for a cleanup that did not fully happen.
 func cleanup(root, cwd, name, submitted, worktree string, report func(string)) error {
@@ -428,10 +433,21 @@ func cleanup(root, cwd, name, submitted, worktree string, report func(string)) e
 		kept = true
 		report(fmt.Sprintf("cleanup: kept %s: %s", what, reason))
 	}
-	// Only a branch still at the submitted tip, which the evidence ref
-	// retains: one that moved on holds a later edit, and one delivered by
-	// an ordinary merge is left to Git's own branch -d.
-	if tip, err := repo.Git(root, "rev-parse", "-q", "--verify", "refs/heads/"+name); err != nil || submitted == "" || strings.TrimSpace(tip) != submitted {
+	// Only a branch nothing is lost by deleting: after a squash, one still at
+	// the submitted tip, which the evidence ref retains, since one that moved
+	// on holds a later edit; after an ordinary merge, which retains nothing,
+	// one whose tip the target contains, since a merge of the candidate alone
+	// leaves the handoff and acceptance after it on the branch only.
+	tip, err := repo.Git(root, "rev-parse", "-q", "--verify", "refs/heads/"+name)
+	tip = strings.TrimSpace(tip)
+	if err == nil && submitted == "" {
+		if in, err := ancestor(root, tip, "HEAD"); err != nil || !in {
+			keep("worktree and branch "+name, "the target does not contain its tip "+short(tip)+", whose commits nothing else retains")
+			return errors.New("cleanup incomplete; the integration stands")
+		}
+		submitted = tip
+	}
+	if err != nil || tip != submitted {
 		keep("worktree and branch "+name, "the branch is not at a tip that a squash delivery retained")
 		return errors.New("cleanup incomplete; the integration stands")
 	}
