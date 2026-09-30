@@ -4,11 +4,11 @@ type: work
 title: "Complete the portable Grove adoption milestone"
 status: proposed
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T01:16:05Z"
+updated: "2026-09-30T03:18:04Z"
 size: large
 members: ["G-260930-62nmj", "G-260928-y2p5h", "G-260928-n4f1q", "G-260929-gm3m4", "G-260930-gwnb1", "G-260929-04svs", "G-260930-4742q", "G-260930-r2k4g"]
 depends_on: ["G-260930-r2k4g"]
-relates_to: ["G-260930-e8jj7"]
+relates_to: ["G-260930-e8jj7", "G-260930-2qa4a"]
 ---
 
 ## Outcome
@@ -84,8 +84,14 @@ implementation of its members.
 
 ## Next
 
-All work remains proposed. The immediately available shaping/design
-assignment is [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md). The dependency graph is authoritative.
+All work remains proposed. The written design in
+[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md) is reconciled
+around the owner's accepted derived-completion decision and ready for final
+owner review. Reuse those artifacts; do not restart design from this parent.
+After the design prerequisite is accepted and delivered, local delivery
+[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) precedes portable
+execution because it owns the shared lifecycle migration. The dependency
+graph is authoritative.
 When this milestone's prerequisites are delivered, the owner selects the
 trial participants, authorized repositories and execution limits; the
 assigned session records the trial evidence and unresolved adoption failures.

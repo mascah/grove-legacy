@@ -95,10 +95,15 @@ not required. Inspect actual repository state before trusting a checkpoint.
 
 ## Workflow and authority
 
-The work lifecycle remains Proposed → Active → Review → Done, with Abandoned
-an explicit human choice. Preparation, implementation and independent review
-are activities; process state, failure and waiting are additional facts.
-A finished attempt does not itself enter Review or establish Done.
+The workflow still moves from Proposed through Active and Review to Done,
+with Abandoned an explicit human choice. Under the selected redesigned
+record contract, acceptance is recorded distinctly and Done is derived from
+that acceptance plus verified delivery. The stored facts must remain
+truthful before and after integration; a permanent review field with a
+contradictory computed Done label is insufficient. Preparation,
+implementation and independent review are activities; process state,
+failure and waiting are additional facts. A finished attempt does not itself
+establish review, acceptance or Done.
 
 Shaping produces proposals. An assignment or Implement action authorizes
 bounded execution; creating a proposal, inspecting it or opening a session
@@ -114,13 +119,20 @@ a changed candidate needs reconsideration. Feedback preserves earlier
 reviews and returns implementation work to Active.
 
 For implementation, Done means the accepted result reached the configured
-target. Today the CLI enforces candidate ancestry and writes done on that
-target. The selected local/hosted delivery work must establish verified
-correspondence when integration changes commit identity, reconcile external
-integration and retain the evidence. Status, an ID or an unverified trailer
-is insufficient. This is a selected redesign requirement, not behavior
-already implemented. Research/design needs completion evidence appropriate
-to its deliverable; older done records retain their historical meaning.
+target. The owner selected
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md): derive Done with
+a redesigned record contract, without mandatory post-delivery completion
+commits or PRs. Raw records communicate acceptance; Git/Grove establishes
+delivery with evidence and freshness. Every lifecycle consumer must use
+that same result, and unknown evidence cannot mean success. Squash and
+external integration require verified correspondence and retained evidence.
+Status, an ID or an unverified trailer is insufficient.
+
+Today the CLI still enforces candidate ancestry and writes done on the
+target. The selected redesign requires a deliberate migration; it is not
+implemented behavior. Research/design needs acceptance and delivery evidence
+appropriate to its Git artifact; older done records retain their historical
+meaning without fabricated approval or candidate evidence.
 
 An explicit standing policy may delegate bounded conflict resolution,
 approval and integration under written conditions

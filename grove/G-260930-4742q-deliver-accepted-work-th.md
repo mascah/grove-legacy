@@ -4,11 +4,11 @@ type: work
 title: "Deliver accepted work through a protected hosted pull request"
 status: proposed
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T01:16:06Z"
+updated: "2026-09-30T03:18:03Z"
 kind: feature
 size: large
 depends_on: ["G-260930-gwnb1"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260929-gm3m4", "G-260921-3qgsf"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260929-gm3m4", "G-260921-3qgsf", "G-260930-2qa4a"]
 ---
 
 ## Outcome
@@ -38,6 +38,19 @@ explicit assignment or applicable standing policy. Inspection has no such
 side effect. Reconcile work completion without an extra unapproved direct
 write to a protected target.
 
+Selected completion model:
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md). Record acceptance
+before delivery, then derive Done when the shared verifier establishes the
+accepted result on the configured remote target. Do not create a mandatory
+follow-up completion PR or direct done write. Acceptance and the discoverable
+proof inputs travel in the prepared submission and retained evidence refs.
+The local-delivery contract owns the record representation and verifier;
+this adapter owns authorized transport and host/remote observation.
+The [contracts design](G-260930-84fnb-portable-workflow-contra.md) owns details.
+A local main ahead of the remote cannot establish hosted delivery. Inspection
+uses available facts without silently fetching or publishing; an explicit
+refresh reports host failures and remote freshness honestly.
+
 Local-only repositories remain supported without credentials, a remote,
 a network service or hosted CI. A host outage leaves delivery unknown or
 waiting with a reason rather than creating a local success claim.
@@ -59,8 +72,14 @@ ancestry-only completion mechanism would require redoing the adapter.
 3. A merge performed outside Grove is reconciled idempotently with evidence
    connecting the accepted candidate to the resulting destination. A squash
    is covered, including retained evidence and cleanup behavior.
-4. Completion tracking requires no bypass of branch protection and no
-   mandatory metadata commit after the protected merge.
+4. Done is derived without a mandatory completion commit or follow-up PR,
+   using applicable recorded acceptance and verified delivery on the remote
+   target. Retry after a merge or lost response reconstructs the result and
+   cannot duplicate implementation, integration or PR creation. Changed or
+   reopened work cannot inherit completion. Offline views name the last
+   verified target and unknown freshness; missing evidence cannot become
+   Done. A fresh clone can obtain and verify the retained evidence through
+   the documented authorized transport path.
 5. Existing local-only operation works without host setup or network access.
    Documentation names the exact host capabilities and limitations tested.
 

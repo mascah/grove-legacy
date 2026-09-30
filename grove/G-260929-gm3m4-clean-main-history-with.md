@@ -4,11 +4,11 @@ type: work
 title: "Deliver accepted work locally with clean history and retained evidence"
 status: proposed
 created: "2026-09-29T16:15:25Z"
-updated: "2026-09-30T01:16:09Z"
+updated: "2026-09-30T03:18:02Z"
 kind: feature
 size: large
 depends_on: ["G-260930-62nmj"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-4742q", "G-260930-r2k4g", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-4742q", "G-260930-r2k4g", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260930-84fnb", "G-260930-2qa4a"]
 ---
 
 ## Outcome
@@ -41,10 +41,29 @@ authority to close work. Changed candidates or targets require appropriate
 reconsideration/reverification. Partial failure after integration must be
 recoverable without a second delivery or destruction of evidence.
 
-Choose how work metadata and completion evidence reach Git so that they do
-not recreate checkpoint noise on the target. Message formatting and metadata
-placement are proposed design choices to resolve in the journey/contracts
-design; deriving a Conventional Commit type from the current kind field is
+The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
+record acceptance and derive Done from verified delivery, using a redesigned
+record contract. This item owns that schema/migration change and the shared
+standing and delivery operations. It must remove misleading permanent review
+state, not add a board-only override. No mandatory post-delivery done commit
+or follow-up completion PR is part of the selected path.
+
+Update every existing lifecycle consumer needed to preserve coherent local
+operation: parser/validation, create/update/approve/feedback, list/show/context,
+deps and current views, attempt selection/reporting/resolution, integration,
+policy sweep, cleanup, and the CLI/TUI adapters and guides that expose them.
+The later experience item owns redesigned onboarding and presentation, not
+this correctness work. Preserve current Claude execution while its caller
+contract changes; provider extraction follows through the declared edge.
+
+Carry acceptance and discoverable delivery inputs in the prepared submission;
+retain candidate and evidence before target advance. Inspection must derive
+completion from those facts after a crash or an external merge without a
+second delivery. Dependencies also check the execution base contains the
+delivered result. Unknown evidence waits without spending an attempt.
+
+Message formatting remains an implementation design detail within useful
+Conventional Commit history; deriving a type from the current kind field is
 not assumed correct. Do not replace release tools or select version numbers.
 
 Hosted PR delivery belongs to [G-260930-4742q](G-260930-4742q-deliver-accepted-work-th.md); this record owns the reusable
@@ -92,21 +111,60 @@ mechanisms and lifecycle contracts change.
 2. Review, approval and verification are bound to the candidate and actual
    integration inputs. A moved target or altered candidate cannot use
    stale evidence; forged or mismatched delivery claims are rejected.
-3. Done, dependency delivery, current-view presentation, policy integration
-   and cleanup agree about a squashed result through the same validated
-   correspondence. Relevant candidate/review objects survive cleanup and
-   ordinary Git garbage collection under the documented retention design.
-4. Refusal and partial-failure tests cover dirty targets, conflicts, shared
-   groups, metadata failure after delivery and safe retry. Evidence survives
-   and a retry does not integrate the same result twice.
-5. An existing local project can migrate deliberately without losing work
-   identity or historical approval/review evidence. Delivered behavior is
-   documented in the model, guides, integration term and cleanup commands.
-6. A bounded real local trial shows useful history, inspectable evidence and
-   supported recovery without hosted infrastructure.
+3. Recorded acceptance is truthful before and after delivery; the redesigned
+   work contract no longer declares permanent review or requires a stored
+   done transition. CLI list/show/context and JSON, board, dependency/base
+   readiness, attempt guards, policy integration and cleanup consume the same
+   verified standing. Raw source remains distinguishable from observed facts.
+   Unknown or stale evidence cannot authorize duplicate work or false Done.
+4. Refusal and recovery tests cover dirty targets, conflicts, shared groups,
+   target movement, changed acceptance/candidate, external delivery, failure
+   just after target advance and safe retry. Done is reconstructed without a
+   completion commit. Reopening invalidates old completion for current work.
+5. Candidate, review, approval and correspondence evidence survive cleanup
+   and ordinary garbage collection. An ordinary fresh-clone transport path
+   is documented and exercised; missing evidence and shallow history report
+   unknown rather than success. Evidence refs do not masquerade as current
+   work branches or conceal real post-delivery edits. Neither a ref name nor
+   a trailer is proof.
+6. A dry-run and explicit versioned migration preserve IDs, paths, original
+   provenance and recoverable Git state. Legacy done claims retain their
+   historical meaning and dependency semantics without invented evidence;
+   ambiguous or mixed-schema branches have a clear reconciliation path.
+   The current schema is not silently reinterpreted. Delivered behavior is
+   reconciled in the model, repository policy, guides, entrypoint revisions
+   where required, Work/Approval/Integration terms and cleanup commands.
+7. A bounded local trial demonstrates useful history, inspectable evidence,
+   existing Claude workflow continuity and recovery without hosted services.
+   Fixtures exercise direct-file and tool-mediated entry paths; the complete
+   local proof additionally evaluates real agents against both paths.
 
 ## Next
 
-Needs [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md). Use its delivery and metadata contracts to plan the
-affected lifecycle, policy, views and retention changes. This is shaped
-local-delivery work; it no longer waits on an unspecified future shaping pass.
+Needs [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md)'s final
+accepted design. The owner has settled the completion-model question in
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md); do not reopen it
+as an implementation preference. The
+[contracts design](G-260930-84fnb-portable-workflow-contra.md) owns its
+semantics and migration requirements.
+
+At assignment, write the implementation plan around these concrete units:
+
+- Inventory raw work-status consumers and define the versioned persisted
+  acceptance and shared standing types. Include CLI/JSON compatibility and
+  the migration dry-run before changing live project records.
+- Build deterministic acceptance/delivery fixtures and the shared verifier,
+  including current-record selection, grouped candidates, context changes,
+  source freshness, target/base reachability and conservative unknowns.
+- Connect existing operations, Claude runner guards, context and views to
+  that result; retain ownership, environment and exact-source safety tests.
+- Implement prepared local squash delivery and evidence transport/retention,
+  with atomic target checks, full-result verification and crash recovery.
+- Exercise the local journey and migration, reconcile shipped documentation
+  and repository policy, and present representative history for judgment.
+
+The plan must specify descriptor serialization without a hash cycle, retained
+ref transport, schema revision and command migration. Those are technical
+implementation choices bounded by the selected contract, not reasons to
+create another generic architecture project. No implementation is assigned
+by these preparation notes.

@@ -4,10 +4,10 @@ type: work
 title: "Design the portable workflow journey and contracts"
 status: proposed
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T01:16:05Z"
+updated: "2026-09-30T03:18:00Z"
 kind: investigation
 size: large
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260928-vdhf0", "G-260923-tnn5e", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260921-sth8q"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260928-vdhf0", "G-260923-tnn5e", "G-260921-3qgsf", "G-260921-jatts", "G-260921-btyck", "G-260921-sth8q", "G-260930-npw49", "G-260930-84fnb", "G-260930-y6fyy", "G-260930-2qa4a"]
 ---
 
 ## Outcome
@@ -79,7 +79,42 @@ current record model and guides remain implemented contracts during design.
 
 ## Next
 
-Ready for a design assignment: $grove-work G-260930-62nmj.
-Inspect the milestone and its member records, then produce concrete journey
-sketches and contract examples for the owner's review. Preserve unresolved
-consequential choices as questions; investigate routine technical uncertainty.
+The owner answered the completion question on 2026-09-29 (local date):
+"Derive Done with a redesigned record contract." Accepted decision
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md) records that
+choice; [G-260930-y6fyy](G-260930-y6fyy-should-completion-be-der.md) is resolved.
+
+The preparation requested in the conversation is now a coherent written
+baseline for final owner review:
+
+- [Experience and terminal sketches](G-260930-npw49-portable-workflow-experi.md)
+  show adoption through local/hosted delivery and recovery.
+- [Contracts and refactoring](G-260930-84fnb-portable-workflow-contra.md)
+  cover authority, continuation, review, acceptance, derived completion,
+  migration, retained evidence and implementation ownership.
+- Dependent proposals follow the selected completion model. Local delivery
+  owns the work-record migration and shared standing in all current callers.
+  Portable execution explicitly depends on it to avoid refactoring raw-status
+  consumers twice. Other declared dependencies retain their meaning.
+
+Acceptance coverage: 1 has concrete journey sketches; 2 has assignment,
+checkpoint, review/approval and delivery examples; 3 has capabilities and
+failure semantics; 4 has migration/retention/fresh-clone requirements; 5 has
+alternatives and a code ownership map; 6 has reconciled proposals and edges.
+The remaining human judgment is acceptance of the complete written journey
+and architecture under acceptance 6. The completion answer settles that
+model, not every screen/interface in these documents. No additional product
+choice is known to block this review; technical serialization and package
+choices belong in the implementing item's plan.
+
+After the owner's design judgment, record its outcome and complete this
+investigation through the current work lifecycle before assigning its
+dependents. Do not mark it done solely because the question was resolved or
+because documents validate. All implementation work remains proposed and
+unassigned. No paid trials, adopter edits, product code, merge or push were
+authorized by this shaping continuation.
+
+The first implementation item in the reconciled graph is
+[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md). Its Next now
+identifies the concrete planning units and verification cases, so execution
+can begin from the written records without this conversation.

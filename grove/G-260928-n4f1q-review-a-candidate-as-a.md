@@ -4,11 +4,11 @@ type: work
 title: "Review candidates independently on the chosen harness"
 status: proposed
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-30T01:16:08Z"
+updated: "2026-09-30T03:18:02Z"
 kind: feature
 size: medium
 depends_on: ["G-260928-y2p5h"]
-relates_to: ["G-260928-917h8", "G-260924-5b6pz", "G-260921-rz7bn", "G-260925-5wrn8", "G-260924-3bapc", "G-260928-c5j9d", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-gwnb1"]
+relates_to: ["G-260928-917h8", "G-260924-5b6pz", "G-260921-rz7bn", "G-260925-5wrn8", "G-260924-3bapc", "G-260928-c5j9d", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-gwnb1", "G-260930-62nmj", "G-260930-84fnb", "G-260930-2qa4a"]
 ---
 
 ## Outcome
@@ -96,3 +96,10 @@ duplicate those responsibilities.
 Needs G-260928-y2p5h. At assignment, use the accepted role and evidence
 contracts to choose the command/configuration details and isolation model.
 The combined implementation-to-review trial belongs to [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md).
+
+The [contracts draft](G-260930-84fnb-portable-workflow-contra.md) proposes
+the exact-candidate review and approval boundary, including controlled
+artifact changes after the candidate. Review evidence feeds the recorded
+acceptance and shared standing delivered by the local-delivery prerequisite;
+a clean review cannot itself establish acceptance or Done. The full written
+design awaits owner review.

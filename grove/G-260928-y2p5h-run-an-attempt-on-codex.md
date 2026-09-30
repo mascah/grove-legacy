@@ -4,11 +4,11 @@ type: work
 title: "Run bounded work through portable Claude and Codex execution"
 status: proposed
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-30T01:16:07Z"
+updated: "2026-09-30T03:17:59Z"
 kind: feature
 size: large
-relates_to: ["G-260928-vdhf0", "G-260928-917h8", "G-260923-tnn5e", "G-260924-59f5k", "G-260925-42j50", "G-260925-04ccr", "G-260925-3pj9a", "G-260925-p2k54", "G-260923-895zb", "G-260928-kehya", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-gwnb1"]
-depends_on: ["G-260930-62nmj"]
+relates_to: ["G-260928-vdhf0", "G-260928-917h8", "G-260923-tnn5e", "G-260924-59f5k", "G-260925-42j50", "G-260925-04ccr", "G-260925-3pj9a", "G-260925-p2k54", "G-260923-895zb", "G-260928-kehya", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-gwnb1", "G-260930-84fnb", "G-260930-2qa4a"]
+depends_on: ["G-260930-62nmj", "G-260929-gm3m4"]
 ---
 
 ## Outcome
@@ -93,6 +93,13 @@ Depends on [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md): the acc
 contracts determine this boundary. Coding directly to the old CLI shape
 would pre-empt that design and risk redoing the runner.
 
+Also depends on [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md):
+it replaces the work record contract and the shared standing used by
+internal/attempt selection, facts and resolution, plus context and policy.
+Those callers currently branch on raw status. Refactoring the provider
+boundary against the old lifecycle would duplicate that migration. Consume
+the delivered standing API and keep acceptance/delivery out of provider events.
+
 ## Acceptance
 
 1. Both providers execute a bounded selection in a Grove-owned worktree.
@@ -118,6 +125,12 @@ would pre-empt that design and risk redoing the runner.
 
 ## Next
 
-Needs [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md). At assignment, plan the extraction/replacement against
-its accepted contracts, retain meaningful lifecycle regression coverage,
-and recheck the dated provider observations.
+Needs the design and local-delivery prerequisites. At assignment, plan
+provider extraction/replacement against their delivered standing and accepted
+assignment/capability contracts, retaining meaningful lifecycle regressions.
+Recheck the dated provider observations before relying on flags or features.
+
+The [contracts design](G-260930-84fnb-portable-workflow-contra.md) specifies
+the proposed boundaries. Completion is selected by
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md); the full design
+awaits owner review. No new schema or provider API is implemented yet.

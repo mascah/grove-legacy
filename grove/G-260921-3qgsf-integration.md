@@ -4,8 +4,8 @@ type: term
 title: "Integration"
 status: settled
 created: "2026-09-21T05:01:57Z"
-updated: "2026-09-30T01:16:11Z"
-relates_to: ["G-260921-vr8a8", "G-260921-jatts", "G-260921-btyck", "G-260930-e8jj7", "G-260929-gm3m4", "G-260930-4742q"]
+updated: "2026-09-30T03:18:06Z"
+relates_to: ["G-260921-vr8a8", "G-260921-jatts", "G-260921-btyck", "G-260930-e8jj7", "G-260929-gm3m4", "G-260930-4742q", "G-260930-2qa4a"]
 formerly: "T-007"
 ---
 
@@ -42,3 +42,13 @@ and [G-260930-4742q](G-260930-4742q-deliver-accepted-work-th.md) must reconcile 
 they deliver verified correspondence between an approved candidate and a
 transformed integrated result. An unverified trailer or work status alone
 will not establish integration.
+
+## Selected completion contract, 2026-09-29
+
+The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
+record candidate acceptance and derive Done from verified target delivery,
+with a redesigned work record that does not remain misleadingly in review.
+This changes representation, not the distinction between approval and
+integration. The current schema and operations described above remain in
+force until [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md)
+delivers the migration and reconciles the implemented model and this term.

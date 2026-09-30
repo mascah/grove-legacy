@@ -4,11 +4,11 @@ type: work
 title: "Make the complete Grove workflow usable without coaching"
 status: proposed
 created: "2026-09-30T01:05:46Z"
-updated: "2026-09-30T01:16:07Z"
+updated: "2026-09-30T03:18:04Z"
 kind: feature
 size: large
 depends_on: ["G-260930-gwnb1", "G-260929-04svs", "G-260930-4742q"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-npw49", "G-260930-84fnb", "G-260930-2qa4a"]
 ---
 
 ## Outcome
@@ -60,8 +60,12 @@ inspecting and unchanged waits do not launch work.
    assignment, leaving and returning, answering, stopping/continuing,
    judging and delivering. The user need not select internal paths,
    lookup native session IDs or understand record frontmatter.
-3. CLI and TUI agree about current work, waits, candidate changes, evidence
-   and permitted actions. Detailed source inspection remains available.
+3. CLI and TUI consume the shared standing already delivered by the local
+   contract and agree with agent context about current work, waits, candidate
+   changes, evidence and actions. Accepted-but-undelivered, verified Done and
+   unknown delivery/freshness are understandable. Raw source is inspectable
+   without being misrepresented as the derived result; no completion PR or
+   independent UI status store is added.
 4. A result/catch-up view explains changed behavior, decisions, checks,
    review findings and what remains, including work that failed or stopped.
    A user can inspect the evidence without finding the original chat.
@@ -77,3 +81,10 @@ inspecting and unchanged waits do not launch work.
 Needs its declared prerequisites. Implement the reviewed experience and
 documentation against their shared operations, then hand off a reproducible
 adoption journey and remaining limitations to [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md).
+
+The proposed [experience sketches](G-260930-npw49-portable-workflow-experi.md)
+and [shared contracts](G-260930-84fnb-portable-workflow-contra.md) are the
+design prerequisite's reconciled drafts. Completion follows the accepted
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md) decision. Final
+review of the whole written design remains; exact screen arrangement and
+interface spelling are not settled by that completion choice.

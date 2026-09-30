@@ -4,11 +4,11 @@ type: work
 title: "Prove a complete workflow across harnesses and local delivery"
 status: proposed
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T01:16:06Z"
+updated: "2026-09-30T03:18:03Z"
 kind: feature
 size: large
 depends_on: ["G-260928-y2p5h", "G-260928-n4f1q", "G-260929-gm3m4"]
-relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260928-pqhyg", "G-260928-kehya"]
+relates_to: ["G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260928-pqhyg", "G-260928-kehya", "G-260930-2qa4a"]
 ---
 
 ## Outcome
@@ -65,7 +65,11 @@ write scope. Headless shaping does not execute these trials.
    completed work. Changed repository state is reconciled explicitly.
 4. Changed candidates and moved targets are exercised; stale approval or
    verification cannot authorize delivery. Independent review is never
-   replaced by self-review without a visible unmet requirement.
+   replaced by self-review without a visible unmet requirement. Agent trials
+   start from both direct Markdown and tool-provided context: after acceptance
+   and delivery they inspect the common standing, avoid assuming acceptance
+   alone means Done, and do not restart already delivered work. Include a
+   fresh clone and missing-evidence case; record confusion as a failure.
 5. A linked report distinguishes deterministic checks, observed agent
    behavior and owner judgment. It recommends concrete retention,
    refactoring or replacement based on this journey. Any further work
