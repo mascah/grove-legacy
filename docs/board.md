@@ -20,7 +20,8 @@ work record in its current state across all local branches and checkouts, as
 [`versions`](commands.md#versions) decides it, the same from any checkout. An
 old copy on a stale branch does not hide a later status elsewhere. Each card
 is a box holding the record's ID and tag, its title, and its kind, size and
-priority, or for Done the date it was last written and its candidate; the
+priority, or for Done the commit that delivered it (for schema 3's done
+claim, the date it was last written and its candidate); the
 focused card has a heavy border and a `▶` marker, and each column an accent
 colour that nothing depends on. A card whose current state is only in a
 checkout's uncommitted files is marked `uncommitted`. With a target, a card
@@ -30,9 +31,11 @@ the target. Where the current states diverge, one card sits
 in the earliest of their statuses, marked `⑂ 2 states`, and its detail says
 which states exist and where, until one side takes the other's change, by a
 merge or an edit, or the branch holding one is deleted (see [Rewritten
-copies](#rewritten-copies)). A Review or Done card whose candidate is
-approved is marked `approved`, or `approved under policy` for a verdict
-`grove sweep` gave
+copies](#rewritten-copies)). Accepted work sits in Review until its
+[standing](commands.md#standing) verifies its delivery, then in Done; a
+Review or Done card whose candidate is accepted is marked `accepted`, or
+`accepted under policy` for an acceptance `grove sweep` gave, and one whose
+acceptance no longer applies `acceptance no longer applies`
 ([G-260928-r1hkh](../grove/G-260928-r1hkh-show-approval-and-merge.md)). Once
 the board has drawn, each Review card's candidate is merged into the target
 in objects only, as `deps` predicts it, one card at a time, and a card that
@@ -76,9 +79,10 @@ shows only after a re-read.
 ## Record detail
 
 Enter on a card opens the record's detail: a boxed header with the ID,
-status, title, planning fields, candidate and, once it is approved, who
-approved it (`approved`, or `approved under policy` for a verdict `grove
-sweep` gave), standing against the target, the places holding its current
+status (`done · accepted, delivered as D` once delivered), title, planning
+fields, candidate and, once it is accepted, who accepted it (`accepted`, or
+`accepted under policy` for an acceptance `grove sweep` gave), standing
+against the target, the places holding its current
 state and when it was last written; then its body
 rendered from Markdown (headings, emphasis, lists, code, tables) beside a
 sidebar of the records linked to it, the timeline of commits that changed
@@ -111,9 +115,10 @@ the owner's editor ([Editing a record](#editing-a-record)).
 
 ## Judging a candidate
 
-Work in `review` is a candidate to judge, and its detail is the handoff: the
-header adds a Review block (the candidate, whether it is approved and
-whether under the policy (`approved under policy`, see `grove sweep`), whether
+Work in `review`, or accepted and not yet delivered, is a candidate to judge
+or deliver, and its detail is the handoff: the header adds a Review block
+(the candidate, whether it is accepted and whether under the policy
+(`accepted under policy`, see `grove sweep`), whether
 only the record changed since it or the tip is a new candidate, what
 merging it into the target would do, as `deps` says it, with the target
 commit that was read and a note when the board read the target at another
@@ -133,8 +138,9 @@ record names this file.`; which of their claims the change left true is the
 reader's judgment. The diff is escaped like record text with added, removed
 and hunk lines coloured, and Esc returns to the content. `a` asks for
 a verdict and approves the candidate in the branch's checkout, `f` asks for
-feedback and returns the work to `active` there, and `i` confirms the merge
-into the target from the target's checkout, then asks whether to remove the
+feedback and returns the work to `active` there, and `i`, once it is
+accepted, confirms its delivery as one squash commit onto the target from
+the target's checkout (`integrate`), then asks whether to remove the
 branch's worktree and branch. Each runs the same operation as the command
 ([Work lifecycle](record-model.md#work-lifecycle)), one at a time; a result
 screen shows its facts, or why it was refused, and the board is re-read. A
@@ -143,8 +149,8 @@ reported instead; the board never creates a checkout. Other work records on
 the branch whose candidate is the same commit, a selection handed off
 together ([G-260925-wc2pz](../grove/G-260925-wc2pz-review-an-explicitly-sel.md)), are
 named where an action covers them: `f` returns them to `active` too, `i`
-merges them as one group and marks each done, refused until each is
-approved, and their record files do not count as changes since the
+delivers them as one group, refused until each is accepted, and their
+record files do not count as changes since the
 candidate.
 
 When the candidate conflicts with the target, `m` opens a line like `R`'s
@@ -373,7 +379,10 @@ and nothing about whether another branch contains it.
 
 ## Rewritten copies
 
-Rewriting the target after a branch was integrated, as a rebase of `main`
+A squash delivery writes the branch's record onto the target unchanged, so
+nothing diverges and a rewrite of the target leaves the retained submission
+to verify against. What follows is schema 3's done, which schema 4 keeps as
+a claim. Rewriting the target after a branch was integrated, as a rebase of `main`
 onto a remote does, gives the branch's commits new hashes there. The
 record's `done` on the target and its `review` on the kept branch then both
 changed since their merge base, so the card diverges and sits in Review,

@@ -158,8 +158,8 @@ read. `check` and `update` enforce:
 - `accepted` requires `candidate`, `approved` equal to it, `approved_by`
   and `approved_context`, which hold only while accepted (`approved` also
   on `done`); an `approved_context` written must be the record's own.
-- No update writes `done` or changes a done record's `candidate`: `done`
-  is schema 3's claim that `grove migrate` kept, shown as such.
+- No update writes `done`: it is schema 3's claim that `grove migrate`
+  kept, shown as such, whose `candidate` may still be corrected.
 
 The acceptance context is the SHA-256 of the title, a newline and the body,
 less the `## Next` section and the paragraphs Grove appends (verdicts,

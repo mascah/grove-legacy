@@ -17,17 +17,18 @@ concurrent direct edit can invalidate a read, since the reader promises no
 transactional snapshot. `--project DIR` can come before or after the
 command, and `--help` needs no project.
 
-- `list` prints ID, type, status and title, ordered by `created` with
+- `list` prints ID, type, status, standing and title, ordered by `created` with
   undated records last, then by ID; the order implies no urgency. One-line
   output escapes control characters, so a multiline title cannot break the
   table. `--status VALUE`, repeatable, keeps records whose status equals any
   given value; a value that is no type's status, or an empty one, is a usage
   error that lists the statuses, and a status no record holds prints the
-  header alone.
+  header alone. STANDING is work's [derived standing](#standing), `-` for
+  other types.
 - `show ID` writes the file's original bytes to stdout and the project and
-  file to stderr; `--json` prints `{id, path, revision, source}`, plus
-  `approved_by` while `approved` is set, derived from the latest verdict on
-  the candidate ([Judging and integrating](#judging-and-integrating)).
+  file to stderr, with work's standing there too; `--json` prints
+  `{id, path, revision, source}`, plus `standing` for work and
+  `approved_by` (`owner` or `policy`) while the record is accepted.
 - `new TYPE TITLE [--slug SLUG]` refuses an unknown type before anything
   else, writes the record with a body skeleton, prints the root-relative
   path, and fails without deleting the file if the project no longer
@@ -38,7 +39,8 @@ command, and `--help` needs no project.
   (directory sync, final validation, output) is reported as an applied
   update. `--commit`, after a change, commits the record's file alone with a
   generated message and adds `commit` (`null` when nothing changed); a
-  commit Git refuses is reported as an applied, uncommitted update.
+  commit Git refuses is reported as an applied, uncommitted update. No
+  update makes a record `done`, which schema 4 derives.
 - `convert` prints one JSON line, `{from, from_path, id, path}`, the caller's
   durable old-to-new mapping. A rerun neither duplicates a record nor remaps
   an identity, since a converted or missing source is refused before any ID
@@ -49,38 +51,63 @@ command, and `--help` needs no project.
 
 ## Judging and integrating
 
-`approve ID VERDICT` appends `Verdict on candidate X, DATE: VERDICT` as the
-body's last paragraph. `feedback ID TEXT` appends `Feedback on candidate X,
+`approve ID VERDICT` records the acceptance: `status: accepted`,
+`approved`, `approved_by: owner` (the sweep writes `policy sha256:…`) and
+`approved_context`, and appends `Verdict on candidate X, DATE: VERDICT` as
+the body's last paragraph. Authority is who ran the command, never what the
+verdict says. `feedback ID TEXT` appends `Feedback on candidate X,
 DATE: TEXT`, and each other member of the group it reopens gets `Reopened
 with ID's feedback on candidate X, DATE`; nothing earlier is removed.
 `resolve ID` is that feedback, generated, naming the target commit and the
 conflicting files.
 
-`integrate ID` merges with a plain `git merge`, the commit its checks read,
-so a branch that moves meanwhile is not merged. A conflict is predicted with
-`git merge-tree` in objects only and refused before anything changes, naming
-the files and the next action; before Git 2.38, which cannot predict it, the
-merge's own conflict is aborted and refused instead. It refuses a merge that
-would carry the candidate of other unfinished, unapproved work on the
-branch, such as a member reopened by feedback and not handed off again.
-`--cleanup` removes the worktree and branch only where Git agrees and the
-worktree holds no ignored files. A squash or rebase that lands a different
-commit is a manual merge, followed by an `update` that names the landed
-commit as the candidate as it sets `done`.
+`integrate ID` runs in the target's clean checkout and delivers the one
+branch holding the work accepted, its acceptance applicable, as one squash
+commit ([G-260929-gm3m4](../grove/G-260929-gm3m4-clean-main-history-with.md)).
+It reads the branch tip once, the submitted commit S, and refuses before
+anything changes: a branch lacking the candidate, a later commit changing
+more than the records, a shared candidate whose members are not all
+accepted, a squash that would carry the candidate of other unfinished work
+on the branch, such as a member reopened by feedback and not handed off
+again, and a conflict, which `git merge-tree` predicts in objects only and
+names with the next action. Then it
 
-Before predicting a conflict, for work the target already holds as done,
-`integrate` compares the branch with the target by patch (`git log
---cherry-mark`), and refuses a branch every commit of which the target lacks
-has a copy there with the same patch: a rewritten copy, as a rebase of the
-target after the branch was integrated leaves
-([G-260928-4qv1m](../grove/G-260928-4qv1m-rewritten-copy.md)). Nothing needs merging,
-and the refusal gives the commands that clear the branch, `git worktree
-remove PATH` where a checkout is on it, which also deletes that checkout's
-ignored files, then `git branch -D BRANCH`, since `-d` checks ancestry and
-refuses. A branch with a commit that has no copy, a merge included, and work
-not yet done on the target, such as a branch cherry-picked by hand, are
-integrated as before. The board explains the same case on the card
-([Rewritten copies](board.md#rewritten-copies)).
+1. retains S as `refs/grove/submitted/S`, the evidence, before the target
+   moves;
+2. writes S merged onto the target tip B as a commit whose only parent is
+   B, with a Conventional Commit message: the most significant type among
+   the candidate's own commits, `!` if any is breaking, the first member's
+   title, the members, and the trailers `Grove-Work: ID` (one per member),
+   `Grove-Candidate: C` and `Grove-Submitted: S`;
+3. fast-forwards the target to it, so a target that moved meanwhile is
+   refused, never overwritten;
+4. reads the standing again and reports each member done only once it
+   verifies.
+
+It writes no record: the delivered record is the branch's, accepted.
+Rerun after an interruption, it finds the delivery through the same
+verifier and goes on to cleanup, never a second commit. `--cleanup` removes
+the worktree only where Git agrees and it holds no ignored files, and the
+branch only while its tip is still S. Retained refs are local refs: to take
+the evidence to another clone, push or fetch `refs/grove/*` with the
+branches. Without it, delivery reads as unknown there, never as done.
+
+### Standing
+
+Done is derived, never written. A work record's standing is `proposed`,
+`active`, `review` (awaiting judgment, or an acceptance that no longer
+applies, since the title or body outside `## Next` and Grove's own
+paragraphs changed), `accepted` (applicable, not delivered), `done`,
+`abandoned`, or `unknown` with a reason. Accepted work is done when the
+configured target contains its candidate, or contains a commit whose
+trailers name it and the retained submission, whose parent is on the
+target, and whose tree is exactly the submission merged onto that parent.
+A delivery commit that is forged, altered, or whose submission ref is
+missing is not done; nor is one the target no longer contains after a
+rewrite, while a later revert does not undo it. Every consumer reads this
+one verifier: `list`, `show`, `deps`, `context`, `run`, the sweep and the
+board. A `done` record is schema 3's claim, kept by migration and labelled
+so, never as verified.
 
 ## Versions
 
@@ -245,10 +272,11 @@ Unknown, duplicate and non-work IDs are refused as `context` refuses them.
 The preview adds no work, starts nothing and authorizes nothing.
 
 Each item's delivery is a fact, not its status alone: proposed and active
-work awaits implementation; a candidate in review or done says whether HEAD
-of this checkout and the target branch contain it, by Git ancestry, or that
-Git cannot read it here; done without a candidate says its delivery is
-unrecorded; abandoned work will not be delivered, and a note names the work
+work awaits implementation; a candidate in review or schema 3's done says
+whether HEAD of this checkout and the target branch contain it, by Git
+ancestry, or that Git cannot read it here; accepted work gives its
+[standing](#standing), with the delivering commit once done; done without a
+candidate says its delivery is unrecorded; abandoned work will not be delivered, and a note names the work
 that still needs it. Done work whose candidate HEAD lacks, where HEAD holds
 exactly one commit with the same patch, a rewritten copy as after a rebase,
 names that copy in its delivery, and a note gives the repair: in the
@@ -546,6 +574,8 @@ reason; `--dry-run` stops there and writes nothing:
 - **approve**, or **integrate** with `integrate: true`, for a clean merge
   that meets the policy.
 
+Work already accepted waits: delivering it is the owner's `integrate`.
+
 To approve, it predicts the merge again, since an earlier act of the same
 sweep may have moved the target, and merges the branch's tip into that
 target commit in a temporary worktree outside every checkout, and runs each
@@ -555,16 +585,16 @@ last output. Once they pass, it approves in the branch's checkout with the
 verdict `delegated under policy grove.yaml sha256:…: review ID examined X
 with no open finding; merged with TARGET at T, verification passed
 (COMMANDS); attempt A produced it for N USD` (or that no Grove attempt is
-recorded as producing it), then integrates as `integrate` does, refused
-before merging if the target moved from the verified commit. The done
-update appends `Integrated under policy … as merge M on TARGET (was B); to
-reverse it: git revert -m 1 M` (or the range a fast-forward moved). An
-integration refused after a delegated approval leaves the record approved,
-waiting for the owner's `integrate`. Such a verdict is told apart from the
-owner's wherever the record's standing is shown: the board's Review block
-and the detail's standing line read `approved under policy`, in review and
-in done, where the owner's read `approved`, and `show --json` gives
-`approved_by` as `policy`, or `owner`.
+recorded as producing it), with `approved_by: policy sha256:…`, the
+policy's revision; then, with `integrate: true`, it delivers as `integrate`
+does, refused if the target moved from the verified commit. The delivery's
+message says `Integrated under policy …`, and the sweep prints the `git
+revert` that reverses it. A delivery refused after a delegated approval
+leaves the record accepted, waiting for the owner's `integrate`. Such an
+acceptance is told apart from the owner's wherever the record's standing is
+shown: the board's Review block reads `accepted under policy` where the
+owner's reads `accepted`, and `show --json` gives `approved_by` as
+`policy`, or `owner`.
 
 ### After an attempt
 
@@ -606,7 +636,7 @@ step 6 says. It prints one line per path:
 `brief` it then follows, for the brief and the record root, and for an
 entrypoint without the marker, which is yours; `unchanged`; or `updated` for
 a marked entrypoint whose template changed in the binary, which is the
-managed update. A `grove.yaml` that is not a schema 3 configuration, or a
+managed update. A `grove.yaml` that is not a schema 4 configuration, or a
 directory, symlink, or unreadable file at a managed path, is a conflict: init
 prints every reason, writes nothing, and exits 1. It never reads or writes
 `AGENTS.md` or `CLAUDE.md`: the entrypoints defer to them for how the CLI is
@@ -675,6 +705,27 @@ caller's: put the build directory on the login `PATH` ahead of any other
 `grove`, or name the executable in the target's `AGENTS.md` or `CLAUDE.md`.
 When the wrong `grove` answers, the entrypoints stop and say so rather than
 act.
+
+### Migrate
+
+Every command but `migrate` refuses a `grove.yaml` at `schema_version: 3`.
+`migrate` reads that project and prints one line per work record that
+changes, `ID  FROM -> TO  WHY`, a `reconcile:` line per problem, and the
+counts; it writes nothing. Proposed, active, abandoned and unapproved review
+work keep their meaning. An approval in review, or on done work whose
+candidate the configured target contains, becomes the acceptance it was,
+`approved_by` read from the last verdict on that candidate (`owner`, or the
+policy revision a sweep's verdict names). Every other done record keeps
+schema 3's claim, labelled so wherever standing is shown and never
+presented as verified; a candidate Git cannot read is a problem to
+reconcile, never a guess. `migrate --commit`, under the write lock, in a
+checkout whose project has no uncommitted changes and no problems, first
+records `refs/grove/schema-3/BRANCH` at HEAD, the way back, then writes
+`grove.yaml` at 4 and each changed record, keeping its ID, path and body
+and appending one `Migrated to schema 4` paragraph, and commits them alone.
+A result that would not validate is restored. Old commits stay readable
+with the binary of their time; a branch still at 3 is refused as a source
+until it is migrated too, or rebased onto a migrated target.
 
 ## Version and guide
 

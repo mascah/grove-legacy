@@ -21,15 +21,14 @@ disagree, repository and user instructions win.
 
 ## Lifecycle
 
-Work runs Proposed → Active → Review → Done, with Abandoned only by an
-explicit human decision. An assignment sets `active` when implementation
-starts (step 5) and ends by handing a candidate commit into `review`
-(step 8). Only the integrator writes `done`, on the target after the merge,
-since Done means accepted and merged.
-The CLI refuses it where the candidate is not already in HEAD, which keeps a
-checkout without the code from closing the work, and where the checkout is
-on a branch other than the configured target; `grove integrate` writes it
-after the merge it performs. Preparation,
+Work runs Proposed → Active → Review → Accepted → Done, with Abandoned only
+by an explicit human decision. An assignment sets `active` when
+implementation starts (step 5) and ends by handing a candidate commit into
+`review` (step 8). `grove approve` records the acceptance. Done is never
+written: it is derived from the target verifiably containing the accepted
+candidate's delivery, the standing `grove list` and `grove show` print. A
+status saying otherwise is not delivery, and `done` is the previous
+schema's claim. Preparation,
 independent review, waiting and a failed attempt are facts recorded in the
 record, never statuses, and an assignment bounded at its plan (step 4)
 leaves the status as it found it. A roadmap plan is not an assignment of all its
@@ -136,7 +135,7 @@ pass as `--project`.
   does not fit, raise `--max-bytes` or select fewer IDs; never proceed on a
   partial reading.
 - Exit 0 means context was assembled. It does not mean the work is ready,
-  authorized, or unblocked, and `done` on a prerequisite is that record's claim
+  authorized, or unblocked, and a prerequisite's status is its record's claim
   in this checkout, not integration.
 
 ## 2. Inspect the real state, without writing
@@ -152,8 +151,9 @@ record, its plan, or its checkpoint names.
 - **What can start.** An open question that blocks selected work is a missing
   human decision for that work. A prerequisite that is selected is done first,
   in order. One that is not selected and not delivered (proposed, active,
-  abandoned, or done on a branch the base does not contain) is an external
-  blocker. Establish delivery by Git ancestry or observed behavior, not status,
+  in review, accepted but not done, abandoned, or delivered on a target the
+  base does not contain) is an external blocker. Establish delivery by its
+  standing, Git ancestry or observed behavior, never status alone,
   and read an open blocking question or an undelivered prerequisite in full
   (`grove show ID`) before deciding what it stops: the listing has only its
   title and status.
@@ -442,7 +442,7 @@ The handoff is sized to the record. It is **compact** when the record's
 `size` is `small` or its own Next asks for the compact handoff, and **full**
 otherwise, a record without `size` included. Neither shape shrinks the
 review step 6 requires, the candidate discipline of item 2 below, or the
-rule that an implementation session never writes `done`.
+rule that an implementation session never approves its own candidate.
 
 Record review evidence where the repository keeps it: a review record with
 its `work` and the `examined` commit where the schema has them, otherwise
@@ -454,7 +454,7 @@ from a review record; otherwise the closing line, the commit the review
 examined and each finding's disposition go into the record's Evidence. A review record holds evidence; it
 is not approval, and there is no run schema.
 
-An implementation session never writes `done`. When the evidence meets the
+An implementation session never approves its own candidate, and nothing writes `done`. When the evidence meets the
 acceptance and the review the record or plan requires has happened, hand the
 candidate to human judgment:
 
@@ -539,59 +539,64 @@ disposition:
   nothing written, when there is no conflict or an attempt of the work
   runs. The owner then judges the resolution: the merge, the previous
   candidate and the files it resolved.
-- **Approval and integration:** `grove approve G-260925-7k2qm "VERDICT"` in
-  the branch's clean checkout binds the verdict to the candidate, then `grove
-  integrate G-260925-7k2qm` in the target's clean checkout merges the branch
-  (a plain merge; a conflict is refused with the target unchanged,
-  predicted before merging with the files and the next action named where
-  Git can), writes `done` there and commits it alone, and with `--cleanup` removes the
-  worktree and branch where Git agrees. It prints approval, merge, done and
-  cleanup as separate facts. The board's detail of the record offers the
-  same as `a`, `f` and `i`. A squash or rebase that lands another commit is a
-  manual merge followed by `grove update G-260925-7k2qm --set status=done --set
-  candidate=COMMIT --commit` on the target.
-- **A target rewritten after integration:** rewriting the target once work
-  is integrated, as a rebase onto a remote does, gives its commits new
-  hashes. A branch kept after the integration then diverges from the
-  target: its record in review, the target's done, the card in Review. Its
-  commits are rewritten copies of work the target already holds, so nothing
-  needs merging: the board's detail, `integrate` and `resolve` say so and
-  print the commands that clear it, `git worktree remove PATH` (which also
-  deletes that checkout's ignored files) and `git branch -D BRANCH`, which
-  Grove never runs. The done record still names the old candidate, so work
-  that depends on it waits; the wait names the copy and the repair, `grove
-  update G-260925-7k2qm --set candidate=COPY --commit` in the target's
-  checkout (with `--unset approved` where it is approved, since an approval
-  is of one commit) and a note under the verdict, after which it is
-  delivered.
+- **Acceptance and delivery:** `grove approve G-260925-7k2qm "VERDICT"` in
+  the branch's clean checkout records the acceptance of the candidate and
+  of the record as it reads then: a later edit of its title or body, other
+  than its Next, makes the acceptance no longer apply, and the work reads as
+  in review again. Then `grove integrate G-260925-7k2qm` in the target's
+  clean checkout delivers it as one squash commit onto the target: the
+  branch's tip, retained under `refs/grove/submitted/`, merged onto the
+  target's tip with a Conventional Commit message whose trailers name the
+  work, the candidate and that retained tip. A conflict is refused with the
+  target unchanged, predicted before anything is written with the files and
+  the next action named. It writes no record, prints acceptance, retained
+  evidence, delivery, verified done and cleanup as separate facts, and with
+  `--cleanup` removes the worktree and branch where Git agrees. The board's
+  detail of the record offers the same as `a`, `f` and `i`. The retained
+  refs are local: push or fetch `refs/grove/*` with the target so another
+  clone verifies the delivery; without them it reads as unknown there,
+  never done.
+- **A schema 3 claim on a rewritten target:** rewriting the target once
+  work is integrated, as a rebase onto a remote does, gives its commits new
+  hashes. A squash delivery survives that through its retained evidence. A
+  `done` record from the previous schema still names the old candidate: a
+  branch kept after its integration diverges from the target and its commits
+  are rewritten copies, so nothing needs merging, and the board's detail,
+  `integrate` and `resolve` say so and print the commands that clear it,
+  `git worktree remove PATH` (which also deletes that checkout's ignored
+  files) and `git branch -D BRANCH`, which Grove never runs. Work that
+  depends on it waits; the wait names the copy and the repair, `grove update
+  G-260925-7k2qm --set candidate=COPY --commit` in the target's checkout
+  (with `--unset approved` where it is approved, since an approval is of one
+  commit) and a note under the verdict, after which it is delivered.
 - **Rejection:** `status=abandoned`, with the decision and its reasons in the
   record or a decision record it links.
 - **Under a standing policy:** where the configuration holds a `policy:`,
   `grove sweep` in the target's checkout (`--dry-run` first shows what
   would happen to each candidate and why) starts one resolution attempt for
-  a conflict and approves, then integrates, a candidate that meets the
+  a conflict and accepts, then delivers, a candidate that meets the
   policy's conditions after its merged result passed the policy's
   verification, each attributed to the policy's revision. An attempt
   Grove started, by `grove run`, `grove resolve` or a sweep, sweeps the
   work it handed off when it ends, and the board's `S` sweeps too.
-  Integration under a policy names the merge to revert. Everything else
+  Delivery under a policy names the commit to revert. Everything else
   waits for these dispositions, as the record model's `policy:` says.
 
-A candidate several records share is judged per record and integrated as
+A candidate several records share is judged per record and delivered as
 their group. `approve` binds each record's own verdict, and the group's
 record commits do not count as later changes. `feedback` on any of them
 reopens them all: the others are set `active` with their approvals dropped
 and a line naming that feedback appended, each committed alone, since the
 next candidate replaces the shared one, so the next attempt selects them all
 again: `grove run` refuses a selection that leaves one out. `integrate` of
-any of them merges the commit, and so all of them: it refuses, naming them,
-until every one is approved in review, then writes `done` for each,
-committed alone. It also refuses a merge that would carry the candidate of
-other unfinished work on the branch that no approval covers.
+any of them delivers the commit, and so all of them: it refuses, naming
+them, until every one is accepted, and its delivery names each. It also
+refuses a delivery that would carry the candidate of other unfinished work
+on the branch that no acceptance covers.
 
 A further commit on the branch after the handoff is a new candidate, which
-`approve` refuses until `candidate` names it: set it and reconsider, since
-approval is of one commit. A `done` record without a candidate predates this rule and claims
+`approve` and `integrate` refuse until `candidate` names it: set it and reconsider, since
+acceptance is of one commit. A `done` record without a candidate predates this rule and claims
 only branch-local completion; delivery of such a prerequisite is established
 by ancestry, as step 2 says.
 

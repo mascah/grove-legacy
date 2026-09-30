@@ -102,31 +102,36 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             commit to the result (null when nothing changed); other paths stay as they are.\n" +
 	"             Lists are JSON arrays such as '[\"G-260925-7k2qm\"]'; priority is 1-5. A plan or\n" +
 	"             review names its work with work=[...]; a review's examined is a Git commit,\n" +
-	"             as is work's candidate, required in review and, reachable from HEAD, for done.\n" +
+	"             as is work's candidate, required in review and accepted. No update makes\n" +
+	"             work done, which is derived from its acceptance and verified delivery.\n" +
 	"             update accepts type=TYPE with whatever else the new type requires in the\n" +
 	"             same update; the ID and path never change.\n" +
-	"  approve    Record the owner's verdict on a work record in review, in a checkout of the\n" +
-	"             branch that holds it: sets approved to the candidate, appends the verdict\n" +
-	"             to the body, and commits that file alone. Refused where HEAD lacks the\n" +
-	"             candidate, the record has uncommitted changes, or a commit after the\n" +
+	"  approve    Record the owner's acceptance of a work record in review, in a checkout of\n" +
+	"             the branch that holds it: sets status accepted, approved to the candidate,\n" +
+	"             approved_by owner and approved_context to the record's acceptance context,\n" +
+	"             appends the verdict to the body, and commits that file alone. Refused where\n" +
+	"             HEAD lacks the candidate, the record has uncommitted changes, or a commit after the\n" +
 	"             candidate changed another file (that tip is a new candidate). Work records\n" +
 	"             whose candidate is the same commit are one group, handed off together from\n" +
-	"             one selection: each is approved on its own, and their record files do not\n" +
+	"             one selection: each is accepted on its own, and their record files do not\n" +
 	"             count as later changes.\n" +
-	"  feedback   Return a work record in review to active with the text appended to the body,\n" +
-	"             committed alone in that same checkout; an approval is unset and the\n" +
+	"  feedback   Return a work record in review or accepted to active with the text appended\n" +
+	"             to the body, committed alone in that same checkout; the acceptance is unset and the\n" +
 	"             candidate kept, so earlier reviews still compare to it. Every other member\n" +
 	"             of its group in review is reopened the same way, each committed alone, with\n" +
 	"             a line naming this feedback. Prints where to continue. Both print what\n" +
 	"             update prints.\n" +
-	"  integrate  Merge the one branch holding an approved candidate of ID into the target\n" +
-	"             branch grove.yaml names, in that target's clean checkout, and mark ID done\n" +
-	"             there, committed alone. A candidate shared by a group integrates the group:\n" +
-	"             refused unless every member is approved in review, then one merge and done\n" +
-	"             for each member, committed alone. Prints one line per fact as it holds: approval,\n" +
-	"             merge (fast-forward or merge commit; a conflict is aborted and refused),\n" +
-	"             done, and with --cleanup the worktree and branch removed, or kept with\n" +
-	"             Git's reason. Every refusal comes before the merge; nothing undoes one.\n" +
+	"  integrate  Deliver the one branch holding ID accepted onto the target branch grove.yaml\n" +
+	"             names, in that target's clean checkout, as one squash commit: the branch tip\n" +
+	"             is retained as refs/grove/submitted/TIP, merged onto the target's tip as a\n" +
+	"             commit whose trailers name the work, candidate and tip, and the target is\n" +
+	"             fast-forwarded to it. No record is written: done is derived. A candidate\n" +
+	"             shared by a group delivers the group, refused unless every member is\n" +
+	"             accepted. Prints one line per fact as it holds: acceptance, retained,\n" +
+	"             delivery, verified done, and with --cleanup the worktree and branch removed,\n" +
+	"             or kept with the reason. Every refusal, a predicted conflict included, comes\n" +
+	"             before the target moves; nothing undoes a delivery. A rerun after one only\n" +
+	"             cleans up.\n" +
 	"  resolve    For a work record in review whose candidate conflicts with the target, from\n" +
 	"             any checkout: record feedback naming the target commit and the conflicting\n" +
 	"             files, committed in the branch's checkout, and start one attempt there, as run\n" +

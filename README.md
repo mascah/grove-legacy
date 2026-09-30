@@ -35,18 +35,19 @@ touches `AGENTS.md` or `CLAUDE.md`: the skills defer to them, so say there if
 `grove` is not the one on `PATH`, or how work branches should be named.
 [Init](docs/commands.md#init) has the details, including Codex's `PATH`.
 
-Then name the branch work merges into, so `grove.yaml` reads:
+Then name the branch work is delivered to, so `grove.yaml` reads:
 
 ```yaml
-schema_version: 3
+schema_version: 4
 records: grove
 brief: grove/brief.md
 target: main
 ```
 
-- `target` is that branch: `integrate` merges into it and writes `done`
-  there, `resolve` and `sweep` need it, and the board marks work not yet on
-  it.
+- `target` is that branch: `integrate` delivers accepted work onto it as
+  one squash commit, done is read from what it contains, `resolve` and
+  `sweep` need it, and the board marks work not yet on it. A project at
+  schema 3 converts with `grove migrate` ([Migrate](docs/commands.md#migrate)).
 - `run:` sets `grove run`'s defaults (`budget`, `permission_mode`, `model`,
   `effort`); without it, every launch passes `--budget` and
   `--permission-mode`.
@@ -83,9 +84,10 @@ Work runs `proposed`, `active`, `review`, `done`.
    or `R` on the board, does the same as a headless attempt that outlives the
    terminal.
 4. **Judge.** Open the work on the board (`grove`) and read the candidate:
-   `a` approves it, `f` gives feedback and returns it to `active`, and `i`
-   merges the approved candidate into the target and writes `done`. The same
-   are `grove approve`, `grove feedback` and `grove integrate`.
+   `a` accepts it, `f` gives feedback and returns it to `active`, and `i`
+   delivers the accepted candidate onto the target as one squash commit,
+   after which it reads as done. The same are `grove approve`, `grove
+   feedback` and `grove integrate`.
 
 `grove guide shape`, `grove guide work` and `grove guide review` print the
 workflows the skills load ([shaping](docs/work-shaping.md),
@@ -109,7 +111,7 @@ and start and stop attempts ([The board](docs/board.md)).
 | `list`, `show`, `brief`, `check` | List, print and validate records and the brief, reading only | [Records](docs/commands.md#records), `grove guide model` |
 | `new`, `update` | Create a record with a new date-form ID; change its frontmatter | [Records](docs/commands.md#records), `grove guide model` |
 | `convert` | Make a record from a Markdown document outside the record root | [Records](docs/commands.md#records), `grove guide model` |
-| `approve`, `feedback`, `integrate` | Judge a candidate in review; merge an approved one and mark it done | [Judging and integrating](docs/commands.md#judging-and-integrating), `grove guide model` |
+| `approve`, `feedback`, `integrate` | Judge a candidate in review; deliver an accepted one as one squash commit | [Judging and integrating](docs/commands.md#judging-and-integrating), `grove guide model` |
 | `resolve` | Give a candidate that conflicts with the target to one attempt that merges the target and resolves it | [Resolving a conflict](docs/commands.md#resolving-a-conflict) |
 | `sweep` | Resolve, approve and integrate candidates in review under the owner's standing `policy:`, each act attributed to it | [Sweep](docs/commands.md#sweep) |
 | `run`, `attempts`, `attempt`, `stop` | Start one headless agent attempt of a work item that outlives the terminal; list, inspect and stop attempts | [Attempts](docs/commands.md#attempts) |
@@ -118,6 +120,7 @@ and start and stop attempts ([The board](docs/board.md)).
 | `context` | Assemble staged context for selected work | [Context](docs/commands.md#context), `grove guide work` |
 | `deps` | Show how unfinished work depends on other work, or preview a selection's order | [Dependencies](docs/commands.md#dependencies) |
 | `init` | Set up Grove in a Git checkout | [Init](docs/commands.md#init) |
+| `migrate` | Convert a schema 3 project to schema 4, previewed first | [Migrate](docs/commands.md#migrate) |
 | `guide`, `version` | Print a workflow or review guide (the work guide's head, or one `--part`) or the record model; name this build | [Version and guide](docs/commands.md#version-and-guide) |
 
 ## Develop Grove

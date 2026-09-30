@@ -16,7 +16,12 @@ IDs and per-type counters were deleted by the conversion to schema 3, whose
 old-to-new mapping [G-260921-czt8x](../grove/G-260921-czt8x-identity-and-path-migrat.md)
 keeps. A commit from before it is inspected with the CLI built from that
 commit; the current CLI reports such a branch in `versions` and the board as
-a source it cannot inspect. The files earlier CLIs kept in the Git common
+a source it cannot inspect. Schema 4 is the one exception, a migration
+rather than a conversion
+([G-260930-2qa4a](../grove/G-260930-2qa4a-derive-done-from-recorde.md)):
+completion changed meaning, and historical claims could not be relabelled
+in place without presenting them as verified, so `grove migrate` classifies
+them and keeps the way back as a ref. The files earlier CLIs kept in the Git common
 directory, `grove/neutral-ids`, `grove/lock` and `grove/next-ids`, are never
 read or written. `schema_version` is this CLI's own number, unrelated to any
 other tool's.
@@ -150,12 +155,20 @@ so earlier reviews still compare to it, and reopens the whole group, since
 the next candidate replaces the shared one. A resolution is a merge, so the
 earlier candidate stays an ancestor of the new one.
 
-Done means accepted and merged into the target, for research and design
+Done means accepted and delivered to the target, for research and design
 deliverables too, since those are files
-([G-260921-9wkjt](../grove/G-260921-9wkjt-hand-implementation-cand.md)). The
-ancestry check keeps a checkout without the code from closing the work, and
-the target check exists because on the work branch the candidate is an
-ancestor too ([G-260921-jwk4e](../grove/G-260921-jwk4e-review-candidates-and-in.md)).
+([G-260921-9wkjt](../grove/G-260921-9wkjt-hand-implementation-cand.md)).
+Schema 4 stops storing it
+([G-260930-2qa4a](../grove/G-260930-2qa4a-derive-done-from-recorde.md)): a
+stored `done` was a second account of a fact Git holds, which a branch, a
+hand edit or a stale checkout could contradict, and an agent reading the raw
+file could not tell it from delivery. The acceptance is what a person
+decides, so it is recorded, with its authority and the context it judged;
+delivery is what Git shows, so it is derived, by one verifier every command
+reads. Squash delivery keeps the target's history one commit per accepted
+outcome, and the retained submission ref and trailers are what keep that
+verifiable after the branch is gone or the target is rewritten
+([G-260929-gm3m4](../grove/G-260929-gm3m4-clean-main-history-with.md)).
 A done record without a candidate asserts only that its outcome was reached
 in its own branch context, as its Evidence says; it is not proof of a merge,
 and its prerequisites' delivery is established by Git ancestry or observed

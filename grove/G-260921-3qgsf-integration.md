@@ -49,6 +49,19 @@ The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
 record candidate acceptance and derive Done from verified target delivery,
 with a redesigned work record that does not remain misleadingly in review.
 This changes representation, not the distinction between approval and
-integration. The current schema and operations described above remain in
-force until [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md)
-delivers the migration and reconciles the implemented model and this term.
+integration.
+
+## Schema 4, 2026-09-30
+
+[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) implements it and
+supersedes the mechanism in Meaning above. `grove integrate` retains the
+branch's tip under `refs/grove/submitted/`, writes that tip merged onto the
+target's tip as one commit with the target tip as its only parent and a
+Conventional Commit message whose trailers name the work, the candidate and
+the retained tip, fast-forwards the target to it, and writes no record.
+Done is derived: accepted work is done when the target contains its
+candidate, or a commit whose trailers, parent and exact tree match the
+retained submission. A forged, altered or unretained delivery, or one a
+rewrite of the target dropped, is not done; a later revert does not undo
+it. A `done` status from schema 3 is kept by `grove migrate` as that
+schema's claim and never presented as verified.

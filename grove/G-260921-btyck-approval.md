@@ -33,6 +33,16 @@ The owner selected [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md):
 record candidate acceptance and derive Done from verified target delivery,
 with a redesigned work record that does not remain misleadingly in review.
 This changes representation, not the distinction between approval and
-integration. The current schema and operations described above remain in
-force until [G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md)
-delivers the migration and reconciles the implemented model and this term.
+integration.
+
+## Schema 4, 2026-09-30
+
+[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) implements it.
+`grove approve` sets the work `accepted` and records, beside `approved`,
+`approved_by` (`owner`, or `policy sha256:…` for a standing policy's
+sweep), the authority of whoever ran it, never read from the verdict's text,
+and `approved_context`, the digest of the record's title and body outside
+`## Next` and Grove's own appended paragraphs. A changed candidate or a
+changed context makes the acceptance no longer apply, and the work reads as
+in review again. `grove feedback` withdraws all three. Approval is still
+not delivery: accepted work is done only once its delivery is verified.

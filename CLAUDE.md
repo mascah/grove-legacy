@@ -53,9 +53,14 @@ applies whatever that record's status; a rule naming none is this file's own.
 
 ### What the code must keep doing
 
-- `schema_version: 3` is the only schema, with no backward compatibility
-  before the first release; inspect an old commit with the CLI in that
-  commit (G-260921-ebsby, G-260921-r491p).
+- `schema_version: 4` is the only schema, with no backward compatibility
+  before the first release beyond `grove migrate`'s one-way conversion from
+  3; inspect an old commit with the CLI in that commit (G-260921-ebsby,
+  G-260921-r491p, G-260930-2qa4a).
+- Done is derived, never written: `internal/standing` is the one verifier
+  of an acceptance's delivery, and every consumer reads it; `integrate`
+  delivers as one squash commit with retained evidence under
+  `refs/grove/submitted/` (G-260930-2qa4a, G-260929-gm3m4).
 - `new` and `convert` issue `G-YYMMDD-xxxxx` from the UTC date and a random
   tail with no shared state, drawing again while a local ref or worktree
   holds the ID; it is the only ID form; and `new` and `update` serialize
@@ -129,13 +134,14 @@ applies whatever that record's status; a rule naming none is this file's own.
   root (G-260921-gtydy).
 - Plans and reviews are records: `new plan` or `new review`, then `update`
   to set `work` and a review's `examined`.
-- Work runs `proposed`, `active`, `review`, `done`, and an implementation
-  ends in `review` with its `candidate` commit. `done` is written on `main`
-  after the merge, never on the work branch; `update` refuses a candidate
-  HEAD lacks and a checkout off the target `grove.yaml` names. Never
-  backfill a candidate on a `done` record that has none (G-260921-9wkjt).
+- Work runs `proposed`, `active`, `review`, `accepted`, and an
+  implementation ends in `review` with its `candidate` commit. Done is
+  derived from the acceptance and its verified delivery to `main`, and no
+  `update` writes it; a `done` status is schema 3's claim. Never backfill a
+  candidate on a `done` record that has none (G-260921-9wkjt,
+  G-260930-2qa4a).
 - `approve`, `feedback` and `integrate` (board `a`, `f`, `i`) record the
-  verdict and merge (G-260921-jwk4e).
+  verdict and deliver (G-260921-jwk4e, G-260929-gm3m4).
 - Progress and the next action belong in a record's Next, never the brief.
   Change the brief only when the direction it selects changes, and never
   keep a second editable account of that direction. When a contract

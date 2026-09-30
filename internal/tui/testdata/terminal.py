@@ -421,7 +421,7 @@ def writes_no_logs(root, wt, base):
 
 
 def review_and_integrate(root, wt, base):
-    """A candidate in review, judged from the board: standing, changes and a diff; a approves on feature; i merges into main and writes done."""
+    """A candidate in review, judged from the board: standing, changes and a diff; a accepts on feature; i squashes it onto main, and done is derived."""
     for key, value in (("user.name", "t"), ("user.email", "t@t"), ("commit.gpgsign", "false"), ("maintenance.auto", "false")):
         git(root, "config", key, value)
     with open(os.path.join(root, "grove.yaml"), "w") as f:
@@ -437,7 +437,7 @@ def review_and_integrate(root, wt, base):
     s = Session(root)
     s.expect("Board: current view")
     s.send(b"ll" + ENTER)  # the Review column's card
-    mark = s.expect(f"Review: candidate {candidate[:7]} · not yet approved")  # the renderer redraws lines from their first changed cell, so expectations stay short
+    mark = s.expect(f"Review: candidate {candidate[:7]} · not yet accepted")  # the renderer redraws lines from their first changed cell, so expectations stay short
     s.expect("code.txt  +1 −0")
     s.send(b"\t" + ENTER)  # no linked records, so Tab lands on the first changed file
     s.expect("Diff of code.txt", mark)  # siblings of one frame are searched from the same offset
@@ -458,13 +458,13 @@ def review_and_integrate(root, wt, base):
     # the approval is checked in the file above; the re-read changes are new.
     mark = s.expect("only the record changed since it", mark)
     s.send(b"i")
-    mark = s.expect("mark G-260101-00001 done? y/n", mark)
+    mark = s.expect("delivering G-260101-00001? y/n", mark)
     s.send(b"y")
     mark = s.expect("remove its worktree? y/n", mark)
     s.send(b"n")
     s.expect("Integration of G-260101-00001", mark)
-    s.expect("merge: merge commit", mark)  # main gained the target commit after feature branched
-    s.expect("done: G-260101-00001 done at commit", mark)
+    s.expect("delivery: squash commit", mark)
+    s.expect("done: G-260101-00001 is done: squashed as", mark)
     mark = s.expect("The board has been re-read.", mark)  # Esc waits for the re-read
     s.send(ESC)
     s.expect("· done", mark)
@@ -474,11 +474,11 @@ def review_and_integrate(root, wt, base):
     check(code == 0 and out == b"", f"exit {code}, stdout {out!r}")
     with open(os.path.join(root, "grove", "work", "G-260101-00001-first.md")) as f:
         record = f.read()
-    check("status: done" in record and f'approved: "{candidate}"' in record, f"main's record after integration: {record!r}")
+    check("status: accepted" in record and f'approved: "{candidate}"' in record, f"main's record after integration: {record!r}")
     check(os.path.isdir(wt), "n kept the worktree")
 
 
-review_and_integrate.mutates = True  # approval and the merge change the repository on purpose
+review_and_integrate.mutates = True  # acceptance and the delivery change the repository on purpose
 
 FAKE_CLAUDE = r"""#!/bin/sh
 [ "$1" = --version ] && { echo 'fake 0.1'; exit 0; }
