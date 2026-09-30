@@ -63,13 +63,23 @@ func Load(cwd, explicit string) (*Project, []Diagnostic) {
 // fs.ReadLinkFS so symlinks are seen rather than followed. A live checkout and
 // a committed Git tree go through this one path, so both obey the same rules.
 func LoadFS(fsys fs.FS) (*Project, []Diagnostic) {
+	return loadFS(fsys, Schema)
+}
+
+// LoadSchema3 reads a live checkout still at schema 3 under that schema's
+// rules, for migration alone; a project at any other version is refused.
+func LoadSchema3(root string) (*Project, []Diagnostic) {
+	return loadFS(os.DirFS(root), Schema3)
+}
+
+func loadFS(fsys fs.FS, schema int) (*Project, []Diagnostic) {
 	p := &Project{}
 	source, err := readRegular(fsys, "grove.yaml")
 	if err != nil {
 		return p, []Diagnostic{{Path: "grove.yaml", Message: err.Error()}}
 	}
 	p.Config = source
-	config, recordDir, brief, target, run, policy := parseConfig(source, func(dir string) error { return checkRecordRoot(fsys, dir) })
+	config, recordDir, brief, target, run, policy := parseConfig(source, schema, func(dir string) error { return checkRecordRoot(fsys, dir) })
 	if len(config.errors) != 0 {
 		return p, sortedDiagnostics(config.errors)
 	}
@@ -108,7 +118,7 @@ func LoadFS(fsys fs.FS) (*Project, []Diagnostic) {
 			problem(err.Error())
 			return nil
 		}
-		record, problems := ParseRecord(relative, source)
+		record, problems := parseRecord(relative, source, schema)
 		p.Records = append(p.Records, record)
 		ds = append(ds, problems...)
 		return nil
@@ -125,7 +135,7 @@ func LoadFS(fsys fs.FS) (*Project, []Diagnostic) {
 // clean brief path it names, with the diagnostics LoadFS would give short of
 // whether the folder exists on disk.
 func ParseConfig(source []byte) (recordDir, brief string, ds []Diagnostic) {
-	config, recordDir, brief, _, _, _ := parseConfig(source, nil)
+	config, recordDir, brief, _, _, _ := parseConfig(source, Schema, nil)
 	return recordDir, brief, sortedDiagnostics(config.errors)
 }
 
@@ -143,11 +153,15 @@ var (
 // inspects the record folder in the order LoadFS always has. The target is
 // only compared with branch names, never passed to Git, so only likely
 // mistakes are refused: surrounding spaces and a full ref name.
-func parseConfig(source []byte, checkRoot func(string) error) (config *metadata, recordDir, brief, target string, run RunDefaults, policy *Policy) {
+func parseConfig(source []byte, schema int, checkRoot func(string) error) (config *metadata, recordDir, brief, target string, run RunDefaults, policy *Policy) {
 	config = parseMapping("grove.yaml", source, 0)
 	version, ok := config.integerField("schema_version", true)
-	if ok && version != 3 {
-		config.problem("schema_version", fmt.Sprintf("unsupported version %d; expected 3", version))
+	switch {
+	case !ok, version == schema:
+	case version == Schema3:
+		config.problem("schema_version", "3 is the previous schema: grove migrate previews this project's conversion to 4, and grove migrate --write applies it")
+	default:
+		config.problem("schema_version", fmt.Sprintf("unsupported version %d; expected %d", version, schema))
 	}
 	recordDir = config.stringField("records", true)
 	for key := range config.fields {

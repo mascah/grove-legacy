@@ -45,33 +45,34 @@ func TestApproveAndFeedback(t *testing.T) {
 	root, candidate := reviewFixture(t)
 	reviewBefore := read(t, root, "grove/reviews/G-260101-00005-review.md")
 	tip := git(t, root, "rev-parse", "HEAD")
-	if _, err := Approve(root, "G-260101-00001", "  ", now); err == nil || !strings.Contains(err.Error(), "a verdict is required") {
+	if _, err := Approve(root, "G-260101-00001", "  ", Owner, now); err == nil || !strings.Contains(err.Error(), "a verdict is required") {
 		t.Fatalf("blank verdict: %v", err)
 	}
-	if _, err := Approve(root, "G-260101-00002", "fine", now); err == nil || !strings.Contains(err.Error(), "G-260101-00002 is proposed, not in review") {
+	if _, err := Approve(root, "G-260101-00002", "fine", Owner, now); err == nil || !strings.Contains(err.Error(), "G-260101-00002 is proposed, not in review") {
 		t.Fatalf("not in review: %v", err)
 	}
 	if _, err := Feedback(root, "G-260101-00003", "more", now); err == nil || !strings.Contains(err.Error(), "G-260101-00003 is a question, not work") {
 		t.Fatalf("not work: %v", err)
 	}
-	res, err := Approve(root, "G-260101-00001", "Ship it.\n", now)
+	res, err := Approve(root, "G-260101-00001", "Ship it.\n", Owner, now)
 	if err != nil || !res.Changed || res.Commit == "" || res.Commit != git(t, root, "rev-parse", "HEAD") {
 		t.Fatalf("approve: %+v %v", res, err)
 	}
 	r := record(t, root, "G-260101-00001")
-	if r.Approved != candidate || r.Status != "review" || !strings.HasSuffix(string(r.Source), "Body --- stays.\n\nVerdict on candidate "+candidate[:7]+", 2026-09-19: Ship it.\n") {
+	if r.Approved != candidate || r.Status != "accepted" || r.ApprovedBy != Owner || r.ApprovedContext != project.AcceptanceContext(r) || !strings.HasSuffix(string(r.Source), "Body --- stays.\n\nVerdict on candidate "+candidate[:7]+", 2026-09-19: Ship it.\n") {
 		t.Fatalf("approved record:\n%s", r.Source)
 	}
 	if files := git(t, root, "show", "--format=", "--name-only", "HEAD"); files != "grove/work/G-260101-00001-first.md" {
 		t.Fatalf("the approval commit must hold the record alone: %q", files)
 	}
-	if msg := git(t, root, "log", "-1", "--format=%s"); msg != "docs(G-260101-00001): set approved="+candidate+" note" {
+	approval := "docs(G-260101-00001): set status=accepted approved=" + candidate + " approved_by=owner approved_context=" + r.ApprovedContext + " note"
+	if msg := git(t, root, "log", "-1", "--format=%s"); msg != approval {
 		t.Fatalf("message: %q", msg)
 	}
 	if git(t, root, "status", "--porcelain") != "" {
 		t.Fatal("approve left the checkout dirty")
 	}
-	if _, err := Approve(root, "G-260101-00001", "again", now); err == nil || !strings.Contains(err.Error(), "already approved; integrate it") {
+	if _, err := Approve(root, "G-260101-00001", "again", Owner, now); err == nil || !strings.Contains(err.Error(), "already accepted; integrate it") {
 		t.Fatalf("second approval: %v", err)
 	}
 	res, err = Feedback(root, "G-260101-00001", "Needs a test for the empty case.", now)
@@ -79,10 +80,10 @@ func TestApproveAndFeedback(t *testing.T) {
 		t.Fatalf("feedback: %+v %v", res, err)
 	}
 	r = record(t, root, "G-260101-00001")
-	if r.Status != "active" || r.Approved != "" || r.Candidate != candidate || !strings.HasSuffix(string(r.Source), "Ship it.\n\nFeedback on candidate "+candidate[:7]+", 2026-09-19: Needs a test for the empty case.\n") {
+	if r.Status != "active" || r.Approved != "" || r.ApprovedBy != "" || r.ApprovedContext != "" || r.Candidate != candidate || !strings.HasSuffix(string(r.Source), "Ship it.\n\nFeedback on candidate "+candidate[:7]+", 2026-09-19: Needs a test for the empty case.\n") {
 		t.Fatalf("record after feedback:\n%s", r.Source)
 	}
-	if msg := git(t, root, "log", "-1", "--format=%s"); msg != "docs(G-260101-00001): set status=active unset approved note" {
+	if msg := git(t, root, "log", "-1", "--format=%s"); msg != "docs(G-260101-00001): set status=active unset approved approved_by approved_context note" {
 		t.Fatalf("message: %q", msg)
 	}
 	if read(t, root, "grove/reviews/G-260101-00005-review.md") != reviewBefore {
@@ -92,7 +93,7 @@ func TestApproveAndFeedback(t *testing.T) {
 		t.Fatalf("feedback on active work: %v", err)
 	}
 	// Both candidates and every disposition stay in history.
-	if log := git(t, root, "log", "--format=%s", tip+"..HEAD"); log != "docs(G-260101-00001): set status=active unset approved note\ndocs(G-260101-00001): set approved="+candidate+" note" {
+	if log := git(t, root, "log", "--format=%s", tip+"..HEAD"); log != "docs(G-260101-00001): set status=active unset approved approved_by approved_context note\n"+approval {
 		t.Fatalf("history: %q", log)
 	}
 }
@@ -115,7 +116,7 @@ func TestJudgingNeedsTheCandidateCheckoutClean(t *testing.T) {
 			t.Fatal("a refusal changed the record or the branch")
 		}
 	}
-	approve := func() (Result, error) { return Approve(root, "G-260101-00001", "ok", now) }
+	approve := func() (Result, error) { return Approve(root, "G-260101-00001", "ok", Owner, now) }
 	feedback := func() (Result, error) { return Feedback(root, "G-260101-00001", "no", now) }
 	// An uncommitted edit of the record is never committed by a judgment.
 	src := read(t, root, "grove/work/G-260101-00001-first.md")

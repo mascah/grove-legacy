@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	config = "schema_version: 3\nrecords: grove\ntarget: main\n"
+	config = "schema_version: 4\nrecords: grove\ntarget: main\n"
 	work   = "---\nid: \"G-260101-00001\"\ntype: work\ntitle: First\nstatus: %s\n---\n\n## Outcome\n\nBody.\n"
 	review = "---\nid: \"G-260101-00005\"\ntype: review\ntitle: Review of G-260101-00001\nstatus: current\nwork: [\"G-260101-00001\"]\nexamined: \"%s\"\n---\n\nFindings.\n"
 )
@@ -93,7 +93,7 @@ func fixture(t *testing.T, approve bool, sub ...string) (root, wt, candidate str
 		t.Fatal(err)
 	}
 	if approve {
-		if _, err := update.Approve(wtProject, "G-260101-00001", "Ship it.", now); err != nil {
+		if _, err := update.Approve(wtProject, "G-260101-00001", "Ship it.", update.Owner, now); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -262,7 +262,7 @@ func TestIntegrateRefusesWhatIsNotReadyToMerge(t *testing.T) {
 	t.Run("no target", func(t *testing.T) {
 		t.Parallel()
 		root, _, _ := fixture(t, true)
-		write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+		write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 		git(t, root, "commit", "-qam", "chore: no target")
 		refused(t, root, false, "integration needs target: BRANCH in grove.yaml")
 	})

@@ -143,7 +143,7 @@ func TestInitCreatesAProjectAndRerunsWithoutTouchingUserFiles(t *testing.T) {
 func TestInitRespectsAnExistingConfiguration(t *testing.T) {
 	t.Parallel()
 	root := emptyRepo(t)
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\n")
 	code, out, errOut := runInitAt(t, root)
 	if code != 0 || !strings.HasPrefix(out, "kept grove.yaml (exists and validates)\ncreated docs/records\ncreated .agents/") {
 		t.Fatalf("code=%d stdout=%q stderr=%q", code, out, errOut)
@@ -199,7 +199,7 @@ func TestInitRefusesConflictsWithoutWriting(t *testing.T) {
 		t.Parallel()
 		root := emptyRepo(t)
 		elsewhere := t.TempDir()
-		write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\n")
+		write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\n")
 		if err := os.Symlink(elsewhere, filepath.Join(root, "docs")); err != nil {
 			t.Skip("symlinks unavailable")
 		}

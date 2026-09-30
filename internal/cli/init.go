@@ -16,7 +16,7 @@ import (
 	"github.com/mascah/grove/internal/repo"
 )
 
-const defaultConfig = "schema_version: 3\nrecords: grove\nbrief: grove/brief.md\n"
+const defaultConfig = "schema_version: 4\nrecords: grove\nbrief: grove/brief.md\n"
 
 const placeholderBrief = "# Brief\n\n" +
 	"This brief is not written yet. `grove init` created it so that the\n" +

@@ -14,7 +14,7 @@ import (
 func knowledgeFixture(t *testing.T) string {
 	t.Helper()
 	root := gitFixture(t)
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\nbrief: docs/brief.md\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\nbrief: docs/brief.md\n")
 	write(t, root, "docs/brief.md", "# Brief\n")
 	return root
 }
@@ -140,7 +140,7 @@ func TestBriefCommand(t *testing.T) {
 func TestVersionsReadsCommittedKnowledgeRecords(t *testing.T) {
 	t.Parallel()
 	root := gitFixture(t)
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\nbrief: docs/records/brief.md\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\nbrief: docs/records/brief.md\n")
 	write(t, root, "docs/records/brief.md", "# Brief\n")
 	var ids []string
 	for _, kind := range []string{"term", "plan", "review"} {

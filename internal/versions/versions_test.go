@@ -17,7 +17,7 @@ import (
 	"github.com/mascah/grove/internal/repo"
 )
 
-const config = "schema_version: 3\nrecords: grove\n"
+const config = "schema_version: 4\nrecords: grove\n"
 
 func record(id, kind, status, body string) string {
 	return "---\nid: \"" + id + "\"\ntype: " + kind + "\ntitle: T " + id + "\nstatus: " + status + "\n---\n" + body
@@ -337,7 +337,7 @@ func TestInspectPrefixAndConfig(t *testing.T) {
 	root := repoFixture(t)
 	// Move the project below the repository root with a different record folder.
 	git(t, root, "rm", "-q", "-r", "grove.yaml", "grove")
-	write(t, root, "sub/grove.yaml", "schema_version: 3\nrecords: docs/records\n")
+	write(t, root, "sub/grove.yaml", "schema_version: 4\nrecords: docs/records\n")
 	write(t, root, "sub/docs/records/work/G-260101-00001-first.md", record("G-260101-00001", "work", "proposed", "Main.\n"))
 	write(t, root, "sub/docs/records/questions/G-260101-00002-q.md", record("G-260101-00002", "question", "open", "Q.\n"))
 	commit(t, root, "nested")

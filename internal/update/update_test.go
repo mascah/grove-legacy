@@ -68,7 +68,7 @@ func gitProject(t *testing.T) string {
 		t.Fatal(err)
 	}
 	git(t, root, "init", "-q", "-b", "main")
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 	write(t, root, "grove/work/G-260101-00001-first.md", work)
 	write(t, root, "grove/work/G-260101-00002-second.md", second)
 	write(t, root, "grove/questions/G-260101-00003-which.md", question)
@@ -173,9 +173,9 @@ func TestUpdateLifecycleAndReopening(t *testing.T) {
 	// compare equal between the original and the candidate.
 	apply(t, root, "G-260101-00001", []Field{{"priority", "2"}, {"size", "small"}, {"members", `["G-260101-00002"]`}})
 	head := git(t, root, "rev-parse", "HEAD")
-	for _, status := range []string{"active", "review", "done", "proposed", "abandoned", "done"} {
+	for _, status := range []string{"active", "review", "proposed", "abandoned", "review"} {
 		sets := []Field{{"status", status}}
-		if status == "review" { // review needs the candidate, and done keeps it
+		if status == "review" { // review needs the candidate, and every status keeps it
 			sets = append(sets, Field{"candidate", head})
 		}
 		apply(t, root, "G-260101-00001", sets)
@@ -373,10 +373,10 @@ func TestUpdateDetectsChangesDuringPreparation(t *testing.T) {
 		}},
 		{"configuration", func(t *testing.T, root string) {
 			os.Rename(filepath.Join(root, "grove"), filepath.Join(root, "records"))
-			write(t, root, "grove.yaml", "schema_version: 3\nrecords: records\n")
+			write(t, root, "grove.yaml", "schema_version: 4\nrecords: records\n")
 		}},
 		{"configuration comment only", func(t *testing.T, root string) {
-			write(t, root, "grove.yaml", "# concurrent edit\nschema_version: 3\nrecords: grove\n")
+			write(t, root, "grove.yaml", "# concurrent edit\nschema_version: 4\nrecords: grove\n")
 		}},
 		{"target permissions", func(t *testing.T, root string) {
 			os.Chmod(filepath.Join(root, "grove/work/G-260101-00001-first.md"), 0o600)
@@ -583,7 +583,7 @@ func TestNewAndUpdateShareTheWriteLockAcrossWorktrees(t *testing.T) {
 func TestUpdateRequiresGit(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 	write(t, root, "grove/work/G-260101-00001-first.md", work)
 	write(t, root, "grove/questions/G-260101-00003-which.md", question)
 	_, err := Apply(root, Request{ID: "G-260101-00001", Expect: revision(t, root, "grove/work/G-260101-00001-first.md"), Set: []Field{{"status", "active"}}}, now, nil)
@@ -663,7 +663,7 @@ func TestCoordinationStateStaysUnderTheCommonDirectory(t *testing.T) {
 		t.Fatal(err)
 	}
 	root, wt := filepath.Join(parent, "new\nline"), filepath.Join(parent, "linked\twt ")
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 	write(t, root, "grove/work/G-260101-00001-first.md", work)
 	write(t, root, "grove/questions/G-260101-00003-which.md", question)
 	git(t, root, "init", "-q", "-b", "main")
@@ -699,14 +699,14 @@ func TestCoordinationStateStaysUnderTheCommonDirectory(t *testing.T) {
 	}
 }
 
-// TestUpdateDoneMeansAnIntegratedCandidate covers the review lifecycle's one
-// write-side rule: done needs a candidate that HEAD contains, so it is written
-// on the target after the merge, while a done record from before the rule
-// stays editable without one.
-func TestUpdateDoneMeansAnIntegratedCandidate(t *testing.T) {
+// TestUpdateNeverWritesDone covers schema 4's completion contract
+// (G-260930-2qa4a): Done is derived, so no update writes done or changes a
+// done record's candidate, while a schema 3 done record migration kept stays
+// editable and can be reopened.
+func TestUpdateNeverWritesDone(t *testing.T) {
 	t.Parallel()
 	root := gitProject(t)
-	base := git(t, root, "rev-parse", "HEAD")
+	head := git(t, root, "rev-parse", "HEAD")
 	refuse := func(id, want string, sets ...Field) {
 		t.Helper()
 		r := record(t, root, id)
@@ -724,57 +724,12 @@ func TestUpdateDoneMeansAnIntegratedCandidate(t *testing.T) {
 		t.Fatalf("candidate must be quoted:\n%s", src)
 	}
 	refuse("G-260101-00001", "candidate: required while status is review: set candidate=COMMIT", Field{"status", "review"})
-	refuse("G-260101-00001", "set candidate=COMMIT", Field{"status", "done"})
-	refuse("G-260101-00001", "could not be checked against this checkout's HEAD", Field{"status", "done"}, Field{"candidate", strings.Repeat("a", 40)})
-	// A candidate on an unmerged branch is refused on main until it is merged.
-	git(t, root, "checkout", "-q", "-b", "feature")
-	write(t, root, "grove/work/G-260101-00001-first.md", strings.Replace(work, "status: proposed", "status: active", 1))
-	git(t, root, "commit", "-qam", "implement")
-	candidate := git(t, root, "rev-parse", "HEAD")
-	// On the work branch the candidate is an ancestor too: the CLI cannot tell
-	// the target from the branch, so the guide, not this check, keeps done off
-	// the branch. Undo it so the merge below is a fast-forward.
-	apply(t, root, "G-260101-00001", []Field{{"status", "done"}, {"candidate", candidate}})
-	git(t, root, "checkout", "-q", "--", ".")
-	git(t, root, "checkout", "-q", "main")
-	refuse("G-260101-00001", "is not an ancestor of this checkout's HEAD; mark done where it was merged", Field{"status", "done"}, Field{"candidate", candidate})
-	git(t, root, "merge", "-q", "--ff-only", "feature")
-	apply(t, root, "G-260101-00001", []Field{{"status", "done"}, {"candidate", candidate}})
-	// Changing a done record's candidate is judged again; its other fields are
-	// not, and the candidate cannot be dropped.
-	refuse("G-260101-00001", "could not be checked against this checkout's HEAD", Field{"candidate", strings.Repeat("b", 40)})
-	{
-		r := record(t, root, "G-260101-00001")
-		_, err := Apply(root, Request{ID: "G-260101-00001", Expect: project.Revision(r.Source), Unset: []string{"candidate"}}, now, nil)
-		if err == nil || !strings.Contains(err.Error(), "stays done cannot lose its candidate") {
-			t.Fatalf("unset candidate on a done record: %v", err)
-		}
-	}
-	if r := record(t, root, "G-260101-00001"); r.Candidate != candidate {
-		t.Fatalf("candidate changed: %+v", r)
-	}
-	apply(t, root, "G-260101-00001", []Field{{"candidate", base}, {"title", "Renamed"}})
-	// Reopening may drop the candidate; closing from review while dropping it
-	// gets the advice to set one, not the removal refusal.
-	apply(t, root, "G-260101-00001", []Field{{"status", "review"}})
-	{
-		r := record(t, root, "G-260101-00001")
-		_, err := Apply(root, Request{ID: "G-260101-00001", Expect: project.Revision(r.Source), Set: []Field{{"status", "done"}}, Unset: []string{"candidate"}}, now, nil)
-		if err == nil || !strings.Contains(err.Error(), "set candidate=COMMIT") {
-			t.Fatalf("done while dropping the candidate: %v", err)
-		}
-	}
-	apply(t, root, "G-260101-00001", []Field{{"status", "active"}}, "candidate")
-	if r := record(t, root, "G-260101-00001"); r.Candidate != "" || r.Status != "active" {
-		t.Fatalf("reopening may drop the candidate: %+v", r)
-	}
-	// A historical done record has no candidate: editable, and never given one that HEAD lacks.
-	write(t, root, "grove/work/G-260101-00002-second.md", strings.Replace(second, "status: proposed", "status: done", 1))
-	apply(t, root, "G-260101-00002", []Field{{"title", "Still done"}})
-	refuse("G-260101-00002", "could not be checked", Field{"candidate", strings.Repeat("c", 40)})
-	if r := record(t, root, "G-260101-00002"); r.Candidate != "" || r.Title != "Still done" {
-		t.Fatalf("historical done: %+v", r)
-	}
+	refuse("G-260101-00001", "done is derived in schema 4", Field{"status", "done"}, Field{"candidate", head})
+	write(t, root, "grove/work/G-260101-00005-done.md", "---\nid: \"G-260101-00005\"\ntype: work\ntitle: Done\nstatus: done\ncandidate: \""+head+"\"\n---\nBody.\n")
+	refuse("G-260101-00005", "done is derived in schema 4", Field{"candidate", "abcdef0"})
+	apply(t, root, "G-260101-00005", []Field{{"title", "Renamed"}})
+	apply(t, root, "G-260101-00005", []Field{{"status", "active"}})
+	refuse("G-260101-00005", "done is derived in schema 4", Field{"status", "done"})
 }
 
 // TestUpdateOptionalExpectAndCommit covers G-260922-q3cr9: an omitted Expect applies to
@@ -818,14 +773,14 @@ func TestUpdateOptionalExpectAndCommit(t *testing.T) {
 	if status := git(t, root, "status", "--porcelain"); status != "M grove/work/G-260101-00002-second.md\nA  notes.txt" { // git() trims the leading space
 		t.Fatalf("other paths must stay as they were:\n%s", status)
 	}
-	// Acceptance 1: done from a clean tree in one step, with several fields and an unset in the message.
+	// Acceptance 1: a status from a clean tree in one step, with several fields and an unset in the message.
 	git(t, root, "commit", "-qam", "the rest")
 	clean := head()
-	res, err = Apply(root, Request{ID: "G-260101-00001", Set: []Field{{"status", "done"}}, Unset: []string{"relates_to"}, Commit: true}, now, nil)
+	res, err = Apply(root, Request{ID: "G-260101-00001", Set: []Field{{"status", "abandoned"}}, Unset: []string{"relates_to"}, Commit: true}, now, nil)
 	if err != nil || res.Commit != head() || res.Commit == clean {
-		t.Fatalf("done --commit: %+v %v", res, err)
+		t.Fatalf("abandoned --commit: %+v %v", res, err)
 	}
-	if subject := git(t, root, "log", "-1", "--format=%s"); subject != "docs(G-260101-00001): set status=done unset relates_to" {
+	if subject := git(t, root, "log", "-1", "--format=%s"); subject != "docs(G-260101-00001): set status=abandoned unset relates_to" {
 		t.Fatalf("message: %q", subject)
 	}
 	if status := git(t, root, "status", "--porcelain"); status != "" {
@@ -833,7 +788,7 @@ func TestUpdateOptionalExpectAndCommit(t *testing.T) {
 	}
 	// A no-op commits nothing.
 	done := head()
-	res, err = Apply(root, Request{ID: "G-260101-00001", Set: []Field{{"status", "done"}}, Commit: true}, now, nil)
+	res, err = Apply(root, Request{ID: "G-260101-00001", Set: []Field{{"status", "abandoned"}}, Commit: true}, now, nil)
 	if err != nil || res.Changed || res.Commit != "" || head() != done {
 		t.Fatalf("no-op with commit: %+v %v", res, err)
 	}
@@ -855,9 +810,10 @@ func TestUpdateOptionalExpectAndCommit(t *testing.T) {
 	}
 }
 
-// TestUpdateApprovedBindsToTheCandidate covers G-260921-jwk4e's approval field: it is
-// written quoted, must name the candidate, and leaves with the review status,
-// so neither a changed candidate nor a reopened record keeps an approval.
+// TestUpdateApprovedBindsToTheCandidate covers the acceptance fields: approved
+// is written quoted and must name the candidate, all three hold only while
+// accepted, and an acceptance context written must be the record's own, so
+// neither a changed candidate nor a reopened record keeps an acceptance.
 func TestUpdateApprovedBindsToTheCandidate(t *testing.T) {
 	t.Parallel()
 	root := gitProject(t)
@@ -871,53 +827,24 @@ func TestUpdateApprovedBindsToTheCandidate(t *testing.T) {
 		}
 	}
 	apply(t, root, "G-260101-00001", []Field{{"candidate", head}}) // allowed on every status; approval is not
-	refuse("approved: approval holds only while status is review or done", []Field{{"approved", head}})
+	refuse("approved: approval holds only while status is accepted or done", []Field{{"approved", head}})
 	apply(t, root, "G-260101-00001", []Field{{"status", "review"}})
-	refuse("approved: approval is of one commit and must name the candidate", []Field{{"approved", "abcdef0"}})
-	apply(t, root, "G-260101-00001", []Field{{"approved", head}})
-	if r := record(t, root, "G-260101-00001"); r.Approved != head || !strings.Contains(string(r.Source), "approved: \""+head+"\"\n") {
-		t.Fatalf("approved must be written quoted: %+v", r)
+	refuse("approved: approval holds only while status is accepted or done, not review", []Field{{"approved", head}})
+	context := project.AcceptanceContext(record(t, root, "G-260101-00001"))
+	accept := []Field{{"status", "accepted"}, {"approved", head}, {"approved_by", "owner"}, {"approved_context", context}}
+	refuse("approved_context: required while status is accepted", accept[:3])
+	refuse("approved: approval is of one commit and must name the candidate", []Field{accept[0], {"approved", "abcdef0"}, accept[2], accept[3]})
+	refuse("approved_context must be this record's acceptance context, "+context, []Field{accept[0], accept[1], accept[2], {"approved_context", "sha256:" + strings.Repeat("0", 64)}})
+	apply(t, root, "G-260101-00001", accept)
+	if r := record(t, root, "G-260101-00001"); r.Approved != head || !strings.Contains(string(r.Source), "approved: \""+head+"\"\napproved_by: owner\napproved_context: \""+context+"\"\n") {
+		t.Fatalf("the acceptance must be written quoted: %s", r.Source)
 	}
 	refuse("approved: approval is of one commit and must name the candidate", []Field{{"candidate", "abcdef0"}})
-	refuse("approved: approval holds only while status is review or done", []Field{{"status", "active"}})
-	apply(t, root, "G-260101-00001", []Field{{"status", "active"}}, "approved")
+	refuse("approved: approval holds only while status is accepted or done", []Field{{"status", "active"}})
+	refuse("approved_by: belongs to an acceptance", []Field{{"status", "active"}}, "approved")
+	apply(t, root, "G-260101-00001", []Field{{"status", "active"}}, "approved", "approved_by", "approved_context")
 	if r := record(t, root, "G-260101-00001"); r.Approved != "" || r.Candidate != head || r.Status != "active" {
-		t.Fatalf("reopening with the approval unset: %+v", r)
-	}
-	apply(t, root, "G-260101-00001", []Field{{"status", "review"}, {"candidate", "abcdef0"}, {"approved", "abcdef0"}})
-	if r := record(t, root, "G-260101-00001"); r.Approved != "abcdef0" {
-		t.Fatalf("a new candidate approved in the same update: %+v", r)
-	}
-}
-
-// TestUpdateDoneStaysOnTheTarget covers the enforcement a configured target
-// allows: done is refused in a checkout on any other branch, or none.
-func TestUpdateDoneStaysOnTheTarget(t *testing.T) {
-	t.Parallel()
-	root := gitProject(t)
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\ntarget: main\n")
-	git(t, root, "commit", "-qam", "target")
-	git(t, root, "checkout", "-q", "-b", "feature")
-	write(t, root, "grove/work/G-260101-00001-first.md", strings.Replace(work, "status: proposed", "status: active", 1))
-	git(t, root, "commit", "-qam", "implement")
-	candidate := git(t, root, "rev-parse", "HEAD")
-	refuse := func(want string) {
-		t.Helper()
-		r := record(t, root, "G-260101-00001")
-		_, err := Apply(root, Request{ID: "G-260101-00001", Expect: project.Revision(r.Source), Set: []Field{{"status", "done"}, {"candidate", candidate}}}, now, nil)
-		if err == nil || !strings.Contains(err.Error(), want) {
-			t.Fatalf("got %v, want %q", err, want)
-		}
-	}
-	refuse("done is written on the target main after the merge; this checkout is on feature")
-	git(t, root, "checkout", "-q", "--detach")
-	refuse("this checkout is on no branch")
-	git(t, root, "checkout", "-q", "main")
-	refuse("is not an ancestor of this checkout's HEAD")
-	git(t, root, "merge", "-q", "--ff-only", "feature")
-	apply(t, root, "G-260101-00001", []Field{{"status", "done"}, {"candidate", candidate}})
-	if r := record(t, root, "G-260101-00001"); r.Status != "done" {
-		t.Fatalf("done on the target: %+v", r)
+		t.Fatalf("reopening with the acceptance unset: %+v", r)
 	}
 }
 
@@ -933,13 +860,13 @@ func TestUpdateRefusalsNameTheirRule(t *testing.T) {
 		set  Field
 		want string
 	}{
-		{"G-260101-00001", Field{"status", "bogus"}, "status: expected proposed, active, review, done or abandoned for work"},
+		{"G-260101-00001", Field{"status", "bogus"}, "status: expected proposed, active, review, accepted, abandoned or done for work"},
 		{"G-260101-00001", Field{"size", "huge"}, "size: expected small, medium or large"},
 		{"G-260101-00001", Field{"kind", "chore"}, "kind: expected feature, fix, refactor, investigation, tooling or release"},
-		{"G-260101-00001", Field{"zzz", "1"}, "zzz is not a field that update accepts on work records; it accepts type, title, status, relates_to, kind, size, priority, members, depends_on, candidate or approved"},
+		{"G-260101-00001", Field{"zzz", "1"}, "zzz is not a field that update accepts on work records; it accepts type, title, status, relates_to, kind, size, priority, members, depends_on, candidate, approved, approved_by or approved_context"},
 		{"G-260101-00003", Field{"work", "[]"}, "work is not a field that update accepts on question records; it accepts type, title, status, relates_to or blocks"},
 		{"G-260101-00004", Field{"status", "open"}, "status: expected proposed, accepted, rejected or superseded for decision"},
-		{"G-260101-00005", Field{"status", "active"}, "approved: approval holds only while status is review or done, not active: unset approved, or set status review or done"},
+		{"G-260101-00005", Field{"status", "active"}, "approved: approval holds only while status is accepted or done, not active: unset approved, or set status accepted"},
 	} {
 		if _, err := Apply(root, Request{ID: tc.id, Set: []Field{tc.set}}, now, nil); err == nil || !strings.Contains(err.Error(), tc.want) {
 			t.Errorf("%s %s=%s: wanted %q, got %v", tc.id, tc.set.Name, tc.set.Value, tc.want, err)

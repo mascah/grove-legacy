@@ -34,7 +34,7 @@ func projectFixture(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	write(t, real, "grove.yaml", "schema_version: 3\nrecords: docs/records\n")
+	write(t, real, "grove.yaml", "schema_version: 4\nrecords: docs/records\n")
 	write(t, real, "docs/records/work/renamed.md", work)
 	write(t, real, "docs/records/questions/question.md", question)
 	return real

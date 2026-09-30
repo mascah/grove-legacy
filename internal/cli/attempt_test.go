@@ -50,7 +50,7 @@ func TestAttemptCommandsUsage(t *testing.T) {
 		}
 	}
 	// With run: defaults the flags are optional: the refusal comes from Start.
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\nrun: {budget: 50, permission_mode: auto}\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\nrun: {budget: 50, permission_mode: auto}\n")
 	var out, errOut bytes.Buffer
 	if code := Run([]string{"--project", root, "run", "G-260101-00009"}, t.TempDir(), &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "G-260101-00009 is not in this checkout") {
 		t.Fatalf("exit %d\n%s", code, errOut.String())

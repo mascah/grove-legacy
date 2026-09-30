@@ -11,13 +11,13 @@ key comes with what is accepted.
 ### Configuration and discovery
 
 One `grove.yaml` at the project root holds one YAML mapping. `grove init`
-writes `schema_version: 3`, `records: grove` and `brief: grove/brief.md`
+writes `schema_version: 4`, `records: grove` and `brief: grove/brief.md`
 where none exists, with the record root and a placeholder brief, and keeps
 an existing configuration that validates.
 
 | Key | Value |
 | --- | --- |
-| `schema_version` | Required, exactly `3`; any other or a missing version is refused, never migrated |
+| `schema_version` | Required, exactly `4`; `3` is refused by every command but `grove migrate`, which converts it; any other or a missing version is refused |
 | `records` | Required: the record root, a dedicated subdirectory relative to `grove.yaml`, not the project root, never absolute, through `..` or a symlink; it must exist |
 | `brief` | Optional: the one project brief, a clean project-relative `.md` path without `..`; not a record, and exempt from discovery (compared without case); a live command needs a regular file there |
 | `target` | Optional: the local branch work merges into, such as `main`; surrounding spaces or a `refs/` prefix are refused |
@@ -44,15 +44,14 @@ without a permission mode there, it waits.
 positive count of added plus removed lines, the record's own file excluded;
 and `never`, project-relative `path.Match` patterns or `DIR/**`.
 `integrate: true` needs `approve`. A malformed policy is a diagnostic named
-`policy.KEY` that stops every command. Whatever it says, sweep approves only
-a candidate in review, unapproved, that no other record shares; blocked by
-no open question; with nothing after it on its branch but its record; named
-by a `current` review that examined it, or an earlier commit from which only
-records changed, every such review's last line starting `Open findings:`
-being `Open findings: none`; changing nothing outside the project, no
-`never` path and no binary file, within `max_lines`; and merging cleanly
-into the target, the merged result passing every `verify` command in a
-temporary worktree.
+`policy.KEY` that stops every command. Whatever it says, sweep accepts only
+a candidate in review that no other record shares, blocked by no open
+question, with nothing after it on its branch but its record, whose
+`current` reviews of it (or of an earlier commit only records changed
+since) each end `Open findings: none`, changing nothing outside the
+project, no `never` path and no binary file, within `max_lines`, and whose
+merge into the target passes every `verify` command in a temporary
+worktree.
 
 Without `--project DIR`, the nearest `grove.yaml` upward from the current
 directory is used, the search stopping at the Git checkout root, or the
@@ -105,7 +104,7 @@ REVISION` refuses other content.
 
 | Type | Statuses (first is what `new` writes) | Own fields |
 | --- | --- | --- |
-| `work` | `proposed`, `active`, `review`, `done`, `abandoned` | `kind`, `size`, `priority`, `members`, `depends_on`, `candidate`, `approved` |
+| `work` | `proposed`, `active`, `review`, `accepted`, `abandoned`, `done` (schema 3's claim, never newly written) | `kind`, `size`, `priority`, `members`, `depends_on`, `candidate`, `approved`, `approved_by`, `approved_context` |
 | `question` | `open`, `resolved` | `blocks` |
 | `decision` | `proposed`, `accepted`, `rejected`, `superseded` | none |
 | `term` | `proposed`, `settled` | none |
@@ -132,7 +131,9 @@ fields.
 | `members` | list of work IDs | Child work in this outcome; order is presentation |
 | `depends_on` | list of work IDs | Prerequisites delivered before this work: it needs their result, or building it first or alongside would redo or conflict with them |
 | `candidate` | quoted Git commit, 7 to 40 lowercase hex digits | The last implementation commit, offered for judgment |
-| `approved` | quoted Git commit | The owner's approval of `candidate` |
+| `approved` | quoted Git commit | The acceptance of `candidate`, always equal to it |
+| `approved_by` | `owner`, or quoted `policy sha256:HEX` | Who accepted: the owner, or a sweep under the `grove.yaml` revision named |
+| `approved_context` | quoted `sha256:HEX` | The acceptance context the acceptance judged (below) |
 | `blocks` | list of work IDs | Work whose outcome needs this question's answer |
 | `work` | list of work IDs | The work a plan or review belongs to |
 | `examined` | quoted Git commit | The commit a review looked at |
@@ -147,30 +148,37 @@ prerequisite is not delivered.
 
 ## Work lifecycle
 
-Proposed → Active → Review → Done, with Abandoned by explicit human
-decision. `check` and `update` enforce:
+Proposed → Active → Review → Accepted, with Abandoned by explicit human
+decision. Done is derived, never stored: an applicable acceptance plus its
+verified delivery to the target, the standing every command and the board
+read. `check` and `update` enforce:
 
 - `review` requires `candidate`. Records on one branch sharing a
-  `candidate` are one group, handed off, reopened and integrated together.
-- `approved` must equal `candidate`, and holds only while status is
-  `review` or `done`: reopening unsets it in the same update.
-- `update` writes `done`, or changes a done record's `candidate`, only when
-  the candidate is an ancestor of HEAD and, where `target` is set, on that
-  branch; a record that stays done cannot lose its candidate. A done record
-  without `candidate` predates this rule: it validates and its other fields
-  stay editable, and none is newly written.
+  `candidate` are one group, handed off, reopened and delivered together.
+- `accepted` requires `candidate`, `approved` equal to it, `approved_by`
+  and `approved_context`, which hold only while accepted (`approved` also
+  on `done`); an `approved_context` written must be the record's own.
+- No update writes `done` or changes a done record's `candidate`: `done`
+  is schema 3's claim that `grove migrate` kept, shown as such.
+
+The acceptance context is the SHA-256 of the title, a newline and the body,
+less the `## Next` section and the paragraphs Grove appends (verdicts,
+feedback, reopenings, delivery and migration notes). An acceptance applies
+while it equals `approved_context`; any other edit makes it stale, and the
+work awaits judgment again.
+
+At the target's tip, an applicable acceptance whose candidate or verified
+squash delivery the tip contains is done; one absent from a complete
+history awaits delivery; a shallow history or a missing object retained
+under `refs/grove/` is unknown.
 
 `approve`, `feedback`, `integrate`, `resolve` and `sweep` act on this
-lifecycle as `grove --help` describes. A verdict `sweep` gave begins
-`delegated under policy grove.yaml REVISION`, names the review and
-verification it relied on, and is shown apart from the owner's own.
+lifecycle as `grove --help` describes.
 
-Not enforced, and left to the guides: the order of transitions, so a done
-record can be reopened; that Abandoned needs a human decision; that a review
-record exists before Review where the work guide's handoff calls for one;
-where done is written without a `target`; that a reopened record's
-candidate moves to its new commits; and that a `superseded` decision names
-its replacement in `relates_to`.
+Not enforced, and left to the guides: the order of transitions; that
+Abandoned needs a human decision; that a review record exists before
+Review; that a reopened record's candidate moves to its new commits; and
+that a `superseded` decision names its replacement in `relates_to`.
 
 ## Reading and writing records
 

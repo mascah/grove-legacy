@@ -73,7 +73,7 @@ func TestContextCLI(t *testing.T) {
 	// related question and the linked plan are listed for a later, explicit read.
 	want := map[string]string{
 		"AGENTS.md": "Follow the guide.\n", "docs/records/work/planned.md": plannedWork,
-		"docs/records/work/renamed.md": work, "grove.yaml": "schema_version: 3\nrecords: docs/records\n",
+		"docs/records/work/renamed.md": work, "grove.yaml": "schema_version: 4\nrecords: docs/records\n",
 	}
 	for _, s := range got.Sources {
 		if want[s.Path] != s.Content || s.Revision != project.Revision([]byte(s.Content)) {

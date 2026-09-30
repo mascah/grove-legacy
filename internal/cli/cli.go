@@ -287,7 +287,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		case "update":
 			res, err = update.Apply(p.Root, a.request, time.Now(), nil)
 		case "approve":
-			res, err = update.Approve(p.Root, a.id, a.title, time.Now())
+			res, err = update.Approve(p.Root, a.id, a.title, update.Owner, time.Now())
 		default:
 			res, err = update.Feedback(p.Root, a.id, a.title, time.Now())
 		}

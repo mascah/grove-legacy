@@ -117,7 +117,7 @@ func TestIntegrateCommand(t *testing.T) {
 		code := Run(args, root, &out, &errOut)
 		return code, out.String(), errOut.String()
 	}
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\ntarget: main\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\ntarget: main\n")
 	gitIn(t, root, "commit", "-qam", "chore: target")
 	code, out, stderr := run("integrate", "G-260101-00001")
 	if code != 1 || out != "" || !strings.Contains(stderr, "grove: no branch holds G-260101-00001 in review; nothing to integrate") {

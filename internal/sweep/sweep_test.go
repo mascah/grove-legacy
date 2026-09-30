@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 const (
 	work   = "---\nid: \"G-260101-00001\"\ntype: work\ntitle: First\nstatus: %s\n---\n\n## Outcome\n\nBody.\n"
 	review = "---\nid: \"G-260101-00005\"\ntype: review\ntitle: Review of G-260101-00001\nstatus: current\nwork: [\"G-260101-00001\"]\nexamined: \"%s\"\n---\n\nFindings: none.\n\n%s\n"
-	policy = "schema_version: 3\nrecords: grove\ntarget: main\npolicy:\n  budget: 5\n  resolve:\n    budget: 1\n  approve:\n    verify: [%s]\n    max_lines: 30\n    never: [grove.yaml, secret/**]\n  integrate: true\nrun:\n  permission_mode: acceptEdits\n"
+	policy = "schema_version: 4\nrecords: grove\ntarget: main\npolicy:\n  budget: 5\n  resolve:\n    budget: 1\n  approve:\n    verify: [%s]\n    max_lines: 30\n    never: [grove.yaml, secret/**]\n  integrate: true\nrun:\n  permission_mode: acceptEdits\n"
 )
 
 var now = time.Date(2026, 9, 25, 18, 30, 0, 0, time.UTC)
@@ -227,7 +227,7 @@ func TestSweepWaitsOutsideThePolicy(t *testing.T) {
 	t.Run("approved by the owner", func(t *testing.T) {
 		t.Parallel()
 		root, wt := fixture(t, strings.Replace(policy, "%s", "'true'", 1), map[string]string{"code.txt": "x\n"}, ClosingLine)
-		if _, err := update.Approve(wt, "G-260101-00001", "Mine.", now); err != nil {
+		if _, err := update.Approve(wt, "G-260101-00001", "Mine.", update.Owner, now); err != nil {
 			t.Fatal(err)
 		}
 		if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "waits: approved by the owner; integrating it is the owner's: grove integrate G-260101-00001") {
@@ -236,7 +236,7 @@ func TestSweepWaitsOutsideThePolicy(t *testing.T) {
 	})
 	t.Run("no approve section", func(t *testing.T) {
 		t.Parallel()
-		root, _ := fixture(t, "schema_version: 3\nrecords: grove\ntarget: main\npolicy:\n  budget: 1\n  resolve: {}\n", map[string]string{"code.txt": "x\n"}, ClosingLine)
+		root, _ := fixture(t, "schema_version: 4\nrecords: grove\ntarget: main\npolicy:\n  budget: 1\n  resolve: {}\n", map[string]string{"code.txt": "x\n"}, ClosingLine)
 		if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "the policy does not approve") {
 			t.Fatalf("facts %q", facts)
 		}
@@ -245,7 +245,7 @@ func TestSweepWaitsOutsideThePolicy(t *testing.T) {
 
 func TestSweepRefusesWithoutAPolicy(t *testing.T) {
 	t.Parallel()
-	root, wt := fixture(t, "schema_version: 3\nrecords: grove\ntarget: main\n", map[string]string{"code.txt": "x\n"}, ClosingLine)
+	root, wt := fixture(t, "schema_version: 4\nrecords: grove\ntarget: main\n", map[string]string{"code.txt": "x\n"}, ClosingLine)
 	if _, err := Plan(root); err == nil || !strings.Contains(err.Error(), "grove.yaml has no policy: nothing is automatic") {
 		t.Fatalf("got %v", err)
 	}
@@ -507,7 +507,7 @@ func TestAnAttemptsOwnerLeavesWhatThePolicyDoesNotName(t *testing.T) {
 	})
 	t.Run("no policy", func(t *testing.T) {
 		t.Parallel()
-		root, wt, v := handedOff(t, "schema_version: 3\nrecords: grove\ntarget: main\n", map[string]string{"code.txt": "x\n"}, nil)
+		root, wt, v := handedOff(t, "schema_version: 4\nrecords: grove\ntarget: main\n", map[string]string{"code.txt": "x\n"}, nil)
 		if v.Sweep != nil || record(t, wt).Status != "review" || record(t, root).Status != "active" {
 			t.Fatalf("sweep.log %q", v.Sweep)
 		}

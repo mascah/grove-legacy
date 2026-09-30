@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-const config = "schema_version: 3\nrecords: grove\ntarget: main\n"
+const config = "schema_version: 4\nrecords: grove\ntarget: main\n"
 
 const work = "---\nid: \"G-260101-00001\"\ntype: work\ntitle: First\nstatus: %s\ncreated: \"2026-09-22T10:00:00Z\"\nupdated: \"2026-09-22T10:00:00Z\"\n---\n\n## Outcome\n\nA thing.\n\n## Acceptance\n\n1. It is.\n"
 

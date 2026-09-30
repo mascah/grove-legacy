@@ -35,7 +35,7 @@ def fixture(base):
     root, wt = os.path.join(base, "main"), os.path.join(base, "feature-wt")
     os.makedirs(os.path.join(root, "grove", "work"))
     with open(os.path.join(root, "grove.yaml"), "w") as f:
-        f.write("schema_version: 3\nrecords: grove\n")
+        f.write("schema_version: 4\nrecords: grove\n")
     with open(os.path.join(root, "grove", "work", "G-260101-00001-first.md"), "w") as f:
         f.write(WORK.format(title="First on main", status="proposed"))
     git(root, "init", "-q", "-b", "main")
@@ -425,7 +425,7 @@ def review_and_integrate(root, wt, base):
     for key, value in (("user.name", "t"), ("user.email", "t@t"), ("commit.gpgsign", "false"), ("maintenance.auto", "false")):
         git(root, "config", key, value)
     with open(os.path.join(root, "grove.yaml"), "w") as f:
-        f.write("schema_version: 3\nrecords: grove\ntarget: main\n")
+        f.write("schema_version: 4\nrecords: grove\ntarget: main\n")
     git(root, "commit", "-qam", "target")
     with open(os.path.join(wt, "code.txt"), "w") as f:
         f.write("hello\n")
@@ -551,7 +551,7 @@ def attempt_lifecycle(root, wt, base):
     git(root, "worktree", "remove", "--force", wt)
     git(root, "branch", "-qD", "feature")
     with open(os.path.join(root, "grove.yaml"), "w") as f:
-        f.write("schema_version: 3\nrecords: grove\ntarget: main\n")
+        f.write("schema_version: 4\nrecords: grove\ntarget: main\n")
     git(root, "commit", "-qam", "target")
     # The skill as init leaves it: written, not committed (G-260925-3pj9a).
     skill = os.path.join(root, ".claude", "skills", "grove-work", "SKILL.md")

@@ -165,7 +165,7 @@ func TestWorkspaceCommitted(t *testing.T) {
 	}
 	// A valid but different live grove.yaml refuses the committed route even
 	// though the record bytes and path still match.
-	write(t, wt, "sub/grove.yaml", "schema_version: 3\nrecords: grove # local note\n")
+	write(t, wt, "sub/grove.yaml", "schema_version: 4\nrecords: grove # local note\n")
 	refuse(t, project, committed, "the live grove.yaml in worktree feature differs from the committed configuration selected; run versions and select the live observation")
 	git(t, wt, "checkout", "-q", "--", "sub/grove.yaml")
 	// A checkout with no project at the prefix says so instead of reporting an
@@ -212,7 +212,7 @@ func TestWorkspaceStale(t *testing.T) {
 		t.Fatalf("restoring the path restores the selection: %+v", w)
 	}
 
-	write(t, wt, "sub/grove.yaml", "schema_version: 3\nrecords: grove # moved\n")
+	write(t, wt, "sub/grove.yaml", "schema_version: 4\nrecords: grove # moved\n")
 	refuse(t, project, live, "configuration, record path, or project location changed")
 	git(t, wt, "checkout", "-q", "--", "sub/grove.yaml")
 

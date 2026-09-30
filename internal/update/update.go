@@ -4,7 +4,6 @@ package update
 
 import (
 	"bytes"
-	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -135,7 +134,7 @@ func Apply(root string, req Request, now time.Time, fault Fault) (Result, error)
 	if err := unchanged(r, next, changes); err != nil {
 		return Result{}, err
 	}
-	if err := integrated(root, p.Target, r, next); err != nil {
+	if err := derived(r, next); err != nil {
 		return Result{}, err
 	}
 	records := slices.Clone(p.Records)
@@ -237,7 +236,7 @@ func plan(r *project.Record, req Request) ([]change, error) {
 		}
 	}
 	lists := map[string][]string{"relates_to": r.RelatesTo, "members": r.Members, "depends_on": r.DependsOn, "blocks": r.Blocks, "work": r.Work}
-	strs := map[string]string{"title": r.Title, "status": r.Status, "kind": r.Kind, "size": r.Size, "examined": r.Examined, "candidate": r.Candidate, "approved": r.Approved, "type": r.Type}
+	strs := map[string]string{"title": r.Title, "status": r.Status, "kind": r.Kind, "size": r.Size, "examined": r.Examined, "candidate": r.Candidate, "approved": r.Approved, "approved_by": r.ApprovedBy, "approved_context": r.ApprovedContext, "type": r.Type}
 	check := func(name string) error {
 		if slices.Contains(fixed, name) {
 			return fmt.Errorf("%s cannot be changed by update", name)
@@ -321,40 +320,23 @@ func plan(r *project.Record, req Request) ([]change, error) {
 	return changes, nil
 }
 
-// integrated enforces what the CLI can of Done's meaning since the review
-// lifecycle, an accepted candidate that reached the target: writing done, or
-// changing the candidate of a done record, needs a candidate that this
-// checkout's HEAD already contains, so a checkout without the code cannot
-// close the work. Where grove.yaml names the target, done is also refused
-// off that branch, since on the work branch the candidate is an ancestor
-// too (G-260921-jwk4e); without one, which branch is the target stays the guide's
-// rule. A done record without a candidate predates this meaning and its
-// other fields stay editable.
-func integrated(root, target string, before, after *project.Record) error {
-	if after.Type != "work" || after.Status != "done" || (before.Status == "done" && before.Candidate == after.Candidate) {
+// derived enforces schema 4's completion contract (G-260930-2qa4a): Done is
+// derived from an acceptance and its verified delivery, never written, so
+// no update newly writes done or changes a done record's candidate; done
+// survives only as schema 3's claim, which migration kept. An acceptance
+// context an update writes must be the record's own, so a hand-written
+// acceptance cannot claim other requirements than the ones it sits beside.
+func derived(before, after *project.Record) error {
+	if after.Type != "work" {
 		return nil
 	}
-	if target != "" {
-		branch, err := Branch(root)
-		if err != nil {
-			return fmt.Errorf("done is written on the target %s: this checkout's branch could not be read: %v", target, err)
-		}
-		if branch != target {
-			return fmt.Errorf("done is written on the target %s after the merge; this checkout is on %s", target, cmp.Or(branch, "no branch"))
-		}
+	if after.Status == "done" && (before.Status != "done" || before.Candidate != after.Candidate) {
+		return errors.New("done is derived in schema 4, from an acceptance and its verified delivery, and no update writes it: grove approve records the acceptance, and grove integrate delivers it")
 	}
-	if after.Candidate == "" {
-		if before.Status == "done" && before.Candidate != "" {
-			return fmt.Errorf("a record that stays done cannot lose its candidate: it is the commit that was accepted and merged")
+	if after.ApprovedContext != "" && after.ApprovedContext != before.ApprovedContext {
+		if want := project.AcceptanceContext(after); after.ApprovedContext != want {
+			return fmt.Errorf("approved_context must be this record's acceptance context, %s", want)
 		}
-		return fmt.Errorf("done means accepted and integrated: set candidate=COMMIT, the commit that was accepted and merged, in the same update")
-	}
-	if _, err := repo.Git(root, "merge-base", "--is-ancestor", after.Candidate, "HEAD"); err != nil {
-		var exit *exec.ExitError
-		if errors.As(err, &exit) && exit.ExitCode() == 1 { // Git's answer, not a failure: known commit, not an ancestor
-			return fmt.Errorf("done means accepted and integrated: candidate %s is not an ancestor of this checkout's HEAD; mark done where it was merged", after.Candidate)
-		}
-		return fmt.Errorf("done means accepted and integrated: candidate %s could not be checked against this checkout's HEAD: %v", after.Candidate, err)
 	}
 	return nil
 }
@@ -390,7 +372,7 @@ func fields(r *project.Record) map[string]string {
 		"id": r.ID, "type": r.Type, "title": r.Title, "status": r.Status, "kind": r.Kind, "size": r.Size,
 		"priority": priority, "created": created,
 		"relates_to": list(r.RelatesTo), "members": list(r.Members), "depends_on": list(r.DependsOn), "blocks": list(r.Blocks),
-		"work": list(r.Work), "examined": r.Examined, "candidate": r.Candidate, "approved": r.Approved, "formerly": r.Formerly,
+		"work": list(r.Work), "examined": r.Examined, "candidate": r.Candidate, "approved": r.Approved, "approved_by": r.ApprovedBy, "approved_context": r.ApprovedContext, "formerly": r.Formerly,
 	}
 }
 

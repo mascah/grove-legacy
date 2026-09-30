@@ -128,7 +128,7 @@ func TestResolveRefusals(t *testing.T) {
 	unchanged(t)
 
 	// Without a target nothing conflicts with anything.
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "resolve needs target") {
 		t.Fatalf("no target: %v", err)
 	}

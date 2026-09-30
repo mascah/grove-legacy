@@ -78,7 +78,7 @@ func TestVersionsLeavesGitUnchanged(t *testing.T) {
 func TestVersionsTargetCLI(t *testing.T) {
 	t.Parallel()
 	root, wt := featureFixture(t)
-	write(t, wt, "grove.yaml", "schema_version: 3\nrecords: docs/records\ntarget: main\n")
+	write(t, wt, "grove.yaml", "schema_version: 4\nrecords: docs/records\ntarget: main\n")
 	gitIn(t, wt, "commit", "-q", "-am", "name the target")
 	var out, errOut bytes.Buffer
 	if code := Run([]string{"versions", "G-260101-00001"}, root, &out, &errOut); code != 0 {
@@ -239,13 +239,13 @@ func TestVersionsIncompleteAndNotFound(t *testing.T) {
 		t.Fatalf("code=%d stdout=%q stderr=%s", code, out.String(), errOut.String())
 	}
 	// An invalid current checkout is one invalid live source, not a hard stop.
-	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\n")
+	write(t, root, "grove.yaml", "schema_version: 5\nrecords: docs/records\n")
 	out.Reset()
 	errOut.Reset()
-	if code := Run([]string{"versions", "G-260101-00001"}, root, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "unsupported version 4") || !strings.Contains(out.String(), "live feature-wt refs/heads/feature") {
+	if code := Run([]string{"versions", "G-260101-00001"}, root, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "unsupported version 5") || !strings.Contains(out.String(), "live feature-wt refs/heads/feature") {
 		t.Fatalf("code=%d stdout=%s stderr=%s", code, out.String(), errOut.String())
 	}
-	if strings.Count(errOut.String(), "unsupported version 4") != 1 {
+	if strings.Count(errOut.String(), "unsupported version 5") != 1 {
 		t.Fatalf("the diagnostic is attributed once, to the live source:\n%s", errOut.String())
 	}
 	plain := projectFixture(t)

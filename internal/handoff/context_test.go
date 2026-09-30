@@ -47,7 +47,7 @@ func fixture(t *testing.T) string {
 		t.Fatal(err)
 	}
 	root = filepath.Join(root, "project") // leaves the parent free for files outside the project
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 	return root
 }
 
@@ -399,7 +399,7 @@ func TestChangeBetweenReadsIsRefused(t *testing.T) {
 	named := map[string]string{"config": "(grove.yaml)", "plan": "(docs/plan.md)", "selected": "(grove/work/G-260101-00002.md)", "prerequisite": "(G-260101-00001)", "new blocker": "(G-260101-00009)"}
 	changes := map[string]func(t *testing.T, root string){
 		"config": func(t *testing.T, root string) {
-			write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n# note\n")
+			write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n# note\n")
 		},
 		"plan": func(t *testing.T, root string) { write(t, root, "docs/plan.md", "changed\n") },
 		"selected": func(t *testing.T, root string) {
@@ -484,7 +484,7 @@ func TestGitIdentity(t *testing.T) {
 		t.Fatal(err)
 	}
 	root := filepath.Join(repo, "nested\nproject") // a nested project whose path holds a newline
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 	work(t, root, "G-260101-00001", "proposed", "", "")
 	git(repo, "init", "-q", "-b", "main")
 

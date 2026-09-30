@@ -83,7 +83,7 @@ func Live() Backend {
 		Changes: versions.ChangesContext, Diff: versions.DiffContext, Ancestry: deps.Ancestry, Predict: versions.PredictContext,
 		CopyOf: deps.Copies, Copies: versions.CopiesContext,
 		Approve: func(_ context.Context, root, id, verdict string) ([]string, error) {
-			res, err := update.Approve(root, id, verdict, time.Now())
+			res, err := update.Approve(root, id, verdict, update.Owner, time.Now())
 			if err != nil {
 				return nil, err
 			}

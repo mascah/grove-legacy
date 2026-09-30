@@ -16,7 +16,7 @@ import (
 	"github.com/mascah/grove/internal/repo"
 )
 
-const config = "schema_version: 3\nrecords: grove\n"
+const config = "schema_version: 4\nrecords: grove\n"
 
 func record(id, kind, status string) string {
 	return "---\nid: \"" + id + "\"\ntype: " + kind + "\ntitle: T\nstatus: " + status + "\n---\nBody.\n"
@@ -305,7 +305,7 @@ func TestNewRefusesWhenRecordRootChangedAfterLoad(t *testing.T) {
 	root := gitProject(t)
 	p := load(t, root)
 	write(t, root, "other/G-260101-00001-first.md", record("G-260101-00001", "work", "done"))
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: other\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: other\n")
 	_, err := New(p, "work", "Moved", "moved", now)
 	if err == nil || !strings.Contains(err.Error(), "nothing created: the record root changed") {
 		t.Fatalf("expected a configuration-change refusal, got %v", err)

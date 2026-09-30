@@ -73,7 +73,7 @@ func TestGroupIntegratesOnlyWhenEveryMemberIsApproved(t *testing.T) {
 	root, wt, candidate := groupFixture(t)
 	// Approval stays per member, and the other member's record commits are
 	// not a new candidate.
-	if _, err := update.Approve(wt, "G-260101-00001", "First is right.", now); err != nil {
+	if _, err := update.Approve(wt, "G-260101-00001", "First is right.", update.Owner, now); err != nil {
 		t.Fatal(err)
 	}
 	main := git(t, root, "rev-parse", "HEAD")
@@ -85,7 +85,7 @@ func TestGroupIntegratesOnlyWhenEveryMemberIsApproved(t *testing.T) {
 	if git(t, root, "rev-parse", "HEAD") != main {
 		t.Fatal("a refused group integration moved main")
 	}
-	if _, err := update.Approve(wt, "G-260101-00003", "Second too.", now); err != nil {
+	if _, err := update.Approve(wt, "G-260101-00003", "Second too.", update.Owner, now); err != nil {
 		t.Fatal(err)
 	}
 	// Integrating either member integrates the group: one merge, done for
@@ -112,7 +112,7 @@ func TestGroupIntegratesOnlyWhenEveryMemberIsApproved(t *testing.T) {
 func TestGroupFeedbackReopensEveryMember(t *testing.T) {
 	t.Parallel()
 	root, wt, candidate := groupFixture(t)
-	if _, err := update.Approve(wt, "G-260101-00001", "First is right.", now); err != nil {
+	if _, err := update.Approve(wt, "G-260101-00001", "First is right.", update.Owner, now); err != nil {
 		t.Fatal(err)
 	}
 	before := git(t, wt, "rev-parse", "HEAD")
@@ -163,7 +163,7 @@ func TestGroupRefusesToCarryAReopenedSibling(t *testing.T) {
 	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: next}}, Commit: true}, now, nil); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := update.Approve(wt, "G-260101-00001", "Now right.", now); err != nil {
+	if _, err := update.Approve(wt, "G-260101-00001", "Now right.", update.Owner, now); err != nil {
 		t.Fatal(err)
 	}
 	main := git(t, root, "rev-parse", "HEAD")

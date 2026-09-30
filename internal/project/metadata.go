@@ -25,8 +25,10 @@ type Record struct {
 	Blocks, RelatesTo       []string
 	Work                    []string // plan and review: the work they belong to
 	Examined                string   // review: the Git commit it examined
-	Candidate               string   // work: the commit offered for judgment; required in review
-	Approved                string   // work: the candidate the owner approved; always equal to Candidate
+	Candidate               string   // work: the commit offered for judgment; required in review and accepted
+	Approved                string   // work: the candidate accepted; always equal to Candidate
+	ApprovedBy              string   // work: "owner" or "policy sha256:…", the acceptance's authority
+	ApprovedContext         string   // work: AcceptanceContext when accepted, which a later edit can make stale
 	Formerly                string   // the ID or document path convert replaced
 	Path                    string
 	Source                  []byte
@@ -178,8 +180,10 @@ type TypeInfo struct {
 // Types is the whole record vocabulary, in ID display order. These tables,
 // Envelope, Kinds and Sizes are what validation checks, what its messages
 // list, and what grove guide model must print (model_test.go).
+// Work's done is schema 3's completion claim, which migration keeps and
+// nothing newly writes: schema 4 derives Done from acceptance and delivery.
 var Types = []TypeInfo{
-	{"work", []string{"proposed", "active", "review", "done", "abandoned"}, []string{"kind", "size", "priority", "members", "depends_on", "candidate", "approved"}},
+	{"work", []string{"proposed", "active", "review", "accepted", "abandoned", "done"}, []string{"kind", "size", "priority", "members", "depends_on", "candidate", "approved", "approved_by", "approved_context"}},
 	{"question", []string{"open", "resolved"}, []string{"blocks"}},
 	{"decision", []string{"proposed", "accepted", "rejected", "superseded"}, nil},
 	{"term", []string{"proposed", "settled"}, nil},
@@ -187,6 +191,9 @@ var Types = []TypeInfo{
 	{"review", []string{"current", "superseded"}, []string{"work", "examined"}},
 	{"page", nil, nil},
 }
+
+// schema3Work is work as schema 3 had it, which only migration reads.
+var schema3Work = TypeInfo{"work", []string{"proposed", "active", "review", "done", "abandoned"}, []string{"kind", "size", "priority", "members", "depends_on", "candidate", "approved"}}
 
 // Envelope is the fields every record may carry; a type without statuses
 // carries no status.
@@ -245,6 +252,14 @@ const IDForm = NeutralPrefix + "-[0-9]{6}-[0-9a-hjkmnp-tv-z]{5}"
 // or converted record keeps its own whatever its type.
 var IDPattern = regexp.MustCompile("^" + IDForm + "$")
 var commitPattern = regexp.MustCompile("^[0-9a-f]{7,40}$")
+var digestPattern = regexp.MustCompile("^sha256:[0-9a-f]{64}$")
+
+// Schema is the record schema this binary reads and writes; Schema3 is the
+// one before it, which only migration reads.
+const (
+	Schema  = 4
+	Schema3 = 3
+)
 
 func (m *metadata) dateField(key string) *time.Time {
 	if _, ok := m.fields[key]; !ok {
@@ -273,6 +288,10 @@ func Revision(source []byte) string {
 // ParseRecord validates one record's source. Writers use it so the candidate
 // they produce is judged by the same rules the reader applies.
 func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
+	return parseRecord(path, source, Schema)
+}
+
+func parseRecord(path string, source []byte, schema int) (*Record, []Diagnostic) {
 	r := &Record{Path: path, Source: source}
 	fail := func(message string) (*Record, []Diagnostic) {
 		return r, []Diagnostic{{Path: path, Field: "frontmatter", Message: message}}
@@ -297,6 +316,9 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 	r.Type = m.stringField("type", true)
 	r.Title = m.stringField("title", true)
 	t := Type(r.Type)
+	if schema == Schema3 && t != nil && t.Name == "work" {
+		t = &schema3Work
+	}
 	allowed := Envelope
 	if t != nil {
 		allowed = t.Keys()
@@ -330,19 +352,23 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 			}
 		}
 		r.Members, r.DependsOn = m.listField("members"), m.listField("depends_on")
-		// A candidate is one commit, so what a review examined and what Done
-		// integrated can be compared to it. Its absence on a done record means
+		// A candidate is one commit, so what a review examined and what was
+		// delivered can be compared to it. Its absence on a done record means
 		// the record predates the review lifecycle and claims only branch-local
 		// completion; the reader never rewrites that.
 		if r.Candidate = m.stringField("candidate", false); r.Candidate != "" && !commitPattern.MatchString(r.Candidate) {
 			m.problem("candidate", "expected a quoted Git commit of 7 to 40 lowercase hex digits")
-		} else if r.Candidate == "" && r.Status == "review" {
-			m.problem("candidate", "required while status is review: set candidate=COMMIT, the commit offered for judgment, in the same update")
+		} else if r.Candidate == "" && (r.Status == "review" || r.Status == "accepted") {
+			m.problem("candidate", "required while status is "+r.Status+": set candidate=COMMIT, the commit offered for judgment, in the same update")
 		}
-		// Approval is of one commit (G-260921-btyck): the field must name the candidate,
-		// so a changed candidate cannot inherit it, and it belongs only to a
-		// candidate awaiting integration or integrated. Feedback that reopens
-		// the work removes it in the same update.
+		// Approval is of one commit (G-260921-btyck): the field must name the
+		// candidate, so a changed candidate cannot inherit it. In schema 4 it
+		// is the acceptance itself, with its authority and the context it
+		// accepted (G-260930-2qa4a); schema 3 kept it beside review.
+		approvedIn := []string{"accepted", "done"}
+		if schema == Schema3 {
+			approvedIn = []string{"review", "done"}
+		}
 		if r.Approved = m.stringField("approved", false); r.Approved != "" {
 			switch {
 			case !commitPattern.MatchString(r.Approved):
@@ -353,8 +379,30 @@ func ParseRecord(path string, source []byte) (*Record, []Diagnostic) {
 				} else {
 					m.problem("approved", "approval is of one commit and must name the candidate "+r.Candidate+"; a changed candidate needs its own approval")
 				}
-			case r.Status != "review" && r.Status != "done" && slices.Contains(t.Statuses, r.Status): // an invalid status has its own refusal
-				m.problem("approved", "approval holds only while status is review or done, not "+r.Status+": unset approved, or set status review or done")
+			case !slices.Contains(approvedIn, r.Status) && slices.Contains(t.Statuses, r.Status): // an invalid status has its own refusal
+				m.problem("approved", "approval holds only while status is "+Choices(approvedIn)+", not "+r.Status+": unset approved, or set status "+approvedIn[0])
+			}
+		}
+		if schema == Schema {
+			r.ApprovedBy, r.ApprovedContext = m.stringField("approved_by", false), m.stringField("approved_context", false)
+			if r.ApprovedBy != "" && r.ApprovedBy != "owner" && !(strings.HasPrefix(r.ApprovedBy, "policy ") && digestPattern.MatchString(strings.TrimPrefix(r.ApprovedBy, "policy "))) {
+				m.problem("approved_by", "expected owner, or policy sha256:HEX naming the grove.yaml revision a sweep acted under")
+			}
+			if r.ApprovedContext != "" && !digestPattern.MatchString(r.ApprovedContext) {
+				m.problem("approved_context", "expected sha256: and 64 lowercase hex digits, the acceptance context")
+			}
+			if r.Status == "accepted" {
+				for _, f := range []struct{ name, value string }{{"approved", r.Approved}, {"approved_by", r.ApprovedBy}, {"approved_context", r.ApprovedContext}} {
+					if f.value == "" {
+						m.problem(f.name, "required while status is accepted: grove approve writes the acceptance")
+					}
+				}
+			} else if slices.Contains(t.Statuses, r.Status) {
+				for _, f := range []struct{ name, value string }{{"approved_by", r.ApprovedBy}, {"approved_context", r.ApprovedContext}} {
+					if f.value != "" {
+						m.problem(f.name, "belongs to an acceptance and holds only while status is accepted, not "+r.Status)
+					}
+				}
 			}
 		}
 	}

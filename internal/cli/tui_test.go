@@ -313,7 +313,7 @@ func TestBoardReviewWorkflow(t *testing.T) {
 	for _, kv := range [][2]string{{"user.name", "t"}, {"user.email", "t@t"}, {"commit.gpgsign", "false"}, {"maintenance.auto", "false"}} {
 		gitIn(t, root, "config", kv[0], kv[1])
 	}
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\ntarget: main\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\ntarget: main\n")
 	gitIn(t, root, "commit", "-qam", "chore: target")
 	wt := filepath.Join(filepath.Dir(root), "feature-wt")
 	gitIn(t, root, "worktree", "add", "-q", "-b", "feature", wt)

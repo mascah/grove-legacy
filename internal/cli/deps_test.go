@@ -34,7 +34,7 @@ func TestDepsCLI(t *testing.T) {
 	gitIn(t, root, "commit", "-q", "--allow-empty", "-m", "candidate")
 	candidate := gitIn(t, root, "rev-parse", "HEAD")
 	gitIn(t, root, "switch", "-q", "main")
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\ntarget: main\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\ntarget: main\n")
 	write(t, root, "docs/records/G-260101-00003.md", "---\nid: G-260101-00003\ntype: work\ntitle: Done before\nstatus: done\ncandidate: "+base+"\n---\n")
 	write(t, root, "docs/records/G-260101-00005.md", "---\nid: G-260101-00005\ntype: work\ntitle: In review\nstatus: review\ncandidate: "+candidate+"\n---\n")
 	next := "---\nid: G-260101-00004\ntype: work\ntitle: Next\nstatus: proposed\ndepends_on: [G-260101-00003, G-260101-00005]\n---\n"
@@ -117,7 +117,7 @@ func TestDepsPredictsMergeOrder(t *testing.T) {
 		candidates[b[0]] = gitIn(t, root, "rev-parse", "HEAD")
 	}
 	gitIn(t, root, "switch", "-q", "main")
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\ntarget: main\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\ntarget: main\n")
 	for id, b := range map[string]string{"G-260101-00010": "a", "G-260101-00011": "b", "G-260101-00012": "c"} {
 		write(t, root, "docs/records/"+id+".md", "---\nid: "+id+"\ntype: work\ntitle: "+b+"\nstatus: review\ncandidate: "+candidates[b]+"\n---\n")
 	}

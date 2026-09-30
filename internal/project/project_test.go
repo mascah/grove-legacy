@@ -26,7 +26,7 @@ func fixture(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	put(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n")
+	put(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n")
 	if err := os.Mkdir(filepath.Join(root, "grove"), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestDiscoveryAndExplicitProject(t *testing.T) {
 	if len(ds) != 0 || p.Root != root {
 		t.Fatalf("explicit parent project: %v", diagnostics(ds))
 	}
-	put(t, root, "nested/grove.yaml", "schema_version: 3\nrecords: records\n")
+	put(t, root, "nested/grove.yaml", "schema_version: 4\nrecords: records\n")
 	if err := os.Mkdir(filepath.Join(root, "nested", "records"), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -102,20 +102,21 @@ func TestInvalidConfiguration(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct{ name, source, field string }{
 		{"version missing", "records: grove\n", "schema_version"},
-		{"unsupported", "schema_version: 4\nrecords: grove\n", "schema_version"},
+		{"unsupported", "schema_version: 5\nrecords: grove\n", "schema_version"},
 		{"schema 1 no longer supported", "schema_version: 1\nrecords: grove\n", "schema_version"},
 		{"schema 2 no longer supported", "schema_version: 2\nrecords: grove\n", "schema_version"},
-		{"quoted version", "schema_version: \"3\"\nrecords: grove\n", "schema_version"},
-		{"fractional version", "schema_version: 3.0\nrecords: grove\n", "schema_version"},
-		{"null root", "schema_version: 3\nrecords: null\n", "records"},
-		{"escape", "schema_version: 3\nrecords: ../outside\n", "records"},
-		{"hidden escape", "schema_version: 3\nrecords: a/../grove\n", "records"},
-		{"project root", "schema_version: 3\nrecords: .\n", "records"},
-		{"absolute root", "schema_version: 3\nrecords: /tmp\n", "records"},
-		{"unknown", "schema_version: 3\nrecords: grove\nextra: true\n", "extra"},
-		{"duplicate", "schema_version: 3\nrecords: grove\nrecords: other\n", "records"},
-		{"extra document", "schema_version: 3\nrecords: grove\n---\n{}\n", "document"},
-		{"missing root", "schema_version: 3\nrecords: absent\n", "records"},
+		{"schema 3 needs migration", "schema_version: 3\nrecords: grove\n", "schema_version"},
+		{"quoted version", "schema_version: \"4\"\nrecords: grove\n", "schema_version"},
+		{"fractional version", "schema_version: 4.0\nrecords: grove\n", "schema_version"},
+		{"null root", "schema_version: 4\nrecords: null\n", "records"},
+		{"escape", "schema_version: 4\nrecords: ../outside\n", "records"},
+		{"hidden escape", "schema_version: 4\nrecords: a/../grove\n", "records"},
+		{"project root", "schema_version: 4\nrecords: .\n", "records"},
+		{"absolute root", "schema_version: 4\nrecords: /tmp\n", "records"},
+		{"unknown", "schema_version: 4\nrecords: grove\nextra: true\n", "extra"},
+		{"duplicate", "schema_version: 4\nrecords: grove\nrecords: other\n", "records"},
+		{"extra document", "schema_version: 4\nrecords: grove\n---\n{}\n", "document"},
+		{"missing root", "schema_version: 4\nrecords: absent\n", "records"},
 		{"non mapping", "- records\n", "mapping"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -217,10 +218,10 @@ func TestExplicitZeroTimeIsNotAnAbsentDate(t *testing.T) {
 	}
 }
 
-func schema3(t *testing.T, config string) string {
+func configured(t *testing.T, config string) string {
 	t.Helper()
 	root := fixture(t)
-	put(t, root, "grove.yaml", "schema_version: 3\nrecords: grove\n"+config)
+	put(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\n"+config)
 	return root
 }
 
@@ -230,7 +231,7 @@ func typed(id, kind, status, extra string) string {
 
 func TestKnowledgeRecords(t *testing.T) {
 	t.Parallel()
-	root := schema3(t, "")
+	root := configured(t, "")
 	put(t, root, "grove/G-260101-00001.md", typed("G-260101-00001", "work", "proposed", ""))
 	put(t, root, "grove/terms/G-260101-00002-attempt.md", typed("G-260101-00002", "term", "settled", "relates_to: [\"G-260101-00001\"]\n"))
 	put(t, root, "grove/plans/G-260101-00003-shared.md", typed("G-260101-00003", "plan", "current", "work: [\"G-260101-00001\"]\n"))
@@ -263,7 +264,7 @@ func TestKnowledgeRecordProblemsNameFileAndField(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			root := schema3(t, "")
+			root := configured(t, "")
 			put(t, root, "grove/G-260101-00001.md", typed("G-260101-00001", "term", "settled", ""))
 			put(t, root, tc.path, tc.source)
 			_, ds := Load(root, root)
@@ -276,7 +277,7 @@ func TestKnowledgeRecordProblemsNameFileAndField(t *testing.T) {
 
 func TestDuplicateTermTitle(t *testing.T) {
 	t.Parallel()
-	root := schema3(t, "")
+	root := configured(t, "")
 	put(t, root, "grove/terms/G-260101-00001.md", "---\nid: G-260101-00001\ntype: term\ntitle: Attempt\nstatus: settled\n---\n")
 	put(t, root, "grove/terms/G-260101-00002.md", "---\nid: G-260101-00002\ntype: term\ntitle: \" attempt\"\nstatus: proposed\n---\n")
 	_, ds := Load(root, root)
@@ -289,7 +290,7 @@ func TestDuplicateTermTitle(t *testing.T) {
 // that also need the brief: configuration key.
 func briefFixture(t *testing.T, config string) string {
 	t.Helper()
-	root := schema3(t, config)
+	root := configured(t, config)
 	put(t, root, "grove/G-260101-00001.md", record("G-260101-00001", "work", ""))
 	return root
 }
@@ -426,7 +427,7 @@ const page = "---\nid: G-260101-00002\ntype: page\ntitle: Synthesis\nrelates_to:
 // arbitrary nested folder all hold any type, under recursive discovery.
 func TestDiscoversByIdentityNotLocation(t *testing.T) {
 	t.Parallel()
-	root := schema3(t, "brief: grove/brief.md\n")
+	root := configured(t, "brief: grove/brief.md\n")
 	put(t, root, "grove/brief.md", "# Brief, not a record\n")
 	put(t, root, "grove/G-260101-00001-work.md", typed("G-260101-00001", "work", "proposed", ""))
 	put(t, root, "grove/G-260101-00002-synthesis.md", page)
@@ -456,7 +457,7 @@ func TestRecordProblems(t *testing.T) {
 		{"no type is not a page", "grove/a.md", "---\nid: G-260101-00002\ntitle: T\n---\n", "type: required field is missing"},
 		{"unknown type", "grove/a.md", typed("G-260101-00002", "note", "open", ""), "type: unknown record type"},
 		{"work record missing status", "grove/a.md", "---\nid: G-260101-00002\ntype: work\ntitle: T\n---\n", "status: required field is missing"},
-		{"work with a bad status", "grove/a.md", typed("G-260101-00002", "work", "settled", ""), "status: expected proposed, active, review, done or abandoned for work"},
+		{"work with a bad status", "grove/a.md", typed("G-260101-00002", "work", "settled", ""), "status: expected proposed, active, review, accepted, abandoned or done for work"},
 		{"plain Markdown", "grove/a.md", "# Just prose\n", "frontmatter: expected an opening --- line"},
 		{"uncanonical ID", "grove/a.md", typed("G-02", "work", "proposed", ""), "id: expected a canonical ID, e.g. G-260925-7k2qm"},
 		{"unknown prefix", "grove/a.md", typed("X-002", "work", "proposed", ""), "id: expected a canonical ID"},
@@ -468,7 +469,7 @@ func TestRecordProblems(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			root := schema3(t, "")
+			root := configured(t, "")
 			put(t, root, "grove/G-260101-00001.md", typed("G-260101-00001", "work", "proposed", "formerly: \"W-007\"\n"))
 			put(t, root, "grove/G-260101-00009.md", "---\nid: G-260101-00009\ntype: page\ntitle: P\n---\n")
 			put(t, root, tc.path, tc.source)
@@ -484,6 +485,8 @@ func TestReviewLifecycleAndCandidate(t *testing.T) {
 	t.Parallel()
 	commit := "candidate: \"0123456789abcdef0123456789abcdef01234567\"\n"
 	approved := "approved: \"0123456789abcdef0123456789abcdef01234567\"\n"
+	digest := "sha256:" + strings.Repeat("ab", 32)
+	accepted := "approved_by: owner\napproved_context: \"" + digest + "\"\n"
 	for _, tc := range []struct{ name, source, want string }{
 		{"review needs a candidate", typed("G-260101-00002", "work", "review", ""), "grove/G-260101-00002.md: candidate: required while status is review"},
 		{"review with one", typed("G-260101-00002", "work", "review", commit), ""},
@@ -493,17 +496,27 @@ func TestReviewLifecycleAndCandidate(t *testing.T) {
 		{"unquoted", typed("G-260101-00002", "work", "active", "candidate: 1234567\n"), "candidate: expected a nonempty string"},
 		{"only on work", typed("G-260101-00002", "plan", "current", commit), "candidate: not a field of plan records"},
 		{"review is a work status only", typed("G-260101-00002", "plan", "review", ""), "status: expected current or superseded for plan"},
-		{"approved in review", typed("G-260101-00002", "work", "review", commit+approved), ""},
+		{"approved in review", typed("G-260101-00002", "work", "review", commit+approved), "approved: approval holds only while status is accepted or done, not review"},
+		{"accepted", typed("G-260101-00002", "work", "accepted", commit+approved+accepted), ""},
+		{"accepted needs its authority", typed("G-260101-00002", "work", "accepted", commit+approved+"approved_context: \""+digest+"\"\n"), "approved_by: required while status is accepted"},
+		{"accepted needs its context", typed("G-260101-00002", "work", "accepted", commit+approved+"approved_by: owner\n"), "approved_context: required while status is accepted"},
+		{"accepted needs its approval", typed("G-260101-00002", "work", "accepted", commit+accepted), "approved: required while status is accepted"},
+		{"accepted needs a candidate", typed("G-260101-00002", "work", "accepted", ""), "candidate: required while status is accepted"},
+		{"a policy's authority", typed("G-260101-00002", "work", "accepted", commit+approved+"approved_by: \"policy "+digest+"\"\napproved_context: \""+digest+"\"\n"), ""},
+		{"an unknown authority", typed("G-260101-00002", "work", "accepted", commit+approved+"approved_by: me\napproved_context: \""+digest+"\"\n"), "approved_by: expected owner, or policy sha256:HEX"},
+		{"a malformed context", typed("G-260101-00002", "work", "accepted", commit+approved+"approved_by: owner\napproved_context: \"sha256:12\"\n"), "approved_context: expected sha256:"},
+		{"acceptance fields off accepted", typed("G-260101-00002", "work", "review", commit+accepted), "approved_by: belongs to an acceptance and holds only while status is accepted, not review"},
+		{"no acceptance fields on schema 3 done", typed("G-260101-00002", "work", "done", commit+approved+accepted), "approved_context: belongs to an acceptance"},
 		{"approved in done", typed("G-260101-00002", "work", "done", commit+approved), ""},
 		{"approved must name the candidate", typed("G-260101-00002", "work", "review", "candidate: \"abcdef0\"\n"+approved), "approved: approval is of one commit and must name the candidate abcdef0"},
 		{"approved needs a candidate", typed("G-260101-00002", "work", "done", approved), "approved: approval is of the candidate, and there is none"},
-		{"approved before review", typed("G-260101-00002", "work", "active", commit+approved), "approved: approval holds only while status is review or done, not active: unset approved"},
+		{"approved before review", typed("G-260101-00002", "work", "active", commit+approved), "approved: approval holds only while status is accepted or done, not active: unset approved"},
 		{"approved not a commit", typed("G-260101-00002", "work", "review", commit+"approved: \"HEAD\"\n"), "approved: expected a quoted Git commit"},
 		{"approved only on work", typed("G-260101-00002", "review", "current", approved), "approved: not a field of review records"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			root := schema3(t, "")
+			root := configured(t, "")
 			put(t, root, "grove/G-260101-00002.md", tc.source)
 			p, ds := Load(root, root)
 			if got := diagnostics(ds); tc.want == "" && got != "" || tc.want != "" && !strings.Contains(got, tc.want) {
@@ -575,7 +588,7 @@ func TestRefusalsNameTheirRule(t *testing.T) {
 		{"size", typed(id, "work", "proposed", "size: huge\n"), "size: expected " + Choices(Sizes)},
 		{"priority", typed(id, "work", "proposed", "priority: 9\n"), "priority: expected 1 (highest) through 5 (lowest)"},
 		{"candidate in review", typed(id, "work", "review", ""), "candidate: required while status is review: set candidate=COMMIT"},
-		{"approved off review", typed(id, "work", "active", "candidate: \""+commit+"\"\napproved: \""+commit+"\"\n"), "approved: approval holds only while status is review or done, not active: unset approved, or set status review or done"},
+		{"approved off review", typed(id, "work", "active", "candidate: \""+commit+"\"\napproved: \""+commit+"\"\n"), "approved: approval holds only while status is accepted or done, not active: unset approved, or set status accepted"},
 		{"approved another commit", typed(id, "work", "review", "candidate: \"abcdef0\"\napproved: \""+commit+"\"\n"), "approved: approval is of one commit and must name the candidate abcdef0"},
 		{"approved beside a bad status", typed(id, "work", "bogus", "candidate: \""+commit+"\"\napproved: \""+commit+"\"\n"), "status: expected " + Choices(Types[0].Statuses) + " for work"},
 		{"approved without candidate", typed(id, "work", "done", "approved: \""+commit+"\"\n"), "approved: approval is of the candidate, and there is none: set candidate"},
@@ -605,7 +618,7 @@ func TestRefusalsNameTheirRule(t *testing.T) {
 		{"policy:\n  budget: 1\n  resolve:\n    x: 1\n", "policy.resolve.x: unknown key; policy.resolve takes " + Choices(PolicyResolveKeys)},
 		{"policy:\n  approve:\n    verify: [true]\n    x: 1\n", "policy.approve.x: unknown key; policy.approve takes " + Choices(PolicyApproveKeys)},
 	} {
-		_, _, ds := ParseConfig([]byte("schema_version: 3\nrecords: grove\n" + tc.config))
+		_, _, ds := ParseConfig([]byte("schema_version: 4\nrecords: grove\n" + tc.config))
 		if got := diagnostics(ds); !strings.Contains(got, tc.want) {
 			t.Errorf("%q: wanted %q; got %q", tc.config, tc.want, got)
 		}

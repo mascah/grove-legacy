@@ -107,7 +107,7 @@ func TestWorkspaceCLI(t *testing.T) {
 		}
 	}
 	// An invalid current checkout still resolves a selection elsewhere.
-	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\n")
+	write(t, root, "grove.yaml", "schema_version: 5\nrecords: docs/records\n")
 	out.Reset()
 	errOut.Reset()
 	if code := Run([]string{"workspace", "--source", detached}, root, &out, &errOut); code != 0 || out.String() != odd+"\n" {
@@ -219,7 +219,7 @@ func TestNewlineCheckoutCLI(t *testing.T) {
 		t.Fatal(err)
 	}
 	root := filepath.Join(parent, "new\nline")
-	write(t, root, "grove.yaml", "schema_version: 3\nrecords: docs/records\n")
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: docs/records\n")
 	write(t, root, "docs/records/work/renamed.md", work)
 	write(t, root, "docs/records/questions/question.md", question)
 	gitIn(t, root, "init", "-q", "-b", "main")
