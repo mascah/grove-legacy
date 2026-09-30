@@ -58,6 +58,52 @@ func squash(t *testing.T, root, submitted, trailers string) string {
 	return d
 }
 
+// delivered accepts id on a branch of its own, squash-delivers it onto main
+// and retains the submitted tip, as integrate does.
+func delivered(t *testing.T, root, id string) {
+	t.Helper()
+	git(t, root, "checkout", "-q", "-b", id, "main")
+	write(t, root, id+".txt", id+"\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "feat: "+id)
+	c := git(t, root, "rev-parse", "HEAD")
+	accept(t, root, id, c)
+	sub := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "main")
+	squash(t, root, sub, "Grove-Work: "+id+"\nGrove-Candidate: "+c+"\nGrove-Submitted: "+sub)
+	git(t, root, "reset", "-q", "--hard", "main")
+	git(t, root, "update-ref", Ref(sub), sub)
+	git(t, root, "branch", "-D", id)
+}
+
+// processes counts the Git processes one Each starts over versions copies
+// of every record, as a board passes each checkout's copy, and requires
+// every accepted record done.
+func processes(t *testing.T, root string, versions int) int {
+	t.Helper()
+	var records []*project.Record
+	for range versions {
+		records = append(records, mustRecords(t, root)...)
+	}
+	trace := filepath.Join(t.TempDir(), "trace")
+	t.Setenv("GIT_TRACE", trace)
+	res, err := Each(context.Background(), root, "main", records)
+	t.Setenv("GIT_TRACE", "0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for r, s := range res {
+		if r.Status == "accepted" && s.State != Done {
+			t.Fatalf("%s: %+v", r.ID, s)
+		}
+	}
+	log, err := os.ReadFile(trace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return strings.Count(string(log), "trace: built-in: git ")
+}
+
 func inspect(t *testing.T, root string) map[string]*Standing {
 	t.Helper()
 	p, ds := project.Load(root, root)
@@ -251,6 +297,122 @@ func TestStandingRejectsForgedDeliveries(t *testing.T) {
 	write(t, root, "grove/G-260101-00001.md", git(t, root, "show", good+":grove/G-260101-00001.md")+"\n")
 	if s := inspect(t, root)["G-260101-00001"]; s.State != Unknown || !strings.Contains(s.Why, "fetch refs/grove/*") {
 		t.Errorf("missing submitted tip: %+v", s)
+	}
+}
+
+// TestStandingSurvivesUnrelatedClaims: a claim naming as its submitted tip a
+// commit unrelated to its parent, which git merge-tree refuses by default,
+// leaves its record unknown and every other record's reading intact, both
+// where that tip lacks the candidate and where it holds one of its own.
+func TestStandingSurvivesUnrelatedClaims(t *testing.T) {
+	t.Parallel()
+	root := fixture(t)
+	delivered(t, root, "G-260101-00010")
+	git(t, root, "checkout", "-q", "-b", "work")
+	write(t, root, "code.txt", "new\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "feat: code")
+	c := git(t, root, "rev-parse", "HEAD")
+	accept(t, root, "G-260101-00001", c)
+	good := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "--orphan", "alone", "main")
+	write(t, root, "alone.txt", "alone\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "feat: alone")
+	c3 := git(t, root, "rev-parse", "HEAD")
+	accept(t, root, "G-260101-00003", c3)
+	s3 := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "main")
+	orphan := git(t, root, "commit-tree", "main^{tree}", "-m", "orphan")
+	d := git(t, root, "commit-tree", "main^{tree}", "-p", "main", "-m", "feat: forged\n\nGrove-Candidate: "+c+"\nGrove-Submitted: "+orphan)
+	d3 := git(t, root, "commit-tree", "main^{tree}", "-p", d, "-m", "feat: forged\n\nGrove-Candidate: "+c3+"\nGrove-Submitted: "+s3)
+	git(t, root, "update-ref", "refs/heads/main", d3)
+	git(t, root, "reset", "-q", "--hard", "main")
+	write(t, root, "grove/G-260101-00001.md", git(t, root, "show", good+":grove/G-260101-00001.md")+"\n")
+	write(t, root, "grove/G-260101-00003.md", git(t, root, "show", s3+":grove/G-260101-00003.md")+"\n")
+	st := inspect(t, root)
+	if s := st["G-260101-00001"]; s.State != Unknown || !strings.Contains(s.Why, "does not verify: delivery "+d[:7]+" names submitted tip "+orphan[:7]+", which does not contain the candidate") {
+		t.Errorf("a claim on a tip without the candidate: %+v", s)
+	}
+	if s := st["G-260101-00003"]; s.State != Unknown || !strings.Contains(s.Why, "does not verify: delivery "+d3[:7]+" is not what merging") {
+		t.Errorf("a claim on a history of its own: %+v", s)
+	}
+	if s := st["G-260101-00010"]; s.State != Done {
+		t.Errorf("another record: %+v", s)
+	}
+}
+
+// TestStandingCrissCrossIsGitsOwnMerge: with two best merge bases, as when
+// an unrelated history is merged into both the target and a branch kept
+// after its delivery, the earlier submission is never the base, so a
+// delivery that brings back what the target removed since does not verify.
+// The unrelated root is dated first, so that git merge-base without --all
+// names the fork point, the base that would bring it back.
+func TestStandingCrissCrossIsGitsOwnMerge(t *testing.T) {
+	t.Parallel()
+	root := fixture(t)
+	git(t, root, "checkout", "-q", "-b", "work")
+	write(t, root, "code.txt", "one\n")
+	git(t, root, "add", "-A")
+	git(t, root, "commit", "-qm", "feat: one")
+	c1 := git(t, root, "rev-parse", "HEAD")
+	accept(t, root, "G-260101-00001", c1)
+	s1 := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "main")
+	squash(t, root, s1, "Grove-Candidate: "+c1+"\nGrove-Submitted: "+s1)
+	git(t, root, "reset", "-q", "--hard", "main")
+	git(t, root, "update-ref", Ref(s1), s1)
+	git(t, root, "checkout", "-q", "--orphan", "other")
+	git(t, root, "rm", "-rqf", ".")
+	write(t, root, "r.txt", "r\n")
+	git(t, root, "add", "-A")
+	old := repo.Command(context.Background(), root, "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", "commit", "-qm", "chore: other root")
+	old.Env = append(old.Env, "GIT_AUTHOR_DATE=2000-01-01T00:00:00Z", "GIT_COMMITTER_DATE=2000-01-01T00:00:00Z")
+	if out, err := old.CombinedOutput(); err != nil {
+		t.Fatalf("%v\n%s", err, out)
+	}
+	for _, b := range []string{"main", "work"} {
+		git(t, root, "checkout", "-q", b)
+		git(t, root, "merge", "-q", "--allow-unrelated-histories", "-m", "merge other", "other")
+	}
+	git(t, root, "checkout", "-q", "main")
+	git(t, root, "rm", "-q", "r.txt")
+	git(t, root, "commit", "-qm", "chore: remove r")
+	tip := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "work")
+	write(t, root, "code.txt", "two\n")
+	git(t, root, "commit", "-qam", "feat: two")
+	c2 := git(t, root, "rev-parse", "HEAD")
+	accept(t, root, "G-260101-00001", c2)
+	s2 := git(t, root, "rev-parse", "HEAD")
+	git(t, root, "checkout", "-q", "main")
+	if bases := strings.Fields(git(t, root, "merge-base", "--all", tip, s2)); len(bases) != 2 {
+		t.Fatalf("fixture: merge bases %v", bases)
+	}
+	if base, err := Base(context.Background(), root, tip, s2); err != nil || base != "" {
+		t.Fatalf("a criss-cross continued from %q: %v", base, err)
+	}
+	// Merged from the earlier submission, r.txt comes back.
+	tree := strings.Fields(git(t, root, "merge-tree", "--write-tree", "--merge-base="+s1, tip, s2))[0]
+	d := git(t, root, "commit-tree", tree, "-p", tip, "-m", "feat: deliver\n\nGrove-Candidate: "+c2+"\nGrove-Submitted: "+s2)
+	git(t, root, "update-ref", "refs/heads/main", d)
+	git(t, root, "reset", "-q", "--hard", "main")
+	if s := inspect(t, root)["G-260101-00001"]; s.State != Unknown || !strings.Contains(s.Why, "is not what merging") {
+		t.Fatalf("a delivery bringing back r.txt: %+v", s)
+	}
+}
+
+// TestStandingGitWorkIsConstant: one reading starts the same Git processes
+// whatever the number of deliveries, open acceptances and versions of each
+// record passed in. Not parallel: it sets GIT_TRACE.
+func TestStandingGitWorkIsConstant(t *testing.T) {
+	root := fixture(t)
+	delivered(t, root, "G-260101-00010")
+	one := processes(t, root, 1)
+	delivered(t, root, "G-260101-00011")
+	delivered(t, root, "G-260101-00012")
+	if many := processes(t, root, 3); many != one {
+		t.Errorf("one delivery started %d Git processes, three deliveries in three versions %d", one, many)
 	}
 }
 

@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mascah/grove/internal/project"
@@ -144,59 +145,79 @@ func Each(ctx context.Context, root, target string, records []*project.Record) (
 	if err != nil {
 		return unknown("not in a readable Git repository")
 	}
-	tip, err := repo.GitContext(ctx, root, "rev-parse", "--verify", "-q", "refs/heads/"+target+"^{commit}")
-	if tip = strings.TrimSpace(tip); err != nil || tip == "" {
+	// Git work here is a fixed number of processes, whatever the number of
+	// deliveries, records or versions of them: one rev-parse, one log, one
+	// cat-file and one rev-list, then one per batch in verify. Only a
+	// delivery whose tree is not the plain merge costs more (bases).
+	head, err := repo.GitContext(ctx, root, "rev-parse", "--is-shallow-repository", "--verify", "-q", "refs/heads/"+target+"^{commit}")
+	f := strings.Fields(head)
+	if err != nil || len(f) != 2 {
 		return unknown("the target branch " + target + " cannot be read here")
 	}
-	shallow, err := repo.GitContext(ctx, root, "rev-parse", "--is-shallow-repository")
+	complete, tip := f[0] == "false", f[1]
+	claims, err := deliveries(ctx, root, tip)
 	if err != nil {
 		return nil, err
-	}
-	complete := strings.TrimSpace(shallow) == "false"
-	reach, err := lines(ctx, root, nil, "rev-list", tip)
-	if err != nil {
-		return nil, err
-	}
-	reachable := map[string]bool{}
-	for _, c := range reach {
-		reachable[c] = true
 	}
 	names := []string{}
 	for _, r := range open {
 		names = append(names, r.Candidate)
 	}
+	for _, d := range claims {
+		names = append(names, d.submitted)
+	}
 	full, err := resolve(ctx, root, names)
 	if err != nil {
 		return nil, err
 	}
-	claims, err := deliveries(ctx, root, tip)
+	candidates := map[string]bool{}
+	var heads []string
+	for _, r := range open {
+		if c := full[r.Candidate]; !candidates[c] {
+			candidates[c] = true
+			heads = append(heads, c)
+		}
+	}
+	for _, d := range claims {
+		if candidates[d.candidate] {
+			heads = append(heads, full[d.submitted])
+		}
+	}
+	graph, err := unmerged(ctx, root, tip, heads)
 	if err != nil {
 		return nil, err
 	}
 	var pending []*check
+	mine := map[*project.Record][]*check{}
+	shared := map[string]*check{} // one check per claim, record ID and path
 	for _, r := range open {
 		s := out[r]
 		s.Tip = tip
 		c := full[r.Candidate]
+		_, off := graph[c]
 		switch {
 		case c == "":
 			s.Why = "candidate " + short(r.Candidate) + " is not in this repository; fetch the branch or the refs/grove evidence that holds it"
-		case reachable[c]:
+		case !off:
 			s.State, s.Delivered, s.Why = Done, c, ""
 		default:
-			claimed := false
 			for _, d := range claims {
-				if d.candidate == c {
-					claimed = true
-					pending = append(pending, &check{record: r, candidate: c, delivery: d})
+				if d.candidate != c {
+					continue
 				}
+				key := d.commit + "\x00" + r.ID + "\x00" + r.Path
+				if shared[key] == nil {
+					shared[key] = &check{record: r, candidate: c, delivery: d}
+					pending = append(pending, shared[key])
+				}
+				mine[r] = append(mine[r], shared[key])
 			}
-			if !claimed {
+			if len(mine[r]) == 0 {
 				absent(s, complete)
 			}
 		}
 	}
-	if err := verify(ctx, root, prefix, records, pending, &bases{claims: claims}); err != nil {
+	if err := verify(ctx, root, prefix, records, pending, full, graph, &bases{claims: claims, verified: map[string]bool{}}); err != nil {
 		return nil, err
 	}
 	// A record is done by any verified claim; otherwise a claim that is
@@ -206,9 +227,9 @@ func Each(ctx context.Context, root, target string, records []*project.Record) (
 	for _, r := range open {
 		s := out[r]
 		var missing, failed string
-		for _, p := range pending {
+		for _, p := range mine[r] {
 			switch {
-			case p.record != r || s.State == Done:
+			case s.State == Done:
 			case p.ok:
 				s.State, s.Delivered, s.Submitted, s.Why = Done, p.delivery.commit, p.delivery.submitted, ""
 			case p.missing:
@@ -244,7 +265,8 @@ type delivery struct {
 	candidate, submitted string
 }
 
-// check is one claimed delivery of one record.
+// check is one claimed delivery of one record, shared by every version of
+// it with the same ID and path.
 type check struct {
 	record    *project.Record
 	candidate string
@@ -293,99 +315,139 @@ func deliveries(ctx context.Context, root, tip string) ([]delivery, error) {
 // is present; the candidate is its ancestor; only records change
 // between them; the record there is accepted for the candidate; and the
 // claimed commit's first parent merged with the submitted tip gives exactly
-// the claimed commit's tree.
-func verify(ctx context.Context, root, prefix string, records []*project.Record, checks []*check, earlier *bases) error {
-	if len(checks) == 0 {
-		return nil
-	}
-	var names []string
+// the claimed commit's tree. full resolves each submitted tip and graph is
+// unmerged's. Each batch is one process holding only the checks still
+// passing: a claim already failed is never merged or read, so nothing it
+// names can fail every record's reading.
+func verify(ctx context.Context, root, prefix string, records []*project.Record, checks []*check, full map[string]string, graph map[string][]string, earlier *bases) error {
+	failed := func(c *check) bool { return c.why != "" }
 	for _, c := range checks {
-		names = append(names, c.delivery.submitted)
-	}
-	present, err := resolve(ctx, root, names)
-	if err != nil {
-		return err
-	}
-	var live []*check
-	for _, c := range checks {
-		if present[c.delivery.submitted] == "" {
+		switch d := c.delivery; {
+		case full[d.submitted] == "":
 			c.missing = true
-			c.why = "delivery " + short(c.delivery.commit) + " names submitted tip " + short(c.delivery.submitted) + ", which is not in this repository; fetch refs/grove/* from where it was delivered"
-			continue
+			c.why = "delivery " + short(d.commit) + " names submitted tip " + short(d.submitted) + ", which is not in this repository; fetch refs/grove/* from where it was delivered"
+		case !contains(graph, full[d.submitted], c.candidate):
+			c.why = "delivery " + short(d.commit) + " names submitted tip " + short(d.submitted) + ", which does not contain the candidate"
 		}
-		live = append(live, c)
 	}
+	live := slices.DeleteFunc(slices.Clone(checks), failed)
 	if len(live) == 0 {
 		return nil
 	}
-	var diffs, merges, blobs bytes.Buffer
+	var diffs bytes.Buffer
 	for _, c := range live {
 		fmt.Fprintf(&diffs, "%s %s\n", c.delivery.submitted, c.candidate)
-		fmt.Fprintf(&merges, "%s %s\n", c.delivery.parent, c.delivery.submitted)
-		fmt.Fprintf(&blobs, "%s:%s\n", c.delivery.submitted, path.Join(prefix, c.record.Path))
-	}
-	// ponytail: one rev-list per claimed squash delivery, which Git cannot
-	// batch; a cache keyed by the immutable pair would bound it if the
-	// number of deliveries on a target ever makes loading slow.
-	for _, c := range live {
-		// rev-list C ^S is empty exactly when C is an ancestor of S.
-		out, err := repo.GitContext(ctx, root, "rev-list", "-n1", c.candidate, "^"+c.delivery.submitted)
-		if err != nil {
-			return err
-		}
-		if strings.TrimSpace(out) != "" {
-			c.why = "delivery " + short(c.delivery.commit) + " names submitted tip " + short(c.delivery.submitted) + ", which does not contain the candidate"
-		}
 	}
 	changed, err := diffTree(ctx, root, live, diffs.Bytes())
 	if err != nil {
 		return err
 	}
-	trees, err := mergeTrees(ctx, root, len(live), merges.Bytes())
-	if err != nil {
-		return err
-	}
-	sources, err := catBlobs(ctx, root, len(live), blobs.Bytes())
-	if err != nil {
-		return err
+	// Records may change after the candidate, the group's handoff and
+	// acceptance among them; what the records say later cannot matter, so
+	// any record read counts, never only those naming it now.
+	allowed := map[string]bool{}
+	for _, o := range records {
+		allowed[path.Join(prefix, o.Path)] = true
 	}
 	for i, c := range live {
-		if c.why != "" {
-			continue
-		}
-		// Records may change after the candidate, the group's handoff and
-		// acceptance among them; what the records say later cannot matter,
-		// so any record read counts, never only those naming it now.
-		allowed := map[string]bool{}
-		for _, o := range records {
-			allowed[path.Join(prefix, o.Path)] = true
-		}
 		for _, f := range changed[i] {
 			if !allowed[f] {
 				c.why = "submitted tip " + short(c.delivery.submitted) + " changes " + f + " after the candidate, which its acceptance does not cover"
 				break
 			}
 		}
-		if c.why != "" {
-			continue
-		}
+	}
+	if live = slices.DeleteFunc(live, failed); len(live) == 0 {
+		return nil
+	}
+	var blobs bytes.Buffer
+	for _, c := range live {
+		fmt.Fprintf(&blobs, "%s:%s\n", c.delivery.submitted, path.Join(prefix, c.record.Path))
+	}
+	sources, err := catBlobs(ctx, root, len(live), blobs.Bytes())
+	if err != nil {
+		return err
+	}
+	for i, c := range live {
 		if at, ds := project.ParseRecord(c.record.Path, sources[i]); sources[i] == nil || len(ds) != 0 || at.ID != c.record.ID || at.Status != "accepted" || !sameCommit(at.Approved, c.candidate) {
 			c.why = "the record at submitted tip " + short(c.delivery.submitted) + " is not accepted for candidate " + short(c.candidate)
-			continue
 		}
-		if trees[i] != c.delivery.tree {
-			ok, err := earlier.rebased(ctx, root, c.delivery)
-			if err != nil {
-				return err
+	}
+	if live = slices.DeleteFunc(live, failed); len(live) == 0 {
+		return nil
+	}
+	var merges bytes.Buffer
+	for _, c := range live {
+		fmt.Fprintf(&merges, "%s %s\n", c.delivery.parent, c.delivery.submitted)
+	}
+	trees, err := mergeTrees(ctx, root, len(live), merges.Bytes())
+	if err != nil {
+		return err
+	}
+	for i, c := range live {
+		// A delivery's tree is judged once, however many records it holds.
+		d := c.delivery
+		ok, seen := earlier.verified[d.commit]
+		if !seen {
+			if ok = trees[i] == d.tree; !ok {
+				if ok, err = earlier.rebased(ctx, root, d); err != nil {
+					return err
+				}
 			}
-			if !ok {
-				c.why = "delivery " + short(c.delivery.commit) + " is not what merging " + short(c.delivery.submitted) + " into its parent gives"
-				continue
-			}
+			earlier.verified[d.commit] = ok
+		}
+		if !ok {
+			c.why = "delivery " + short(d.commit) + " is not what merging " + short(d.submitted) + " into its parent gives"
+			continue
 		}
 		c.ok = true
 	}
 	return nil
+}
+
+// unmerged maps each commit reachable from heads and not from tip to its
+// parents, in one git rev-list: a head missing from it is on the target, and
+// every path from a head to a commit in it stays in it.
+// ponytail: the ^tip walk stops by commit date, so clock skew past Git's
+// slop can list a commit the tip holds, which then reads as awaiting
+// delivery or unknown, never done; merge-base --is-ancestor per candidate
+// is exact if that is ever seen.
+func unmerged(ctx context.Context, root, tip string, heads []string) (map[string][]string, error) {
+	var in bytes.Buffer
+	for _, h := range heads {
+		if h != "" {
+			fmt.Fprintln(&in, h)
+		}
+	}
+	out, err := lines(ctx, root, in.Bytes(), "rev-list", "--parents", "--stdin", "^"+tip)
+	if err != nil {
+		return nil, err
+	}
+	graph := map[string][]string{}
+	for _, l := range out {
+		if f := strings.Fields(l); len(f) != 0 {
+			graph[f[0]] = f[1:]
+		}
+	}
+	return graph, nil
+}
+
+// contains reports whether commit, which is in graph, is head or an
+// ancestor of it.
+func contains(graph map[string][]string, head, commit string) bool {
+	seen := map[string]bool{}
+	for next := []string{head}; len(next) != 0; {
+		c := next[len(next)-1]
+		next = next[:len(next)-1]
+		if c == commit {
+			return true
+		}
+		if !seen[c] {
+			seen[c] = true
+			next = append(next, graph[c]...)
+		}
+	}
+	return false
 }
 
 // Base is the submitted tip of the newest squash delivery reachable from
@@ -403,7 +465,7 @@ func Base(ctx context.Context, root, tip, submitted string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return (&bases{claims: claims}).of(ctx, root, tip, submitted)
+	return (&bases{claims: claims, verified: map[string]bool{}}).of(ctx, root, tip, submitted)
 }
 
 // bases finds and checks the earlier deliveries a later one merged from.
@@ -420,11 +482,15 @@ type bases struct {
 // ponytail: one ancestry check per earlier claim among the branch's own
 // commits, newest first; bounded by the deliveries that branch continues.
 func (b *bases) of(ctx context.Context, root, parent, submitted string) (string, error) {
-	fork, err := repo.GitContext(ctx, root, "merge-base", parent, submitted)
-	if err != nil {
-		return "", nil // unrelated histories have nothing to continue
+	// Unrelated histories have nothing to continue, and several best merge
+	// bases (a criss-cross) are left to Git's own merge: the earlier
+	// submission cannot be shown to replace them all.
+	out, err := repo.GitContext(ctx, root, "merge-base", "--all", parent, submitted)
+	fork := strings.Fields(out)
+	if err != nil || len(fork) != 1 {
+		return "", nil
 	}
-	own, err := lines(ctx, root, nil, "rev-list", "--ancestry-path", submitted, "^"+strings.TrimSpace(fork))
+	own, err := lines(ctx, root, nil, "rev-list", "--ancestry-path", submitted, "^"+fork[0])
 	if err != nil {
 		return "", err
 	}
@@ -455,9 +521,6 @@ func (b *bases) of(ctx context.Context, root, parent, submitted string) (string,
 func (b *bases) tree(ctx context.Context, root string, d delivery) (bool, error) {
 	if ok, seen := b.verified[d.commit]; seen {
 		return ok, nil
-	}
-	if b.verified == nil {
-		b.verified = map[string]bool{}
 	}
 	b.verified[d.commit] = false // a cycle proves nothing
 	trees, err := mergeTrees(ctx, root, 1, []byte(d.parent+" "+d.submitted+"\n"))
@@ -540,8 +603,10 @@ func diffTree(ctx context.Context, root string, checks []*check, in []byte) ([][
 
 // mergeTrees gives each merge's tree, or "" for a conflict, in one git
 // merge-tree: per merge "status\0tree\0" then conflicted names and "\0".
+// A claim can name histories unrelated to its parent, which Git merges from
+// an empty base here rather than refusing the whole batch.
 func mergeTrees(ctx context.Context, root string, n int, in []byte) ([]string, error) {
-	out, err := run(ctx, root, in, "merge-tree", "--write-tree", "--stdin", "--no-messages", "--name-only", "-z")
+	out, err := run(ctx, root, in, "merge-tree", "--write-tree", "--stdin", "--allow-unrelated-histories", "--no-messages", "--name-only", "-z")
 	if err != nil {
 		return nil, err
 	}
