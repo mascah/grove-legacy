@@ -67,7 +67,8 @@ same candidate, which only a delivery brings there, and reading proves
 nothing again. `grove check --deliveries` audits every delivery on request:
 the target contains the candidate, or a commit on it matches the retained
 submission; a forged or altered delivery is not proved there, and one whose
-submission a clone lacks cannot be audited there. A later revert does not
-undo it. A branch kept after its delivery merges the target before its next
+submission a clone lacks cannot be audited there. Reverting the delivery
+commit reverts its record too, so the work reads as it did before and can be
+delivered again; a later code change that leaves the record does not undo it. A branch kept after its delivery merges the target before its next
 one. A `done` status from schema 3 is kept by `grove migrate` as that
 schema's claim and never presented as proved.

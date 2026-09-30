@@ -361,9 +361,12 @@ Core inspection reads local objects and never silently fetches or pushes.
 
 Delivery is a historical fact at D, with current target reachability checked
 separately. A force-rewritten target that no longer contains D cannot support
-a claim of current delivery. A later code revert does not erase that a
-delivery occurred; show a known reversal and link any new corrective work
-rather than automatically reopening and reimplementing it. Arbitrary later
+a claim of current delivery. As amended by
+[G-260930-gj9d7](G-260930-gj9d7-prove-delivery-once-at-i.md), done is what
+the target's record says: reverting D reverts the record with the code, so
+the work reads as it did before delivery and can be delivered again, while a
+later code revert that leaves the record does not erase that a delivery
+occurred; link any new corrective work rather than reimplementing it. Arbitrary later
 semantic regression cannot be inferred from a commit message alone.
 
 ## Contract 5: capabilities and failure semantics

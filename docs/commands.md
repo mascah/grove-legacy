@@ -67,12 +67,16 @@ conflicting files.
 `integrate ID` runs in the target's clean checkout and delivers the one
 branch holding the work accepted, its acceptance applicable, as one squash
 commit ([G-260929-gm3m4](../grove/G-260929-gm3m4-clean-main-history-with.md)).
+Where several branches accept the same candidate, as when later work was
+based on this work's branch, it delivers from the one every other contains;
+otherwise several are refused.
 It reads the branch tip once, the submitted commit S, and refuses before
 anything changes: a branch lacking the candidate, a later commit changing
 more than the records, a shared candidate whose members are not all
 accepted, a squash that would carry the candidate of other unfinished work
 on the branch, such as a member reopened by feedback and not handed off
-again, a conflict, which `git merge-tree` predicts in objects only and
+again, or of other accepted work the target lacks, such as work the branch
+was based on, which is integrated first, a conflict, which `git merge-tree` predicts in objects only and
 names with the next action, work whose standing is
 [unknown](#standing), and a delivery that would change nothing. Then it
 
@@ -123,7 +127,9 @@ copy of the record, at the same path, is accepted for the same candidate;
 an acceptance reaches the target only through a delivery, so nothing else
 is read: no history, trailers or `refs/grove`. Work accepted again on a
 kept branch for another candidate awaits delivery; work reopened on the
-target reads as its record says. A reading starts one Git process, a `git
+target reads as its record says, and so does a reverted delivery, since
+reverting the delivery commit reverts the record too, and it can be
+delivered again. A reading starts one Git process, a `git
 cat-file` of the target's copies, whatever the history, branches,
 deliveries or versions, and the board none, since it already holds every
 branch's records. `list`, `show`, `deps`, `context`, `run`, `feedback`,
@@ -136,7 +142,7 @@ delivered, reads as done; only an audit notices.
 ### Auditing deliveries
 
 `check --deliveries` also proves, from Git, the delivery of every work
-record the target holds accepted, for the records the checkout reads: the
+record the target holds accepted under the record root: the
 target contains its candidate, or a commit on the target whose trailers
 name the candidate and a submitted tip S, where S is present, contains the
 candidate, changes only records after it, holds the record accepted for

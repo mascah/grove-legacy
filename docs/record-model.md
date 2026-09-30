@@ -56,8 +56,8 @@ worktree.
 Without `--project DIR`, the nearest `grove.yaml` upward from the current
 directory is used, the search stopping at the Git checkout root, or the
 filesystem root outside Git. `--project DIR` names the directory holding it.
-Reading needs no Git, and `list`, `show` and `check` read only the selected
-checkout's live files, and the target's copy of accepted work.
+`list`, `show` and `check` read only the selected checkout's live files;
+work's standing also reads the target's copy.
 
 ### Folders and files
 

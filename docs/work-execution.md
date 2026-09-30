@@ -596,7 +596,8 @@ again: `grove run` refuses a selection that leaves one out. `integrate` of
 any of them delivers the commit, and so all of them: it refuses, naming
 them, until every one is accepted, and its delivery names each. It also
 refuses a delivery that would carry the candidate of other unfinished work
-on the branch that no acceptance covers.
+on the branch that no acceptance covers, or of other accepted work the
+target lacks, such as work the branch was based on: integrate that first.
 
 A further commit on the branch after the handoff is a new candidate, which
 `approve` and `integrate` refuse until `candidate` names it: set it and reconsider, since
