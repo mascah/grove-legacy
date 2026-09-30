@@ -9,19 +9,27 @@ relates_to: ["G-260930-62nmj", "G-260930-npw49", "G-260930-y6fyy", "G-260930-e8j
 
 ## Status and ownership
 
-Proposed architecture for
-[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md).
+Accepted architecture baseline for
+[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md). On 2026-09-29
+(owner's local date), the owner reviewed this design and the experience
+sketches at commit f376a6dab7a5999560b25adaacb93d919c36e7a8 and said:
+"I've reviewed the designs and I accept them."
+
 The [experience design](G-260930-npw49-portable-workflow-experi.md) owns the
 screens; the [brief](brief.md) owns direction. Existing code is observed at
-main 9b5c5a55f355. None of the interfaces, fields or package names below is
-implemented or an accepted new record schema.
+main 9b5c5a55f355. Acceptance establishes the implementation baseline; it does
+not claim the new behavior is implemented. Field spelling, package names
+and examples remain illustrative where the design says so. The current
+schema 3 contract stays in force until its planned migration is delivered.
 
 The owner selected derived completion with a redesigned record contract in
 [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md), resolving
 [G-260930-y6fyy](G-260930-y6fyy-should-completion-be-der.md). The design below
-implements that choice on paper. The complete written design remains ready
-for owner review before dependent implementation; technical field spelling
-and package layout can be settled in the implementing item's plan.
+implements that choice on paper and now has the owner's acceptance.
+Technical field spelling and package layout can be settled in the
+implementing item's plan within these contracts. Descriptions labelled
+proposed below describe intended implementation, subject to the explicit
+trial and reconsideration criteria; they are not unresolved owner gates.
 
 ## Approach and alternatives
 

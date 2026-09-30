@@ -82,9 +82,9 @@ Needs its declared prerequisites. Implement the reviewed experience and
 documentation against their shared operations, then hand off a reproducible
 adoption journey and remaining limitations to [G-260930-60c3d](G-260930-60c3d-complete-the-portable-gr.md).
 
-The proposed [experience sketches](G-260930-npw49-portable-workflow-experi.md)
+The [experience sketches](G-260930-npw49-portable-workflow-experi.md)
 and [shared contracts](G-260930-84fnb-portable-workflow-contra.md) are the
-design prerequisite's reconciled drafts. Completion follows the accepted
-[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md) decision. Final
-review of the whole written design remains; exact screen arrangement and
-interface spelling are not settled by that completion choice.
+owner-accepted design baseline at f376a6d. Completion follows
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md). The actual terminal
+implementation still requires evaluation; exact arrangement and interface
+spelling may be refined within the accepted journey.

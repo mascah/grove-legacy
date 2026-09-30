@@ -9,16 +9,20 @@ relates_to: ["G-260930-62nmj", "G-260930-84fnb", "G-260930-60c3d", "G-260930-e8j
 
 ## Status and scope
 
-Proposed experience design for
+Accepted experience baseline for
 [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md), following the
 owner-selected direction in
 [G-260930-e8jj7](G-260930-e8jj7-build-a-portable-workflo.md).
+On 2026-09-29 (owner's local date), the owner reviewed this page and the
+contracts at commit f376a6dab7a5999560b25adaacb93d919c36e7a8 and said:
+"I've reviewed the designs and I accept them."
+
 The [brief](brief.md) remains the direction owner. This page owns interaction
 examples; the [contracts design](G-260930-84fnb-portable-workflow-contra.md)
-owns the proposed mechanics. These screens are sketches, not implemented UI,
-approved visual designs, or a new set of command names. Completion follows
-the owner's selected [derived-Done decision](G-260930-2qa4a-derive-done-from-recorde.md);
-the rest of the written experience remains ready for final design review.
+owns mechanics. These accepted sketches establish the intended journey;
+actual terminal behavior still needs implementation and evaluation. Exact
+keys, spacing and command spelling remain implementation details. Completion
+follows the [derived-Done decision](G-260930-2qa4a-derive-done-from-recorde.md).
 
 ## A journey a person can explain
 
@@ -327,7 +331,7 @@ beliefs about authority/completion, time to recover context, and whether they
 would keep using Grove. Deterministic fixtures exercise recovery states;
 real bounded harness trials establish behavior beyond mocks.
 
-The owner reviews these sketches and the actual terminal implementation.
-A changed visual arrangement is acceptable when it preserves the journey
+The owner accepted these sketches. The actual terminal implementation still
+needs their judgment. A changed visual arrangement is acceptable when it preserves the journey
 and improves those outcomes. Exact keys, spacing and command spelling are
 implementation design details, not settled by this page.

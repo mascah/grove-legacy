@@ -131,6 +131,7 @@ assignment/capability contracts, retaining meaningful lifecycle regressions.
 Recheck the dated provider observations before relying on flags or features.
 
 The [contracts design](G-260930-84fnb-portable-workflow-contra.md) specifies
-the proposed boundaries. Completion is selected by
-[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md); the full design
-awaits owner review. No new schema or provider API is implemented yet.
+the accepted boundaries. Completion is selected by
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md); the owner accepted
+the full design at f376a6d, recorded in the design prerequisite. No new
+schema or provider API is implemented yet.

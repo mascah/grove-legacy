@@ -77,44 +77,49 @@ current record model and guides remain implemented contracts during design.
    interaction and architectural design before dependent implementation.
    This design does not authorize paid trials or changes in adopter repos.
 
+## Evidence and owner acceptance
+
+On 2026-09-29 (owner's local date), the owner reviewed the written designs
+at commit f376a6dab7a5999560b25adaacb93d919c36e7a8 and explicitly accepted them:
+"I've reviewed the designs and I accept them."
+
+The accepted artifact commit is already on the configured target main.
+This closes the design investigation; it does not claim any proposed
+runtime behavior has been implemented or any agent trial has passed.
+Candidate and approval name that exact reviewed commit. The original
+completion-model answer remains attributed in accepted decision
+[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md), and question
+[G-260930-y6fyy](G-260930-y6fyy-should-completion-be-der.md) remains resolved.
+
+| Acceptance | Delivered evidence |
+| --- | --- |
+| 1: journey and owner judgment | [Experience sketches](G-260930-npw49-portable-workflow-experi.md), including waits/recovery; owner's acceptance above |
+| 2: shared contracts | [Contracts design](G-260930-84fnb-portable-workflow-contra.md), assignment through recorded acceptance and verified delivery |
+| 3: provider capabilities | Contracts design's capability matrix and failure semantics |
+| 4: retention and migration | Contracts design's fresh-clone, retained-ref, legacy completion and schema migration requirements |
+| 5: implementation strategy | Contracts design's alternatives and refactoring ownership map |
+| 6: reconciliation and approval | Brief and dependent proposals reconciled at f376a6d; explicit local-delivery prerequisite for portable execution; owner's acceptance above |
+
+Mechanical evidence at f376a6d: grove check passed for 269 records, 114 local
+links resolved, dependency edges matched the stated order, and diff checks
+passed. These checks establish document consistency, not product usability.
+No independent agent review or provider trial is claimed for this shaping
+work. Closure validation also passed: grove check (269 records), 74 local
+links across the nine acceptance updates, balanced code fences and diff
+checks. The final dependency preview verifies the design prerequisite is
+delivered before reporting local delivery ready.
+
 ## Next
 
-The owner answered the completion question on 2026-09-29 (local date):
-"Derive Done with a redesigned record contract." Accepted decision
-[G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md) records that
-choice; [G-260930-y6fyy](G-260930-y6fyy-should-completion-be-der.md) is resolved.
+Design accepted and delivered on main; use the accepted pages as the
+implementation baseline. The first implementation assignment is
+$grove-work G-260929-gm3m4, for
+[local delivery and the shared lifecycle redesign](G-260929-gm3m4-clean-main-history-with.md).
+Its Next names the planning units, schema/migration choices and verification
+cases. Technical field spelling and package layout remain implementation
+choices within the accepted contracts.
 
-The preparation requested in the conversation is now a coherent written
-baseline for final owner review:
-
-- [Experience and terminal sketches](G-260930-npw49-portable-workflow-experi.md)
-  show adoption through local/hosted delivery and recovery.
-- [Contracts and refactoring](G-260930-84fnb-portable-workflow-contra.md)
-  cover authority, continuation, review, acceptance, derived completion,
-  migration, retained evidence and implementation ownership.
-- Dependent proposals follow the selected completion model. Local delivery
-  owns the work-record migration and shared standing in all current callers.
-  Portable execution explicitly depends on it to avoid refactoring raw-status
-  consumers twice. Other declared dependencies retain their meaning.
-
-Acceptance coverage: 1 has concrete journey sketches; 2 has assignment,
-checkpoint, review/approval and delivery examples; 3 has capabilities and
-failure semantics; 4 has migration/retention/fresh-clone requirements; 5 has
-alternatives and a code ownership map; 6 has reconciled proposals and edges.
-The remaining human judgment is acceptance of the complete written journey
-and architecture under acceptance 6. The completion answer settles that
-model, not every screen/interface in these documents. No additional product
-choice is known to block this review; technical serialization and package
-choices belong in the implementing item's plan.
-
-After the owner's design judgment, record its outcome and complete this
-investigation through the current work lifecycle before assigning its
-dependents. Do not mark it done solely because the question was resolved or
-because documents validate. All implementation work remains proposed and
-unassigned. No paid trials, adopter edits, product code, merge or push were
-authorized by this shaping continuation.
-
-The first implementation item in the reconciled graph is
-[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md). Its Next now
-identifies the concrete planning units and verification cases, so execution
-can begin from the written records without this conversation.
+Implementation work remains proposed and unassigned. Design acceptance
+supplies its prerequisite; it does not launch implementation, paid trials,
+adopter changes, a merge or a push. The current schema 3 lifecycle is used
+to record this closure until the selected replacement is implemented.

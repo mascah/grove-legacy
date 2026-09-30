@@ -84,14 +84,13 @@ implementation of its members.
 
 ## Next
 
-All work remains proposed. The written design in
-[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md) is reconciled
-around the owner's accepted derived-completion decision and ready for final
-owner review. Reuse those artifacts; do not restart design from this parent.
-After the design prerequisite is accepted and delivered, local delivery
-[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) precedes portable
-execution because it owns the shared lifecycle migration. The dependency
-graph is authoritative.
+The owner accepted the written design in
+[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md) at f376a6d, already
+on main. Reuse that baseline; do not restart design from this parent.
+Implementation work remains proposed and unassigned. Local delivery
+[G-260929-gm3m4](G-260929-gm3m4-clean-main-history-with.md) is the next assignment
+and precedes portable execution because it owns the shared lifecycle
+migration. The dependency graph is authoritative.
 When this milestone's prerequisites are delivered, the owner selects the
 trial participants, authorized repositories and execution limits; the
 assigned session records the trial evidence and unresolved adoption failures.

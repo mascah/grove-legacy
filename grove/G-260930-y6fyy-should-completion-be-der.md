@@ -49,4 +49,7 @@ resolves the completion-model question; it does not claim acceptance of
 all proposed interface or screen details. The
 [contracts](G-260930-84fnb-portable-workflow-contra.md) and
 [experience](G-260930-npw49-portable-workflow-experi.md) are reconciled around
-this answer for the design item's final review. No product code has changed.
+this answer. The owner subsequently reviewed and accepted both designs at
+f376a6d; that acceptance is recorded in
+[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md). No product code
+has changed.

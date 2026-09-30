@@ -141,8 +141,9 @@ mechanisms and lifecycle contracts change.
 
 ## Next
 
-Needs [G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md)'s final
-accepted design. The owner has settled the completion-model question in
+Ready for assignment: $grove-work G-260929-gm3m4. The owner accepted
+[G-260930-62nmj](G-260930-62nmj-design-the-portable-work.md)'s design at f376a6d,
+already on main. The completion-model question is settled in
 [G-260930-2qa4a](G-260930-2qa4a-derive-done-from-recorde.md); do not reopen it
 as an implementation preference. The
 [contracts design](G-260930-84fnb-portable-workflow-contra.md) owns its

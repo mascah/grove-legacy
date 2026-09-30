@@ -97,9 +97,9 @@ Needs G-260928-y2p5h. At assignment, use the accepted role and evidence
 contracts to choose the command/configuration details and isolation model.
 The combined implementation-to-review trial belongs to [G-260930-gwnb1](G-260930-gwnb1-prove-a-complete-workflo.md).
 
-The [contracts draft](G-260930-84fnb-portable-workflow-contra.md) proposes
+The accepted [contracts design](G-260930-84fnb-portable-workflow-contra.md) specifies
 the exact-candidate review and approval boundary, including controlled
 artifact changes after the candidate. Review evidence feeds the recorded
 acceptance and shared standing delivered by the local-delivery prerequisite;
-a clean review cannot itself establish acceptance or Done. The full written
-design awaits owner review.
+a clean review cannot itself establish acceptance or Done. The owner accepted
+the full written design at f376a6d, recorded in the design prerequisite.
