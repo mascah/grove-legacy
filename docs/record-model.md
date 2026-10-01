@@ -34,24 +34,25 @@ Under `run:`, `budget` is a positive decimal dollar amount and the others
 one word each. Without it every launch needs `--budget` and
 `--permission-mode`. A launch reads only its own checkout's `grove.yaml`.
 
-Under `policy:`, `budget` bounds the dollars of one sweep's resolution
-attempts and is required with `resolve`. `resolve`, a mapping whose
-optional `budget` bounds one attempt (else `run:`'s), allows one resolution
-attempt per target commit for a candidate that conflicts with the target,
-with the permission mode, model and effort of the `run:` beside the policy;
-without a permission mode there, it waits.
-`approve` takes `verify`, a required list of shell commands; `max_lines`, a
-positive count of added plus removed lines, the record's own file excluded;
-and `never`, project-relative `path.Match` patterns or `DIR/**`.
-`integrate: true` needs `approve`. A malformed policy is a diagnostic named
-`policy.KEY` that stops every command. Whatever it says, sweep accepts only
-a candidate in review that no other record shares, blocked by no open
-question, with nothing after it on its branch but its record, whose
-`current` reviews of it (or of an earlier commit only records changed
-since) each end `Open findings: none`, changing nothing outside the
-project, no `never` path and no binary file, within `max_lines`, and whose
-merge into the target passes every `verify` command in a temporary
-worktree.
+Under `policy:`, `budget` bounds one sweep's resolution spend and is required
+with `resolve`. That mapping permits one attempt per conflicting candidate
+and target commit; its optional `budget` overrides `run:`'s. Resolution uses
+the target's `run:` settings and waits without a permission mode.
+`approve` takes required `verify` commands; `max_lines` (positive added plus
+removed lines, excluding the work record); `never` (project-relative
+`path.Match` patterns or `DIR/**`); and boolean `allow_followups` (default
+false). `integrate: true` needs `approve`. Invalid policy stops every command
+with a `policy.KEY` diagnostic. Sweep requires one unshared candidate in
+review, no blocking question, only its record changed afterward, and every
+applicable current review complete with zero blockers. Follow-ups additionally
+need `allow_followups: true`. A review must
+examine the candidate or a commit since which only records changed. Changes
+must stay inside the project, avoid `never` paths and binaries, fit
+`max_lines`, and pass every `verify` command on the merged result in a
+temporary worktree.
+
+Review summaries and legacy compatibility follow `grove guide review`;
+incomplete or malformed reports always wait.
 
 Without `--project DIR`, the nearest `grove.yaml` upward from the current
 directory is used, the search stopping at the Git checkout root, or the

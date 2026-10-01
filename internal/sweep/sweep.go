@@ -34,10 +34,8 @@ import (
 	"github.com/mascah/grove/internal/versions"
 )
 
-// ClosingLine is how a review record says no finding, knowledge findings
-// included, remains open on the commit it examined: the reviewer's last
-// round ends with it and the author copies it into the record.
-const ClosingLine = "Open findings: none"
+// ClosingLine is the legacy zero-findings summary, retained for old reviews.
+const ClosingLine = project.LegacyReviewClosing
 
 // Acts an Item can plan.
 const (
@@ -55,8 +53,8 @@ type Item struct {
 
 	tip, checkout string // the branch's commit and its checkout's project directory
 	merge         versions.Merge
-	review        *project.Record // Approve: the review the policy consumes
-	budget        string          // Resolve: the attempt's budget
+	review        *reviewed // Approve: applicable reviews and their follow-ups
+	budget        string    // Resolve: the attempt's budget
 }
 
 // Sweep is one sweep's plan, read from the target's checkout.
@@ -280,16 +278,16 @@ func (s *Sweep) planApprove(ctx context.Context, it Item, r *project.Record, rec
 	if len(s.Policy.Verify) == 1 {
 		commands = "command"
 	}
-	it.Why = fmt.Sprintf("%s; review %s has no open finding; %d changed lines, no never path; verify with %d %s on the merged result, then %s", merge, review.ID, lines, len(s.Policy.Verify), commands, then)
+	it.Why = fmt.Sprintf("%s; review %s has %s; %d changed lines, no never path; verify with %d %s on the merged result, then %s", merge, review.ID, review.text(), lines, len(s.Policy.Verify), commands, then)
 	return it
 }
 
 // review finds the current reviews of the work that cover the candidate:
 // they examined it, or an earlier commit from which only records changed.
-// Every one must close with ClosingLine, so a later review's open finding
-// is never outvoted; the newest is the one the verdict names.
-func (s *Sweep) review(ctx context.Context, r *project.Record, records []*project.Record) (*project.Record, string) {
-	var found *project.Record
+// Every one must be complete and blocker-free, with any follow-ups explicitly
+// allowed by policy. One review never outvotes another; preserve all counts.
+func (s *Sweep) review(ctx context.Context, r *project.Record, records []*project.Record) (*reviewed, string) {
+	found := &reviewed{}
 	for _, o := range slices.Backward(records) {
 		if o.Type != "review" || o.Status != "current" || !slices.Contains(o.Work, r.ID) || o.Examined == "" {
 			continue
@@ -304,21 +302,40 @@ func (s *Sweep) review(ctx context.Context, r *project.Record, records []*projec
 				continue // it reviewed earlier code
 			}
 		}
-		closing := ""
-		for l := range strings.SplitSeq(string(o.Source), "\n") {
-			if l = strings.TrimSpace(l); strings.HasPrefix(l, "Open findings:") {
-				closing = l
+		report, err := project.ReadReviewSummary(o.Source)
+		if err != nil {
+			return nil, fmt.Sprintf("review %s of candidate %s %v", o.ID, short(r.Candidate), err)
+		}
+		if !report.Complete {
+			return nil, fmt.Sprintf("review %s of candidate %s is incomplete", o.ID, short(r.Candidate))
+		}
+		if report.Blockers != 0 {
+			return nil, fmt.Sprintf("review %s has %d blocking findings", o.ID, report.Blockers)
+		}
+		if report.Followups != 0 {
+			if s.Policy == nil || !s.Policy.AllowFollowups {
+				return nil, fmt.Sprintf("review %s has %d follow-ups; policy.approve.allow_followups is not true", o.ID, report.Followups)
 			}
+			found.followups = append(found.followups, fmt.Sprintf("%s: %d follow-ups", o.ID, report.Followups))
 		}
-		if closing != ClosingLine {
-			return nil, fmt.Sprintf("review %s of candidate %s does not end with %q", o.ID, short(r.Candidate), ClosingLine)
-		}
-		found = cmp.Or(found, o)
+		found.Record = cmp.Or(found.Record, o)
 	}
-	if found == nil {
+	if found.Record == nil {
 		return nil, fmt.Sprintf("no current review covers candidate %s", short(r.Candidate))
 	}
 	return found, ""
+}
+
+type reviewed struct {
+	*project.Record
+	followups []string
+}
+
+func (r *reviewed) text() string {
+	if len(r.followups) == 0 {
+		return "no open finding"
+	}
+	return "no blockers; " + strings.Join(r.followups, "; ")
 }
 
 // scope counts the lines the candidate changes against its merge base with
@@ -550,8 +567,8 @@ func (s *Sweep) approve(it Item, now time.Time, say func(string, ...any)) {
 		return
 	}
 	say("verified: the merge of %s with %s at %s passed %s", short(it.tip), s.Target, short(it.merge.Target), strings.Join(s.Policy.Verify, "; "))
-	verdict := fmt.Sprintf("delegated under %s: review %s examined %s with no open finding; merged with %s at %s, verification passed (%s); %s",
-		s.Attribution, it.review.ID, short(it.review.Examined), s.Target, short(it.merge.Target), strings.Join(s.Policy.Verify, "; "), s.produced(it))
+	verdict := fmt.Sprintf("delegated under %s: review %s examined %s with %s; merged with %s at %s, verification passed (%s); %s",
+		s.Attribution, it.review.ID, short(it.review.Examined), it.review.text(), s.Target, short(it.merge.Target), strings.Join(s.Policy.Verify, "; "), s.produced(it))
 	// ponytail: a retired branch (standing.Retired) is refused here, after
 	// the merge was verified; ask before verifying if that cost ever shows.
 	res, err := update.Approve(it.checkout, it.ID, verdict, update.Policy(strings.TrimPrefix(s.Attribution, "policy grove.yaml ")), now)

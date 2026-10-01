@@ -17,6 +17,7 @@ type Policy struct {
 	Resolve          bool     // policy.resolve: start a resolution attempt for a conflict
 	ResolveBudgetUSD string   // policy.resolve.budget; "" uses run: budget
 	Approve          bool     // policy.approve: approve a candidate that meets the conditions
+	AllowFollowups   bool     // policy.approve.allow_followups: explicit acceptance of tracked nonblockers
 	Verify           []string // policy.approve.verify: commands the merged result must pass
 	MaxLines         int      // policy.approve.max_lines; 0 is no bound
 	Never            []string // policy.approve.never: paths whose change always waits
@@ -69,6 +70,11 @@ func (m *metadata) policyField() *Policy {
 	}
 	if approve := top.section("approve", "a mapping of "+Choices(PolicyApproveKeys)); approve != nil {
 		p.Approve = true
+		if n, ok := approve.fields["allow_followups"]; ok {
+			if n.Kind != yaml.ScalarNode || n.Tag != "!!bool" || n.Decode(&p.AllowFollowups) != nil {
+				approve.problem("allow_followups", "expected true or false")
+			}
+		}
 		for key := range approve.fields {
 			if !slices.Contains(PolicyApproveKeys, key) {
 				approve.problem(key, "unknown key; policy.approve takes "+Choices(PolicyApproveKeys))

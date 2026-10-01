@@ -357,7 +357,7 @@ every review through it, a fresh one per gate, and pass it: the checkout's
 path; the exact commit, or base and tip, under review; the record's path with
 its acceptance and constraints; the plan's path; the commands it may run;
 and, for a re-review, the findings and what was done about each. It returns
-findings with evidence and never edits; its closing line goes into a review
+findings with evidence and never edits; its summary goes into a review
 record, or, in a compact handoff that writes none (step 8), into the record's
 Evidence with the commit it examined. If the
 harness cannot supply an independent reviewer, say so; a self-review is never
@@ -372,8 +372,12 @@ defines, contradicts a settled term or an accepted decision, depends on a
 choice still open, or implements a consequential choice no decision explains.
 Each is a finding for the author to reconcile, not one the reviewer settles.
 
-Fix consequential findings with regressions, then re-review. Allow at most
-three fix/review rounds per review gate. After the third, stop: preserve the
+Fix blockers with regressions, then re-review the changed rule, neighboring
+states and affected callers; repeat the full review when scope warrants it.
+Reconcile a changed lifecycle rule before fixing callers. Preserve follow-ups
+and their dispositions without starting another full round solely for them;
+they cannot conceal unmet acceptance. Do not downgrade the reviewer's finding.
+Allow at most three fix/review rounds per review gate. After the third, stop: preserve the
 changes and the open findings in the record and hand off. Exhausting the cap is
 not acceptance.
 
@@ -446,11 +450,12 @@ rule that an implementation session never approves its own candidate.
 
 Record review evidence where the repository keeps it: a review record with
 its `work` and the `examined` commit where the schema has them, otherwise
-prose and links, ending with the last round's closing line (`Open findings:
-none`, or their number) as the reviewer gave it. A compact handoff writes a
+prose and links, ending with the last round's versioned summary as the
+reviewer gave it (format in `grove guide review`). Keep
+historical closing lines unchanged. A compact handoff writes a
 review record only where the record or its plan asks for one, or where the
-project's standing `policy:` delegates approval, which reads the closing line
-from a review record; otherwise the closing line, the commit the review
+project's standing `policy:` delegates approval, which reads the summary
+from a review record; otherwise the summary, the commit the review
 examined and each finding's disposition go into the record's Evidence. A review record holds evidence; it
 is not approval, and there is no run schema.
 
@@ -470,7 +475,7 @@ candidate to human judgment:
      runs them as given.
    - **Compact:** the branch, base and candidate commit; one line of
      evidence per acceptance item; the verification commands, their results
-     and the commit they ran at; the review's closing line with the commit
+     and the commit they ran at; the review's summary with the commit
      it examined and each finding's disposition, or the review record that
      holds them; a line for
      each limit the judge must know; and the same two integrator commands.

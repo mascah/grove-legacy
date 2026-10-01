@@ -700,6 +700,12 @@ reason; `--dry-run` stops there and writes nothing:
   that meets the policy.
 
 Work already accepted waits: delivering it is the owner's `integrate`.
+Every applicable current review must be complete and blocker-free. Follow-ups
+wait unless the target's committed policy sets
+`policy.approve.allow_followups: true`; existing policies remain strict.
+The preview and verdict disclose each applicable review's follow-up count.
+The [review guide](work-review.md) owns the report format and compatibility;
+the [record model](record-model.md) owns delegation conditions.
 
 To approve, it predicts the merge again, since an earlier act of the same
 sweep may have moved the target, and merges the branch's tip into that
@@ -708,9 +714,10 @@ target commit in a temporary worktree outside every checkout, and runs each
 failure leaves the target and the record unchanged and prints the command's
 last output. Once they pass, it approves in the branch's checkout with the
 verdict `delegated under policy grove.yaml sha256:…: review ID examined X
-with no open finding; merged with TARGET at T, verification passed
+with SUMMARY; merged with TARGET at T, verification passed
 (COMMANDS); attempt A produced it for N USD` (or that no Grove attempt is
-recorded as producing it), with `approved_by: policy sha256:…`, the
+recorded as producing it). SUMMARY reports no findings, or no blockers with
+the applicable reviews' follow-up counts, with `approved_by: policy sha256:…`, the
 policy's revision; then, with `integrate: true`, it delivers as `integrate`
 does, refused if the target moved from the verified commit. The delivery's
 message says `Integrated under policy …`, and the sweep prints the `git

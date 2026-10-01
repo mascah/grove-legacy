@@ -146,7 +146,7 @@ var (
 	RunKeys           = []string{"budget", "permission_mode", "model", "effort"}
 	PolicyKeys        = []string{"budget", "resolve", "approve", "integrate"}
 	PolicyResolveKeys = []string{"budget"}
-	PolicyApproveKeys = []string{"verify", "max_lines", "never"}
+	PolicyApproveKeys = []string{"verify", "max_lines", "never", "allow_followups"}
 )
 
 // parseConfig is the configuration half of LoadFS; checkRoot, when given,

@@ -267,14 +267,17 @@ closing sentence cannot alone be proof that all those inputs were checked.
 Grove validates the result before treating the independent-review
 requirement as satisfied. Review failure never becomes an empty findings list.
 
-Selected follow-up, not current policy behavior:
-[G-261001-mbjwz](G-261001-mbjwz-separate-blocking-review.md) distinguishes
+Implemented in the review-policy candidate
+[G-261001-mbjwz](G-261001-mbjwz-separate-blocking-review.md), pending delivery:
+review distinguishes
 acceptance/correctness blockers from tracked improvements. A documentation
 defect that misstates supported behavior can block; a severity label cannot
 waive acceptance. The complete report retains every finding and disposition.
 An explicit, validated summary carries completeness and the two categories
-to the policy consumer. Its exact representation and delegation compatibility
-are implementation design, with no silent broadening of existing mandates.
+to the policy consumer. The [review guide](../docs/work-review.md) owns the
+terminal format; the [record model](../docs/record-model.md) owns the explicit
+allow_followups opt-in. Existing
+mandates remain strict unless their owner changes that policy.
 Existing nonzero review counts cannot be reinterpreted as only follow-ups.
 Repair reviews cover the changed rule, neighboring states and affected
 callers; a changed lifecycle rule is reconciled before caller-specific fixes.

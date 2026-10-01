@@ -52,8 +52,11 @@ a record.
 ## What you return
 
 - Findings, most consequential first, each with its file and line or
-  command, the evidence, and why it matters. Say which you verified by
-  running something and which you read.
+  command, evidence, disposition and category: **blocker** or **follow-up**.
+  A blocker is unmet acceptance, a correctness or authority defect, or
+  missing required verification. Misleading documentation can block. A
+  follow-up improves the result without invalidating acceptance. Severity
+  alone does not decide the category. Say what you ran and what you read.
 - For a re-review, the disposition of each earlier finding: resolved, still
   open, or disputed, with evidence.
 - Limits: what you did not read or could not run.
@@ -61,7 +64,26 @@ a record.
 Say plainly when you found nothing consequential. Do not soften a finding,
 and do not report a preference as a defect.
 
-End with one line, exactly `Open findings: none` when no finding of any
-weight, knowledge findings included, remains open on the commit you
-examined, and otherwise `Open findings: N` with their number. A standing
-policy that delegates approval reads that line from the review record.
+For a repair review, check the fix, neighboring states and affected callers;
+repeat the whole review when changed scope warrants it. If a finding changes
+the lifecycle rule, identify the rule to reconcile before caller-specific
+fixes. Preserve previous findings and their dispositions.
+
+End with exactly one final nonempty summary line, for example:
+
+```text
+Review v1: complete; blockers=0; follow-ups=1
+```
+
+The format is `Review v1: STATE; blockers=N; follow-ups=N`: STATE is
+`complete` or `incomplete`; counts are nonnegative decimal integers within
+the platform's integer range. Missing, malformed, unsupported-version or
+overflowed summaries cannot satisfy a review gate. Count unresolved findings
+by category. Use `incomplete` if required review or verification was not
+completed, even with zero findings. The implementing
+session copies your summary unchanged; it cannot downgrade your findings.
+Legacy terminal `Open findings: none` remains complete with zero findings;
+nonzero legacy counts cannot become follow-ups. A versioned report cannot
+fall back to a legacy line appended beneath it. Keep historical closing lines
+unchanged. Delegated approval of follow-ups needs explicit policy permission;
+this summary is not approval.

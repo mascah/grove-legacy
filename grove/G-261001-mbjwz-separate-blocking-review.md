@@ -2,13 +2,17 @@
 id: "G-261001-mbjwz"
 type: work
 title: "Separate blocking review findings from follow-ups"
-status: proposed
+status: accepted
 created: "2026-10-01T02:17:15Z"
-updated: "2026-10-01T02:22:08Z"
+updated: "2026-10-01T02:51:12Z"
 kind: feature
 size: small
 depends_on: ["G-260930-0s29t"]
 relates_to: ["G-261001-fg05z", "G-260928-n4f1q", "G-260930-84fnb", "G-260930-60c3d"]
+candidate: "cd8f821026eba0e2e5e752fb14a597c527300495"
+approved: "cd8f821026eba0e2e5e752fb14a597c527300495"
+approved_by: owner
+approved_context: "sha256:b3570bb87328ec81288fc745f68978a18a6d1b2d970e59d80093bf8a8de6f69d"
 ---
 
 ## Outcome
@@ -39,7 +43,7 @@ implementer cannot silently downgrade the reviewer's finding. Preferences
 are not defects. Keep the complete historical review, including its original
 examined commit and closing line.
 
-Proposed implementation: an explicit, validated review summary consumed by
+Selected implementation: an explicit, validated review summary consumed by
 the policy, with complete/incomplete state and separate blockers and
 follow-ups. Its exact representation and configuration change belong in the
 implementation plan. Legacy zero-finding reviews keep their meaning;
@@ -73,9 +77,32 @@ before changing the review contract used to judge later work.
    Review this bounded contract change independently; keep the report format
    reusable by the later independent-review operation.
 
+## Evidence
+
+Branch `worktree-G-261001-mbjwz`, base `bf86caa`; implementation `4a2f64d`.
+Candidate is the evidence commit named in frontmatter, followed only by this record's handoff.
+[Plan](G-261001-hcb0h-plan-review-summaries-an.md) committed at `4c9846a`.
+
+1. The review guide owns a strict versioned summary separating completeness, blockers and follow-ups; the work guide preserves the reviewer's judgment.
+2. Every applicable report must be complete and blocker-free; follow-ups need explicit `policy.approve.allow_followups: true`. Preview and verdict disclose all applicable follow-ups. Freshness, scope and verification gates remain.
+3. Existing configurations default to false; legacy clean reviews still pass and nonzero legacy reviews still wait. Historical reports are unchanged.
+4. New parser/configuration and real sweep fixtures cover the required refusal states, conflicting reviews, stale code, overflow and delivery. Actual preview: `review G-260101-00005 has no blockers; G-260101-00005: 2 follow-ups; ... then approve and integrate`.
+5. Model, review/work guides, command documentation and help agree; the shared parser is reusable by later review orchestration.
+
+Verification on the implementation tree committed as `4a2f64d`: the new tests first failed against the old contract, then passed. Focused `go test -short . ./internal/project ./internal/sweep`, `go vet ./...`, `gofmt -l .`, `git diff --check` and `go run ./cmd/grove check` passed (283 records); 80 changed-document local links and fences checked.
+One `go test -count=1 -timeout 120s ./...` passed every package except the TUI `TestTerminal/attempt_lifecycle` timeout waiting for its expected drawing. Only `go test -count=1 -timeout 120s ./internal/tui` was rerun and passed (11.507s). The full run was not wholly green; the same timing symptom was recorded in the prerequisite.
+Independent [review G-261001-5hkbh](G-261001-5hkbh-review-of-blocking-findi.md) examined `4a2f64d`, reran focused tests and reported `Review v1: complete; blockers=0; follow-ups=0`.
+Limits: repository policy was not opted into allowing follow-ups. Provider trials, the future review runner and imported-branch eligibility are outside this change; no claim is made for them.
+
 ## Next
 
-Authorized for follow-through in the current conversation. Wait for
-G-260930-0s29t's walkthrough judgment and delivery, then prepare the exact
-summary and delegation-compatibility design in a separate work branch. Do
-not expand this into provider execution or a new review runner.
+Ready for owner judgment of the candidate in frontmatter. After approval, the integrator runs these commands from this checkout; keep the source workspace for inspection:
+
+```sh
+go run ./cmd/grove approve G-261001-mbjwz "Owner approved the recorded candidate and review-policy behavior."
+go run ./cmd/grove --project /Users/mascah/GitHub/mascah/grove integrate G-261001-mbjwz --keep
+```
+
+Then start [G-261001-62n4p](G-261001-62n4p-isolate-workspace-eligib.md) in a fresh worktree from main. That work is already authorized; it waits for this prerequisite's delivery. No merge or push of this candidate is implied by the earlier approval of G-260930-0s29t.
+
+Verdict on candidate cd8f821, 2026-10-01: Owner approved candidate cd8f821026eba0e2e5e752fb14a597c527300495 and authorized local integration and continuation with workspace eligibility in this conversation.
