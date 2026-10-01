@@ -72,9 +72,61 @@ func (s *Standing) Text() string {
 
 // Ref retains a squash delivery's submitted tip, and with it the candidate
 // and its review and acceptance, through cleanup and garbage collection,
-// for Audit alone. It is outside refs/heads, so it is evidence, never a
-// work branch.
+// for Audit, and for Retired to tell a delivered branch. It is outside
+// refs/heads, so it is evidence, never a work branch.
 func Ref(submitted string) string { return "refs/grove/submitted/" + submitted }
+
+// Delivery is a squash delivery a branch holds: its commit on the target and
+// the work that commit names.
+type Delivery struct {
+	Commit string
+	Work   []string
+}
+
+// Holds says which delivery retires branch, the opening of every refusal.
+func (d *Delivery) Holds(branch string) string {
+	return fmt.Sprintf("%s holds the delivery %s of %s", branch, short(d.Commit), strings.Join(d.Work, ", "))
+}
+
+// Retired is the delivery tip holds, or nil: a retained submission tip
+// contains and the target does not, whose squash commit is on the target's
+// first parents. A workspace holding one is retired from execution
+// (G-260930-tcc9w): kept for inspection, and no command acts on it again,
+// whichever work the delivery names and whichever would come next. Every
+// command that would act asks here, and none narrows the answer:
+//
+//   - run refuses it named with --branch, and moves the default name on to
+//     -2, -3, …;
+//   - approve and feedback refuse in its checkout, and so does resolve,
+//     whose feedback that is, before anything is written;
+//   - integrate never delivers from it and refuses work in review or
+//     accepted only there; its rerun for work that reads done only cleans up.
+//
+// A hand edit there is preserved and never delivered. A submission retained
+// whose target never advanced, or one the target contains as an ordinary
+// merge, retires nothing. It walks the target's first parents, so no
+// reading asks.
+// ponytail: finds submissions through refs/grove alone, so a clone that
+// fetched the branch without them cannot tell; fetch refs/grove/* with it.
+func Retired(ctx context.Context, root, target, tip string) (*Delivery, error) {
+	out, err := repo.Command(ctx, root, "for-each-ref", "--merged="+tip, "--format=%(objectname)", "refs/grove/submitted/").Output()
+	if err != nil {
+		return nil, fmt.Errorf("the retained submissions in %s could not be read: %v", tip, err)
+	}
+	for s := range strings.FieldsSeq(string(out)) {
+		if repo.Command(ctx, root, "merge-base", "--is-ancestor", s, "refs/heads/"+target).Run() == nil {
+			continue
+		}
+		out, err := repo.Command(ctx, root, "log", "-1", "--first-parent", "--format=%H%n%(trailers:key=Grove-Work,valueonly)", "--fixed-strings", "--grep=Grove-Submitted: "+s, "refs/heads/"+target).Output()
+		if err != nil {
+			return nil, fmt.Errorf("%s's history could not be read: %v", target, err)
+		}
+		if lines := strings.Fields(string(out)); len(lines) != 0 {
+			return &Delivery{Commit: lines[0], Work: lines[1:]}, nil
+		}
+	}
+	return nil, nil
+}
 
 // Of is a record's standing from its file alone, before the target is read:
 // an accepted record whose acceptance applies stays Unknown until Judge.

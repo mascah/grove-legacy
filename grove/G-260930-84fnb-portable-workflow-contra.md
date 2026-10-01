@@ -13,7 +13,11 @@ The owner accepted the original written architecture and experience design
 at f376a6d on 2026-09-29 (local date). On 2026-09-30 they reconsidered its
 delivery and execution scope after the local-delivery implementation and
 selected [G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md).
-This revision reconciles those selected boundaries. Preparation, recovery
+On 2026-09-30 they also authorized
+[G-261001-fg05z](G-261001-fg05z-simplify-workflow-bounda.md) after reviewing
+the workspace implementation's churn: settle the local walkthrough, separate
+blocking review findings from follow-ups, and isolate workspace eligibility
+before provider extraction. This revision reconciles those selected boundaries. Preparation, recovery
 and interface details below are proposed implementation design for review;
 the owner's decisions do not claim those details have been implemented.
 
@@ -169,6 +173,15 @@ failure never undoes Done or by itself blocks a safe fresh next workspace.
 Receipt/ownership checks run at the mutation boundary, not by adding a
 history walk to ordinary reads.
 
+The [command operation table](../docs/commands.md#workspace-operation-table)
+owns the current implementation's per-operation answers and limitations.
+The workspace follow-up
+[G-261001-62n4p](G-261001-62n4p-isolate-workspace-eligib.md) must map those
+callers to common eligibility and ownership facts. Delivery may depend on
+those facts without importing provider invocation/event handling. Its plan
+must identify obsolete recovery rules removed and existing-assignment
+compatibility retained; moving code alone does not demonstrate simplification.
+
 ## Contract 2: checkpoint and continuation
 
 The checkpoint supplies facts needed by another session:
@@ -253,6 +266,18 @@ references, provenance and complete/incomplete review state. A provider's
 closing sentence cannot alone be proof that all those inputs were checked.
 Grove validates the result before treating the independent-review
 requirement as satisfied. Review failure never becomes an empty findings list.
+
+Selected follow-up, not current policy behavior:
+[G-261001-mbjwz](G-261001-mbjwz-separate-blocking-review.md) distinguishes
+acceptance/correctness blockers from tracked improvements. A documentation
+defect that misstates supported behavior can block; a severity label cannot
+waive acceptance. The complete report retains every finding and disposition.
+An explicit, validated summary carries completeness and the two categories
+to the policy consumer. Its exact representation and delegation compatibility
+are implementation design, with no silent broadening of existing mandates.
+Existing nonzero review counts cannot be reinterpreted as only follow-ups.
+Repair reviews cover the changed rule, neighboring states and affected
+callers; a changed lifecycle rule is reconciled before caller-specific fixes.
 
 Approval binds C, the acceptance/context revision and the authorizing person
 or policy. It is separate from the review and from delivery. Feedback
@@ -461,6 +486,19 @@ an accepted record on the target can misstate ordinary Done; the owner
 accepted this trust boundary, with checks at supported mutations and an
 optional audit. Do not compensate with a historical verifier on every read.
 
+**Imported workspace eligibility.** In the unmerged workspace implementation
+at a448a6c, retirement also reads the local evidence refs. A clone receiving
+a kept implementation branch without them cannot recognize its retirement.
+This does not change its reading of Done. It is a limitation of that
+implementation, not the portable contract.
+
+The selected boundary is that fresh work and ordinary completion reads need
+no audit refs, while an imported old implementation branch may be reused
+only when its eligibility is established. Missing evidence cannot be taken
+as proof of eligibility. G-261001-62n4p owns the bounded transport/reconciliation
+or derivation design and its source-repository/fresh-clone demonstration.
+No inspection silently fetches, changes work status or starts an attempt.
+
 The current view still uses ancestry and exact source observations to
 preserve real later edits and divergence. Retired workspaces and retained
 evidence do not acquire execution authority from that view. Source selection
@@ -520,7 +558,9 @@ cannot prove.
 | --- | --- | --- |
 | Schema 4 acceptance, cheap standing, local squash, optional audit | Retain the delivered contract and focused regressions; no second migration | G-260929-gm3m4 (delivered) |
 | Execution bases, proposal admission, workspace retirement, cleanup | Narrow to the selected supported paths; remove repeated squash delivery and carried-branch recoveries | G-260930-0s29t |
-| Provider command/events, capabilities, ownership and limits | Extract common operations and exercise Claude and Codex on the narrowed workspace contract | G-260928-y2p5h |
+| Blocking findings and tracked follow-ups | Change review reports and their policy consumer together, with explicit delegation compatibility | G-261001-mbjwz |
+| Shared workspace eligibility and ownership | Separate delivery from provider handling; remove obsolete recoveries and demonstrate imported-branch eligibility | G-261001-62n4p |
+| Provider command/events, capabilities and limits | Exercise Claude and Codex using the delivered workspace boundary | G-260928-y2p5h |
 | Independent review operation | Bind exact candidate and preserve complete/incomplete evidence | G-260928-n4f1q |
 | Delegated acceptance judgment | Add configured, bounded LLM policy condition; move inside the milestone | G-260928-c5j9d |
 | Finite selected sequence, both delivery modes, operation recovery | Coordinate existing operations, authority and remaining limits; expose mode and waits in current CLI/TUI | G-260930-yfh91 |
@@ -528,9 +568,10 @@ cannot prove.
 | Protected hosted delivery | Consume the exercised local contract; keep host waits and audit availability distinct from reading Done | G-260930-4742q |
 | Interactive entry and assembled experience | Consume the exercised operations; native resume stays optional after workspace cleanup | G-260929-04svs and G-260930-r2k4g |
 
-The workspace follow-up depends on delivered local integration; provider
-extraction depends on that follow-up because both affect workspace creation
-and selection. Review uses portable execution; the judge uses its role and
+The local workspace work depends on delivered integration. The review-policy
+follow-up takes its judged baseline, then the workspace-boundary refactor
+uses that review contract. Provider extraction depends on that refactor
+because both affect workspace creation and selection. Review uses portable execution; the judge uses its role and
 independent evidence. Sequence progression consumes all of them. The complete
 local proof consumes the sequence before hosted delivery and the assembled
 experience. Work records' depends_on fields own this order.

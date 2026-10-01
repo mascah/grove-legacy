@@ -372,7 +372,7 @@ func TestBoardReviewWorkflow(t *testing.T) {
 	s.press("i")
 	s.want("Squash branch feature onto main, delivering G-260101-00001? y/n   (runs in ") // the temp path is truncated at 160 columns
 	s.press("y")
-	s.want("Also delete branch feature and remove its worktree? y/n   (")
+	s.want("Remove branch feature and its worktree? y/n, n keeps them   (")
 	s.press("n")
 	s.want("Integration of G-260101-00001", "acceptance: candidate "+short+" of G-260101-00001 accepted by owner on branch feature at ", "delivery: squash commit ", "done: G-260101-00001 is done: delivered to main, proved: squashed as ")
 	if got := gitIn(t, root, "show", "HEAD:docs/records/work/renamed.md"); !strings.Contains(got, "status: accepted") || !strings.Contains(got, "approved: \""+candidate+"\"") {

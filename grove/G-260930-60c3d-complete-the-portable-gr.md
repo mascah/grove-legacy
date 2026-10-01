@@ -4,9 +4,9 @@ type: work
 title: "Complete the portable Grove adoption milestone"
 status: proposed
 created: "2026-09-30T01:05:45Z"
-updated: "2026-09-30T20:22:04Z"
+updated: "2026-10-01T02:22:09Z"
 size: large
-members: ["G-260930-62nmj", "G-260929-gm3m4", "G-260930-0s29t", "G-260928-y2p5h", "G-260928-n4f1q", "G-260928-c5j9d", "G-260930-yfh91", "G-260930-gwnb1", "G-260929-04svs", "G-260930-4742q", "G-260930-r2k4g"]
+members: ["G-260930-62nmj", "G-260929-gm3m4", "G-260930-0s29t", "G-261001-mbjwz", "G-261001-62n4p", "G-260928-y2p5h", "G-260928-n4f1q", "G-260928-c5j9d", "G-260930-yfh91", "G-260930-gwnb1", "G-260929-04svs", "G-260930-4742q", "G-260930-r2k4g"]
 depends_on: ["G-260930-r2k4g"]
 relates_to: ["G-260930-e8jj7", "G-260930-2qa4a", "G-260930-tcc9w"]
 ---
@@ -83,7 +83,8 @@ The owner judges both the experience and the limits of the resulting claims.
 ## Work and dependencies
 
 The members are the journey/contracts design, delivered local integration,
-the bounded workspace follow-up, portable execution, independent review,
+the bounded workspace follow-up, blocking/follow-up review policy, shared
+workspace eligibility, portable execution, independent review,
 delegated judgment, finite sequence progression, complete local proof,
 interactive continuation, hosted delivery and cohesive experience. Each
 record owns its outcome; membership itself assigns nothing.
@@ -107,11 +108,21 @@ baseline, not an instruction to ignore these amendments.
 
 G-260929-gm3m4 is delivered; preserve its evidence and schema 4 reading
 contract. Its unsupported continuation cases are addressed by new bounded
-work G-260930-0s29t. G-260930-yfh91 separately owns automatic progression.
+work G-260930-0s29t. The owner accepted its six local walkthrough behaviors
+on 2026-09-30; candidate approval and delivery remain pending. On
+2026-09-30 the owner authorized
+[G-261001-fg05z](G-261001-fg05z-simplify-workflow-bounda.md): settle that
+baseline, deliver G-261001-mbjwz's review-policy distinction, then
+G-261001-62n4p's workspace boundary before provider extraction. Their
+depends_on edges own the sequence. This is follow-through on the accepted
+direction, not a new completion schema or a whole-application rewrite.
+G-260930-yfh91 separately owns automatic progression.
 Existing provider, review, judge, proof, hosted and experience proposals have
 been reconciled to consume these boundaries. The dependency graph owns order.
 
-No implementation or paid trial is assigned by this reconciliation. The
+The earlier reconciliation assigned no implementation. The later owner
+authorization covers the two bounded follow-ups above; it assigns no paid
+provider trial and does not approve or deliver G-260930-0s29t. The
 owner releases the adopter hold; recommend doing so after the small local
 trials demonstrate the chosen workflow and direct-file behavior, rather
 than treating a schema conversion or passing fixture suite as usability

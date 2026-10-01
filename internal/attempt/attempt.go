@@ -36,6 +36,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -44,6 +45,7 @@ import (
 	"github.com/mascah/grove/internal/deps"
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
+	"github.com/mascah/grove/internal/standing"
 	"github.com/mascah/grove/internal/update"
 	"golang.org/x/sys/unix"
 )
@@ -102,6 +104,7 @@ type Launch struct {
 	Effort         string     `json:"effort,omitempty"`       // requested reasoning effort, passed as --effort
 	Until          string     `json:"until,omitempty"`        // the assignment's bound: "plan", or "" to run through
 	ResumedFrom    string     `json:"resumed_from,omitempty"` // the attempt whose session this one forks (--resume)
+	Keep           bool       `json:"keep,omitempty"`         // integrate keeps the workspace after delivery (--keep)
 	// Reviewer is the sha256 of the worktree's grove-reviewer definition at
 	// launch, "none" when it had none, "" for an attempt before this field.
 	Reviewer string `json:"reviewer,omitempty"`
@@ -231,6 +234,7 @@ type Request struct {
 	Effort         string
 	Until          string // "plan" ends the attempt at its plan; "" runs through
 	Resume         bool   // fork the latest finished attempt's session on this branch
+	Keep           bool   // keep the workspace after its delivery
 	Branch         string // default worktree-ID
 	Worktree       string // default <root>/.claude/worktrees/<branch>
 	Expect         string // one work's record revision the caller read in root; "" checks nothing
@@ -272,12 +276,14 @@ var flags = []struct {
 // "--name=VALUE", into req, each at most once; it reports false for any
 // other argument.
 func Flag(args []string, i *int, req *Request) (bool, error) {
-	if args[*i] == "--resume" {
-		if req.Resume {
-			return true, errors.New("--resume may only be supplied once")
+	for name, set := range map[string]*bool{"--resume": &req.Resume, "--keep": &req.Keep} {
+		if args[*i] == name {
+			if *set {
+				return true, errors.New(name + " may only be supplied once")
+			}
+			*set = true
+			return true, nil
 		}
-		req.Resume = true
-		return true, nil
 	}
 	for _, f := range flags {
 		value, inline := strings.CutPrefix(args[*i], f.name+"=")
@@ -329,7 +335,7 @@ func Dir(root string) (string, error) {
 // prepared is a launch checked before anything is written.
 type prepared struct {
 	launch       *Launch
-	head         string
+	head         string // the commit a new branch starts from: the target's tip, or HEAD
 	branchExists bool   // the branch exists, with or without a worktree
 	source       string // --resume: the session to fork, "" otherwise
 }
@@ -387,20 +393,57 @@ func prepare(req Request) (*prepared, error) {
 		return nil, fmt.Errorf("this checkout's HEAD could not be read: %v", err)
 	}
 	head = strings.TrimSpace(head)
-	branch := req.Branch
-	if branch == "" {
-		branch = "worktree-" + strings.Join(req.IDs, "-")
+	// A new workspace starts from the target's tip (G-260930-tcc9w), without
+	// one from HEAD; an existing branch continues where it is.
+	start := head
+	if p.Target != "" {
+		tip, err := repo.Git(root, "rev-parse", "-q", "--verify", "refs/heads/"+p.Target+"^{commit}")
+		if err != nil {
+			return nil, fmt.Errorf("the target %s cannot be read, and a new workspace starts from it", p.Target)
+		}
+		start = strings.TrimSpace(tip)
 	}
-	worktree := req.Worktree
-	if worktree == "" {
-		worktree = filepath.Join(root, ".claude", "worktrees", branch)
-	} else if !filepath.IsAbs(worktree) {
-		worktree = filepath.Join(root, worktree)
-	}
-	worktree = filepath.Clean(worktree)
-	base, reused, exists, err := locate(root, branch, worktree, head)
-	if err != nil {
-		return nil, err
+	// A branch holding a delivery is retired (standing.Retired) and never
+	// run again. The default name, given or not (the board names it with its
+	// checkout), then moves on to -2, -3, …, in its own checkout, so a
+	// reopened item's fresh workspace never collides with a kept one; the
+	// preview says so.
+	name := "worktree-" + strings.Join(req.IDs, "-")
+	var branch, worktree, base string
+	var reused, exists bool
+	var skipped []string
+	fresh := req.Branch == "" || req.Branch == name
+	for n := 1; ; n++ {
+		branch, worktree = req.Branch, req.Worktree
+		if fresh {
+			branch = name
+			if n > 1 {
+				branch, worktree = name+"-"+strconv.Itoa(n), ""
+			}
+		}
+		if worktree == "" {
+			worktree = filepath.Join(root, ".claude", "worktrees", branch)
+		} else if !filepath.IsAbs(worktree) {
+			worktree = filepath.Join(root, worktree)
+		}
+		worktree = filepath.Clean(worktree)
+		if base, reused, exists, err = locate(root, branch, worktree, start); err != nil {
+			return nil, err
+		}
+		if !exists || p.Target == "" {
+			break
+		}
+		d, err := standing.Retired(context.Background(), root, p.Target, base)
+		if err != nil {
+			return nil, err
+		}
+		if d == nil {
+			break
+		}
+		if !fresh {
+			return nil, fmt.Errorf("%s: a delivered workspace is kept for inspection and never run again; launch without --branch for a fresh one from %s", d.Holds(branch), p.Target)
+		}
+		skipped = append(skipped, d.Holds(branch)+" and is kept for inspection, never run again")
 	}
 	var resumed *View
 	if req.Resume {
@@ -413,11 +456,22 @@ func prepare(req Request) (*prepared, error) {
 	if err != nil {
 		return nil, err
 	}
+	for _, k := range skipped {
+		s.Notes = append(s.Notes, k+"; this launch uses "+branch)
+	}
 	for _, m := range s.Members {
 		if dirty, err := repo.Git(root, "status", "--porcelain", "--", m.Path); err != nil {
 			return nil, err
 		} else if strings.TrimSpace(dirty) != "" {
 			return nil, fmt.Errorf("%s has uncommitted changes in this checkout; commit them so the attempt sees them", m.Path)
+		}
+	}
+	if !exists && start != head {
+		if s.Admitted, err = admission(p, s.Order, head, start); err != nil {
+			return nil, err
+		}
+		if len(s.Admitted) != 0 {
+			s.Source = head
 		}
 	}
 	if m := s.Members[0]; req.Expect != "" && m.Revision != req.Expect {
@@ -431,20 +485,24 @@ func prepare(req Request) (*prepared, error) {
 	}
 	prefix = filepath.FromSlash(strings.TrimSuffix(strings.TrimSpace(prefix), "/"))
 	// The worktree holds only what is committed, so a skill init wrote and
-	// nobody committed is absent there. A new branch is checked in HEAD
-	// before it exists: kept at a HEAD without the skill, it would refuse
-	// every later launch too.
+	// nobody committed is absent there. A new branch is checked at the commit
+	// it would start from before it exists: kept at a commit without the
+	// skill, it would refuse every later launch too.
 	skill := filepath.Join(prefix, SkillPath)
 	if !exists {
-		if _, err := repo.Git(root, "cat-file", "-e", head+":"+filepath.ToSlash(skill)); err != nil {
-			return nil, fmt.Errorf("%s is not committed at HEAD %s, so the attempt's worktree would not hold the grove-work skill its prompt names; commit the files grove init wrote and launch again", skill, short(head))
+		where := "HEAD " + short(start)
+		if start != head {
+			where = "the target " + p.Target + " at " + short(start)
+		}
+		if _, err := repo.Git(root, "cat-file", "-e", start+":"+filepath.ToSlash(skill)); err != nil {
+			return nil, fmt.Errorf("%s is not committed at %s, so the attempt's worktree would not hold the grove-work skill its prompt names; commit the files grove init wrote and launch again", skill, where)
 		}
 		for _, path := range []string{SkillPath, ReviewerPath} {
-			content, err := repo.Git(root, "cat-file", "blob", head+":"+filepath.ToSlash(filepath.Join(prefix, path)))
+			content, err := repo.Git(root, "cat-file", "blob", start+":"+filepath.ToSlash(filepath.Join(prefix, path)))
 			if err != nil {
 				continue // the reviewer's absence is warned of at launch
 			}
-			if err := incompatible(prefix, path, "HEAD "+short(head), content); err != nil {
+			if err := incompatible(prefix, path, where, content); err != nil {
 				return nil, err
 			}
 		}
@@ -470,7 +528,7 @@ func prepare(req Request) (*prepared, error) {
 	l := &Launch{
 		Work: s.Selected[0], Project: root, Target: p.Target, Selection: s,
 		Base: base, Branch: branch, Worktree: worktree, Prefix: prefix, WorktreeReused: reused,
-		Model: req.Model, Effort: req.Effort, Until: req.Until,
+		Model: req.Model, Effort: req.Effort, Until: req.Until, Keep: req.Keep,
 		BudgetUSD: req.BudgetUSD, PermissionMode: req.PermissionMode,
 	}
 	var source string
@@ -481,7 +539,7 @@ func prepare(req Request) (*prepared, error) {
 	if req.Digest != "" && req.Digest != s.Digest {
 		return nil, fmt.Errorf("the assignment changed since its preview: its digest is %s, not %s; what it would run now:\n%s\npreview it again (run --dry-run) before launching", s.Digest, req.Digest, strings.Join(Explain(l, func(v string) string { return v }), "\n"))
 	}
-	return &prepared{launch: l, head: head, branchExists: exists, source: source}, nil
+	return &prepared{launch: l, head: start, branchExists: exists, source: source}, nil
 }
 
 // resumeSource is the newest finished attempt of selected on branch at
@@ -619,6 +677,11 @@ func Start(req Request, now time.Time, report func(string)) (*Launch, error) {
 	}
 	if base != l.Base {
 		return nil, fmt.Errorf("%s moved from %s to %s during the launch; launch again", branch, short(l.Base), short(base))
+	}
+	if !reused && !pre.branchExists && len(l.Selection.Admitted) != 0 {
+		if err := admit(root, worktree, prefix, branch, l.Selection.Source, l.Selection.Admitted, report); err != nil {
+			return nil, err
+		}
 	}
 	// A branch checked out just now is read as the reused one was.
 	if pre.branchExists && !reused {

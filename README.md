@@ -48,9 +48,10 @@ target: main
   one squash commit, done is read from its copy of each accepted record,
   `resolve` and `sweep` need it, and the board marks work not yet on it.
   Each delivery leaves that commit and one local ref,
-  `refs/grove/submitted/…`, which only `grove check --deliveries` reads;
-  nothing else is added to your history, and a clone needs nothing extra
-  fetched for Grove to read it. A project at
+  `refs/grove/submitted/…`, which only `grove check --deliveries` and the
+  refusal of an already delivered branch read; nothing else is added to
+  your history, and a clone needs nothing extra fetched for Grove to read
+  it. A project at
   schema 3 converts with `grove migrate` ([Migrate](docs/commands.md#migrate)).
 - `run:` sets `grove run`'s defaults (`budget`, `permission_mode`, `model`,
   `effort`); without it, every launch passes `--budget` and

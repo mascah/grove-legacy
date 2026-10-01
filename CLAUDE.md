@@ -62,8 +62,8 @@ applies whatever that record's status; a rule naming none is this file's own.
   and none on the board, and never walks history, trailers or `refs/grove`
   on a read; `integrate` delivers as one squash commit, proves that commit,
   and retains evidence under `refs/grove/submitted/`, which only
-  `check --deliveries` reads (G-260930-2qa4a, G-260930-gj9d7,
-  G-260929-gm3m4).
+  `check --deliveries` and a command refusing a retired branch read
+  (G-260930-2qa4a, G-260930-gj9d7, G-260929-gm3m4).
 - `new` and `convert` issue `G-YYMMDD-xxxxx` from the UTC date and a random
   tail with no shared state, drawing again while a local ref or worktree
   holds the ID; it is the only ID form; and `new` and `update` serialize
@@ -164,10 +164,12 @@ applies whatever that record's status; a rule naming none is this file's own.
   a listing is not a reading, and `context` writes nothing and authorizes
   nothing. The guides say what to read at each step.
 - Work branches are `worktree-G-260925-7k2qm`, or
-  `worktree-G-260925-7k2qm-G-260925-8m3xd` for several IDs, and a headless
+  `worktree-G-260925-7k2qm-G-260925-8m3xd` for several IDs, with `-2`, `-3`
+  for reopened work beside a kept delivered one, and a headless
   proposal branch is `worktree-shape-SLUG`, each in a linked worktree under
-  `.claude/worktrees/`. The base is `main` only when it
-  holds the selected records; otherwise the work guide says what to do.
+  `.claude/worktrees/`. A new work branch starts from `main`, taking
+  selected records only on a shaping branch as the work guide says; a
+  delivered branch is never worked on again (G-260930-tcc9w).
 - Do not merge or push unless the assignment says so.
 - Fixtures that create records run in a disposable clone reached by an
   explicit absolute `--project` path, never a `cd` that can fail: `new` in

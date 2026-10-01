@@ -101,12 +101,15 @@ func Live() Backend {
 				facts = append(facts, fmt.Sprintf("reopened: %s shared the candidate and is active again, commit %s", o.ID, o.Commit[:min(len(o.Commit), 7)]))
 				ids = append(ids, o.ID)
 			}
+			if res.OnTarget { // delivered work reopened: never run on the target
+				return append(facts, "next: R starts a fresh workspace from the target, or /grove-work "+strings.Join(ids, " ")+" there"), nil
+			}
 			return append(facts, "next: continue there with /grove-work "+strings.Join(ids, " ")), nil
 		},
-		Integrate: func(_ context.Context, root, id string, cleanup bool) ([]string, error) {
+		Integrate: func(_ context.Context, root, id string, keep bool) ([]string, error) {
 			var facts []string
 			cwd, _ := os.Getwd()
-			err := integrate.Run(integrate.Request{Root: root, ID: id, Cwd: cwd, Cleanup: cleanup}, time.Now(), func(fact string) { facts = append(facts, fact) })
+			err := integrate.Run(integrate.Request{Root: root, ID: id, Cwd: cwd, Keep: keep, Cleanup: !keep}, time.Now(), func(fact string) { facts = append(facts, fact) })
 			return facts, err
 		},
 	}

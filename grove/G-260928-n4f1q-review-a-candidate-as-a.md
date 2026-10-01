@@ -42,6 +42,12 @@ separate outcome inside the milestone under
 delivery group: one member in separate mode, the shared candidate in together
 mode. It does not choose the grouping or authorize the next delivery.
 
+Consume the report and policy contract from
+[G-261001-mbjwz](G-261001-mbjwz-separate-blocking-review.md), delivered through
+the provider prerequisite's dependency chain. Preserve blockers, follow-ups,
+completeness and their dispositions; do not design a second severity or
+approval gate inside the review runner.
+
 ## Observed evidence
 
 Observed 2026-09-28 at main `6fbb888`:

@@ -35,14 +35,14 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"       grove guide work|shape|review|model [--entrypoint N] [--part NAME] | version\n" +
 	"       grove [--project DIR] new TYPE TITLE [--slug SLUG]\n" +
 	"       grove [--project DIR] update ID [--expect REVISION] (--set FIELD=VALUE | --unset FIELD)... [--commit]\n" +
-	"       grove [--project DIR] approve ID VERDICT | feedback ID TEXT | integrate ID [--cleanup]\n" +
+	"       grove [--project DIR] approve ID VERDICT | feedback ID TEXT | integrate ID [--keep | --cleanup]\n" +
 	"       grove [--project DIR] resolve ID [--budget USD] [--permission-mode MODE] [--model MODEL]\n" +
 	"                                     [--effort LEVEL]\n" +
 	"       grove [--project DIR] sweep [--dry-run]\n" +
 	"       grove [--project DIR] run WORK_ID... [--dry-run | --expect DIGEST] [--budget USD]\n" +
 	"                                     [--permission-mode MODE] [--until plan] [--model MODEL]\n" +
 	"                                     [--effort LEVEL] [--branch NAME] [--worktree DIR]\n" +
-	"                                     [--resume]\n" +
+	"                                     [--resume] [--keep]\n" +
 	"       grove [--project DIR] attempts [ID] | attempt ATTEMPT [--json] | stop ATTEMPT\n" +
 	"       grove [--project DIR] convert PATH --type TYPE --title TITLE [--slug SLUG]\n" +
 	"       grove [--project DIR] versions [ID] [--json]\n" +
@@ -117,8 +117,9 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             the branch that holds it: sets status accepted, approved to the candidate,\n" +
 	"             approved_by owner and approved_context to the record's acceptance context,\n" +
 	"             appends the verdict to the body, and commits that file alone. Refused where\n" +
-	"             HEAD lacks the candidate, the record has uncommitted changes, or a commit after the\n" +
-	"             candidate changed another file (that tip is a new candidate). Work records\n" +
+	"             HEAD lacks the candidate, the record has uncommitted changes, a commit after the\n" +
+	"             candidate changed another file (that tip is a new candidate), or the branch\n" +
+	"             holds a delivery (retired, below). Work records\n" +
 	"             whose candidate is the same commit are one group, handed off together from\n" +
 	"             one selection: each is accepted on its own, and their record files do not\n" +
 	"             count as later changes.\n" +
@@ -126,8 +127,8 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             to the body, committed alone in that same checkout; the acceptance is unset and the\n" +
 	"             candidate kept, so earlier reviews still compare to it. Every other member\n" +
 	"             of its group in review is reopened the same way, each committed alone, with\n" +
-	"             a line naming this feedback. Prints where to continue. Both print what\n" +
-	"             update prints.\n" +
+	"             a line naming this feedback. Refused on a branch holding a delivery. Prints\n" +
+	"             where to continue. Both print what update prints.\n" +
 	"  integrate  Deliver the one branch holding ID accepted onto the target branch grove.yaml\n" +
 	"             names, in that target's clean checkout, as one squash commit: the branch tip\n" +
 	"             is retained as refs/grove/submitted/TIP, merged onto the target's tip as a\n" +
@@ -135,11 +136,14 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             fast-forwarded to it. No record is written: done is derived. A candidate\n" +
 	"             shared by a group delivers the group, refused unless every member is\n" +
 	"             accepted. Prints one line per fact as it holds: acceptance, retained,\n" +
-	"             delivery, done with that one commit proved, and with --cleanup the worktree\n" +
-	"             and branch removed, or kept with the reason. Every refusal, a predicted\n" +
-	"             conflict included, comes before the target moves; nothing undoes a delivery.\n" +
-	"             A rerun after one only cleans up. A branch kept after its delivery merges the\n" +
-	"             target before its next one, as any branch does.\n" +
+	"             delivery, done with that one commit proved, then cleanup: the worktree and\n" +
+	"             branch removed, or kept with the reason (--keep, or run --keep unless\n" +
+	"             --cleanup, an attempt running there, anything a removal would lose). Every\n" +
+	"             refusal, a predicted conflict included, comes before the target moves;\n" +
+	"             nothing undoes a delivery.\n" +
+	"             A rerun after one only cleans up. A branch holding a delivery is retired:\n" +
+	"             kept, it is for inspection, and run, approve, feedback, resolve and integrate\n" +
+	"             all refuse it, naming the delivery; the work runs fresh from the target.\n" +
 	"  resolve    For a work record in review whose candidate conflicts with the target, from\n" +
 	"             any checkout: record feedback naming the target commit and the conflicting\n" +
 	"             files, committed in the branch's checkout, and start one attempt there, as run\n" +
@@ -163,8 +167,10 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             proposed or active work as one Grove-owned\n" +
 	"             `claude -p \"/grove-work ID... --interaction headless\"` process that outlives\n" +
 	"             this terminal, the IDs passed as given: in the branch's worktree (default\n" +
-	"             worktree- plus the IDs joined by - under .claude/worktrees/, created from this\n" +
-	"             checkout's HEAD or reused), with --max-budget-usd USD over the whole selection,\n" +
+	"             worktree- plus the IDs joined by - under .claude/worktrees/, reused, or created\n" +
+	"             from the target's tip with the selected records the target lacks taken from\n" +
+	"             this checkout's HEAD and committed; -2, -3 when a delivered branch holds the\n" +
+	"             name), with --max-budget-usd USD over the whole selection,\n" +
 	"             --permission-mode MODE and --permission-prompts none, its raw output in files\n" +
 	"             under the Git common directory. Members are implemented one at a time in\n" +
 	"             dependency order; nothing outside the selection is added, and the complete\n" +
@@ -175,6 +181,7 @@ const usage = "Usage: grove [--project DIR] [--json]\n" +
 	"             as a fork under a new session id, with the same prompt; the attempt records\n" +
 	"             resumed_from. It is refused, with nothing written, when the branch has no\n" +
 	"             worktree, no such attempt exists, or that attempt never started its provider.\n" +
+	"             --keep records that integrate keeps the workspace after its delivery.\n" +
 	"             --budget and --permission-mode are required unless grove.yaml's run: sets them;\n" +
 	"             it may set --model and --effort too, and a flag overrides it. --dry-run checks\n" +
 	"             and prints the assignment without writing or starting anything:\n" +
@@ -334,9 +341,16 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 				object["reopened"] = reopened
 			}
 			branch, _ := update.Branch(p.Root)
-			fmt.Fprintf(errOut, "Next: %s active on branch %s in %s; continue there with /grove-work %s\n", strings.Join(ids, ", ")+map[bool]string{true: " is", false: " are"}[len(ids) == 1], visible(cmp.Or(branch, "(detached HEAD)")), visible(p.Root), strings.Join(ids, " "))
-			if len(ids) > 1 && branch != "" {
-				fmt.Fprintf(errOut, "or launch the group again: grove run %s --branch %s\n", strings.Join(ids, " "), visible(branch))
+			are := strings.Join(ids, ", ") + map[bool]string{true: " is", false: " are"}[len(ids) == 1]
+			switch {
+			case res.OnTarget:
+				// Reopened on the target, as delivered work is: never run there.
+				fmt.Fprintf(errOut, "Next: %s active on the target %s in %s; start a fresh workspace from it with grove run %s, or /grove-work %s there\n", are, visible(branch), visible(p.Root), strings.Join(ids, " "), strings.Join(ids, " "))
+			default:
+				fmt.Fprintf(errOut, "Next: %s active on branch %s in %s; continue there with /grove-work %s\n", are, visible(cmp.Or(branch, "(detached HEAD)")), visible(p.Root), strings.Join(ids, " "))
+				if len(ids) > 1 && branch != "" {
+					fmt.Fprintf(errOut, "or launch the group again: grove run %s --branch %s\n", strings.Join(ids, " "), visible(branch))
+				}
 			}
 		}
 		if a.request.Commit || a.command != "update" { // approve and feedback always commit
@@ -359,7 +373,7 @@ func Run(args []string, cwd string, out, errOut io.Writer) int {
 		}
 		return 0
 	case "integrate":
-		err := integrate.Run(integrate.Request{Root: p.Root, ID: a.id, Cwd: cwd, Cleanup: a.cleanup}, time.Now(), func(fact string) {
+		err := integrate.Run(integrate.Request{Root: p.Root, ID: a.id, Cwd: cwd, Keep: a.run.Keep, Cleanup: a.cleanup}, time.Now(), func(fact string) {
 			fmt.Fprintln(out, visible(fact))
 		})
 		if err != nil {
@@ -832,6 +846,12 @@ func parseArgs(args []string) (a invocation, err error) {
 	}
 	if a.cleanup && a.command != "integrate" {
 		return a, fmt.Errorf("--cleanup applies only to integrate")
+	}
+	if a.run.Keep && a.command != "run" && a.command != "integrate" {
+		return a, fmt.Errorf("--keep applies only to run and integrate")
+	}
+	if a.run.Keep && a.cleanup {
+		return a, fmt.Errorf("--keep and --cleanup contradict each other; cleanup is the default")
 	}
 	if a.deliveries && a.command != "check" {
 		return a, fmt.Errorf("--deliveries applies only to check")

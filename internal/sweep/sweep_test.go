@@ -176,12 +176,13 @@ func TestSweepIntegratesACandidateInsideThePolicy(t *testing.T) {
 	if !strings.Contains(git(t, root, "log", "-1", "--format=%B", "main"), "Integrated under "+s.Attribution+".") {
 		t.Fatal("the delivery must name the policy")
 	}
-	if out := git(t, root, "worktree", "list", "--porcelain"); strings.Count(out, "worktree ") != 2 {
-		t.Fatalf("the verification worktree remains:\n%s", out)
+	// The delegated delivery cleans up as integrate does by default: the
+	// branch's worktree goes with the verification worktree.
+	if out := git(t, root, "worktree", "list", "--porcelain"); strings.Count(out, "worktree ") != 1 || !strings.Contains(joined, "G-260101-00001: cleanup: deleted branch worktree-G-260101-00001") {
+		t.Fatalf("a worktree remains:\n%s\n%s", out, joined)
 	}
-	// Integrated, it is no longer a candidate in review anywhere but on its
-	// branch, which the target now holds.
-	if _, facts := sweep(t, root); len(facts) != 1 || !strings.Contains(facts[0], "G-260101-00001: skipped: ") {
+	// Integrated, it is no longer a candidate in review anywhere.
+	if _, facts := sweep(t, root); len(facts) != 0 {
 		t.Fatalf("second sweep: %q", facts)
 	}
 }
@@ -531,7 +532,8 @@ func TestAnAttemptsOwnerLeavesWhatThePolicyDoesNotName(t *testing.T) {
 	})
 	t.Run("while another sweep runs", func(t *testing.T) {
 		t.Parallel()
-		// The owner waits, saying so, until the sweep holding the lock ends.
+		// The owner waits, saying so, until the sweep holding the lock ends;
+		// its attempt has finished, so the delivery cleans up its workspace.
 		root, _, v := handedOff(t, config, map[string]string{"code.txt": "the change\n"}, func(root string) {
 			unlock, err := lock(root, nil)
 			if err != nil {
@@ -547,7 +549,7 @@ func TestAnAttemptsOwnerLeavesWhatThePolicyDoesNotName(t *testing.T) {
 				}
 			}()
 		})
-		if len(v.Sweep) < 2 || !strings.Contains(v.Sweep[0], "waiting for another sweep of this repository to end") || !strings.Contains(v.Sweep[len(v.Sweep)-1], "G-260101-00001: done: ") {
+		if len(v.Sweep) < 2 || !strings.Contains(v.Sweep[0], "waiting for another sweep of this repository to end") || !strings.Contains(strings.Join(v.Sweep, "\n"), "G-260101-00001: done: ") || !strings.Contains(v.Sweep[len(v.Sweep)-1], "G-260101-00001: cleanup: deleted branch worktree-G-260101-00001") {
 			t.Fatalf("sweep.log %q", v.Sweep)
 		}
 		if r := record(t, root); r.Status != "accepted" {

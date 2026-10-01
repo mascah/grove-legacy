@@ -62,7 +62,8 @@ with ID's feedback on candidate X, DATE`; nothing earlier is removed. It
 runs in a checkout holding the candidate, or, for work already delivered,
 in one holding the delivery, such as the target's after a squash.
 `resolve ID` is that feedback, generated, naming the target commit and the
-conflicting files.
+conflicting files. None of the three judges anything on a
+[retired branch](#retired-branches).
 
 `integrate ID` runs in the target's clean checkout and delivers the one
 branch holding the work accepted, its acceptance applicable, as one squash
@@ -72,14 +73,14 @@ candidate containing every other, and refuses candidates none of which
 contains the others; of branches accepting that candidate, as when later work
 was based on this work's branch, it takes the one whose commits after the
 candidate change only the records sharing it, or among several such, the one
-every other contains.
+every other contains. A [retired branch](#retired-branches) is never chosen.
 It reads the branch tip once, the submitted commit S, and refuses before
 anything changes: a branch lacking the candidate, a later commit changing
 more than the records, a shared candidate whose members are not all
 accepted, and a squash that would carry another work's candidate. The
 target's own copy of that work decides: done for that candidate, it arrived
 by its own delivery and nothing is refused; done for another, the branch is
-behind the target and merges it first; not done and accepted, it is
+behind the target and the work starts fresh from it; not done and accepted, it is
 integrated first from its own branch, or, where only this branch can deliver
 it, reopened and handed off with this work as one candidate; unaccepted, it
 is handed off and judged with this work or moved off the branch. It also
@@ -103,23 +104,70 @@ names with the next action, work whose standing is
 It writes no record: the delivered record is the branch's, accepted.
 Rerun after an interruption, it reads the delivery as every command does,
 from the target's copy of the record, and goes on to cleanup, never a
-second commit. A branch kept after its delivery merges the target before
-its next one, as any branch does; its earlier delivery is not a merge base,
-and what conflicts is refused and resolved as any conflict is. `--cleanup` removes
+second commit. Then it cleans up, by default: `--keep`, or the newest
+attempt on the branch launched with `run --keep`, keeps the worktree and
+branch, and so does an attempt running or orphaned there, and a registered
+path that no longer holds the branch's checkout. Otherwise it removes
 the worktree only where Git agrees and it holds no ignored files, and the
 branch only where nothing is lost: after a squash while its tip is still S,
 and after an ordinary merge when the target contains its tip, since a merge
 of the candidate alone leaves the handoff and acceptance on the branch;
 integrating such work delivers it as usual, which brings the acceptance
 over. Before it deletes a branch at S, cleanup writes the retained ref if it
-is missing.
+is missing. Whatever is kept is a fact with its reason, not a failure: the
+delivery and done stand, the exit is 0, and a later `integrate ID` retries
+the cleanup alone. `--cleanup`, once the opt-in, now overrides a
+`run --keep`, as the board's `y` does.
 
 What Grove leaves in a repository is one squash commit per delivery, with
 the message and trailers above, and one local ref per delivery,
 `refs/grove/submitted/S`, which keeps S from garbage collection and which
-only the audit reads. Nothing needs fetching for Grove to read a clone
-correctly; to audit deliveries in another clone, push or fetch
-`refs/grove/*` with the branches.
+only the audit and the [retired-branch](#retired-branches) check read.
+Nothing needs fetching for Grove to read a clone correctly; to audit
+deliveries in another clone, or for it to tell a retired branch, push or
+fetch `refs/grove/*` with the branches.
+
+### Retired branches
+
+A branch holding a delivery is **retired**
+([G-260930-tcc9w](../grove/G-260930-tcc9w-bound-delivery-groups-an.md)):
+it contains a submitted tip retained under `refs/grove/submitted/` that the
+target does not contain and whose squash commit is on the target's first
+parents. Kept, it is for inspection, and no command acts on it again,
+whichever work that delivery was of and whichever would come next:
+
+- `run` refuses it named with `--branch`, and moves the default name on to
+  `-2`, `-3`, …, a fresh workspace from the target.
+- `approve` and `feedback` refuse in its checkout, and so does `resolve`,
+  whose feedback that is, before anything is written.
+- `integrate` never delivers from it, and refuses work in review or accepted
+  only there. Its rerun for work that reads done still only cleans up.
+
+Each refusal names the delivery and the route: run the work fresh from the
+target, reopening it there first with `feedback` if it was delivered. A
+hand edit on such a branch is preserved and never delivered. The check
+walks the target's first parents, so no reading makes it. A retained
+submission whose target never advanced retires nothing, so an interrupted
+delivery retries. The check finds deliveries through the local
+`refs/grove/submitted/` refs alone: a clone that fetched a kept branch
+without them cannot tell it is retired, until it fetches `refs/grove/*`.
+
+### Workspace operation table
+
+This table describes the current local implementation. Every operation also
+keeps its normal source, ownership, candidate and approval checks; a row is
+not permission to bypass them. `main` below means the configured target.
+
+| Situation | Operation and workspace | Shared check or implementation |
+| --- | --- | --- |
+| New work | `run` creates a workspace from the target; required committed proposal records may be admitted from the launching branch. | `attempt.prepare`, `admission` and `Start` |
+| Interrupted before delivery | `run` reuses the unfinished workspace, after checking ownership and selected inputs. Existing assignments continue in place. | `attempt.prepare`, `locate` and `Start` |
+| Review fixes before delivery | `feedback` reopens the work in that workspace; fix, review and approve the new candidate there. `resolve` checks before writing its feedback. | `update` review preflight, `standing.Retired`, `attempt.Resolve` |
+| Accepted, not delivered | From the target checkout, `integrate` identifies the applicable accepted candidate and its group, then verifies and delivers it. | `integrate.accepted`, `update.Group`, `standing.Prove` |
+| Delivered, workspace retained | Inspection stays available; `run`, `approve`, `feedback` and `resolve` cannot resume that retired branch, and `integrate` cannot deliver it again. Ordinary edits remain possible and preserved. | `standing.Retired` at mutation boundaries |
+| Reopened after delivery | `feedback` on the target reopens the work; `run` creates a fresh workspace from the target, using `-2`, `-3`, etc. when necessary. | `update.Feedback`, `attempt.prepare` |
+| Delivered, cleanup pending | Retry `integrate` while the work still reads Done: cleanup only. Keep, a live/lost owner, changed tip, extra files or a replaced path can preserve the workspace. After reopening on the target, this cleanup route may refuse the old branch; Git can remove it separately. | `integrate.cleanup` and `keeping` |
+| Imported old branch without delivery refs | Reading Done still works, but the current retirement check cannot recognize that branch as retired. Transfer the evidence before relying on it; this is a known limitation, not an implemented automatic refusal. | `standing.Retired` requires local `refs/grove/submitted/` |
 
 ### Standing
 
@@ -133,7 +181,8 @@ read. An applicable acceptance is done when the configured target tip's own
 copy of the record, at the same path, is accepted for the same candidate;
 an acceptance reaches the target only through a delivery, so nothing else
 is read: no history, trailers or `refs/grove`. Work accepted again on a
-kept branch for another candidate awaits delivery; work reopened on the
+kept, delivered branch for another candidate reads as awaiting delivery,
+which `integrate` refuses; work reopened on the
 target reads as its record says, and so does a reverted delivery, since
 reverting the delivery commit reverts the record too, and it can be
 delivered again. A reading starts one Git process, a `git
@@ -367,15 +416,14 @@ Grove starts an agent only through `run` or the board's `R`, one assigned
 work, or one explicit selection of work, per attempt. `run ID...
 [--dry-run | --expect DIGEST] [--budget USD] [--permission-mode MODE]
 [--until plan] [--model MODEL] [--effort LEVEL] [--branch NAME]
-[--worktree DIR] [--resume]` starts one bounded implementation
+[--worktree DIR] [--resume] [--keep]` starts one bounded implementation
 attempt of proposed or active work as a Grove-owned `claude -p "/grove-work
 ID... --interaction headless"` process that outlives the terminal
 ([G-260923-tnn5e](../grove/G-260923-tnn5e-run-attempts-as-a-grove.md),
 [G-260921-h46pb](../grove/G-260921-h46pb-run-one-bounded-implemen.md)), the IDs passed as given. It creates `worktree-` plus the IDs joined by `-`
 (`worktree-G-260925-7k2qm`, `worktree-G-260925-7k2qm-G-260925-8m3xd`) under
-`.claude/worktrees/` from this checkout's HEAD, or reuses the branch's
-registered worktree so a next attempt continues from preserved partial work,
-then starts an owner process in its own session that runs the provider there
+`.claude/worktrees/`, or reuses the branch's registered worktree so a next
+attempt continues from preserved partial work, then starts an owner process in its own session that runs the provider there
 with `--output-format stream-json`, `--max-budget-usd`, `--permission-mode`
 and `--permission-prompts none`, its stdout and stderr written straight to
 files under the Git common directory (`.git/grove/attempts/ATTEMPT/`, shared
@@ -389,13 +437,36 @@ is refused as a usage error: Grove itself sets no default spend or profile.
 Grove starts one process and never retries; subagents the provider starts
 share the budget.
 
+A new workspace starts from the tip of the target `grove.yaml` names, not
+from this checkout's HEAD; without a target, from HEAD
+([G-260930-tcc9w](../grove/G-260930-tcc9w-bound-delivery-groups-an.md)).
+Where HEAD is not that tip, as on a shaping branch, the new branch takes
+from HEAD only records: each selected record the target lacks, with every
+record their relationships name and every plan or question naming a
+selected member that the target lacks, never code, configuration or other
+records. They are copied exactly, the project there is validated, and they
+are committed as `chore: admit IDS from COMMIT` with the trailer
+`Grove-Admitted-From: COMMIT`; the commit is part of the candidate and is
+delivered with it. A selected record the target holds with other bytes is
+refused before anything is written, to be delivered or reconciled first, and
+so is other work reached that way that is further along than proposed (its
+code is not on the target, and its acceptance would arrive with this
+delivery) and an admitted file with uncommitted changes.
+A branch that already exists continues where it is, so a pre-delivery fix
+or an interrupted attempt resumes. A [retired branch](#retired-branches)
+never runs again: named with `--branch` it is refused, and the default
+name, given or not, moves on to `-2`, `-3`, …, the first not retired, so
+reopened work gets a fresh workspace from the target beside the kept one;
+the preview names the branch passed over. `--keep` records in
+`attempt.json` that `integrate` keeps the workspace after its delivery.
+
 Several IDs are one selection
 ([G-260925-7c8g9](../grove/G-260925-7c8g9-execute-an-explicitly-se.md),
 [G-260925-wc2pz](../grove/G-260925-wc2pz-review-an-explicitly-sel.md)): still one
 process, one worktree and one budget over all of it, never one process per
 ID. `run` orders the members as [`deps`](#dependencies) does and adds
 nothing: a prerequisite outside the selection is listed with its delivery at
-the base (the launching HEAD, or the reused branch's tip), never implemented.
+the base (the target's tip, or the reused branch's tip), never implemented.
 A member **waits**, and the agent does not start it, when an open question
 blocks it, when an outside prerequisite is not delivered at the base
 (proposed, active, review or abandoned, or done with a candidate the base
@@ -418,8 +489,9 @@ started keeps its wait and does not. `--dry-run` checks everything a launch
 checks and prints the assignment without writing or starting anything: the
 IDs, order, each member's status, revision and whether it can start or
 waits and why, the outside prerequisites, the base, worktree, bounds, review
-boundary, continuation policy, and a digest, sha256 over the IDs as given,
-each member's revision, the base and the resolved options. `--expect DIGEST`
+boundary, continuation policy, each admitted record, and a digest, sha256
+over the IDs as given, each member's revision, the admitted records, the
+base and the resolved options. `--expect DIGEST`
 refuses a launch whose assignment no longer has that digest and prints what
 it would run now. `attempt.json` records the selection with its digest and
 member revisions; an attempt from before selections reads as a selection of
@@ -566,6 +638,7 @@ Every refusal comes before the feedback is written:
   lacks has a copy there with the same patch, a rewritten copy, which it
   explains as `integrate` does, whether or not a checkout is on the branch;
 - no checkout is on that branch;
+- the branch is [retired](#retired-branches);
 - the candidate merges without a conflict;
 - an attempt of any member is running or orphaned;
 - no budget or permission mode is supplied;

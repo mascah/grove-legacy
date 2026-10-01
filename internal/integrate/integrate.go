@@ -8,7 +8,9 @@
 // work records on its branch (G-260925-wc2pz) is delivered as their group:
 // every member must be accepted. Rerun after an interruption, it reads a
 // delivery already made as every reader does, from the target's copy of the
-// record, and goes on to cleanup, never a second commit.
+// record, and goes on to cleanup, never a second commit. A branch once
+// delivered is retired (G-260930-tcc9w): kept, it is for inspection, and is
+// never delivered from again.
 package integrate
 
 import (
@@ -23,6 +25,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/mascah/grove/internal/attempt"
 	"github.com/mascah/grove/internal/project"
 	"github.com/mascah/grove/internal/repo"
 	"github.com/mascah/grove/internal/standing"
@@ -32,10 +35,11 @@ import (
 
 // Request names the work to integrate from Root, the target's checkout. Cwd
 // is the process's directory, which cleanup keeps out of any removed
-// worktree.
+// worktree. Cleanup follows a delivery unless Keep, or the newest attempt
+// on the branch was launched to keep it and Cleanup does not override that.
 type Request struct {
 	Root, ID, Cwd string
-	Cleanup       bool
+	Keep, Cleanup bool
 	// Expect, when set, is the target commit a delegated integration verified
 	// the merge against: a target at any other commit is refused unmerged.
 	Expect string
@@ -97,14 +101,11 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 	name, submitted := strings.TrimPrefix(from.Ref, "refs/heads/"), from.Commit
 	// The branch's own acceptance decides, read against the target's copy as
 	// every reader reads it: a delivery already made, as by an interrupted
-	// run or someone else, leaves only cleanup, and work reopened and
-	// accepted again on a kept branch is a new delivery.
+	// run or someone else, leaves only cleanup; accepted chose no retired
+	// branch.
 	switch s := standing.Each(ctx, root, p.Target, []*project.Record{r})[r]; s.State {
 	case standing.Done:
 		report(fmt.Sprintf("delivered: %s is already %s", req.ID, s.Text()))
-		if !req.Cleanup {
-			return nil
-		}
 		// The squash commit whose submitted tip is the branch's, if one is.
 		// ponytail: walks the target's first parents until it finds one, only
 		// for a cleanup of work already delivered.
@@ -115,7 +116,8 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		if strings.TrimSpace(d) == "" {
 			submitted = ""
 		}
-		return cleanup(root, req.Cwd, name, submitted, worktreeOf(res, from.Ref), report)
+		cleanup(root, req, name, submitted, worktreeOf(res, from.Ref), report)
+		return nil
 	case standing.Unknown:
 		return fmt.Errorf("%s's delivery cannot be decided (%s); nothing was delivered", req.ID, s.Why)
 	}
@@ -169,7 +171,7 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		case st[o].State == standing.Done:
 			continue
 		case len(read) == 2 && st[read[1]].State == standing.Done:
-			return fmt.Errorf("%s, but %s already holds %s done, from candidate %s: %s is behind it; merge %s into %s and hand the work off again; %s is unchanged", carry, p.Target, o.ID, short(read[1].Candidate), name, p.Target, name, p.Target)
+			return fmt.Errorf("%s, but %s already holds %s done, from candidate %s: %s is behind it; start this work fresh from %s; %s is unchanged", carry, p.Target, o.ID, short(read[1].Candidate), name, p.Target, p.Target)
 		case o.Status != "accepted":
 			return fmt.Errorf("%s, which is %s without an acceptance; hand it off and judge it with %s, or move it off %s; %s is unchanged", carry, o.Status, ids(group), name, p.Target)
 		}
@@ -278,10 +280,8 @@ func Run(req Request, now time.Time, report func(fact string)) error {
 		}
 		report(fmt.Sprintf("done: %s is %s, %s", m.ID, read[m].Text(), proofs[i].Text()))
 	}
-	if !req.Cleanup {
-		return nil
-	}
-	return cleanup(root, req.Cwd, name, submitted, worktreeOf(res, from.Ref), report)
+	cleanup(root, req, name, submitted, worktreeOf(res, from.Ref), report)
+	return nil
 }
 
 // types orders Conventional Commit types from most to least significant.
@@ -363,7 +363,7 @@ func subject(title string) string {
 // sharing it, as delivery requires, or
 // among several such, the one every other contains.
 func accepted(ctx context.Context, root string, res *versions.Result, id, target string) (*versions.Source, *project.Record, error) {
-	var judged, ok []*versions.Version
+	var found []*versions.Version
 	for i := range res.Groups {
 		if res.Groups[i].ID != id {
 			continue
@@ -373,10 +373,7 @@ func accepted(ctx context.Context, root string, res *versions.Result, id, target
 			if v.Source.Kind != "committed" || v.Source.Ref == "refs/heads/"+target || v.Record == nil || v.Record.Type != "work" || v.Record.Status != "review" && v.Record.Status != "accepted" {
 				continue
 			}
-			judged = append(judged, v)
-			if standing.Of(v.Record).State == standing.Unknown {
-				ok = append(ok, v)
-			}
+			found = append(found, v)
 		}
 	}
 	names := func(vs []*versions.Version) string {
@@ -385,6 +382,35 @@ func accepted(ctx context.Context, root string, res *versions.Result, id, target
 			out = append(out, strings.TrimPrefix(v.Source.Ref, "refs/heads/"))
 		}
 		return strings.Join(out, ", ")
+	}
+	// A branch holding a delivery is retired (standing.Retired) and never
+	// delivered from again, in review there or accepted, unless its
+	// acceptance is the one delivered, which leaves only its cleanup.
+	records := make([]*project.Record, len(found))
+	for i, v := range found {
+		records[i] = v.Record
+	}
+	st := standing.Each(ctx, root, target, records)
+	var judged, ok []*versions.Version
+	var retired []string
+	for _, v := range found {
+		if st[v.Record].State != standing.Done {
+			d, err := standing.Retired(ctx, root, target, v.Source.Commit)
+			if err != nil {
+				return nil, nil, err
+			}
+			if d != nil {
+				retired = append(retired, d.Holds(strings.TrimPrefix(v.Source.Ref, "refs/heads/")))
+				continue
+			}
+		}
+		judged = append(judged, v)
+		if standing.Of(v.Record).State == standing.Unknown {
+			ok = append(ok, v)
+		}
+	}
+	if len(judged) == 0 && len(retired) != 0 {
+		return nil, nil, fmt.Errorf("%s has a candidate only on a retired branch (%s): a delivered workspace is kept for inspection and never delivered from again; run %s fresh from %s, reopening it there first (grove feedback) if it was delivered", id, strings.Join(retired, "; "), id, target)
 	}
 	switch {
 	case len(ok) == 1:
@@ -517,15 +543,21 @@ func verdict(r *project.Record) string {
 // cleanup removes the branch's worktree, then the branch, through Git's own
 // refusals: a worktree with changes or untracked files is kept, and so is a
 // branch whose deletion would lose a commit. A worktree holding cwd is kept
-// too, and one holding ignored files, which git worktree remove would delete.
-// submitted is the tip a squash delivery retained, "" after an ordinary merge.
-// Whatever is kept is reported and makes the result an error, since the
-// caller asked for a cleanup that did not fully happen.
-func cleanup(root, cwd, name, submitted, worktree string, report func(string)) error {
+// too, one holding ignored files, which git worktree remove would delete, and
+// one whose path no longer holds the branch's checkout; so is a workspace an
+// attempt still owns, and one kept by choice (G-260930-tcc9w). submitted is
+// the tip a squash delivery retained, "" after an ordinary merge. Whatever is
+// kept is reported with the reason; the delivery stands either way, and a
+// rerun of integrate retries the cleanup.
+func cleanup(root string, req Request, name, submitted, worktree string, report func(string)) {
 	kept := false
 	keep := func(what, reason string) {
 		kept = true
 		report(fmt.Sprintf("cleanup: kept %s: %s", what, reason))
+	}
+	if why := keeping(root, req, name); why != "" {
+		keep("worktree and branch "+name, why)
+		return
 	}
 	// Only a branch nothing is lost by deleting: after a squash, one still at
 	// the submitted tip, since one that moved on holds a later edit, and only
@@ -540,22 +572,24 @@ func cleanup(root, cwd, name, submitted, worktree string, report func(string)) e
 	if err == nil && submitted == "" {
 		if in, err := ancestor(root, tip, "HEAD"); err != nil || !in {
 			keep("worktree and branch "+name, "the target does not contain its tip "+short(tip)+", whose commits nothing else retains")
-			return errors.New("cleanup incomplete; the integration stands")
+			return
 		}
 		submitted = tip
 	} else if err == nil && tip == submitted {
 		if _, err := repo.Git(root, "update-ref", standing.Ref(submitted), submitted); err != nil {
 			keep("worktree and branch "+name, "its tip "+short(tip)+" could not be retained under "+standing.Ref(submitted)+": "+err.Error())
-			return errors.New("cleanup incomplete; the integration stands")
+			return
 		}
 	}
 	if err != nil || tip != submitted {
 		keep("worktree and branch "+name, "the branch is not at a tip that a squash delivery retained")
-		return errors.New("cleanup incomplete; the integration stands")
+		return
 	}
 	if worktree != "" {
-		if rel, err := filepath.Rel(worktree, cwd); cwd != "" && err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		if rel, err := filepath.Rel(worktree, req.Cwd); req.Cwd != "" && err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 			keep("worktree "+worktree, "it holds this process's working directory")
+		} else if !holds(worktree, name) {
+			keep("worktree "+worktree, "the path no longer holds the checkout of "+name)
 		} else if ignored, err := ignored(worktree); err != nil {
 			keep("worktree "+worktree, err.Error())
 		} else if len(ignored) != 0 {
@@ -575,10 +609,55 @@ func cleanup(root, cwd, name, submitted, worktree string, report func(string)) e
 	} else {
 		report("cleanup: deleted branch " + name)
 	}
-	if kept {
-		return errors.New("cleanup incomplete; the integration stands")
+}
+
+// keeping is why a delivered workspace stays whatever it holds: kept by the
+// caller, by the newest attempt on the branch unless the caller asked for
+// cleanup, or owned by an attempt still running or orphaned there; "" when
+// nothing keeps it.
+func keeping(root string, req Request, name string) string {
+	if req.Keep {
+		return "kept by request (--keep)"
 	}
-	return nil
+	views, err := attempt.List(root, req.ID)
+	if err != nil {
+		return "its attempts could not be read: " + err.Error()
+	}
+	newest := true
+	for _, v := range views { // newest first
+		if v.Launch.Branch != name {
+			continue
+		}
+		if v.Status == attempt.Running || v.Status == attempt.Orphaned {
+			return "attempt " + v.Launch.Attempt + " is " + string(v.Status) + " in it"
+		}
+		if newest && v.Launch.Keep && !req.Cleanup {
+			return "attempt " + v.Launch.Attempt + " was launched to keep it (run --keep)"
+		}
+		newest = false
+	}
+	return ""
+}
+
+// holds reports whether the directory at worktree is still the checkout of
+// branch name, not a path replaced since Git registered it.
+func holds(worktree, name string) bool {
+	top, err := repo.GitPath(worktree, "--show-toplevel")
+	if err != nil {
+		return false
+	}
+	branch, err := repo.Git(worktree, "symbolic-ref", "-q", "HEAD")
+	return err == nil && samePath(top, worktree) && strings.TrimSpace(branch) == "refs/heads/"+name
+}
+
+func samePath(a, b string) bool {
+	if x, err := filepath.EvalSymlinks(a); err == nil {
+		a = x
+	}
+	if y, err := filepath.EvalSymlinks(b); err == nil {
+		b = y
+	}
+	return filepath.Clean(a) == filepath.Clean(b)
 }
 
 // ignored lists a checkout's ignored files, which git worktree remove deletes

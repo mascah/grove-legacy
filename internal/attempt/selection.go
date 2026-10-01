@@ -24,7 +24,11 @@ type Selection struct {
 	Members  []Member  `json:"members"` // in order
 	Outside  []Outside `json:"outside,omitempty"`
 	Notes    []string  `json:"notes,omitempty"`
-	Digest   string    `json:"digest"`
+	// Admitted is the records a new workspace took from Source, the
+	// launching checkout's HEAD, because the target lacks them.
+	Admitted []Member `json:"admitted,omitempty"`
+	Source   string   `json:"source,omitempty"`
+	Digest   string   `json:"digest"`
 }
 
 // Member is one selected work record at launch.
@@ -180,6 +184,12 @@ func digest(l *Launch) string {
 	for _, m := range l.Selection.Members {
 		fmt.Fprintf(h, "member %s %s\n", m.ID, m.Revision)
 	}
+	for _, m := range l.Selection.Admitted {
+		fmt.Fprintf(h, "admit %s %s %s from %s\n", m.ID, m.Path, m.Revision, l.Selection.Source)
+	}
+	if l.Keep {
+		fmt.Fprintf(h, "keep\n")
+	}
 	fmt.Fprintf(h, "base %s\nbranch %s\nworktree %s\nbudget %s\npermission %s\nmodel %s\neffort %s\nuntil %s\n",
 		l.Base, l.Branch, l.Worktree, l.BudgetUSD, l.PermissionMode, l.Model, l.Effort, l.Until)
 	if l.ResumedFrom != "" {
@@ -220,8 +230,14 @@ func Explain(l *Launch, visible func(string) string) []string {
 	for _, n := range s.Notes {
 		line("Note: %s", visible(n))
 	}
+	for _, m := range s.Admitted {
+		line("Admit: %s at %s, record %s, from %s; the target lacks it", m.ID, visible(m.Path), m.Revision, short(s.Source))
+	}
 	if l.ResumedFrom != "" {
 		line("Resume: %s, forking its session", visible(l.ResumedFrom))
+	}
+	if l.Keep {
+		line("Keep: the workspace stays after its delivery")
 	}
 	line("Review boundary: %s", Boundary)
 	line("Continuation: %s", Continuation)

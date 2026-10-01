@@ -47,6 +47,10 @@ type Result struct {
 	// Reopened is, for feedback, the other members of the record's group
 	// returned to active with it (G-260925-wc2pz), each its own commit.
 	Reopened []Result
+	// OnTarget is, for feedback, that it reopened the work in the target's
+	// checkout, as delivered work is: the next attempt starts in a fresh
+	// workspace from the target, never on it (G-260930-tcc9w).
+	OnTarget bool
 }
 
 // Failure retains publication state when an error happens after the rename

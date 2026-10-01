@@ -143,7 +143,9 @@ a verdict and approves the candidate in the branch's checkout, `f` asks for
 feedback and returns the work to `active` there, and `i`, once it is
 accepted, confirms its delivery as one squash commit onto the target from
 the target's checkout (`integrate`), then asks whether to remove the
-branch's worktree and branch. Each runs the same operation as the command
+branch's worktree and branch, as `integrate` does by default: `y` removes
+them even after `run --keep`, as `--cleanup` does, and `n` keeps them, as
+`--keep` does. Each runs the same operation as the command
 ([Work lifecycle](record-model.md#work-lifecycle)), one at a time; a result
 screen shows its facts, or why it was refused, and the board is re-read. A
 candidate without a clean checkout of its branch, or a target without one, is

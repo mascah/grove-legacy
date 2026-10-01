@@ -120,6 +120,19 @@ func TestResolveRefusals(t *testing.T) {
 	git(t, wt, "commit", "-qm", "no question")
 	before = git(t, root, "rev-parse", "worktree-G-260101-00001")
 
+	// The branch holds a delivery, here of other work whose squash landed
+	// since: retired, so the feedback is refused, before it is written.
+	main := git(t, root, "rev-parse", "main")
+	git(t, root, "update-ref", "refs/grove/submitted/"+candidate, candidate)
+	d := git(t, root, "commit-tree", "main^{tree}", "-p", "main", "-m", "feat: other\n\nGrove-Work: G-260101-00009\nGrove-Submitted: "+candidate)
+	git(t, root, "merge", "-q", "--ff-only", d)
+	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "worktree-G-260101-00001 holds the delivery "+d[:7]+" of G-260101-00009") {
+		t.Fatalf("a retired branch: %v", err)
+	}
+	unchanged(t)
+	git(t, root, "reset", "-q", "--hard", main)
+	git(t, root, "update-ref", "-d", "refs/grove/submitted/"+candidate)
+
 	// Resolved by hand: the candidate merges cleanly, so there is nothing to do.
 	git(t, root, "revert", "--no-edit", "HEAD")
 	if _, _, err := resolve(root, nil, now); err == nil || !strings.Contains(err.Error(), "there is no conflict to resolve") {

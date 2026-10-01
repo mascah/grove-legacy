@@ -460,7 +460,7 @@ def review_and_integrate(root, wt, base):
     s.send(b"i")
     mark = s.expect("delivering G-260101-00001? y/n", mark)
     s.send(b"y")
-    mark = s.expect("remove its worktree? y/n", mark)
+    mark = s.expect("and its worktree? y/n, n keeps them", mark)
     s.send(b"n")
     s.expect("Integration of G-260101-00001", mark)
     s.expect("delivery: squash commit", mark)

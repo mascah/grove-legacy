@@ -49,6 +49,9 @@ func attemptText(v *attempt.View) string {
 // previewText prints what run would launch, and how to launch exactly that.
 func previewText(l *attempt.Launch) string {
 	reuse := "a new worktree from this checkout's HEAD"
+	if l.Target != "" {
+		reuse = "a new worktree from the target " + visible(l.Target)
+	}
 	switch {
 	case l.WorktreeReused:
 		reuse = "its existing worktree"

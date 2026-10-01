@@ -175,3 +175,31 @@ func TestAppendKeepsEveryByte(t *testing.T) {
 	}
 	_ = bytes.Equal
 }
+
+// TestNothingIsJudgedOnARetiredBranch: a checkout holding a delivery takes
+// neither verdict nor feedback, whichever work the delivery was of
+// (G-260930-tcc9w), and a refusal writes nothing. A submission retained
+// whose target never advanced retires nothing.
+func TestNothingIsJudgedOnARetiredBranch(t *testing.T) {
+	t.Parallel()
+	root, candidate := reviewFixture(t)
+	write(t, root, "grove.yaml", "schema_version: 4\nrecords: grove\ntarget: main\n") // read from the checkout; judging commits the record alone
+	git(t, root, "update-ref", "refs/grove/submitted/"+candidate, candidate)
+	if _, err := Approve(root, "G-260101-00001", "ok", Owner, now); err != nil {
+		t.Fatalf("retained, not delivered: %v", err)
+	}
+	// Other work's squash of a tip this branch contains lands on the target.
+	d := git(t, root, "commit-tree", "main^{tree}", "-p", "main", "-m", "feat: second\n\nGrove-Work: G-260101-00002\nGrove-Submitted: "+candidate)
+	git(t, root, "update-ref", "refs/heads/main", d)
+	head := git(t, root, "rev-parse", "HEAD")
+	want := "feature holds the delivery " + d[:7] + " of G-260101-00002: a delivered workspace is kept for inspection and nothing is judged in it; run G-260101-00001 fresh from main"
+	if _, err := Approve(root, "G-260101-00001", "again", Owner, now); err == nil || !strings.Contains(err.Error(), want) {
+		t.Fatalf("approve: %v", err)
+	}
+	if _, err := Feedback(root, "G-260101-00001", "more", now); err == nil || !strings.Contains(err.Error(), want) {
+		t.Fatalf("feedback: %v", err)
+	}
+	if git(t, root, "rev-parse", "HEAD") != head || record(t, root, "G-260101-00001").Status != "accepted" {
+		t.Fatal("a refusal changed the record or the branch")
+	}
+}

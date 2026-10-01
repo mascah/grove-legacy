@@ -148,6 +148,8 @@ func Resolve(req Request, shown *versions.Merge, now time.Time, report func(stri
 	if req.Policy != "" {
 		text = fmt.Sprintf("delegated under %s, budget %s USD: %s", req.Policy, d.BudgetUSD, text)
 	}
+	// Feedback's own refusals, a retired branch among them
+	// (standing.Retired), come before it writes.
 	fb, err := update.Feedback(dir, id, text, now)
 	if err != nil {
 		return nil, err

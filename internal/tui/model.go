@@ -51,7 +51,7 @@ type Backend struct {
 	// branch judged, or of the target. Nil leaves the action out.
 	Approve   func(ctx context.Context, root, id, verdict string) ([]string, error)
 	Feedback  func(ctx context.Context, root, id, text string) ([]string, error)
-	Integrate func(ctx context.Context, root, id string, cleanup bool) ([]string, error)
+	Integrate func(ctx context.Context, root, id string, keep bool) ([]string, error)
 	// Attempts lists the attempts in the repository's attempts directory,
 	// starting no process, and Attempt reads one in root with the end of its
 	// activity (G-260921-7trd7); nil leaves attempts out. Launch starts one and Stop

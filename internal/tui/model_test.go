@@ -181,8 +181,8 @@ func (f *fake) backend() Backend {
 			log(&f.acts, "feedback "+root+" "+id+" "+text)
 			return []string{"feedback: " + id + " is active again in " + root, "next: /grove-work " + id}, f.fail
 		}
-		b.Integrate = func(_ context.Context, root, id string, cleanup bool) ([]string, error) {
-			log(&f.acts, fmt.Sprintf("integrate %s %s cleanup=%v", root, id, cleanup))
+		b.Integrate = func(_ context.Context, root, id string, keep bool) ([]string, error) {
+			log(&f.acts, fmt.Sprintf("integrate %s %s keep=%v", root, id, keep))
 			return []string{"approval: found", "merge: fast-forward"}, f.fail
 		}
 		b.Conflict = func(_ context.Context, req attempt.Request, shown *versions.Merge) ([]string, error) {

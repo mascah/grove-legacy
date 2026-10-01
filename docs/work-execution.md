@@ -179,12 +179,12 @@ checkout.
   clearly this assignment's and reusing it preserves all concurrent work.
 - **Otherwise create** an isolated worktree on a new branch, named as the
   repository's instructions say; where they name nothing, choose a clear
-  name and state it in the handoff. Base it on the intended base from step 2. If
-  none is named, use the repository's default base only when that base holds
-  the selected records and their inputs. When `versions` shows the selected
-  records only on another branch, base the work there, or stop and ask if that
-  branch is someone's unfinished work; do not branch from the default and
-  recreate the records. Records that exist only as uncommitted files in
+  name and state it in the handoff. Base it on the target's tip (without a
+  target, the default base), never on another unmerged branch or a delivered
+  one. When `versions` shows the selected records only on another branch,
+  first commit exact copies of them, their plans and questions and the
+  records they name that the base lacks, naming the source commit, never its
+  code; stop and ask if that is someone's unfinished work. Records that exist only as uncommitted files in
   another checkout are not yours to copy or commit: ask (interactive) or return
   the limit (headless).
 - **Verify in that checkout.** Run `grove context IDs` from inside it, so that
@@ -551,14 +551,16 @@ disposition:
   target unchanged, predicted before anything is written with the files and
   the next action named. It writes no record, prints acceptance, retained
   evidence, delivery, done with that commit proved, and cleanup as separate
-  facts, and with `--cleanup` removes the worktree and branch where Git
-  agrees and no commit would be lost. The board's detail of the record
-  offers the same as `a`, `f` and `i`. The retained refs are local and only
-  `grove check --deliveries`, an audit run on request, reads them; push or
+  facts, then removes the worktree and branch where Git agrees and nothing
+  would be lost, unless `--keep` (or `run --keep`) or a running attempt
+  keeps them. The board's detail of the record
+  offers the same as `a`, `f` and `i`. The retained refs are local and no
+  reading uses them, only `grove check --deliveries`, an audit run on
+  request, and the refusal of a delivered branch below; push or
   fetch `refs/grove/*` with the target to audit another clone. `grove
-  feedback` on the target reopens delivered work, and a branch kept after
-  its delivery merges the target before its next handoff, as any branch
-  does.
+  feedback` on the target reopens delivered work, which then starts in a
+  fresh workspace from the target: a branch kept after its delivery is for
+  inspection, and nothing is run, judged or delivered there again.
 - **A schema 3 claim on a rewritten target:** rewriting the target once
   work is integrated, as a rebase onto a remote does, gives its commits new
   hashes. A squash delivery survives that, since the target keeps its
@@ -591,9 +593,9 @@ their group. `approve` binds each record's own verdict, and the group's
 record commits do not count as later changes. `feedback` on any of them
 reopens them all: the others are set `active` with their approvals dropped
 and a line naming that feedback appended, each committed alone, since the
-next candidate replaces the shared one, so the next attempt selects them all
-again: `grove run` refuses a selection that leaves one out. `integrate` of
-any of them delivers the commit, and so all of them: it refuses, naming
+next candidate replaces the shared one, so the next attempt on that branch
+selects them all again: `grove run` refuses a selection there that leaves
+one out. `integrate` of any of them delivers the commit, and so all of them: it refuses, naming
 them, until every one is accepted, and its delivery names each. It also
 refuses a delivery that would carry another work's candidate unless the
 target already holds that work done for it: done for another candidate, merge

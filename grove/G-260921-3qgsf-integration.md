@@ -52,6 +52,6 @@ workflow.
 The [contracts design](G-260930-84fnb-portable-workflow-contra.md) owns the
 proposed mechanics. [Command documentation](../docs/commands.md) describes
 implemented behavior: G-260929-gm3m4 delivered schema 4 and local squash;
-G-260930-0s29t owns the pending workspace/cleanup changes and G-260930-4742q
-the hosted path. Historical ancestry-only mechanisms and kept-branch
+G-260930-0s29t fresh target-based workspaces, retirement and default
+cleanup; G-260930-4742q owns the hosted path. Historical ancestry-only mechanisms and kept-branch
 recoveries remain in Git history, not a second definition here.

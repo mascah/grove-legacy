@@ -552,6 +552,8 @@ func (s *Sweep) approve(it Item, now time.Time, say func(string, ...any)) {
 	say("verified: the merge of %s with %s at %s passed %s", short(it.tip), s.Target, short(it.merge.Target), strings.Join(s.Policy.Verify, "; "))
 	verdict := fmt.Sprintf("delegated under %s: review %s examined %s with no open finding; merged with %s at %s, verification passed (%s); %s",
 		s.Attribution, it.review.ID, short(it.review.Examined), s.Target, short(it.merge.Target), strings.Join(s.Policy.Verify, "; "), s.produced(it))
+	// ponytail: a retired branch (standing.Retired) is refused here, after
+	// the merge was verified; ask before verifying if that cost ever shows.
 	res, err := update.Approve(it.checkout, it.ID, verdict, update.Policy(strings.TrimPrefix(s.Attribution, "policy grove.yaml ")), now)
 	if err != nil {
 		say("waits: approval refused: %v", err)

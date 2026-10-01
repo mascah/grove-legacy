@@ -6,7 +6,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -104,7 +106,7 @@ func fixture(t *testing.T, approve bool, sub ...string) (root, wt, candidate str
 func run(t *testing.T, root, cwd string, cleanup bool) ([]string, error) {
 	t.Helper()
 	var facts []string
-	err := Run(Request{Root: root, ID: "G-260101-00001", Cwd: cwd, Cleanup: cleanup}, now, func(f string) { facts = append(facts, f) })
+	err := Run(Request{Root: root, ID: "G-260101-00001", Cwd: cwd, Keep: !cleanup}, now, func(f string) { facts = append(facts, f) })
 	return facts, err
 }
 
@@ -138,7 +140,16 @@ func TestIntegrateSquashesAndRetainsEvidence(t *testing.T) {
 	t.Parallel()
 	root, wt, candidate := fixture(t, true)
 	before, submitted := tipOf(t, root, "main"), tipOf(t, root, "feature")
-	facts, err := run(t, root, root, true)
+	// As after a delivery interrupted before the target moved: a retained
+	// submission retires nothing, and it retries. An attempt launched to
+	// keep the workspace is overridden by an explicit cleanup.
+	git(t, root, "update-ref", "refs/grove/submitted/"+submitted, submitted)
+	if d, err := standing.Retired(context.Background(), root, "main", submitted); err != nil || d != nil {
+		t.Fatalf("retired without a delivery: %+v %v", d, err)
+	}
+	attemptOn(t, root, true, true)
+	var facts []string
+	err := Run(Request{Root: root, ID: "G-260101-00001", Cwd: root, Cleanup: true}, now, func(f string) { facts = append(facts, f) })
 	if err != nil {
 		t.Fatalf("%v; facts %q", err, facts)
 	}
@@ -187,7 +198,7 @@ func TestIntegrateRecoversAfterTheTargetAdvanced(t *testing.T) {
 	write(t, wt, "grove/G-260101-00001-first.md", string(record(t, wt).Source)+"\n## Next\n\nA later edit.\n")
 	git(t, wt, "commit", "-qam", "docs: later")
 	facts, err := run(t, root, root, true)
-	if err == nil || tipOf(t, root, "main") != d || !strings.Contains(strings.Join(facts, "\n"), "cleanup: kept worktree and branch feature: the target does not contain its tip") {
+	if err != nil || tipOf(t, root, "main") != d || !strings.Contains(strings.Join(facts, "\n"), "cleanup: kept worktree and branch feature: the target does not contain its tip") {
 		t.Fatalf("%v %q", err, facts)
 	}
 }
@@ -295,7 +306,7 @@ func TestIntegrateRefusesWhatIsNotReadyToDeliver(t *testing.T) {
 		// The acceptance came with the copy, so it reads delivered: only the
 		// audit could say how it got there.
 		facts, err := run(t, root, root, false)
-		if err != nil || len(facts) != 1 || facts[0] != "delivered: G-260101-00001 is already done: delivered to main" || tipOf(t, root, "main") != head {
+		if err != nil || len(facts) != 2 || facts[0] != "delivered: G-260101-00001 is already done: delivered to main" || tipOf(t, root, "main") != head {
 			t.Fatalf("%v %q", err, facts)
 		}
 		if out, _ := repo.Git(root, "for-each-ref", "refs/grove/"); out != "" {
@@ -333,7 +344,7 @@ func TestIntegrateCleanupKeepsWhatGitOrTheSessionHolds(t *testing.T) {
 			tc.setup(t, root, wt)
 			facts, err := run(t, root, tc.cwd(root, wt), true)
 			joined := strings.Join(facts, "\n")
-			if err == nil || !strings.Contains(err.Error(), "cleanup incomplete; the integration stands") || !strings.Contains(joined, tc.want) || !strings.Contains(joined, "cleanup: kept branch feature: its worktree is kept") {
+			if err != nil || !strings.Contains(joined, tc.want) || !strings.Contains(joined, "cleanup: kept branch feature: its worktree is kept") {
 				t.Fatalf("%v\n%s", err, joined)
 			}
 			if _, err := os.Stat(wt); err != nil {
@@ -426,38 +437,19 @@ func TestIntegrateDeliversCarriedWorkFirst(t *testing.T) {
 	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err == nil || !strings.Contains(err.Error(), "would also carry G-260101-00001's candidate") || !strings.Contains(err.Error(), "integrate G-260101-00001 first, from feature") || tipOf(t, root, "main") != head {
 		t.Fatalf("%v %q", err, facts)
 	}
-	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, say); err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tipOf(t, root, "feature")) {
+	if err := Run(Request{Root: root, ID: "G-260101-00001", Keep: true}, now, say); err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tipOf(t, root, "feature")) {
 		t.Fatalf("the earlier work, from its own branch: %v %q", err, facts)
 	}
-	// The squash and the checkpoint change the earlier record apart, so the
-	// later branch merges the target first and is judged again, as any
-	// branch behind a squash is.
+	// Behind the squash, the later branch is refused, not repaired: its work
+	// starts fresh from the target (G-260930-tcc9w).
 	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err == nil || !strings.Contains(err.Error(), "conflicts with main") {
 		t.Fatalf("the later work, behind: %v", err)
-	}
-	git(t, later, "merge", "-q", "-X", "theirs", "-m", "merge main", "main")
-	if _, err := update.Feedback(later, "G-260101-00003", "Take main first.", now); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := update.Apply(later, update.Request{ID: "G-260101-00003", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: tipOf(t, later, "HEAD")}}, Commit: true}, now, nil); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := update.Approve(later, "G-260101-00003", "Still yes.", update.Owner, now); err != nil {
-		t.Fatal(err)
-	}
-	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, say); err != nil {
-		t.Fatalf("the later work: %v %q", err, facts)
-	}
-	p, _ := project.Load(root, root)
-	proofs, err := standing.Audit(context.Background(), root, "main", p.RecordDir, p.Records)
-	if err != nil || len(proofs) != 2 || !proofs[0].Proved || !proofs[1].Proved {
-		t.Fatalf("%v %+v %+v", err, proofs[0], proofs[len(proofs)-1])
 	}
 }
 
 // TestIntegrateCarriedWorkDeliveredElsewhere: later work based on earlier
 // work while it was in review carries it unaccepted; once the earlier work
-// is delivered from its own branch, the refusal says to merge the target.
+// is delivered from its own branch, the refusal says to start fresh.
 func TestIntegrateCarriedWorkDeliveredElsewhere(t *testing.T) {
 	t.Parallel()
 	root, wt, _ := fixture(t, false)
@@ -481,14 +473,14 @@ func TestIntegrateCarriedWorkDeliveredElsewhere(t *testing.T) {
 		t.Fatal(err)
 	}
 	head := tipOf(t, root, "main")
-	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "but main already holds G-260101-00001 done, from candidate ") || !strings.Contains(err.Error(), "merge main into later") || tipOf(t, root, "main") != head {
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "but main already holds G-260101-00001 done, from candidate ") || !strings.Contains(err.Error(), "start this work fresh from main") || tipOf(t, root, "main") != head {
 		t.Fatal(err)
 	}
 }
 
 // TestIntegrateCarriedWorkRevisedElsewhere: earlier work reopened, revised
 // and delivered from its own branch after later work was based on it. The
-// target's copy decides: the later branch is behind it and merges it, never
+// target's copy decides: the later branch is behind it and is refused, never
 // delivering the superseded candidate, and of the earlier work's two
 // acceptances, the one containing the other is the one delivered.
 func TestIntegrateCarriedWorkRevisedElsewhere(t *testing.T) {
@@ -517,35 +509,19 @@ func TestIntegrateCarriedWorkRevisedElsewhere(t *testing.T) {
 	write(t, wt, "code.txt", "the change, revised\n")
 	git(t, wt, "commit", "-qam", "fix: the case")
 	handoff(wt, "G-260101-00001")
-	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(string) {}); err != nil {
+	if err := Run(Request{Root: root, ID: "G-260101-00001", Keep: true}, now, func(string) {}); err != nil {
 		t.Fatal(err)
 	}
 	head := tipOf(t, root, "main")
-	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "but main already holds G-260101-00001 done") || !strings.Contains(err.Error(), "merge main into later") {
+	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err == nil || !strings.Contains(err.Error(), "but main already holds G-260101-00001 done") || !strings.Contains(err.Error(), "start this work fresh from main") {
 		t.Fatalf("the later work: %v", err)
 	}
 	var facts []string
-	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(f string) { facts = append(facts, f) }); err != nil || len(facts) != 1 || !strings.HasPrefix(facts[0], "delivered: G-260101-00001 is already done") {
+	if err := Run(Request{Root: root, ID: "G-260101-00001", Keep: true}, now, func(f string) { facts = append(facts, f) }); err != nil || len(facts) != 2 || !strings.HasPrefix(facts[0], "delivered: G-260101-00001 is already done") {
 		t.Fatalf("the earlier work again: %v %q", err, facts)
 	}
 	if tipOf(t, root, "main") != head {
 		t.Fatal("main moved")
-	}
-	// The recovery the refusal names delivers the later work alone.
-	git(t, later, "merge", "-q", "-X", "theirs", "-m", "merge main", "main")
-	if _, err := update.Feedback(later, "G-260101-00003", "Take main first.", now); err != nil {
-		t.Fatal(err)
-	}
-	handoff(later, "G-260101-00003")
-	if err := Run(Request{Root: root, ID: "G-260101-00003"}, now, func(string) {}); err != nil {
-		t.Fatal(err)
-	}
-	if got := git(t, root, "show", "main:code.txt"); got != "the change, revised" {
-		t.Fatalf("code.txt: %q", got)
-	}
-	p, _ := project.Load(root, root)
-	if proofs, err := standing.Audit(context.Background(), root, "main", p.RecordDir, p.Records); err != nil || len(proofs) != 2 || !proofs[0].Proved || !proofs[1].Proved {
-		t.Fatalf("%v %+v", err, proofs)
 	}
 }
 
@@ -569,7 +545,7 @@ func TestIntegrateDeliversTheLatestAcceptance(t *testing.T) {
 		t.Fatal(err)
 	}
 	var facts []string
-	if err := Run(Request{Root: root, ID: "G-260101-00001"}, now, func(f string) { facts = append(facts, f) }); err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tipOf(t, root, "later")) {
+	if err := Run(Request{Root: root, ID: "G-260101-00001", Keep: true}, now, func(f string) { facts = append(facts, f) }); err != nil || !slices.Contains(facts, "retained: refs/grove/submitted/"+tipOf(t, root, "later")) {
 		t.Fatalf("%v %q", err, facts)
 	}
 	if got := git(t, root, "show", "main:code.txt"); got != "the change, revised" {
@@ -657,44 +633,44 @@ func TestMessageTypes(t *testing.T) {
 	}
 }
 
-// TestIntegrateDeliversReopenedWorkAgain: the branch's own acceptance
-// decides, so work reopened on a kept branch is refused while in review and
-// is a second delivery once accepted again, never "already done" from the
-// target's earlier copy. The kept branch conflicts with its own earlier
-// delivery until it merges the target, as any branch does; feedback after a
-// squash runs on the target, which never holds the candidate.
-func TestIntegrateDeliversReopenedWorkAgain(t *testing.T) {
+// TestIntegrateRefusesAKeptDeliveredBranch: a workspace delivered and kept
+// is retired (G-260930-tcc9w). Nothing is judged there, and work reopened
+// and accepted again on it by hand is refused and never becomes a second
+// squash; feedback after a squash runs on the target, which never holds the
+// candidate, and the work starts fresh from there.
+func TestIntegrateRefusesAKeptDeliveredBranch(t *testing.T) {
 	t.Parallel()
 	root, wt, _ := fixture(t, true)
 	if _, err := run(t, root, root, false); err != nil {
 		t.Fatal(err)
 	}
 	d1 := tipOf(t, root, "main")
-	if _, err := update.Feedback(wt, "G-260101-00001", "More.", now); err != nil {
-		t.Fatal(err)
+	holds := "feature holds the delivery " + d1[:7] + " of G-260101-00001"
+	if _, err := update.Feedback(wt, "G-260101-00001", "More.", now); err == nil || !strings.Contains(err.Error(), holds+": a delivered workspace is kept for inspection and nothing is judged in it") {
+		t.Fatalf("feedback on the kept branch: %v", err)
 	}
+	// Reopened there by hand anyway, and accepted again, by hand too.
+	set := func(unset []string, fields ...update.Field) {
+		t.Helper()
+		if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: fields, Unset: unset, Commit: true}, now, nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	set([]string{"approved", "approved_by", "approved_context"}, update.Field{Name: "status", Value: "active"})
 	write(t, wt, "code.txt", "the change, more\n")
 	git(t, wt, "commit", "-qam", "fix: more")
-	// What was delivered is the branch's own, so its side wins.
-	git(t, wt, "merge", "-q", "-X", "ours", "-m", "merge main", "main")
-	c2 := git(t, wt, "rev-parse", "HEAD")
-	if _, err := update.Apply(wt, update.Request{ID: "G-260101-00001", Set: []update.Field{{Name: "status", Value: "review"}, {Name: "candidate", Value: c2}}, Commit: true}, now, nil); err != nil {
-		t.Fatal(err)
-	}
-	refused(t, root, false, "G-260101-00001 is in review on feature but not accepted")
-	if _, err := update.Approve(wt, "G-260101-00001", "Now.", update.Owner, now); err != nil {
-		t.Fatal(err)
-	}
-	facts, err := run(t, root, root, false)
-	if err != nil || !strings.HasPrefix(facts[len(facts)-1], "done: G-260101-00001 is done: delivered to main, proved: squashed as ") || git(t, root, "show", "main:code.txt") != "the change, more" {
-		t.Fatalf("the second acceptance: %v %q", err, facts)
-	}
-	if git(t, root, "rev-parse", "main^") != d1 || !strings.HasPrefix(git(t, root, "log", "-1", "--format=%s", "main"), "feat: first") {
-		t.Fatal("the second delivery is one commit on the first")
+	c := tipOf(t, wt, "HEAD")
+	retired := "G-260101-00001 has a candidate only on a retired branch (" + holds + "): a delivered workspace is kept for inspection"
+	set(nil, update.Field{Name: "status", Value: "review"}, update.Field{Name: "candidate", Value: c})
+	refused(t, root, true, retired) // in review there: never "approve it there first"
+	set(nil, update.Field{Name: "status", Value: "accepted"}, update.Field{Name: "approved", Value: c}, update.Field{Name: "approved_by", Value: update.Owner}, update.Field{Name: "approved_context", Value: project.AcceptanceContext(record(t, wt))})
+	refused(t, root, true, retired)
+	if _, err := os.Stat(wt); err != nil || tipOf(t, root, "main") != d1 {
+		t.Fatal("the kept branch must stay, and the target unchanged")
 	}
 	// Feedback on the target after the squash reopens the work there.
-	if _, err := update.Feedback(root, "G-260101-00001", "Once more.", now); err != nil {
-		t.Fatalf("feedback after delivery: %v", err)
+	if res, err := update.Feedback(root, "G-260101-00001", "Once more.", now); err != nil || !res.OnTarget {
+		t.Fatalf("feedback after delivery: %+v %v", res, err)
 	}
 	if r := record(t, root); r.Status != "active" || r.Approved != "" {
 		t.Fatalf("reopened: %+v", r)
@@ -714,7 +690,7 @@ func TestIntegrateLeavesAnAlteredDeliveryToTheAudit(t *testing.T) {
 	git(t, root, "add", "-A")
 	git(t, root, "commit", "-q", "--amend", "--no-edit")
 	head := tipOf(t, root, "main")
-	if facts, err := run(t, root, root, false); err != nil || len(facts) != 1 || tipOf(t, root, "main") != head {
+	if facts, err := run(t, root, root, false); err != nil || len(facts) != 2 || tipOf(t, root, "main") != head {
 		t.Fatalf("%v %q", err, facts)
 	}
 	p, _ := project.Load(root, root)
@@ -744,35 +720,11 @@ func reaccept(t *testing.T, wt string) {
 	}
 }
 
-// TestIntegrateNeverUndoesTheTarget: an earlier submission is the merge base
-// only where it replaces Git's own, so a branch that took a target change
-// after its delivery cannot bring back what the target removed since, and a
-// crafted claim naming an older commit as its submission is never a base.
+// TestIntegrateNeverUndoesTheTarget: a crafted claim naming an older commit
+// as its submission is never a merge base, and retires nothing, since the
+// target contains that commit.
 func TestIntegrateNeverUndoesTheTarget(t *testing.T) {
 	t.Parallel()
-	t.Run("merged after its delivery", func(t *testing.T) {
-		t.Parallel()
-		root, wt, _ := fixture(t, true)
-		if _, err := run(t, root, root, false); err != nil {
-			t.Fatal(err)
-		}
-		write(t, root, "x.txt", "x\n")
-		git(t, root, "add", "-A")
-		git(t, root, "commit", "-qm", "chore: add x")
-		if _, err := update.Feedback(wt, "G-260101-00001", "Take main.", now); err != nil {
-			t.Fatal(err)
-		}
-		git(t, wt, "merge", "-q", "-X", "ours", "-m", "merge main", "main")
-		git(t, root, "rm", "-q", "x.txt")
-		git(t, root, "commit", "-qm", "chore: remove x")
-		reaccept(t, wt)
-		if facts, err := run(t, root, root, false); err != nil {
-			t.Fatalf("%v %q", err, facts)
-		}
-		if out := git(t, root, "ls-tree", "--name-only", "main"); strings.Contains(out, "x.txt") {
-			t.Fatalf("the delivery brought back what the target removed:\n%s", out)
-		}
-	})
 	t.Run("a crafted claim", func(t *testing.T) {
 		t.Parallel()
 		root, wt, _ := fixture(t, false)
@@ -794,4 +746,64 @@ func TestIntegrateNeverUndoesTheTarget(t *testing.T) {
 			t.Fatalf("a crafted claim was a merge base:\n%s", out)
 		}
 	})
+}
+
+// TestIntegrateCleanupKeepsWhatAnAttemptHolds: cleanup follows a delivery by
+// default, but an attempt launched to keep its workspace keeps it, one still
+// running there owns it, and a path replaced since Git registered it is not
+// the workspace to remove (G-260930-tcc9w). Each keep is a fact, and the
+// delivery stands.
+func TestIntegrateCleanupKeepsWhatAnAttemptHolds(t *testing.T) {
+	t.Parallel()
+	for name, tc := range map[string]struct {
+		setup func(t *testing.T, root, wt string)
+		want  string
+	}{
+		"launched to keep": {func(t *testing.T, root, wt string) { attemptOn(t, root, true, true) }, "cleanup: kept worktree and branch feature: attempt G-260101-00001.20260922T183000Z was launched to keep it (run --keep)"},
+		"a running owner": {func(t *testing.T, root, wt string) {
+			f, err := os.OpenFile(filepath.Join(attemptOn(t, root, false, false), "owner.lock"), os.O_CREATE|os.O_RDWR, 0o644)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { f.Close() })
+			if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+				t.Fatal(err)
+			}
+		}, "cleanup: kept worktree and branch feature: attempt G-260101-00001.20260922T183000Z is running in it"},
+		"a replaced path": {func(t *testing.T, root, wt string) {
+			if err := os.Rename(wt, wt+".moved"); err != nil {
+				t.Fatal(err)
+			}
+			write(t, wt, "other.txt", "someone else's\n")
+		}, "the path no longer holds the checkout of feature"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			root, wt, _ := fixture(t, true)
+			tc.setup(t, root, wt)
+			facts, err := run(t, root, root, true)
+			joined := strings.Join(facts, "\n")
+			if err != nil || !strings.Contains(joined, "done: G-260101-00001 is done") || !strings.Contains(joined, tc.want) || strings.Contains(joined, "cleanup: deleted branch") {
+				t.Fatalf("%v\n%s", err, joined)
+			}
+			if _, err := os.Stat(wt); err != nil {
+				t.Fatal("the worktree was removed")
+			}
+		})
+	}
+}
+
+// attemptOn records an attempt of G-260101-00001 on branch feature, as run
+// writes one, launched to keep its workspace or not, finished or not, and
+// returns its directory.
+func attemptOn(t *testing.T, root string, keep, finished bool) string {
+	t.Helper()
+	common := git(t, root, "rev-parse", "--path-format=absolute", "--git-common-dir")
+	id := "G-260101-00001.20260922T183000Z"
+	dir := filepath.Join(common, "grove", "attempts", id)
+	write(t, dir, "attempt.json", `{"attempt":"`+id+`","work":"G-260101-00001","branch":"feature","keep":`+strconv.FormatBool(keep)+`,"started":"2026-09-22T18:30:00Z"}`)
+	if finished {
+		write(t, dir, "result.json", `{"finished":"2026-09-22T18:40:00Z"}`)
+	}
+	return dir
 }

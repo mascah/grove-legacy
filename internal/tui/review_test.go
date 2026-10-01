@@ -296,7 +296,7 @@ func TestReviewIntegrateFromTheBoard(t *testing.T) {
 		t.Fatalf("n cancels:\n%s", s)
 	}
 	press(m, "i", "y")
-	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Also delete branch feature and remove its worktree? y/n   (/repo/feat)") {
+	if s := plain(m); m.prompt == nil || !strings.Contains(s, "Remove branch feature and its worktree? y/n, n keeps them   (/repo/feat)") {
 		t.Fatalf("y should ask about cleanup:\n%s", s)
 	}
 	deliverAll(m, press(m, "n"))
@@ -305,7 +305,7 @@ func TestReviewIntegrateFromTheBoard(t *testing.T) {
 	}
 	press(m, "esc", "i", "y")
 	deliverAll(m, press(m, "y"))
-	if strings.Join(f.acts, ";") != "integrate /repo W-001 cleanup=false;integrate /repo W-001 cleanup=true" {
+	if strings.Join(f.acts, ";") != "integrate /repo W-001 keep=true;integrate /repo W-001 keep=false" {
 		t.Fatalf("acts %v", f.acts)
 	}
 	// Other keys during a y/n prompt do nothing.

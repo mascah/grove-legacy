@@ -910,7 +910,7 @@ func (m *Model) act(p *prompt) tea.Cmd {
 		case "sweep":
 			facts, err = m.backend.Sweep(ctx, root)
 		default:
-			facts, err = m.backend.Integrate(ctx, root, id, cleanup)
+			facts, err = m.backend.Integrate(ctx, root, id, !cleanup)
 		}
 		return actMsg{gen, kind, about, facts, err}
 	})
@@ -954,7 +954,7 @@ func (m *Model) promptText() (typed, help string) {
 	case "sweep":
 		return "", fmt.Sprintf("Sweep every candidate in review under the policy: %s? y/n   (runs in %s)", m.planSummary(), p.root)
 	}
-	return "", fmt.Sprintf("Also delete branch %s and remove its worktree? y/n   (%s)", p.branch, p.wt)
+	return "", fmt.Sprintf("Remove branch %s and its worktree? y/n, n keeps them   (%s)", p.branch, p.wt)
 }
 
 // promptRows draws the open prompt in at most n rows of w cells. A y/n

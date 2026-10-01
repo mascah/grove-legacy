@@ -177,9 +177,14 @@ since only a delivery puts an acceptance there: re-proving every delivery
 on every read cost more Git work with every year of history and every kept
 branch, and Grove has to stay cheap in repositories with thousands of
 commits and branches it did not make. What that gives up is noticing, by
-itself, an acceptance written on the target by hand. For the same reason a
-branch kept after its delivery merges the target like any other, rather
-than delivering from its earlier submission as a merge base.
+itself, an acceptance written on the target by hand. A branch kept after
+its delivery is retired, never delivered from again, and reopened work
+starts in a fresh workspace from the target
+([G-260930-tcc9w](../grove/G-260930-tcc9w-bound-delivery-groups-an.md)):
+supporting repeated delivery from a squashed branch cost the merge bases,
+continuation rules and recoveries the churn review counted, for a workflow
+the owner did not need. Telling a retired branch walks the target's first
+parents, so no reading asks, only a command about to act on the branch.
 A done record without a candidate asserts only that its outcome was reached
 in its own branch context, as its Evidence says; it is not proof of a merge,
 and its prerequisites' delivery is established by Git ancestry or observed

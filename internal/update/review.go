@@ -1,6 +1,7 @@
 package update
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -112,6 +113,9 @@ func Feedback(root, id, text string, now time.Time) (Result, error) {
 	if err != nil {
 		return res, err
 	}
+	if branch, _ := Branch(root); p.Target != "" && branch == p.Target {
+		res.OnTarget = true
+	}
 	for _, o := range others {
 		done, err := reopen(o, fmt.Sprintf("Reopened with %s's feedback on candidate %s, %s: the next candidate replaces the one this group shared.", id, short(r.Candidate), day))
 		if err != nil {
@@ -142,7 +146,10 @@ func SameCommit(a, b string) bool {
 	return a != "" && b != "" && (strings.HasPrefix(a, b) || strings.HasPrefix(b, a))
 }
 
-// judged loads the project and returns the work record in review or accepted.
+// judged loads the project and returns the work record in review or
+// accepted. A checkout holding a delivery is retired (standing.Retired) and
+// nothing is judged in it, whichever work the delivery was of: an acceptance
+// there is never delivered, and a reopening would continue there.
 func judged(root, id string) (*project.Project, *project.Record, error) {
 	p, ds := project.Load(root, root)
 	if len(ds) != 0 {
@@ -158,6 +165,16 @@ func judged(root, id string) (*project.Project, *project.Record, error) {
 	}
 	if r.Status != "review" && r.Status != "accepted" {
 		return nil, nil, fmt.Errorf("%s is %s, not in review: there is no candidate awaiting judgment", id, r.Status)
+	}
+	if p.Target != "" {
+		d, err := standing.Retired(context.Background(), root, p.Target, "HEAD")
+		if err != nil {
+			return nil, nil, err
+		}
+		if d != nil {
+			branch, _ := Branch(root)
+			return nil, nil, fmt.Errorf("%s: a delivered workspace is kept for inspection and nothing is judged in it; run %s fresh from %s, reopening it there first (grove feedback) if it was delivered", d.Holds(cmp.Or(branch, "this checkout")), id, p.Target)
+		}
 	}
 	return p, r, nil
 }

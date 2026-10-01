@@ -4,11 +4,11 @@ type: work
 title: "Run bounded work through portable Claude and Codex execution"
 status: proposed
 created: "2026-09-28T19:29:00Z"
-updated: "2026-09-30T20:22:04Z"
+updated: "2026-10-01T02:22:09Z"
 kind: feature
 size: large
 relates_to: ["G-260928-vdhf0", "G-260928-917h8", "G-260923-tnn5e", "G-260924-59f5k", "G-260925-42j50", "G-260925-04ccr", "G-260925-3pj9a", "G-260925-p2k54", "G-260923-895zb", "G-260928-kehya", "G-260930-e8jj7", "G-260930-60c3d", "G-260930-62nmj", "G-260930-gwnb1", "G-260930-84fnb", "G-260930-2qa4a", "G-260930-tcc9w"]
-depends_on: ["G-260930-62nmj", "G-260929-gm3m4", "G-260930-0s29t"]
+depends_on: ["G-260930-62nmj", "G-260929-gm3m4", "G-260930-0s29t", "G-261001-62n4p"]
 ---
 
 ## Outcome
@@ -27,8 +27,11 @@ preserving the current command bytes or package shape.
 ## Scope and constraints
 
 Separate provider-specific command construction, event decoding, capabilities,
-permissions, limits and native-session behavior from common ownership,
-worktree handling, duplicate-start refusal, stop and result reconciliation.
+permissions, limits and native-session behavior. Consume the common workspace
+eligibility and ownership boundary delivered by
+[G-261001-62n4p](G-261001-62n4p-isolate-workspace-eligib.md); do not repeat its
+lifecycle redesign inside provider extraction. Preserve duplicate-start
+refusal, stop and result reconciliation through that boundary.
 Extract or replace code where the design warrants it. Exercise the boundary
 with both providers; a public plugin SDK and a third provider are out of scope.
 
@@ -108,6 +111,11 @@ it changes workspace admission and lifetime before this extraction touches
 the same launch/selection code. Repeated execution on an old squashed branch
 is not behavior to preserve; before-delivery continuation remains required.
 
+Also depends on [G-261001-62n4p](G-261001-62n4p-isolate-workspace-eligib.md):
+the owner authorized a narrower refactor and imported-branch demonstration
+before introducing another provider. It separates delivery's workspace
+checks from provider execution and inventories the old rules removed.
+
 ## Acceptance
 
 1. Both providers execute a bounded delivery group in a Grove-owned worktree.
@@ -123,7 +131,9 @@ is not behavior to preserve; before-delivery continuation remains required.
    work model. Missing usage or cost is reported honestly.
 4. Existing Claude workflows retain their required behavior, with migration
    for deliberate interface changes. No byte-for-byte command-preservation
-   constraint prevents a cleaner implementation.
+   constraint prevents a cleaner implementation. Both providers consume the
+   same workspace eligibility/ownership interface; neither parses the other's
+   events or introduces its own branch-retirement or cleanup rules.
 5. Real bounded smoke trials on both providers record versions, permission
    behavior, effective limits, stopping and observed activity. The owner
    supplies execution configuration and any paid usage mandate.
@@ -133,8 +143,8 @@ is not behavior to preserve; before-delivery continuation remains required.
 
 ## Next
 
-Needs the declared design, delivered local integration and workspace
-prerequisites. Plan extraction against the reconciled
+Needs the declared design, delivered local integration, local workspace and
+shared workspace-boundary prerequisites. Plan extraction against the reconciled
 [contracts](G-260930-84fnb-portable-workflow-contra.md) and
 [G-260930-tcc9w](G-260930-tcc9w-bound-delivery-groups-an.md). Preserve
 ownership, limits, source safety and pre-delivery continuation; do not retain
